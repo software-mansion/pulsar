@@ -9,7 +9,7 @@ export default defineConfig({
   integrations: [starlight({
     title: 'Happytic',
     customCss: [
-      './src/content/docs/playground/components/Example.css',
+      './src/custom.css',
       '@fontsource/bebas-neue/400.css',
     ],
     pagination: false,

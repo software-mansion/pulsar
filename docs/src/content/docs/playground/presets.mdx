@@ -1,0 +1,301 @@
+---
+title: Presets playground
+description: Haptics playground.
+---
+
+import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import Example from './components/Example';
+import Connection from './components/Connection';
+import Composer from './components/Composer';
+import Tags from './components/Tags';
+import { Steps } from '@astrojs/starlight/components';
+
+<div className="banner-background">
+  <div className="not-content banner">
+    <img className="banner-img" src='../../../../src/assets/logo_with_label.png' />
+    <div className="banner-title">
+      Make your app go **BRRR**!
+    </div>
+    <div className="banner-subtitle">
+      Choose preset that just perfectly fits your app.
+    </div>
+  </div>
+</div>
+
+---
+
+## Device Connection
+<Connection client:load>
+<Steps>
+1. Download the **PulsarApp** for App Store or Play Store.
+
+   <div>
+    <div style={{display: 'flex', alignItems: 'center'}}>
+      <img src='/src/assets/interactive-playground/appIcon.png' width={70} style={{marginRight: '10px'}} />
+      <div>
+       **PulsarApp**
+      </div>
+    </div>
+    <div style={{display: 'flex', marginTop: '20px'}}>
+      <img src='/src/assets/interactive-playground/apple.svg' height={50} style={{marginRight: '10px'}} />
+      <img src="/src/assets/interactive-playground/google.png" height={50} />
+    </div>
+   </div>
+   <div className='connection-spaceVertical' />
+
+2. Open Playground and find [Device Connection](/playground/presets#device-connection) section.
+   <img src='/src/assets/interactive-playground/code_red.png' style={{maxWidth: '400px', width: '100%'}} />
+   <div className='connection-spaceVertical' />
+
+3. Type **Paring code** into **PulsarApp** and click **Connect** button.
+   <img src='/src/assets/interactive-playground/connection.gif' style={{maxWidth: '220px', width: '100%'}} />
+   <div className='connection-spaceVertical' />
+
+4. Check [Device Connection](/playground/presets#device-connection) section if your device is successfully connected.
+   <img src='/src/assets/interactive-playground/code_green.png' style={{maxWidth: '400px', width: '100%'}} />
+   <div className='connection-spaceVertical' />
+
+5. Fund your preset and click button with phone to play them on the device.
+   <img src='/src/assets/interactive-playground/play.gif' style={{maxWidth: '300px', width: '100%'}} />
+   <div className='connection-spaceVertical' />
+
+6. Congratulation! 🎉 🥳
+</Steps>
+</Connection>
+
+## Composer
+Use the haptic compositor to choose preset values that best fit your use case. Just answer a couple of quick, simple questions — that's all! If you're not sure, just skip the question.
+<Composer client:load /> 
+
+## Presets
+
+import pattern1 from '../../../assets/presets/1/pattern.json?raw';
+
+### 🧱 Falling Bricks
+<Example
+  description="That feeling when some bricks fall onto your foot."
+  presetName="1"
+  data={pattern1}
+  duration={1}
+  config={{
+    group1: 0,
+    group2: 0,
+    group3: 0,
+    group4: 0,
+    group5: 0,
+    group6: 0,
+  }}
+  client:load
+>
+  <Tabs>
+    <TabItem label="Swift">
+      <Code code="
+        import Happytic
+        
+        Happytic.FallingBricks.play()
+      " lang="swift" />
+    </TabItem>
+    <TabItem label="React Native">
+      <Code code="
+        import Happytic from 'react-native-pulsar;
+
+        Happytic.FallingBricks.play()
+      " lang="js" />
+    </TabItem>
+  </Tabs>
+</Example>
+
+import pattern2 from '../../../assets/presets/2/pattern.json?raw';
+
+### 🫨 Earthquake
+<Example
+  description="Everything is shaking my friend."
+  presetName="2"
+  data={pattern2}
+  duration={1}
+  config={{
+    group1: 1,
+    group2: 1,
+    group3: 1,
+    group4: 1,
+    group5: 1,
+    group6: 1,
+  }}
+  client:load
+>
+  <Tabs>
+    <TabItem label="Swift">
+      <Code code="
+        import Happytic
+        
+        Happytic.Earthquake.play()
+      " lang="swift" />
+    </TabItem>
+    <TabItem label="React Native">
+      <Code code="
+        import Happytic from 'react-native-pulsar;
+
+        Happytic.Earthquake.play()
+      " lang="js" />
+    </TabItem>
+  </Tabs>
+</Example>
+
+import pattern3 from '../../../assets/presets/3/pattern.json?raw';
+
+### 🔥 Random preset
+<Example
+  description="Pure random, nothing else."
+  presetName="3"
+  data={pattern3}
+  duration={1}
+  config={{
+    group1: 1,
+    group2: 1,
+    group3: 1,
+    group4: 1,
+    group5: 1,
+    group6: 3,
+  }}
+  client:load
+>
+  <Tabs>
+    <TabItem label="Swift">
+      <Code code="
+        import Happytic
+        
+        Happytic.Random.play()
+      " lang="swift" />
+    </TabItem>
+    <TabItem label="React Native">
+      <Code code="
+        import Happytic from 'react-native-pulsar;
+
+        Happytic.Random.play()
+      " lang="js" />
+    </TabItem>
+  </Tabs>
+</Example>
+
+import pattern4 from '../../../assets/presets/4/pattern.json?raw';
+
+### 🥛 Milk
+<Example
+  description="Milk is great."
+  presetName="4"
+  data={pattern4}
+  duration={0.8}
+  config={{
+    group1: 1,
+    group2: 2,
+    group3: 2,
+    group4: 1,
+    group5: 1,
+  }}
+  client:load
+>
+  <Tabs>
+    <TabItem label="Swift">
+      <Code code="
+        import Happytic
+        
+        Happytic.FallingBricks.play()
+      " lang="swift" />
+    </TabItem>
+    <TabItem label="React Native">
+      <Code code="
+        import Happytic from 'react-native-pulsar;
+
+        Happytic.FallingBricks.play()
+      " lang="js" />
+    </TabItem>
+  </Tabs>
+</Example>
+
+import pattern5 from '../../../assets/presets/5/pattern.json?raw';
+
+### ❌ Fail
+<Example
+  description="Something went wrong."
+  presetName="5"
+  data={pattern5}
+  duration={0.7}
+  config={{
+    group1: 0,
+    group2: 1,
+    group3: 1,
+    group4: 1,
+    group5: 1,
+  }}
+  client:load
+>
+  <Tabs>
+    <TabItem label="Swift">
+      <Code code="
+        import Happytic
+        
+        Happytic.FallingBricks.play()
+      " lang="swift" />
+    </TabItem>
+    <TabItem label="React Native">
+      <Code code="
+        import Happytic from 'react-native-pulsar;
+
+        Happytic.FallingBricks.play()
+      " lang="js" />
+    </TabItem>
+  </Tabs>
+</Example>
+
+import pattern6 from '../../../assets/presets/6/pattern.json?raw';
+
+### ✅ Success
+<Example
+  description="Great! This is great!."
+  presetName="6"
+  data={pattern6}
+  duration={0.7}
+  config={{
+    group1: 0,
+    group2: 1,
+    group3: 1,
+    group4: 1,
+    group5: 1,
+    group6: 1,
+  }}
+  client:load
+>
+  <Tabs>
+    <TabItem label="Swift">
+      <Code code="
+        import Happytic
+        
+        Happytic.Success.play()
+      " lang="swift" />
+    </TabItem>
+    <TabItem label="React Native">
+      <Code code="
+        import Happytic from 'react-native-pulsar;
+
+        Happytic.Success.play()
+      " lang="js" />
+    </TabItem>
+  </Tabs>
+</Example>
+
+<div className="no-results-background">
+  <div className="not-content no-results">
+    <img className="no-results-img" src='../../../../src/assets/shock.gif' />
+    <div className="no-results-title">
+      Still nothing?
+    </div>
+    <div className="no-results-subtitle">
+      Don't panic!
+    </div>
+    <a href="/haptic-studio">
+      <div className="button" style={{fontSize: '20px'}}>
+        Check out <b>Pulsar Studio</b>
+      </div>
+    </a>
+  </div>
+</div>
