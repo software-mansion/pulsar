@@ -15,8 +15,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.swmansion.pulsarapp.types.BarPreset
+
 class MainActivity : ComponentActivity() {
     private var hapticsHandler: HapticsHandler? = null
 
@@ -34,22 +37,19 @@ class MainActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Button(
-                        onClick = { hapticsHandler?.playPredefinedVibration() }
-                    ) {
-                        Text(
-                            text = "play predefined vibration",
-                        )
-                    }
-                    Button(
-                        onClick = { hapticsHandler?.playWaveformVibration() }
-                    ) {
-                        Text(
-                            text = "play waveform vibration",
-                        )
-                    }
+                    VibrationButton(SUCCESS_PRESET)
                 }
             }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @Composable
+    fun VibrationButton(preset: BarPreset){
+        Button(
+            onClick = { hapticsHandler?.playPresetVibration(preset) }
+        ) {
+            Text(preset.name)
         }
     }
 }

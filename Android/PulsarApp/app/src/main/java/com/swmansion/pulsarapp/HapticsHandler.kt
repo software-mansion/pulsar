@@ -9,6 +9,7 @@ import android.os.Vibrator
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import com.swmansion.pulsarapp.types.BarPreset
 
 const val TAG = "HapticsHandler"
 
@@ -27,22 +28,11 @@ class HapticsHandler(val context: Context) {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    fun playWaveformVibration(){
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun playPresetVibration(preset: BarPreset){
         if(checkVibrationPermission()){
             Log.i(TAG, "permission granted")
-
-            val timings: LongArray = longArrayOf(
-                25, 25, 50, 25, 25, 25, 25, 25, 25, 25, 75, 25, 25,
-                300, 25, 25, 150, 25, 25, 25
-            )
-            val amplitudes: IntArray = intArrayOf(
-                38, 77, 79, 84, 92, 99, 121, 143, 180, 217, 255, 170, 85,
-                0, 85, 170, 255, 170, 85, 0
-            )
-            val repeatIndex = -1 // Do not repeat.
-
-            vibrationService.vibrate(VibrationEffect.createWaveform(timings, amplitudes, repeatIndex))
+            vibrationService.vibrate(preset.vibrationEffect)
         } else {
             Log.i(TAG, "permission not granted")
         }
