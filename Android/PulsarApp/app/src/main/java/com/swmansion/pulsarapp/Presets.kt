@@ -26,7 +26,9 @@ val FAILURE_PRESET = Preset(
 val ENVELOPE_PRESET = Preset(
     name = "Envelope",
     controlPoints = arrayListOf(
-        EnvelopePoint(1.0f, 1.0f, 500),
-        EnvelopePoint(0.0f, 1.0f, 500)
-    )
+        EnvelopePoint(1.0f, 0.8f, 1200),
+        EnvelopePoint(0.0f, 0.8f, 1200),
+        EnvelopePoint(0.0f, 0.8f, 1400),
+        EnvelopePoint(1.0f, 0.8f, 2000),
+        )
 )
