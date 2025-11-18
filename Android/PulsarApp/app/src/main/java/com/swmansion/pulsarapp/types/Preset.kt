@@ -23,6 +23,33 @@ data class Preset(
   val barsList: ArrayList<Bar>? = null,
   val controlPointsList: ArrayList<EnvelopePoint>? = null,
 ) {
+  init {
+    barsList?.let {
+      for (bar in barsList) {
+        checkAmplitude(bar.amplitude)
+        checkFrequency(bar.frequency)
+      }
+      controlPointsList?.let {
+        for (point in controlPointsList) {
+          checkAmplitude(point.intensity)
+          checkFrequency(point.sharpness)
+        }
+      }
+    }
+  }
+
+  private fun checkAmplitude(amplitude: Float) {
+    if (amplitude < 0 || amplitude > 1) {
+      throw Exception("Found invalid amplitude: ${amplitude}. Amplitude must be value from [0,1].")
+    }
+  }
+
+  private fun checkFrequency(frequency: Float) {
+    if (frequency <= 0 || frequency > 1) {
+      throw Exception("Found invalid frequency: ${frequency}. Frequency must be value from (0,1].")
+    }
+  }
+
   @RequiresApi(Build.VERSION_CODES.O)
   fun createVibrationEffect(props: CreateVibrationEffectProps? = null): VibrationEffect? {
     if (barsList == null && controlPointsList == null) {
