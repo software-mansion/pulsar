@@ -107,8 +107,6 @@ data class Preset(
     return VibrationEffect.createWaveform(timings, amplitudes, -1)
   }
 
-  // TODO: check consts from envelopeInfo:
-  // https://developer.android.com/reference/android/os/VibrationEffect.WaveformEnvelopeBuilder#:~:text=You%20can%20use,duration%3A%20VibratorEnvelopeEffectInfo.getMaxDurationMillis()
   fun createWaveformFromPoints(
     points: ArrayList<EnvelopePoint>,
     frequencyProfile: VibratorFrequencyProfile,
