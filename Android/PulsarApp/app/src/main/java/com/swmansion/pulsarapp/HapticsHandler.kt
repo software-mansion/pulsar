@@ -18,10 +18,10 @@ class HapticsHandler(context: Context) {
             logEnvelopeSpecification()
         }
         val vibrationEffect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA){
-            // if frequency profile is not available use API before 16
-            val props = vibrationService.frequencyProfile?.let { frequencyProfile ->
-                CreateVibrationEffectProps(frequencyProfile, vibrationService.envelopeEffectInfo)
-            }
+            val props =  CreateVibrationEffectProps(
+                vibrationService.frequencyProfile,
+                vibrationService.envelopeEffectInfo
+            )
             preset.createVibrationEffect(props)
         } else {
             preset.createVibrationEffect()

@@ -18,7 +18,7 @@ class ExampleUnitTest {
         Bar(300, 500, 0.6f, 0.8f),
         Bar(600, 800, 1f, 0.8f)
     )
-    val preset = Preset(name = "test", bars = bars)
+    val preset = Preset(name = "test", barsList = bars)
 
     val expectedPositions = listOf<Long>(0, 100, 100, 200, 200, 300, 300, 500, 500, 600, 600, 800)
     val expectedAmplitude = listOf(0f, 0f, 0.3f, 0.3f, 0f, 0f, 0.6f, 0.6f, 0f, 0f, 1f, 1f)
