@@ -21,7 +21,7 @@ data class CreateVibrationEffectProps(
 data class Preset(
   val name: String,
   val barsList: ArrayList<Bar>? = null,
-  val controlPointsList: ArrayList<EnvelopePoint>? = null,
+  val pointsList: ArrayList<EnvelopePoint>? = null,
 ) {
   init {
     barsList?.let {
@@ -31,7 +31,7 @@ data class Preset(
       }
     }
 
-    controlPointsList?.let { points ->
+    pointsList?.let { points ->
       for (point in points) {
         checkAmplitude(point.intensity)
         checkFrequency(point.sharpness)
@@ -43,11 +43,17 @@ data class Preset(
         val lastPoint = points[n - 1]
 
         if (firstPoint.relativeTime != 0L) {
-          throw getInitException("Found invalid controlPointsList. First element relativeTime must be 0.")
+          throw getInitException(
+            "Found invalid controlPointsList. First element relativeTime must be 0."
+          )
         } else if (n == 1) {
-          throw getInitException("Found invalid controlPointsList. It must contain at least two points.")
+          throw getInitException(
+            "Found invalid controlPointsList. It must contain at least two points."
+          )
         } else if (lastPoint.intensity != 0f) { // required in basic envelope
-          throw getInitException("Found invalid controlPointsList. Last element intensity must be 0.")
+          throw getInitException(
+            "Found invalid controlPointsList. Last element intensity must be 0."
+          )
         }
       }
     }
@@ -55,13 +61,17 @@ data class Preset(
 
   private fun checkAmplitude(amplitude: Float) {
     if (amplitude < 0 || amplitude > 1) {
-      throw getInitException("Found invalid amplitude: ${amplitude}. Amplitude must be value from [0,1].")
+      throw getInitException(
+        "Found invalid amplitude: ${amplitude}. Amplitude must be value from [0,1]."
+      )
     }
   }
 
   private fun checkFrequency(frequency: Float) {
     if (frequency <= 0 || frequency > 1) {
-      throw getInitException("Found invalid frequency: $frequency. Frequency must be value from (0,1].") // TODO correct for bars
+      throw getInitException(
+        "Found invalid frequency: $frequency. Frequency must be value from (0,1]."
+      ) // TODO correct for bars
     }
   }
 
@@ -70,7 +80,7 @@ data class Preset(
   }
 
   fun createVibrationEffect(props: CreateVibrationEffectProps? = null): VibrationEffect? {
-    if (barsList == null && controlPointsList == null) {
+    if (barsList == null && pointsList == null) {
       Log.w(TAG, "Vibration creation failed. No data in preset.")
       return null
     } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -78,7 +88,7 @@ data class Preset(
       return null
     } else {
       val barsWaveform = barsList?.let { createWaveformFromBars(it, props) }
-      val pointsWaveform = controlPointsList?.let { createWaveformFromPoints(it, props) }
+      val pointsWaveform = pointsList?.let { createWaveformFromPoints(it, props) }
 
       if (barsWaveform != null) {
         Log.i(TAG, "Vibration created based on bars.")
@@ -173,7 +183,8 @@ data class Preset(
       if (i == 0) {
         // handle start from non zero amplitude
         if (currPoint.intensity != 0f) {
-          controlPoints += createControlPoint(props, currPoint.intensity, currPoint.sharpness, minDuration)
+          controlPoints +=
+            createControlPoint(props, currPoint.intensity, currPoint.sharpness, minDuration)
         }
       } else {
         // handle transition between points
@@ -181,7 +192,8 @@ data class Preset(
         val pointsTimeDiff = currPoint.relativeTime - prevPoint.relativeTime
         val duration = if (pointsTimeDiff > 0) pointsTimeDiff else minDuration
 
-        controlPoints += createControlPoint(props, currPoint.intensity, currPoint.sharpness, duration)
+        controlPoints +=
+          createControlPoint(props, currPoint.intensity, currPoint.sharpness, duration)
       }
     }
 

@@ -25,7 +25,7 @@ val FAIL_PRESET =
 val ENVELOPE_TEST_PRESET =
   Preset(
     name = "Envelope Test",
-    controlPointsList =
+    pointsList =
       arrayListOf(
         EnvelopePoint(1.0f, 0.8f, 0),
         EnvelopePoint(0.0f, 0.8f, 500),
@@ -48,7 +48,7 @@ val FALLING_BRICKS =
 val EARTHQUAKE_PRESET =
   Preset(
     name = "Earthquake",
-    controlPointsList = arrayListOf(
+    pointsList = arrayListOf(
       EnvelopePoint(0f, 1f, 0),
       EnvelopePoint(0.8f, 1f, 400),
       EnvelopePoint(0f, 1f, 400),
@@ -60,7 +60,7 @@ val EARTHQUAKE_PRESET =
 val RANDOM_PRESET =
   Preset(
     name = "Random Preset",
-    controlPointsList = arrayListOf(
+    pointsList = arrayListOf(
       EnvelopePoint(0f, 1f, 0),
       EnvelopePoint(0.8f, 1f, 400),
       EnvelopePoint(0f, 1f, 400),
