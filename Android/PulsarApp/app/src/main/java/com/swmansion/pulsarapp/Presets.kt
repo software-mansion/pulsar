@@ -54,7 +54,7 @@ val EARTHQUAKE_PRESET =
       EnvelopePoint(0f, 1f, 400),
       EnvelopePoint(0f, 1f, 500),
       EnvelopePoint(0.8f, 1f, 700),
-      EnvelopePoint(0f, 0f, 700),
+      EnvelopePoint(0f, 1f, 700),
       )
   )
 val RANDOM_PRESET =
