@@ -1,6 +1,7 @@
 package com.swmansion.pulsarapp
 
 import com.swmansion.pulsarapp.types.Bar
+import com.swmansion.pulsarapp.types.EnvelopePoint
 import com.swmansion.pulsarapp.types.Preset
 import org.junit.Assert.*
 import org.junit.Test
@@ -12,29 +13,78 @@ import org.junit.Test
  */
 class ExampleUnitTest {
   @Test
-  fun convertBarsToPoints() {
-    val bars = arrayListOf(
+  fun basicConvertBarsToPointsTest() {
+    val bars =
+      arrayListOf(
         Bar(100, 200, 0.3f, 0.8f),
         Bar(300, 500, 0.6f, 0.8f),
         Bar(600, 800, 1f, 0.8f)
-    )
+      )
+
     val preset = Preset(name = "test", barsList = bars)
-
-    val expectedPositions = listOf<Long>(0, 100, 100, 200, 200, 300, 300, 500, 500, 600, 600, 800)
-    val expectedAmplitude = listOf(0f, 0f, 0.3f, 0.3f, 0f, 0f, 0.6f, 0.6f, 0f, 0f, 1f, 1f)
-
     val points = preset.convertBarsToPoints(bars)
 
-    val convertedTimes = points.map { it.relativeTime }
-    val convertedAmplitude = points.map { it.intensity }
+    val expectedPoints: ArrayList<EnvelopePoint> =
+      arrayListOf(
+        EnvelopePoint(0f, 0f, 0),
+        EnvelopePoint(0f, 0.8f, 100),
+        EnvelopePoint(0.3f, 0.8f, 100),
+        EnvelopePoint(0.3f, 0.8f, 200),
+        EnvelopePoint(0f, 0.8f, 200),
+        EnvelopePoint(0f, 0.8f, 300),
+        EnvelopePoint(0.6f, 0.8f, 300),
+        EnvelopePoint(0.6f, 0.8f, 500),
+        EnvelopePoint(0f, 0.8f, 500),
+        EnvelopePoint(0f, 0.8f, 600),
+        EnvelopePoint(1f, 0.8f, 600),
+        EnvelopePoint(1f, 0.8f, 800),
+        EnvelopePoint(0f, 0.8f, 800),
+      )
 
-    assertEquals(expectedPositions.size, convertedTimes.size)
-    assertEquals(expectedAmplitude.size, convertedAmplitude.size)
-    assertEquals(convertedTimes.size, convertedAmplitude.size)
+    assertEquals(points, expectedPoints)
+  }
 
-    for (i in 0..expectedPositions.size - 1) {
-      assertEquals(expectedPositions[i], convertedTimes[i])
-      assertEquals(expectedAmplitude[i], convertedAmplitude[i])
-    }
+  @Test
+  fun commonPointConvertBarsToPointsTest() {
+    val bars = arrayListOf(
+      Bar(100, 200, 0.3f, 0.8f),
+      Bar(200, 300, 0.6f, 0.8f)
+    )
+
+    val preset = Preset(name = "test", barsList = bars)
+    val points = preset.convertBarsToPoints(bars)
+
+    val expectedPoints: ArrayList<EnvelopePoint> =
+      arrayListOf(
+        EnvelopePoint(0f, 0f, 0),
+        EnvelopePoint(0f, 0.8f, 100),
+        EnvelopePoint(0.3f, 0.8f, 100),
+        EnvelopePoint(0.3f, 0.8f, 200),
+        EnvelopePoint(0.6f, 0.8f, 200),
+        EnvelopePoint(0.6f, 0.8f, 300),
+        EnvelopePoint(0f, 0.8f, 300),
+      )
+
+    assertEquals(points, expectedPoints)
+  }
+
+  @Test
+  fun startWith0ConvertBarsToPointsTest() {
+    val bars = arrayListOf(
+      Bar(0, 200, 0.3f, 0.8f)
+    )
+
+    val preset = Preset(name = "test", barsList = bars)
+    val points = preset.convertBarsToPoints(bars)
+
+    val expectedPoints: ArrayList<EnvelopePoint> =
+      arrayListOf(
+        EnvelopePoint(0f, 0.8f, 0),
+        EnvelopePoint(0.3f, 0.8f, 0),
+        EnvelopePoint(0.3f, 0.8f, 200),
+        EnvelopePoint(0f, 0.8f, 200),
+      )
+
+    assertEquals(points, expectedPoints)
   }
 }

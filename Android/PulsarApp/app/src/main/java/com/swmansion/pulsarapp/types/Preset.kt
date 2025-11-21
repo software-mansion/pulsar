@@ -41,9 +41,9 @@ data class Preset(
       val n = controlPointsList.size
       val firstPoint = if (n > 0) controlPointsList[0] else null
       firstPoint?.let {
-        if (it.relativeTime != 0.toLong()){
+        if (it.relativeTime != 0.toLong()) {
           throw Exception("Found invalid controlPointsList. First element relativeTime must be 0.")
-        } else if (n == 1){
+        } else if (n == 1) {
           throw Exception("Found invalid controlPointsList. It must contain at least two points.")
         }
       }
@@ -72,8 +72,10 @@ data class Preset(
     } else {
       val barsWaveform =
         barsList?.let { bars ->
-          if (supportAndroid36() && props?.frequencyProfile != null) // TODO: handle null frequency better
-            createBarWaveform36(bars, props.frequencyProfile, props.envelopeInfo)
+          if (
+            supportAndroid36() && props?.frequencyProfile != null
+          ) // TODO: handle null frequency better
+           createBarWaveform36(bars, props.frequencyProfile, props.envelopeInfo)
           else createBarWaveform26(bars)
         }
 
@@ -201,36 +203,30 @@ data class Preset(
     val points = ArrayList<EnvelopePoint>()
     val n = bars.size
 
+    // TODO: better validation
+    val validBars = bars.filter { it.amplitude != 0f }
+
+    // create empty interval at the beginning
+    if (validBars.isNotEmpty() && validBars[0].x1 != 0L) {
+      points += EnvelopePoint(0f, 0f, 0)
+    }
+
     for (i in 0..n - 1) {
-      val prevBar = if (i == 0) null else bars[i - 1]
-      val currBar = bars[i]
+      val currBar = validBars[i]
 
-      // add empty interval at the beginning if first bar do not start at 0
-      if (i == 0 && currBar.x1 != 0.toLong()) {
-        addIntervalEdgesToPoints(points, 0f, currBar.frequency, 0, currBar.x1)
+      if (i == 0 || validBars[i - 1].x2 != currBar.x1) {
+        points += EnvelopePoint(0f, currBar.frequency, currBar.x1)
       }
 
-      // add empty interval between bars if they are not next to each other
-      if (prevBar != null && prevBar.x2 != currBar.x1) {
-        addIntervalEdgesToPoints(points, 0f, currBar.frequency, prevBar.x2, currBar.x1)
-      }
+      points += EnvelopePoint(currBar.amplitude, currBar.frequency, currBar.x1)
+      points += EnvelopePoint(currBar.amplitude, currBar.frequency, currBar.x2)
 
-      // add bar interval
-      addIntervalEdgesToPoints(points, currBar.amplitude, currBar.frequency, currBar.x1, currBar.x2)
+      if (i == n - 1 || currBar.x2 != validBars[i + 1].x1) {
+        points += EnvelopePoint(0f, currBar.frequency, currBar.x2)
+      }
     }
 
     return points
-  }
-
-  private fun addIntervalEdgesToPoints(
-    points: ArrayList<EnvelopePoint>,
-    intensity: Float,
-    sharpness: Float,
-    relativeTime1: Long,
-    relativeTime2: Long,
-  ) {
-    points += EnvelopePoint(intensity, sharpness, relativeTime1)
-    points += EnvelopePoint(intensity, sharpness, relativeTime2)
   }
 
   private fun supportAndroid36(): Boolean {
