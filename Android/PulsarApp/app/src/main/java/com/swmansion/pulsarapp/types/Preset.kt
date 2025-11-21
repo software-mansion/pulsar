@@ -41,7 +41,7 @@ data class Preset(
       val n = controlPointsList.size
       val firstPoint = if (n > 0) controlPointsList[0] else null
       firstPoint?.let {
-        if (it.relativeTime != 0.toLong()) {
+        if (it.relativeTime != 0L) {
           throw Exception("Found invalid controlPointsList. First element relativeTime must be 0.")
         } else if (n == 1) {
           throw Exception("Found invalid controlPointsList. It must contain at least two points.")
@@ -67,24 +67,11 @@ data class Preset(
       Log.w(TAG, "Vibration creation failed. No data in preset.")
       return null
     } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-      Log.w(TAG, "Vibration not supported on version before 26 yet")
+      Log.w(TAG, "Vibration not supported on version before 26 yet.") // TODO: handle somehow
       return null
     } else {
-      val barsWaveform =
-        barsList?.let { bars ->
-          if (
-            supportAndroid36() && props?.frequencyProfile != null
-          ) // TODO: handle null frequency better
-           createBarWaveform36(bars, props.frequencyProfile, props.envelopeInfo)
-          else createBarWaveform26(bars)
-        }
-
-      val pointsWaveform =
-        controlPointsList?.let { points ->
-          if (supportAndroid36() && props?.frequencyProfile != null)
-            createPointsWaveform36(points, props.frequencyProfile, props.envelopeInfo)
-          else null // TODO: handle somehow
-        }
+      val barsWaveform = barsList?.let { createBarWaveform(it, props) }
+      val pointsWaveform = controlPointsList?.let { createPointsWaveform(it, props) }
 
       if (barsWaveform != null) {
         Log.i(TAG, "Vibration created based on bars.")
@@ -97,6 +84,20 @@ data class Preset(
         return null
       }
     }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  fun createBarWaveform(bars: ArrayList<Bar>, props: CreateVibrationEffectProps?): VibrationEffect {
+    return if (supportAndroid36() && props != null) createBarWaveform36(bars, props)
+    else createBarWaveform26(bars)
+  }
+
+  fun createPointsWaveform(
+    points: ArrayList<EnvelopePoint>,
+    props: CreateVibrationEffectProps?,
+  ): VibrationEffect? {
+    return if (supportAndroid36() && props != null) createPointsWaveform36(points, props)
+    else null // TODO: handle somehow
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
@@ -127,15 +128,23 @@ data class Preset(
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
   fun createBarWaveform36(
     bars: ArrayList<Bar>,
-    frequencyProfile: VibratorFrequencyProfile,
-    envelopeInfo: VibratorEnvelopeEffectInfo,
+    props: CreateVibrationEffectProps,
   ): VibrationEffect {
     val points = convertBarsToPoints(bars)
-    return createPointsWaveform36(points, frequencyProfile, envelopeInfo)
+    return createPointsWaveform36(points, props)
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
   fun createPointsWaveform36(
+    points: ArrayList<EnvelopePoint>,
+    props: CreateVibrationEffectProps,
+  ): VibrationEffect {
+    return props.frequencyProfile?.let { createPointsWaveform36Hz(points, it, props.envelopeInfo) }
+      ?: run { createPointsWaveform36Basic(points, props.envelopeInfo) }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  fun createPointsWaveform36Hz(
     points: ArrayList<EnvelopePoint>,
     frequencyProfile: VibratorFrequencyProfile,
     envelopeInfo: VibratorEnvelopeEffectInfo,
@@ -180,6 +189,41 @@ data class Preset(
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  fun createPointsWaveform36Basic(
+    points: ArrayList<EnvelopePoint>,
+    envelopeInfo: VibratorEnvelopeEffectInfo,
+  ): VibrationEffect {
+    val minDuration = envelopeInfo.minControlPointDurationMillis
+    val builder = VibrationEffect.BasicEnvelopeBuilder()
+    val n = points.size
+
+    for (i in 0..n - 1) {
+      val currPoint = points[i]
+
+      if (i == 0) {
+        // handle start from non zero amplitude
+        if (currPoint.intensity != 0f) {
+          builder.addControlPoint(currPoint.intensity, currPoint.sharpness, minDuration)
+        }
+      } else {
+        // handle transition between points
+        val prevPoint = points[i - 1]
+        val pointsTimeDiff = currPoint.relativeTime - prevPoint.relativeTime
+        val duration =
+          if (pointsTimeDiff > 0) adjustDuration(pointsTimeDiff, envelopeInfo) else minDuration
+
+        builder.addControlPoint(currPoint.intensity, currPoint.sharpness, duration)
+
+        if (i == n - 1 && currPoint.intensity != 0.0f) {
+          builder.addControlPoint(0f, currPoint.sharpness, minDuration)
+        }
+      }
+    }
+
+    return builder.build()
+  }
+
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
   fun addPointToBuilder(
     builder: VibrationEffect.WaveformEnvelopeBuilder,
     frequencyProfile: VibratorFrequencyProfile,
@@ -188,15 +232,22 @@ data class Preset(
     sharpness: Float,
     duration: Long,
   ) {
-    val minDuration = envelopeInfo.minControlPointDurationMillis
-    val maxDuration = envelopeInfo.maxControlPointDurationMillis
-    val adjustedDuration = max(min(duration, maxDuration), minDuration)
+    val adjustedDuration = adjustDuration(duration, envelopeInfo)
 
     val minFrequencyHz = frequencyProfile.minFrequencyHz
     val maxFrequencyHz = frequencyProfile.maxFrequencyHz
     val frequencyHz = sharpness * (maxFrequencyHz - minFrequencyHz) + minFrequencyHz
 
     builder.addControlPoint(intensity, frequencyHz, adjustedDuration)
+  }
+
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  private fun adjustDuration(duration: Long, envelopeInfo: VibratorEnvelopeEffectInfo): Long {
+    val minDuration = envelopeInfo.minControlPointDurationMillis
+    val maxDuration = envelopeInfo.maxControlPointDurationMillis
+    val adjustedDuration = max(min(duration, maxDuration), minDuration)
+
+    return adjustedDuration
   }
 
   fun convertBarsToPoints(bars: ArrayList<Bar>): ArrayList<EnvelopePoint> {
