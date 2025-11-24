@@ -22,12 +22,12 @@ import com.swmansion.pulsarapp.types.Preset
 import com.swmansion.pulsarapp.ui.theme.PulsarAppTheme
 
 class MainActivity : ComponentActivity() {
-  private var hapticsHandler: HapticsHandler? = null
+  private var hapticsHandler: VibrationHandler? = null
 
   @SuppressLint("NewApi")
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onCreate(savedInstanceState: Bundle?) {
-    hapticsHandler = HapticsHandler(this)
+    hapticsHandler = VibrationHandler(this)
 
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()

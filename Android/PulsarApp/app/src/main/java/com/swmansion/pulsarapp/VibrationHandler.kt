@@ -7,9 +7,9 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.swmansion.pulsarapp.types.Preset
 
-const val TAG = "HapticsHandler"
+const val TAG = "VibrationHandler"
 
-class HapticsHandler(context: Context) {
+class VibrationHandler(context: Context) {
   private val vibrationService = context.getSystemService(Vibrator::class.java)
   private val vibrationBuilder = VibrationBuilder()
 
