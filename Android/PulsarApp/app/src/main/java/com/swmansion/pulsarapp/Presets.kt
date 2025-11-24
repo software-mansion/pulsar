@@ -146,3 +146,23 @@ val UP_AND_DOWN_PRESET =
         EnvelopePoint(0f, 1f, 15200),
       ),
   )
+
+val COMPLEX =
+  Preset(
+    name = "Complex",
+    bars =
+      arrayListOf(
+        Bar(200, 400, 1f, 1f),
+        Bar(1200, 1400, 1f, 1f),
+        Bar(2200, 2400, 1f, 1f),
+        Bar(7200, 7400, 1f, 1f),
+        Bar(8200, 8400, 1f, 1f),
+        Bar(9200, 9400, 1f, 1f),
+      ),
+    points =
+      arrayListOf(
+        EnvelopePoint(0f, 1f, 0),
+        EnvelopePoint(0.9f, 1f, 5000),
+        EnvelopePoint(0f, 1f, 10000),
+      ),
+  )

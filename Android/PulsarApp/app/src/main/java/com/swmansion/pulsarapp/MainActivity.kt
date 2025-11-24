@@ -65,6 +65,11 @@ class MainActivity : ComponentActivity() {
               VibrationButton(UP_AND_DOWN_PRESET)
             }
           }
+
+          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Complex presets:")
+            Row { VibrationButton(COMPLEX) }
+          }
         }
       }
     }

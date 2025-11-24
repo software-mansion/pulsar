@@ -86,4 +86,26 @@ class ExampleUnitTest {
 
     assertEquals(points, expectedPoints)
   }
+
+  @Test
+  fun mapBarsToPoints(){
+    val bars = arrayListOf(
+      Bar(500, 600, 1f, 1f),
+    )
+    val points =
+      arrayListOf(
+        EnvelopePoint(0f, 1f, 0),
+        EnvelopePoint(0.6f, 1f, 500),
+        EnvelopePoint(0f, 1f, 1000),
+      )
+
+    val builder = VibrationBuilder()
+
+    val p = builder.mergePointsAndBars(bars, points)
+
+    for (i in p){
+      println(i.toString())
+    }
+
+  }
 }
