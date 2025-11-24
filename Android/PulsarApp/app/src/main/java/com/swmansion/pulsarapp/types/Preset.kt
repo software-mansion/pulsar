@@ -6,13 +6,48 @@ data class Preset(
   val points: ArrayList<EnvelopePoint>? = null,
 ) {
   init {
+    checkBars()
+    checkPoints()
+  }
+
+  private fun checkBars() {
     bars?.let {
-      for (bar in it) {
-        checkAmplitude(bar.amplitude)
-        checkFrequency(bar.frequency)
+      val barsComparator = Comparator { bar1: Bar, bar2: Bar -> compareBars(bar1, bar2) }
+      if (it != it.sortedWith(barsComparator))
+        throw getInitException(
+          "Property bars is invalid. Relative time should be in ascending order."
+        )
+
+      val n = it.size
+      for (i in 0..n - 1) {
+        val currBar = it[i]
+
+        checkAmplitude(currBar.amplitude)
+        checkFrequency(currBar.frequency)
+
+        if (currBar.x1 >= currBar.x2) {
+          throw getInitException(
+            "Found invalid bar interval: ${currBar.x1}-${currBar.x2}. Bar end must be greater than start."
+          )
+        }
+
+        if (i > 0) {
+          val prevBar = it[i - 1]
+          if (prevBar.x1 == currBar.x2 || prevBar.x2 > currBar.x1) {
+            throw getInitException("Found invalid bars: $prevBar, $currBar. Bars cannot overlap.")
+          }
+        }
       }
     }
+  }
 
+  fun compareBars(b1: Bar, b2: Bar): Int {
+    val firstCoordinateDiff = b1.x1 - b2.x1
+    val diff = if (firstCoordinateDiff != 0L) firstCoordinateDiff else b1.x2 - b2.x2
+    return diff.toInt()
+  }
+
+  private fun checkPoints() {
     points?.let {
       for (point in it) {
         checkAmplitude(point.intensity)
