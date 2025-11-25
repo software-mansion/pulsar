@@ -1,26 +1,39 @@
 package com.swmansion.pulsarapp
 
 import android.util.Log
+import com.swmansion.pulsarapp.types.Bar
+import com.swmansion.pulsarapp.types.ControlPoint
 import com.swmansion.pulsarapp.types.Point
 import kotlin.collections.forEach
 
 // helper functions for plotting only
 
-fun printPoints(points: ArrayList<Point>) {
-  Log.i(TAG, "x1 x2 x3 x4 relative_time intensity")
+fun printPointsToPlot(points: ArrayList<Point>) {
+  Log.i(TAG, getPlotHeader())
   points.forEach { Log.i(TAG, "${it.relativeTime} ${it.intensity}") }
 }
 
-fun convertControlPointToPoints(controlPoints: ArrayList<Point>): ArrayList<Point> {
-  val points = ArrayList<Point>()
+fun getPlotHeader(): String {
+  return "x x x x relative_time intensity"
+}
 
+fun convertControlPointToPoints(controlPoints: ArrayList<ControlPoint>): ArrayList<Point> {
+  val points = ArrayList<Point>()
   points += Point(0f, 1f, 0)
-  var cnt = 0L
+  var relativeTime = 0L
 
   for (x in controlPoints) {
-    cnt += x.relativeTime
-    points += Point(x.intensity, x.sharpness, cnt)
+    relativeTime += x.duration
+    points += Point(x.intensity, x.sharpness, relativeTime)
   }
 
   return points
+}
+
+fun printBarsToPlot(bars: ArrayList<Bar>) {
+  Log.i(TAG, getPlotHeader())
+  bars.forEach { bar ->
+    Log.i(TAG, "${bar.x1} ${bar.intensity}")
+    Log.i(TAG, "${bar.x2} ${bar.intensity}")
+  }
 }
