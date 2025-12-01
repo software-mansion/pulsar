@@ -8,4 +8,7 @@ package com.swmansion.pulsarapp.types
  * @param intensity Bar intensity. Value range [0-1].
  * @param sharpness Bar sharpness. Value range (0-1]. Ignored on versions before Android 16
  */
-data class Bar(val x1: Long, val x2: Long, val intensity: Float, val sharpness: Float)
+data class Bar(val x1: Long, val x2: Long, val intensity: Float, val sharpness: Float) {
+  val point1 = Point(intensity, sharpness, x1)
+  val point2 = Point(intensity, sharpness, x2)
+}
