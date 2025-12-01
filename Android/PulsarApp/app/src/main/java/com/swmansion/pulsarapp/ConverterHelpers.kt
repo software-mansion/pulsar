@@ -12,25 +12,22 @@ fun convertBarsToPoints(bars: ArrayList<Bar>): ArrayList<Point> {
     val points = ArrayList<Point>()
     val n = bars.size
 
-    // TODO: better validation
-    val validBars = bars.filter { it.intensity != 0f }
-
     // create empty interval at the beginning
-    if (validBars.isNotEmpty() && validBars[0].x1 != 0L) {
+    if (bars.isNotEmpty() && bars[0].x1 != 0L) {
         points += Point(0f, 0f, 0)
     }
 
     for (i in 0..n - 1) {
-        val currBar = validBars[i]
+        val currBar = bars[i]
 
-        if (i == 0 || validBars[i - 1].x2 != currBar.x1) {
+        if (i == 0 || bars[i - 1].x2 != currBar.x1) {
             points += Point(0f, currBar.sharpness, currBar.x1)
         }
 
         points += Point(currBar.intensity, currBar.sharpness, currBar.x1)
         points += Point(currBar.intensity, currBar.sharpness, currBar.x2)
 
-        if (i == n - 1 || currBar.x2 != validBars[i + 1].x1) {
+        if (i == n - 1 || currBar.x2 != bars[i + 1].x1) {
             points += Point(0f, currBar.sharpness, currBar.x2)
         }
     }
@@ -160,32 +157,30 @@ private fun getPointsOnTheLine(
     for (j in 0..nBars - 1) {
         val bar = bars[j]
 
-        getBarIntersectionPoints(a, b, bar)?.let {
-            val (verticalIntersection1, horizontalIntersection, verticalIntersection2) = it
+        val (verticalIntersection1, horizontalIntersection, verticalIntersection2) = getBarIntersectionPoints(a, b, bar)
 
-            var barPointsToAdd: ArrayList<Point>? = null
+        var barPointsToAdd: ArrayList<Point>? = null
 
-            if (verticalIntersection1 != null && verticalIntersection2 != null) {
-                barPointsToAdd =
-                    arrayListOf(verticalIntersection1, bar.point1, bar.point2, verticalIntersection2)
-            } else if (
-                horizontalIntersection != null &&
-                (verticalIntersection1 != null || verticalIntersection2 != null)
-            ) {
-                if (verticalIntersection1 != null) {
-                    barPointsToAdd = arrayListOf(verticalIntersection1, bar.point1, horizontalIntersection)
-                } else if (verticalIntersection2 != null) {
-                    barPointsToAdd = arrayListOf(horizontalIntersection, bar.point2, verticalIntersection2)
-                }
-            } else {
-                Log.i(
-                    TAG,
-                    "Bar ${bar.x1}-${bar.x2} wasn't added to the line. This shouldn't happen. Intersections are not empty.",
-                )
+        if (verticalIntersection1 != null && verticalIntersection2 != null) {
+            barPointsToAdd =
+                arrayListOf(verticalIntersection1, bar.point1, bar.point2, verticalIntersection2)
+        } else if (
+            horizontalIntersection != null &&
+            (verticalIntersection1 != null || verticalIntersection2 != null)
+        ) {
+            if (verticalIntersection1 != null) {
+                barPointsToAdd = arrayListOf(verticalIntersection1, bar.point1, horizontalIntersection)
+            } else if (verticalIntersection2 != null) {
+                barPointsToAdd = arrayListOf(horizontalIntersection, bar.point2, verticalIntersection2)
             }
-
-            barPointsToAdd?.let{barPoints -> points.addAll(barPoints) }
+        } else {
+            Log.i(
+                TAG,
+                "Bar ${bar.x1}-${bar.x2} wasn't added to the line. No intersection points found.",
+            )
         }
+
+        barPointsToAdd?.let{barPoints -> points.addAll(barPoints) }
     }
 
     points += linePoint2
@@ -268,7 +263,7 @@ private fun getBarIntersectionPoints(
     a: Float,
     b: Float,
     bar: Bar,
-): Triple<Point?, Point?, Point?>? {
+): Triple<Point?, Point?, Point?> {
     val verticalIntersection1 = getBarVerticalIntersectionPoint(a, b, bar.point1)
     val verticalIntersection2 = getBarVerticalIntersectionPoint(a, b, bar.point2)
     val horizontalIntersection = getBarHorizontalIntersectionPoint(a, b, bar)

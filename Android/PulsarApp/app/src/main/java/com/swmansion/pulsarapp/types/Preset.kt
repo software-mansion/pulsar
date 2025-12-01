@@ -25,6 +25,12 @@ data class Preset(
         checkIntensity(currBar.intensity)
         checkSharpness(currBar.sharpness)
 
+        if (currBar.intensity == 0f) {
+          throw getInitException(
+            "Found invalid bar: ${currBar.x1}-${currBar.x2}. Bar intensity cannot be 0."
+          )
+        }
+
         if (currBar.x1 >= currBar.x2) {
           throw getInitException(
             "Found invalid bar interval: ${currBar.x1}-${currBar.x2}. Bar end must be greater than start."
