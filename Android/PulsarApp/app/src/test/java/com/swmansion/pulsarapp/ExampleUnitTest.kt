@@ -20,8 +20,7 @@ class ExampleUnitTest {
         Bar(600, 800, 1f, 0.8f)
       )
 
-    val vibrationBuilder = VibrationBuilder()
-    val points = vibrationBuilder.convertBarsToPoints(bars)
+    val points = convertBarsToPoints(bars)
 
     val expectedPoints: ArrayList<Point> =
       arrayListOf(
@@ -50,8 +49,7 @@ class ExampleUnitTest {
       Bar(200, 300, 0.6f, 0.8f)
     )
 
-    val vibrationBuilder = VibrationBuilder()
-    val points = vibrationBuilder.convertBarsToPoints(bars)
+    val points = convertBarsToPoints(bars)
 
     val expectedPoints: ArrayList<Point> =
       arrayListOf(
@@ -73,8 +71,7 @@ class ExampleUnitTest {
       Bar(0, 200, 0.3f, 0.8f)
     )
 
-    val vibrationBuilder = VibrationBuilder()
-    val points = vibrationBuilder.convertBarsToPoints(bars)
+    val points = convertBarsToPoints(bars)
 
     val expectedPoints: ArrayList<Point> =
       arrayListOf(
@@ -99,9 +96,7 @@ class ExampleUnitTest {
         Point(0f, 1f, 1000),
       )
 
-    val builder = VibrationBuilder()
-
-    val p = builder.mergePointsAndBars(bars, points)
+    val p = mergePointsAndBars(bars, points)
 
     for (i in p){
       println(i.toString())
