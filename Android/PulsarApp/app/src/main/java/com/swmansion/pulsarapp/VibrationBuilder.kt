@@ -135,22 +135,14 @@ class VibrationBuilder(val vibrationService: Vibrator) {
     val n = points.size
     val minDuration = vibrationService.envelopeEffectInfo.minControlPointDurationMillis
 
-    for (i in 0..n - 1) {
+    for (i in 1..n - 1) {
       val currPoint = points[i]
+      val prevPoint = points[i - 1]
 
-      if (i == 0) {
-        // handle start from non zero intensity
-        if (currPoint.intensity != 0f) {
-          controlPoints += createControlPoint(currPoint.intensity, currPoint.sharpness, minDuration)
-        }
-      } else {
-        // handle transition between points
-        val prevPoint = points[i - 1]
-        val pointsTimeDiff = currPoint.relativeTime - prevPoint.relativeTime
-        val duration = if (pointsTimeDiff > 0) pointsTimeDiff else minDuration
+      val pointsTimeDiff = currPoint.relativeTime - prevPoint.relativeTime
+      val duration = if (pointsTimeDiff > 0) pointsTimeDiff else minDuration
 
-        controlPoints += createControlPoint(currPoint.intensity, currPoint.sharpness, duration)
-      }
+      controlPoints += createControlPoint(currPoint.intensity, currPoint.sharpness, duration)
     }
 
     return controlPoints
