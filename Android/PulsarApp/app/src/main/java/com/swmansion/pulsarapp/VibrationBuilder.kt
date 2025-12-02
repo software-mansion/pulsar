@@ -16,8 +16,6 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 const val MAX_AMPLITUDE = 255
-const val STEPS_PER_100_MS = 30
-const val DEFAULT_SHARPNESS = 1f
 
 class VibrationBuilder(val vibrationService: Vibrator) {
   fun createVibrationEffect(preset: Preset): VibrationEffect? {
@@ -66,6 +64,10 @@ class VibrationBuilder(val vibrationService: Vibrator) {
     return if (isEnvelopeSupported()) createEnvelopeWaveform(points)
     else {
       val bars = convertPointsToBars(points)
+
+      Log.i(TAG, "----------- POINTS -----------")
+      printBarsToPlot(bars)
+
       createWaveform(bars)
     }
   }

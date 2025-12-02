@@ -8,6 +8,9 @@ import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToLong
 
+const val STEPS_PER_100_MS = 30
+const val DEFAULT_SHARPNESS = 1f
+
 fun convertBarsToPoints(bars: ArrayList<Bar>): ArrayList<Point> {
     val barsWithPauses = getBarsWithPauses(bars)
     val nBarsWithPauses = barsWithPauses.size
@@ -59,39 +62,39 @@ fun convertPointsToBars(points: ArrayList<Point>): ArrayList<Bar> {
 
     val n = points.size
     for (i in 1..n - 1) {
-        val currPoint = points[i]
-        val prevPoint = points[i - 1]
+        val linePoint1 = points[i - 1]
+        val linePoint2 = points[i]
 
-        // when prevPoint.relativeTime == currPoint.relativeTime skip (vertical lines)
+        val isLineVertical = linePoint1.relativeTime == linePoint2.relativeTime
+        val isLineHorizontal = linePoint1.intensity == linePoint2.intensity
 
-        if (prevPoint.intensity == currPoint.intensity) {
+        if(isLineHorizontal){
             bars +=
                 Bar(
-                    prevPoint.relativeTime,
-                    currPoint.relativeTime,
-                    currPoint.intensity,
+                    linePoint1.relativeTime,
+                    linePoint2.relativeTime,
+                    linePoint2.intensity,
                     DEFAULT_SHARPNESS, // sharpness of this bar will never be used
                 )
-        } else if (prevPoint.relativeTime != currPoint.relativeTime) {
-            val intervalDuration = currPoint.relativeTime - prevPoint.relativeTime
+        } else if (!isLineVertical){
+            val intensity1 = linePoint1.intensity
+            val intensity2 = linePoint2.intensity
 
-            val startIntensity = prevPoint.intensity
-            val endIntensity = currPoint.intensity
+            val intensityDiff = intensity2 - intensity1
+            val isLineAscending = intensityDiff > 0
+            val lineDuration = linePoint2.relativeTime - linePoint1.relativeTime
 
-            val steps = (intervalDuration * STEPS_PER_100_MS) / 100
-            val stepDuration = intervalDuration / steps
-            val stepValue = abs(startIntensity - endIntensity) / steps
+            val nSteps = (lineDuration * STEPS_PER_100_MS) / 100
+            val stepDuration = lineDuration / nSteps
+            val stepValue = abs(intensityDiff) / nSteps
 
-            val isAscending = startIntensity < endIntensity
-
-            // TODO fix last interval length
-            for (i in 0..steps - 1) {
-                val startTime = prevPoint.relativeTime + stepDuration * i
-                val endTime = if (i < steps - 1) startTime + stepDuration else currPoint.relativeTime
+            for (i in 0..nSteps - 1) { // TODO fix last interval length ?
+                val x1 = linePoint1.relativeTime + stepDuration * i
+                val x2 = if (i < nSteps - 1) x1 + stepDuration else linePoint2.relativeTime
                 val intensity =
-                    if (isAscending) startIntensity + stepValue * i else startIntensity - stepValue * i
+                    if (isLineAscending) linePoint1.intensity + stepValue * i else linePoint1.intensity - stepValue * i
 
-                bars += Bar(startTime, endTime, intensity, DEFAULT_SHARPNESS)
+                bars += Bar(x1, x2, intensity, DEFAULT_SHARPNESS)
             }
         }
     }
