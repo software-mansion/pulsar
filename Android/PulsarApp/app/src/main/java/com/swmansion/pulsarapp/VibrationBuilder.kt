@@ -84,23 +84,28 @@ class VibrationBuilder(val vibrationService: Vibrator) {
     var timings = longArrayOf()
     var amplitudes = intArrayOf()
 
-    printBarsToPlot(bars)
-
     val n = bars.size
     for (i in 0..n - 1) {
-      val prevBar = if (i == 0) null else bars[i - 1]
       val currBar = bars[i]
 
-      if (prevBar != null && prevBar.x2 != currBar.x1) {
-        // add pause between bars
-        val pauseDuration = currBar.x1 - prevBar.x2
-        timings += pauseDuration
+      // add pause at the beginning
+      if (i == 0 && currBar.x1 != 0L) {
+        timings += currBar.x1
         amplitudes += 0
       }
 
+      // add bar
       val currBarDuration = currBar.x2 - currBar.x1
       timings += currBarDuration
       amplitudes += (currBar.intensity * MAX_AMPLITUDE).roundToInt()
+
+      // add pause between bars
+      val nextBar = if (i != n - 1) bars[i + 1] else null
+      if (nextBar != null && currBar.x2 != nextBar.x1) {
+        val pauseDuration = nextBar.x1 - currBar.x2
+        timings += pauseDuration
+        amplitudes += 0
+      }
     }
 
     return VibrationEffect.createWaveform(timings, amplitudes, -1)
@@ -167,6 +172,6 @@ class VibrationBuilder(val vibrationService: Vibrator) {
 
   private fun isEnvelopeSupported(): Boolean {
     return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
-      vibrationService.areEnvelopeEffectsSupported()
+            vibrationService.areEnvelopeEffectsSupported()
   }
 }
