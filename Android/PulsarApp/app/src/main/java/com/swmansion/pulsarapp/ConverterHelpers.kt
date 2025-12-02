@@ -9,30 +9,49 @@ import kotlin.math.round
 import kotlin.math.roundToLong
 
 fun convertBarsToPoints(bars: ArrayList<Bar>): ArrayList<Point> {
+    val barsWithPauses = getBarsWithPauses(bars)
+    val nBarsWithPauses = barsWithPauses.size
+
     val points = ArrayList<Point>()
-    val n = bars.size
 
-    // create empty interval at the beginning
-    if (bars.isNotEmpty() && bars[0].x1 != 0L) {
-        points += Point(0f, 0f, 0)
-    }
-
-    for (i in 0..n - 1) {
-        val currBar = bars[i]
-
-        if (i == 0 || bars[i - 1].x2 != currBar.x1) {
-            points += Point(0f, currBar.sharpness, currBar.x1)
+    barsWithPauses.forEachIndexed { index, bar ->
+        if(index == 0 && bar.intensity != 0f){
+            points += Point(0f,bar.sharpness,0)
         }
 
-        points += Point(currBar.intensity, currBar.sharpness, currBar.x1)
-        points += Point(currBar.intensity, currBar.sharpness, currBar.x2)
+        points += bar.point1
+        points += bar.point2
 
-        if (i == n - 1 || currBar.x2 != bars[i + 1].x1) {
-            points += Point(0f, currBar.sharpness, currBar.x2)
+        if(index == nBarsWithPauses-1 && bar.intensity != 0f){
+            points += Point(0f,bar.sharpness,bar.x2)
         }
     }
 
     return points
+}
+
+private fun getBarsWithPauses(bars: ArrayList<Bar>): ArrayList<Bar> {
+    val barsWithPauses = ArrayList<Bar>()
+    val n = bars.size
+
+    for (i in 0..n - 1) {
+        val currBar = bars[i]
+        val nextBar = if (i != n-1) bars[i+1] else null
+
+        // create pause at the beginning
+        if(i == 0 && currBar.x1 != 0L){
+            barsWithPauses.add(Bar(0, currBar.x1, 0f, currBar.sharpness))
+        }
+
+        barsWithPauses.add(currBar)
+
+        // create pause between bars
+        if(nextBar != null && currBar.x2 != nextBar.x1){
+            barsWithPauses.add(Bar(currBar.x2, nextBar.x1, 0f, currBar.sharpness))
+        }
+    }
+
+    return barsWithPauses
 }
 
 fun convertPointsToBars(points: ArrayList<Point>): ArrayList<Bar> {

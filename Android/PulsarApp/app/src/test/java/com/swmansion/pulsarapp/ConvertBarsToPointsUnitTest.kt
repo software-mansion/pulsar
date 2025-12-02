@@ -12,57 +12,57 @@ import org.junit.Test
  */
 class ConvertBarsToPointsUnitTest {
   @Test
-  fun simpleTest() {
+  fun separatedBarsTest() {
     val bars =
       arrayListOf(
-        Bar(100, 200, 0.3f, 0.8f),
-        Bar(300, 500, 0.6f, 0.8f),
-        Bar(600, 800, 1f, 0.8f)
+        Bar(100, 200, 0.3f, 1f),
+        Bar(300, 500, 0.6f, 0.6f),
+        Bar(600, 800, 1f, 0.3f)
       )
 
     val points = convertBarsToPoints(bars)
 
     val expectedPoints: ArrayList<Point> =
       arrayListOf(
-        Point(0f, 0f, 0),
-        Point(0f, 0.8f, 100),
-        Point(0.3f, 0.8f, 100),
-        Point(0.3f, 0.8f, 200),
-        Point(0f, 0.8f, 200),
-        Point(0f, 0.8f, 300),
-        Point(0.6f, 0.8f, 300),
-        Point(0.6f, 0.8f, 500),
-        Point(0f, 0.8f, 500),
-        Point(0f, 0.8f, 600),
-        Point(1f, 0.8f, 600),
-        Point(1f, 0.8f, 800),
-        Point(0f, 0.8f, 800),
+        Point(0f, 1f, 0),
+        Point(0f, 1f, 100),
+        Point(0.3f, 1f, 100),
+        Point(0.3f, 1f, 200),
+        Point(0f, 1f, 200),
+        Point(0f, 1f, 300),
+        Point(0.6f, 0.6f, 300),
+        Point(0.6f, 0.6f, 500),
+        Point(0f, 0.6f, 500),
+        Point(0f, 0.6f, 600),
+        Point(1f, 0.3f, 600),
+        Point(1f, 0.3f, 800),
+        Point(0f, 0.3f, 800),
       )
 
-    assertEquals(points, expectedPoints)
+    assertEquals(expectedPoints, points)
   }
 
   @Test
-  fun commonPointTest() {
+  fun connectedBarsTest() {
     val bars = arrayListOf(
       Bar(100, 200, 0.3f, 0.8f),
-      Bar(200, 300, 0.6f, 0.8f)
+      Bar(200, 300, 0.6f, 0.6f)
     )
 
     val points = convertBarsToPoints(bars)
 
     val expectedPoints: ArrayList<Point> =
       arrayListOf(
-        Point(0f, 0f, 0),
+        Point(0f, 0.8f, 0),
         Point(0f, 0.8f, 100),
         Point(0.3f, 0.8f, 100),
         Point(0.3f, 0.8f, 200),
-        Point(0.6f, 0.8f, 200),
-        Point(0.6f, 0.8f, 300),
-        Point(0f, 0.8f, 300),
+        Point(0.6f, 0.6f, 200),
+        Point(0.6f, 0.6f, 300),
+        Point(0f, 0.6f, 300),
       )
 
-    assertEquals(points, expectedPoints)
+    assertEquals(expectedPoints, points)
   }
 
   @Test
@@ -81,6 +81,6 @@ class ConvertBarsToPointsUnitTest {
         Point(0f, 0.8f, 200),
       )
 
-    assertEquals(points, expectedPoints)
+    assertEquals(expectedPoints, points)
   }
 }
