@@ -101,7 +101,7 @@ fun mergePointsAndBars(points: ArrayList<Point>, allBars: ArrayList<Bar>): Array
   val lines = convertPointsToLines(points)
   val bars = allBars.filter { shouldBarBeMerged(it, lines) }
 
-  if(lines.isEmpty() || bars.isEmpty()){
+  if (lines.isEmpty() || bars.isEmpty()) {
     return points
   }
 
@@ -115,9 +115,7 @@ fun mergePointsAndBars(points: ArrayList<Point>, allBars: ArrayList<Bar>): Array
 
   // add points before first bar
   bars.first().let { bar ->
-    getLinePointsFromInterval(startPoint, bar.point1, lines)?.let {
-      mergedPoints.addAll(it)
-    }
+    getLinePointsFromInterval(startPoint, bar.point1, lines)?.let { mergedPoints.addAll(it) }
   }
 
   // add points within bars range
@@ -140,9 +138,7 @@ fun mergePointsAndBars(points: ArrayList<Point>, allBars: ArrayList<Bar>): Array
 
   // add points after last bar
   bars.last().let { bar ->
-    getLinePointsFromInterval(bar.point2, endPoint, lines)?.let {
-      mergedPoints.addAll(it)
-    }
+    getLinePointsFromInterval(bar.point2, endPoint, lines)?.let { mergedPoints.addAll(it) }
   }
 
   // add end point
@@ -158,7 +154,7 @@ fun mergePointsAndBars(points: ArrayList<Point>, allBars: ArrayList<Bar>): Array
 }
 
 fun getLinePointsFromInterval(x1: Point, x2: Point, allLines: ArrayList<Line>): ArrayList<Point>? {
-  if (x1.relativeTime == x2.relativeTime){
+  if (x1.relativeTime == x2.relativeTime) {
     return null
   }
   if (x1.relativeTime > x2.relativeTime) {
@@ -167,7 +163,8 @@ fun getLinePointsFromInterval(x1: Point, x2: Point, allLines: ArrayList<Line>): 
   }
 
   // vertical lines can be ignored while using points
-  val lines = ArrayList(allLines.filter { (point1, point2) -> point1.relativeTime != point2.relativeTime })
+  val lines =
+    ArrayList(allLines.filter { (point1, point2) -> point1.relativeTime != point2.relativeTime })
 
   var firstLineAdded = false
   val intervalLines = ArrayList<Line>()
@@ -191,8 +188,7 @@ fun getLinePointsFromInterval(x1: Point, x2: Point, allLines: ArrayList<Line>): 
       if (x2LinePoint != null) { // end adding lines
         intervalLines += Line(currLine.point1, x2LinePoint)
         break
-      }
-      else { // add lines between x1 and x2
+      } else { // add lines between x1 and x2
         intervalLines += currLine
       }
     }
@@ -245,12 +241,10 @@ fun convertPointsToBars(points: ArrayList<Point>): ArrayList<Bar> {
 
 fun shouldBarBeMerged(bar: Bar, lines: ArrayList<Line>): Boolean {
   getLinePointsFromInterval(bar.point1, bar.point2, lines)?.forEach { point ->
-    if(point.intensity >= bar.intensity){
+    if (point.intensity >= bar.intensity) {
       return false
     }
-  } ?: {
-    Log.i(TAG, "This should not happen")
-  }
+  } ?: { Log.i(TAG, "This should not happen") }
 
   return true
 }
