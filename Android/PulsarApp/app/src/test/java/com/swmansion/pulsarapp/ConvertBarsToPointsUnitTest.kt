@@ -19,24 +19,29 @@ class ConvertBarsToPointsUnitTest {
         Bar(300, 500, 0.6f, 0.6f),
         Bar(600, 800, 1f, 0.3f)
       )
+      arrayListOf(
+        Bar(100, 200, 0.3f, 1f),
+        Bar(300, 500, 0.6f, 0.6f),
+        Bar(600, 800, 1f, 0.3f)
+      )
 
     val points = convertBarsToPoints(bars)
 
-    val expectedPoints: ArrayList<Point> =
+    val expectedPoints =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0f, 1f, 100),
-        Point(0.3f, 1f, 100),
-        Point(0.3f, 1f, 200),
-        Point(0f, 1f, 200),
-        Point(0f, 1f, 300),
-        Point(0.6f, 0.6f, 300),
-        Point(0.6f, 0.6f, 500),
-        Point(0f, 0.6f, 500),
-        Point(0f, 0.6f, 600),
-        Point(1f, 0.3f, 600),
-        Point(1f, 0.3f, 800),
-        Point(0f, 0.3f, 800),
+        Point(0, 0f),
+        Point(100, 0f),
+        Point(100, 0.3f),
+        Point(200, 0.3f),
+        Point(200, 0f),
+        Point(300, 0f),
+        Point(300, 0.6f),
+        Point(500, 0.6f),
+        Point(500, 0f),
+        Point(600, 0f),
+        Point(600, 1f),
+        Point(800, 1f),
+        Point(800, 0f),
       )
 
     assertEquals(expectedPoints, points)
@@ -51,35 +56,34 @@ class ConvertBarsToPointsUnitTest {
 
     val points = convertBarsToPoints(bars)
 
-    val expectedPoints: ArrayList<Point> =
+    val expectedPoints =
       arrayListOf(
-        Point(0f, 0.8f, 0),
-        Point(0f, 0.8f, 100),
-        Point(0.3f, 0.8f, 100),
-        Point(0.3f, 0.8f, 200),
-        Point(0.6f, 0.6f, 200),
-        Point(0.6f, 0.6f, 300),
-        Point(0f, 0.6f, 300),
+        Point(0, 0f),
+        Point(100, 0f),
+        Point(100, 0.3f),
+        Point(200, 0.3f), // TODO remove duplicates
+        Point(200, 0.6f),
+        Point(300, 0.6f),
+        Point(300, 0f),
       )
 
     assertEquals(expectedPoints, points)
   }
 
   @Test
-  fun startWith0Test() {
+  fun startWithoutPauseTest() {
     val bars = arrayListOf(
-      Bar(0, 200, 0.3f, 0.8f)
+      Bar(0, 100, 0.3f, 0.8f)
     )
 
     val points = convertBarsToPoints(bars)
 
-    val expectedPoints: ArrayList<Point> =
-      arrayListOf(
-        Point(0f, 0.8f, 0),
-        Point(0.3f, 0.8f, 0),
-        Point(0.3f, 0.8f, 200),
-        Point(0f, 0.8f, 200),
-      )
+    val expectedPoints = arrayListOf(
+      Point(0, 0f),
+      Point(0, 0.3f),
+      Point(100, 0.3f),
+      Point(100, 0f)
+    )
 
     assertEquals(expectedPoints, points)
   }

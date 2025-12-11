@@ -12,10 +12,21 @@ data class Preset(
 
     verifyBars()
     verifyPoints()
+
+    if (bars != null && points != null && bars.last().x2 > points.last().relativeTime) {
+      throw getInitException(
+        "Bars relativeTime (${bars.last().x2}) cannot be greater than points relativeTime (${points.last().relativeTime})."
+      )
+    }
   }
 
   private fun verifyBars() {
     bars?.let {
+      if (it.isEmpty())
+        throw getInitException(
+          "Property bars is invalid. When bars is passed it must contain at least one bar."
+        )
+
       val barsComparator = Comparator { bar1: Bar, bar2: Bar -> compareBars(bar1, bar2) }
       if (it != it.sortedWith(barsComparator))
         throw getInitException(
@@ -61,7 +72,6 @@ data class Preset(
     points?.let {
       for (point in it) {
         checkIntensity(point.intensity)
-        checkSharpness(point.sharpness)
       }
 
       if (it.size < 2) {

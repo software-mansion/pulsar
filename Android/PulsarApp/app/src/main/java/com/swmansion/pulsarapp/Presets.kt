@@ -30,12 +30,12 @@ val ENVELOPE_PRESET =
     name = "Envelope",
     points =
       arrayListOf(
-        Point(0f, 0.8f, 0),
-        Point(1.0f, 0.8f, 0),
-        Point(0.0f, 0.8f, 500),
-        Point(0.0f, 0.8f, 1000),
-        Point(1.0f, 0.8f, 2000),
-        Point(0.0f, 0.8f, 2000),
+        Point(0, 0f),
+        Point(0, 1f),
+        Point(500, 0f),
+        Point(1000, 0f),
+        Point(2000, 1f),
+        Point(2000, 0f),
       ),
   )
 val FALLING_BRICKS =
@@ -55,12 +55,12 @@ val EARTHQUAKE_PRESET =
     name = "Earthquake",
     points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.8f, 1f, 400),
-        Point(0f, 1f, 400),
-        Point(0f, 1f, 500),
-        Point(0.8f, 1f, 700),
-        Point(0f, 1f, 700),
+        Point(0, 0f),
+        Point(400, 0.8f),
+        Point(400, 0f),
+        Point(500, 0f),
+        Point(700, 0.8f),
+        Point(700, 0f),
       ),
   )
 val RANDOM_PRESET =
@@ -68,20 +68,20 @@ val RANDOM_PRESET =
     name = "Random Preset",
     points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.8f, 1f, 400),
-        Point(0f, 1f, 400),
-        Point(0f, 1f, 500),
-        Point(0.8f, 1f, 700),
-        Point(0f, 1f, 700),
-        Point(0f, 1f, 900),
-        Point(1f, 0.9f, 900),
-        Point(1f, 0.9f, 1000),
-        Point(0f, 0.9f, 1000),
-        Point(0f, 0.9f, 1100),
-        Point(1f, 0.9f, 1100),
-        Point(1f, 0.9f, 1200),
-        Point(0f, 0.9f, 1200),
+        Point(0, 0f),
+        Point(400, 0.8f),
+        Point(400, 0f),
+        Point(500, 0f),
+        Point(700, 0.8f),
+        Point(700, 0f),
+        Point(900, 0f),
+        Point(900, 1f),
+        Point(1000, 1f),
+        Point(1000, 0f),
+        Point(1100, 0f),
+        Point(1100, 1f),
+        Point(1200, 1f),
+        Point(1200, 0f),
       ),
   )
 
@@ -90,9 +90,9 @@ val LONG_RISING_PRESET =
     name = "Long Rising",
     points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 10000),
-        Point(0f, 1f, 10000),
+        Point(0, 0f),
+        Point(10000, 1f),
+        Point(10000, 0f)
       ),
   )
 
@@ -101,24 +101,24 @@ val UP_PRESET =
     name = "Up",
     points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 50), // 50ms
-        Point(0f, 1f, 50),
-        Point(0f, 1f, 1050),
-        Point(1f, 1f, 1200), // 150ms
-        Point(0f, 1f, 1200),
-        Point(0f, 1f, 2200),
-        Point(1f, 1f, 2500), // 300ms
-        Point(0f, 1f, 2500),
-        Point(0f, 1f, 3500),
-        Point(1f, 1f, 4100), // 600ms
-        Point(0f, 1f, 4100),
-        Point(0f, 1f, 5100),
-        Point(1f, 1f, 6100), // 1000ms
-        Point(0f, 1f, 6100),
-        Point(0f, 1f, 7100),
-        Point(1f, 1f, 10100), // 3000ms
-        Point(0f, 1f, 10100),
+        Point(0, 0f),
+        Point(50, 1f), // 50ms
+        Point(50, 0f),
+        Point(1050, 0f),
+        Point(1200, 1f), // 150ms
+        Point(1200, 0f),
+        Point(2200, 0f),
+        Point(2500, 1f), // 300ms
+        Point(2500, 0f),
+        Point(3500, 0f),
+        Point(4100, 1f), // 600ms
+        Point(4100, 0f),
+        Point(5100, 0f),
+        Point(6100, 1f), // 1000ms
+        Point(6100, 0f),
+        Point(7100, 0f),
+        Point(10100, 1f), // 3000ms
+        Point(10100, 0f),
       ),
   )
 
@@ -127,24 +127,24 @@ val UP_AND_DOWN_PRESET =
     name = "Up and Down",
     points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 50), // 50ms
-        Point(0f, 1f, 100),
-        Point(0f, 1f, 1100),
-        Point(1f, 1f, 1250), // 150ms
-        Point(0f, 1f, 1400),
-        Point(0f, 1f, 2400),
-        Point(1f, 1f, 2700), // 300ms
-        Point(0f, 1f, 3000),
-        Point(0f, 1f, 4000),
-        Point(1f, 1f, 4600), // 600ms
-        Point(0f, 1f, 5200),
-        Point(0f, 1f, 6200),
-        Point(1f, 1f, 7200), // 1000ms
-        Point(0f, 1f, 8200),
-        Point(0f, 1f, 9200),
-        Point(1f, 1f, 12200), // 3000ms
-        Point(0f, 1f, 15200),
+        Point(0, 0f),
+        Point(50, 1f), // 50ms
+        Point(100, 0f),
+        Point(1100, 0f),
+        Point(1250, 1f), // 150ms
+        Point(1400, 0f),
+        Point(2400, 0f),
+        Point(2700, 1f), // 300ms
+        Point(3000, 0f),
+        Point(4000, 0f),
+        Point(4600, 1f), // 600ms
+        Point(5200, 0f),
+        Point(6200, 0f),
+        Point(7200, 1f), // 1000ms
+        Point(8200, 0f),
+        Point(9200, 0f),
+        Point(12200, 1f), // 3000ms
+        Point(15200, 0f),
       ),
   )
 
@@ -162,9 +162,9 @@ val COMPLEX_PRESET =
       ),
     points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.9f, 1f, 5000),
-        Point(0f, 1f, 10000),
+        Point(0, 0f),
+        Point(5000, 0.9f),
+        Point(10000, 0f)
       ),
   )
 
@@ -181,10 +181,10 @@ val TEST_PRESET =
         Bar(1000, 1100, 1f, 1f),
         Bar(1500, 1600, 1f, 1f),
         Bar(1900, 2000, 1f, 1f),
-        ),
+      ),
     points = arrayListOf(
-      Point(0f,1f,0),
-      Point(0.5f, 1f, 1000),
-      Point(0f, 1f, 2000),
-      )
+      Point(0, 0f),
+      Point(1000, 0.5f),
+      Point(2000, 0f)
+    )
   )

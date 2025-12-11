@@ -37,11 +37,11 @@ fun printControlPointsToPlot(controlPoints: ArrayList<ControlPoint>) {
 private fun convertControlPointsToPoints(controlPoints: ArrayList<ControlPoint>): ArrayList<Point> {
   var relativeTime = 0L
   val points = ArrayList<Point>()
-  points += Point(0f, 1f, 0)
+  points += Point(1, 0f)
 
   controlPoints.forEach {
     relativeTime += it.duration
-    points += Point(it.intensity, it.sharpness, relativeTime)
+    points += Point(relativeTime, it.intensity)
   }
 
   return points

@@ -146,7 +146,7 @@ class VibrationBuilder(val vibrationService: Vibrator) {
       val currPoint = points[i]
 
       val duration = currPoint.relativeTime - prevPoint.relativeTime
-      controlPoints += createControlPoint(currPoint.intensity, currPoint.sharpness, duration)
+      controlPoints += createControlPoint(currPoint.intensity, DEFAULT_SHARPNESS, duration)
     }
 
     return controlPoints

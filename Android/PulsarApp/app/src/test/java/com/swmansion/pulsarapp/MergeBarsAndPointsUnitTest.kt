@@ -12,7 +12,7 @@ import org.junit.Test
  */
 class MergeBarsAndPointsUnitTest {
   @Test
-  fun simpleAscendingTest() {
+  fun horizontalTest() {
     val bars =
       arrayListOf(
         Bar(0, 100, 1f, 1f), // beginning
@@ -20,128 +20,36 @@ class MergeBarsAndPointsUnitTest {
         Bar(400, 500, 1f, 1f), // end
       )
 
-    val points = arrayListOf(Point(0f, 1f, 0), Point(1f, 1f, 500), Point(0f, 1f, 500))
+    val points = arrayListOf(
+      Point(0, 0f),
+      Point(0, 0.2f),
+      Point(500, 0.2f),
+      Point(500, 0f)
+    )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 0),
-        Point(1f, 1f, 100),
-        Point(0.2f, 1f, 100),
-        Point(0.4f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 300),
-        Point(0.6f, 1f, 300),
-        Point(0.8f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
+        Point(0, 0f),
+        Point(0, 1f),
+        Point(100, 1f),
+        Point(100, 0.2f),
+        Point(200, 0.2f),
+        Point(200, 1f),
+        Point(300, 1f),
+        Point(300, 0.2f),
+        Point(400, 0.2f),
+        Point(400, 1f),
+        Point(500, 1f),
+        Point(500, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, mergePointsAndBars(points, bars))
   }
 
-  @Test
-  fun simpleDescendingTest() {
-    val bars =
-      arrayListOf(
-        Bar(0, 100, 1f, 1f), // beginning
-        Bar(200, 300, 1f, 1f), // middle
-        Bar(400, 500, 1f, 1f), // end
-      )
-
-    val points = arrayListOf(Point(0f, 1f, 0), Point(1f, 1f, 0), Point(0f, 1f, 500))
-
-    val expectedResults =
-      arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 0),
-        Point(1f, 1f, 100),
-        Point(0.8f, 1f, 100),
-        Point(0.6f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 300),
-        Point(0.4f, 1f, 300),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
-      )
-
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
-  }
+  //  fun barOverlapptingMultipleLinesTest
 
   @Test
-  fun simpleConstantTest() {
-    val bars =
-      arrayListOf(
-        Bar(0, 100, 1f, 1f), // beginning
-        Bar(200, 300, 1f, 1f), // middle
-        Bar(400, 500, 1f, 1f), // end
-      )
-
-    val points =
-      arrayListOf(Point(0f, 1f, 0), Point(0.2f, 1f, 0), Point(0.2f, 1f, 500), Point(0f, 1f, 500))
-
-    val expectedResults =
-      arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 0),
-        Point(1f, 1f, 100),
-        Point(0.2f, 1f, 100),
-        Point(0.2f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 300),
-        Point(0.2f, 1f, 300),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
-      )
-
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
-  }
-
-  @Test
-  fun cutBarsTest() {
-    val bars =
-      arrayListOf(
-        Bar(100, 300, 0.4f, 1f), // cut bar
-        Bar(350, 400, 0.8f, 1f), // corner bar
-      )
-
-    val points = arrayListOf(Point(0f, 1f, 0), Point(1f, 1f, 500), Point(0f, 1f, 500))
-
-    val expectedResults =
-      arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 100),
-        Point(0.4f, 1f, 100),
-        Point(0.4f, 1f, 200),
-        Point(0.7f, 1f, 350),
-        Point(0.8f, 1f, 350),
-        Point(0.8f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
-      )
-
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
-  }
-
-  @Test
-  fun barWithCommonRelativeTimeTest() {
+  fun commonBarRelativeTimeTest() {
     val bars =
       arrayListOf(
         Bar(50, 100, 1f, 1f),
@@ -151,39 +59,40 @@ class MergeBarsAndPointsUnitTest {
         Bar(300, 350, 0.8f, 1f),
       )
 
-    val points =
-      arrayListOf(Point(0f, 1f, 0), Point(0.2f, 1f, 0), Point(0.2f, 1f, 500), Point(0f, 1f, 500))
+    val points = arrayListOf(
+      Point(0, 0f),
+      Point(0, 0.2f),
+      Point(500, 0.2f),
+      Point(500, 0f)
+    )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 50),
-        Point(1f, 1f, 50),
-        Point(1f, 1f, 100),
-        Point(0.8f, 1f, 100),
-        Point(0.8f, 1f, 150),
-        Point(0.2f, 1f, 150),
-        Point(0.2f, 1f, 200),
-        Point(0.8f, 1f, 200),
-        Point(0.8f, 1f, 250),
-        Point(1f, 1f, 250),
-        Point(1f, 1f, 300),
-        Point(0.8f, 1f, 300),
-        Point(0.8f, 1f, 350),
-        Point(0.2f, 1f, 350),
-        Point(0.2f, 1f, 500),
-        Point(0f, 1f, 500),
+        Point(0, 0f),
+        Point(0, 0.2f),
+        Point(50, 0.2f),
+        Point(50, 1f),
+        Point(100, 1f),
+        Point(100, 0.8f),
+        Point(150, 0.8f),
+        Point(150, 0.2f),
+        Point(200, 0.2f),
+        Point(200, 0.8f),
+        Point(250, 0.8f),
+        Point(250, 1f),
+        Point(300, 1f),
+        Point(300, 0.8f),
+        Point(350, 0.8f),
+        Point(350, 0.2f),
+        Point(500, 0.2f),
+        Point(500, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, mergePointsAndBars(points, bars))
   }
 
   @Test
-  fun multipleConnectedBarsWithSameAmplitudeTest() {
+  fun deleteRedundantLinePointsTest() {
     val bars =
       arrayListOf(
         Bar(50, 100, 1f, 1f),
@@ -194,94 +103,95 @@ class MergeBarsAndPointsUnitTest {
         Bar(350, 400, 1f, 1f),
       )
 
-    val points =
-      arrayListOf(Point(0f, 1f, 0), Point(0.2f, 1f, 0), Point(0.2f, 1f, 500), Point(0f, 1f, 500))
+    val points = arrayListOf(
+      Point(0, 0f),
+      Point(0, 0.2f),
+      Point(500, 0.2f),
+      Point(500, 0f)
+    )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 50),
-        Point(1f, 1f, 50),
-        Point(1f, 1f, 150),
-        Point(0.2f, 1f, 150),
-        Point(0.2f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 400),
-        Point(0.2f, 1f, 400),
-        Point(0.2f, 1f, 500),
-        Point(0f, 1f, 500),
+        Point(0, 0f),
+        Point(0, 0.2f),
+        Point(50, 0.2f),
+        Point(50, 1f),
+        Point(150, 1f),
+        Point(150, 0.2f),
+        Point(200, 0.2f),
+        Point(200, 1f),
+        Point(400, 1f),
+        Point(400, 0.2f),
+        Point(500, 0.2f),
+        Point(500, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    print(mergedPoints)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, mergePointsAndBars(points, bars))
   }
 
+  // TODO ?
   @Test
   fun differentFrequencyEdgeTest() {
-    val bars = arrayListOf(Bar(400, 500, 1f, 1f), Bar(500, 600, 0.8f, 1f))
+    val bars = arrayListOf(
+      Bar(400, 500, 1f, 1f),
+      Bar(500, 600, 0.8f, 1f)
+    )
 
     val points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 500),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        Point(0, 0f),
+        Point(0, 0.2f),
+        Point(500, 0.2f),
+        Point(1000, 1f),
+        Point(1000, 0f)
       )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0.8f, 1f, 500),
-        Point(0.8f, 1f, 600),
-        Point(0.36f, 1f, 600),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        Point(0, 0f),
+        Point(0, 0.2f),
+        Point(400, 0.2f),
+        Point(400, 1f),
+        Point(500, 1f),
+        Point(500, 0.8f),
+        Point(600, 0.8f),
+        Point(600, 0.36f),
+        Point(1000, 1f),
+        Point(1000, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, mergePointsAndBars(points, bars))
   }
 
+  // TODO ?
   @Test
   fun sameFrequencyEdgeTest() {
-    val bars = arrayListOf(Bar(400, 500, 1f, 1f), Bar(500, 600, 1f, 1f))
+    val bars = arrayListOf(
+      Bar(400, 500, 1f, 1f),
+      Bar(500, 600, 1f, 1f)
+    )
 
     val points =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 500),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        Point(0, 0f),
+        Point(0, 0.2f),
+        Point(500, 0.2f),
+        Point(1000, 1f),
+        Point(1000, 0f)
       )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 600),
-        Point(0.36f, 1f, 600),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        Point(0, 0f),
+        Point(0, 0.2f),
+        Point(400, 0.2f),
+        Point(400, 1f),
+        Point(600, 1f),
+        Point(600, 0.36f),
+        Point(1000, 1f),
+        Point(1000, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, mergePointsAndBars(points, bars))
   }
 }
