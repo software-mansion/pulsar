@@ -116,7 +116,7 @@ class VibrationBuilder(val vibrationService: Vibrator) {
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
   private fun createEnvelopeWaveform(plot: PresetPlot): VibrationEffect {
-    val points = convertPlotToEnvelopePoints(plot) ?: ArrayList()
+    val points = generatePlotPoints(plot) ?: ArrayList()
     val controlPoints = convertPointsToControlPoints(points)
 
     printPointsToPlot(points)

@@ -13,13 +13,63 @@ import kotlin.math.abs
 const val STEPS_PER_100_MS = 30
 const val DEFAULT_SHARPNESS = 1f
 
-fun generateIntensity(bars: ArrayList<Bar>): ArrayList<IntensityPoint> {
-  val intensity = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(bars.last().x2, 0f))
-  val defaultSharpness = arrayListOf(SharpnessPoint(0, DEFAULT_SHARPNESS))
+fun generateBars(plot: PresetPlot): ArrayList<Bar> {
+  val lines = generateLines(plot.intensity)
+  val bars = generateBars(lines)
+  return bars
+}
 
-  val plot = PresetPlot(intensity, defaultSharpness)
-  val complexPlot = generateComplexPlot(plot, bars)
-  return complexPlot.intensity
+fun generateLines(intensity: ArrayList<IntensityPoint>): ArrayList<Line> {
+  val lines = ArrayList<Line>()
+
+  for (i in 1..intensity.size - 1) {
+    val prevPoint = intensity[i - 1]
+    val currPoint = intensity[i]
+
+    lines.add(Line(prevPoint, currPoint))
+  }
+  return lines
+}
+
+private fun generateBars(lines: ArrayList<Line>): ArrayList<Bar> {
+  val bars = ArrayList<Bar>()
+
+  lines
+    .filter { !it.isVertical() }
+    .forEach { line ->
+      if (line.isHorizontal()) {
+        bars +=
+          Bar(
+            line.point1.relativeTime,
+            line.point2.relativeTime,
+            line.point1.intensity,
+            DEFAULT_SHARPNESS, // sharpness of this bar will never be used
+          )
+      } else {
+        val intensity1 = line.point1.intensity
+        val intensity2 = line.point2.intensity
+
+        val intensityDiff = intensity2 - intensity1
+        val isLineAscending = intensityDiff > 0
+        val lineDuration = line.point2.relativeTime - line.point1.relativeTime
+
+        val nSteps = (lineDuration * STEPS_PER_100_MS) / 100
+        val stepDuration = lineDuration / nSteps
+        val stepValue = abs(intensityDiff) / nSteps
+
+        for (i in 0..nSteps - 1) { // TODO fix long last interval length ?
+          val x1 = line.point1.relativeTime + stepDuration * i
+          val x2 = if (i < nSteps - 1) x1 + stepDuration else line.point2.relativeTime
+          val intensity =
+            if (isLineAscending) line.point1.intensity + stepValue * i // TODO: middle step
+            else line.point1.intensity - stepValue * i
+
+          bars += Bar(x1, x2, intensity, DEFAULT_SHARPNESS)
+        }
+      }
+    }
+
+  return bars
 }
 
 fun generateComplexPlot(plot: PresetPlot, initBars: ArrayList<Bar>): PresetPlot {
@@ -177,65 +227,6 @@ private fun deleteRedundantHorizontalLinePoints(points: ArrayList<IntensityPoint
   indexesToDelete.reversed().forEach { points.removeAt(it) }
 }
 
-fun generateLines(intensity: ArrayList<IntensityPoint>): ArrayList<Line> {
-  val lines = ArrayList<Line>()
-
-  for (i in 1..intensity.size - 1) {
-    val prevPoint = intensity[i - 1]
-    val currPoint = intensity[i]
-
-    lines.add(Line(prevPoint, currPoint))
-  }
-  return lines
-}
-
-fun generateBars(plot: PresetPlot): ArrayList<Bar> {
-  val lines = generateLines(plot.intensity)
-  val bars = generateBars(lines)
-  return bars
-}
-
-private fun generateBars(lines: ArrayList<Line>): ArrayList<Bar> {
-  val bars = ArrayList<Bar>()
-
-  lines
-    .filter { !it.isVertical() }
-    .forEach { line ->
-      if (line.isHorizontal()) {
-        bars +=
-          Bar(
-            line.point1.relativeTime,
-            line.point2.relativeTime,
-            line.point1.intensity,
-            DEFAULT_SHARPNESS, // sharpness of this bar will never be used
-          )
-      } else {
-        val intensity1 = line.point1.intensity
-        val intensity2 = line.point2.intensity
-
-        val intensityDiff = intensity2 - intensity1
-        val isLineAscending = intensityDiff > 0
-        val lineDuration = line.point2.relativeTime - line.point1.relativeTime
-
-        val nSteps = (lineDuration * STEPS_PER_100_MS) / 100
-        val stepDuration = lineDuration / nSteps
-        val stepValue = abs(intensityDiff) / nSteps
-
-        for (i in 0..nSteps - 1) { // TODO fix long last interval length ?
-          val x1 = line.point1.relativeTime + stepDuration * i
-          val x2 = if (i < nSteps - 1) x1 + stepDuration else line.point2.relativeTime
-          val intensity =
-            if (isLineAscending) line.point1.intensity + stepValue * i // TODO: middle step
-            else line.point1.intensity - stepValue * i
-
-          bars += Bar(x1, x2, intensity, DEFAULT_SHARPNESS)
-        }
-      }
-    }
-
-  return bars
-}
-
 private fun getSharpnessFromInterval(
   x1: Long,
   x2: Long,
@@ -273,6 +264,15 @@ fun generatePlot(bars: ArrayList<Bar>): PresetPlot {
   return PresetPlot(intensity, sharpness)
 }
 
+fun generateIntensity(bars: ArrayList<Bar>): ArrayList<IntensityPoint> {
+  val intensity = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(bars.last().x2, 0f))
+  val defaultSharpness = arrayListOf(SharpnessPoint(0, DEFAULT_SHARPNESS))
+
+  val plot = PresetPlot(intensity, defaultSharpness)
+  val complexPlot = generateComplexPlot(plot, bars)
+  return complexPlot.intensity
+}
+
 private fun generateSharpness(bars: ArrayList<Bar>): ArrayList<SharpnessPoint> {
   val sharpness = bars.map { SharpnessPoint(it.x1, it.sharpness) } as ArrayList
   deleteDuplicatedSharpness(sharpness)
@@ -280,7 +280,7 @@ private fun generateSharpness(bars: ArrayList<Bar>): ArrayList<SharpnessPoint> {
   return sharpness
 }
 
-fun convertPlotToEnvelopePoints(plot: PresetPlot): ArrayList<PlotPoint>? {
+fun generatePlotPoints(plot: PresetPlot): ArrayList<PlotPoint>? {
   val (plotPoints, plotSharpness) = plot
   val lines = generateLines(plotPoints)
 
