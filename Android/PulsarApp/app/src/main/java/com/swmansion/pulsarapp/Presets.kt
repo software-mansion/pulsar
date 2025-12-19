@@ -13,21 +13,23 @@ val SUCCESS_PRESET =
     name = "Success",
     bars =
       arrayListOf(
-        Bar(0, 100, 1f, 0.5f),
-        Bar(200, 300, 1f, 0.5f),
-        Bar(550, 650, 1f, 1f)
+        Bar(0, 50, 0.809f, 0.616f),
+        Bar(150, 200, 0.809f, 0.619f),
+        Bar(450, 500, 1f, 1f)
       ),
   )
+
 val FAIL_PRESET =
   Preset(
     name = "Fail",
     bars =
       arrayListOf(
-        Bar(0, 100, 0.809f, 0.616f),
-        Bar(200, 300, 0.809f, 0.619f),
-        Bar(550, 650, 0.591f, 0.309f),
+        Bar(0, 50, 0.809f, 0.616f),
+        Bar(150, 200, 0.809f, 0.619f),
+        Bar(450, 500, 0.591f, 0.309f),
       ),
   )
+
 val ENVELOPE_PRESET =
   Preset(
     name = "Envelope",
@@ -42,7 +44,7 @@ val ENVELOPE_PRESET =
             IntensityPoint(2000, 1f),
             IntensityPoint(2000, 0f),
           ),
-        sharpness = CONST_PLOT_SHARPNESS
+        sharpness = CONST_PLOT_SHARPNESS,
       ),
   )
 val FALLING_BRICKS =
@@ -50,11 +52,11 @@ val FALLING_BRICKS =
     name = "Falling Bricks",
     bars =
       arrayListOf(
-        Bar(0, 100, 1f, 1f),
-        Bar(200, 300, 0.675f, 0.675f),
-        Bar(400, 500, 0.406f, 0.2f),
-        Bar(600, 700, 0.659f, 0.659f),
-        Bar(800, 900, 0.941f, 0.941f),
+        Bar(0, 50, 1f, 1f),
+        Bar(149, 199, 0.675f, 0.675f),
+        Bar(301, 351, 0.406f, 0.2f),
+        Bar(501, 551, 0.659f, 0.659f),
+        Bar(650, 700, 0.941f, 0.941f),
       ),
   )
 val EARTHQUAKE_PRESET =
@@ -65,38 +67,45 @@ val EARTHQUAKE_PRESET =
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
-            IntensityPoint(400, 0.8f),
+            IntensityPoint(300, 0.8f),
+            IntensityPoint(300, 0f),
             IntensityPoint(400, 0f),
-            IntensityPoint(500, 0f),
-            IntensityPoint(700, 0.8f),
-            IntensityPoint(700, 0f),
+            IntensityPoint(600, 0.8f),
+            IntensityPoint(600, 0f),
+            IntensityPoint(1000, 0f),
           ),
-        sharpness = CONST_PLOT_SHARPNESS
+        sharpness = 
+        arrayListOf(
+          SharpnessPoint(0, 0.8f),
+          SharpnessPoint(600, 0.8f)
+        ),
       ),
   )
 val RANDOM_PRESET =
   Preset(
-    name = "Random Preset",
+    name = "Random",
     plot =
       PresetPlot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
-            IntensityPoint(400, 0.8f),
+            IntensityPoint(300, 0.8f),
+            IntensityPoint(300, 0f),
             IntensityPoint(400, 0f),
-            IntensityPoint(500, 0f),
-            IntensityPoint(700, 0.8f),
-            IntensityPoint(700, 0f),
-            IntensityPoint(900, 0f),
-            IntensityPoint(900, 1f),
-            IntensityPoint(1000, 1f),
+            IntensityPoint(600, 0.8f),
+            IntensityPoint(600, 0f),
             IntensityPoint(1000, 0f),
-            IntensityPoint(1100, 0f),
-            IntensityPoint(1100, 1f),
-            IntensityPoint(1200, 1f),
-            IntensityPoint(1200, 0f),
           ),
-        sharpness = CONST_PLOT_SHARPNESS
+        sharpness = 
+          arrayListOf(
+            SharpnessPoint(0, 0.8f),
+            SharpnessPoint(600, 0.8f)
+          ),
+      ),
+    bars = 
+      arrayListOf(
+        Bar(834, 884, 0.834f, 1f),
+        Bar(941, 992, 0.897f, 1f)
       ),
   )
 
@@ -141,7 +150,7 @@ val UP_PRESET =
             IntensityPoint(10100, 1f), // 3000ms
             IntensityPoint(10100, 0f),
           ),
-        sharpness = CONST_PLOT_SHARPNESS
+        sharpness = CONST_PLOT_SHARPNESS,
       ),
   )
 
@@ -171,7 +180,7 @@ val UP_AND_DOWN_PRESET =
             IntensityPoint(12200, 1f), // 3000ms
             IntensityPoint(15200, 0f),
           ),
-        sharpness = CONST_PLOT_SHARPNESS
+        sharpness = CONST_PLOT_SHARPNESS,
       ),
   )
 
@@ -251,5 +260,32 @@ val FREQUENCY_PRESET =
             SharpnessPoint(2000, 0.5f),
             SharpnessPoint(3000, 0.25f),
           ),
+      ),
+  )
+
+val MILK_PRESET =
+  Preset(
+    name = "Milk",
+    plot =
+      PresetPlot(
+        intensity =
+          arrayListOf(
+            IntensityPoint(0, 0f),
+            IntensityPoint(850, 0.813f),
+            IntensityPoint(850, 0f),
+            ),
+        sharpness =
+          arrayListOf(
+            SharpnessPoint(0, 0.7f),
+          ),
+      ),
+    bars =
+      arrayListOf(
+        Bar(50, 100, 0.897f, 0.209f),
+        Bar(200, 250, 0.897f, 0.322f),
+        Bar(350, 400, 0.903f, 0.484f),
+        Bar(500, 550, 0.903f, 0.716f),
+        Bar(650, 700, 0.906f, 0.803f),
+        Bar(800, 850, 0.906f, 1f),
       ),
   )

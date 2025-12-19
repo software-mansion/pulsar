@@ -232,7 +232,7 @@ fun getSharpnessFromInterval(
   x2: Long,
   sharpness: ArrayList<SharpnessPoint>,
 ): ArrayList<SharpnessPoint>? {
-  if(x1 == x2){
+  if (x1 == x2) {
     return null
   }
 

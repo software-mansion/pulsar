@@ -36,10 +36,24 @@ class MainActivity : ComponentActivity() {
       PulsarAppTheme {
         Column(
           modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-          verticalArrangement = Arrangement.spacedBy(48.dp, Alignment.CenterVertically),
+          verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           DeviceInfo()
+
+          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Docs presets:")
+            Row {
+              VibrationButton(FALLING_BRICKS)
+              VibrationButton(EARTHQUAKE_PRESET)
+              VibrationButton(RANDOM_PRESET)
+            }
+            Row {
+              VibrationButton(MILK_PRESET)
+              VibrationButton(FAIL_PRESET)
+              VibrationButton(SUCCESS_PRESET)
+            }
+          }
 
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("Bars presets:")
@@ -51,7 +65,7 @@ class MainActivity : ComponentActivity() {
           }
 
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Points presets:")
+            Text("Plot presets:")
             Row {
               VibrationButton(EARTHQUAKE_PRESET)
               VibrationButton(RANDOM_PRESET)
@@ -59,10 +73,11 @@ class MainActivity : ComponentActivity() {
             Row {
               VibrationButton(ENVELOPE_PRESET)
               VibrationButton(LONG_RISING_PRESET)
+              VibrationButton(UP_PRESET)
             }
             Row {
-              VibrationButton(UP_PRESET)
               VibrationButton(UP_AND_DOWN_PRESET)
+              VibrationButton(FREQUENCY_PRESET)
             }
           }
 
@@ -72,11 +87,6 @@ class MainActivity : ComponentActivity() {
               VibrationButton(COMPLEX_PRESET)
               VibrationButton(TEST_PRESET)
             }
-          }
-
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Frequency change presets:")
-            Row { VibrationButton(FREQUENCY_PRESET) }
           }
         }
       }
