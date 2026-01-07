@@ -1,7 +1,7 @@
 package com.swmansion.pulsarapp
 
 import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.Point
+import com.swmansion.pulsarapp.types.IntensityPoint
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -19,24 +19,29 @@ class ConvertBarsToPointsUnitTest {
         Bar(300, 500, 0.6f, 0.6f),
         Bar(600, 800, 1f, 0.3f)
       )
-
-    val points = convertBarsToPoints(bars)
-
-    val expectedPoints: ArrayList<Point> =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0f, 1f, 100),
-        Point(0.3f, 1f, 100),
-        Point(0.3f, 1f, 200),
-        Point(0f, 1f, 200),
-        Point(0f, 1f, 300),
-        Point(0.6f, 0.6f, 300),
-        Point(0.6f, 0.6f, 500),
-        Point(0f, 0.6f, 500),
-        Point(0f, 0.6f, 600),
-        Point(1f, 0.3f, 600),
-        Point(1f, 0.3f, 800),
-        Point(0f, 0.3f, 800),
+        Bar(100, 200, 0.3f, 1f),
+        Bar(300, 500, 0.6f, 0.6f),
+        Bar(600, 800, 1f, 0.3f)
+      )
+
+    val points = generateIntensity(bars)
+
+    val expectedPoints =
+      arrayListOf(
+        IntensityPoint(0, 0f),
+        IntensityPoint(100, 0f),
+        IntensityPoint(100, 0.3f),
+        IntensityPoint(200, 0.3f),
+        IntensityPoint(200, 0f),
+        IntensityPoint(300, 0f),
+        IntensityPoint(300, 0.6f),
+        IntensityPoint(500, 0.6f),
+        IntensityPoint(500, 0f),
+        IntensityPoint(600, 0f),
+        IntensityPoint(600, 1f),
+        IntensityPoint(800, 1f),
+        IntensityPoint(800, 0f),
       )
 
     assertEquals(expectedPoints, points)
@@ -49,37 +54,36 @@ class ConvertBarsToPointsUnitTest {
       Bar(200, 300, 0.6f, 0.6f)
     )
 
-    val points = convertBarsToPoints(bars)
+    val points = generateIntensity(bars)
 
-    val expectedPoints: ArrayList<Point> =
+    val expectedPoints =
       arrayListOf(
-        Point(0f, 0.8f, 0),
-        Point(0f, 0.8f, 100),
-        Point(0.3f, 0.8f, 100),
-        Point(0.3f, 0.8f, 200),
-        Point(0.6f, 0.6f, 200),
-        Point(0.6f, 0.6f, 300),
-        Point(0f, 0.6f, 300),
+        IntensityPoint(0, 0f),
+        IntensityPoint(100, 0f),
+        IntensityPoint(100, 0.3f),
+        IntensityPoint(200, 0.3f),
+        IntensityPoint(200, 0.6f),
+        IntensityPoint(300, 0.6f),
+        IntensityPoint(300, 0f),
       )
 
     assertEquals(expectedPoints, points)
   }
 
   @Test
-  fun startWith0Test() {
+  fun startWithoutPauseTest() {
     val bars = arrayListOf(
-      Bar(0, 200, 0.3f, 0.8f)
+      Bar(0, 100, 0.3f, 0.8f)
     )
 
-    val points = convertBarsToPoints(bars)
+    val points = generateIntensity(bars)
 
-    val expectedPoints: ArrayList<Point> =
-      arrayListOf(
-        Point(0f, 0.8f, 0),
-        Point(0.3f, 0.8f, 0),
-        Point(0.3f, 0.8f, 200),
-        Point(0f, 0.8f, 200),
-      )
+    val expectedPoints = arrayListOf(
+      IntensityPoint(0, 0f),
+      IntensityPoint(0, 0.3f),
+      IntensityPoint(100, 0.3f),
+      IntensityPoint(100, 0f)
+    )
 
     assertEquals(expectedPoints, points)
   }

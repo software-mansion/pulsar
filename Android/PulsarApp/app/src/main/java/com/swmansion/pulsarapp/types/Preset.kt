@@ -1,51 +1,71 @@
 package com.swmansion.pulsarapp.types
 
+data class PresetPlot(
+  val intensity: ArrayList<IntensityPoint>,
+  val sharpness: ArrayList<SharpnessPoint>,
+)
+
 data class Preset(
   val name: String,
   val bars: ArrayList<Bar>? = null,
-  val points: ArrayList<Point>? = null,
+  val plot: PresetPlot? = null,
 ) {
   init {
-    if (bars == null && points == null) {
-      throw getInitException("At least one of bars and points must be declared.")
+    if (bars == null && plot == null) {
+      throw getInitException("At least one of bars or plot must be declared.")
     }
 
-    verifyBars()
-    verifyPoints()
+    bars?.let { verifyBars(it) }
+    plot?.let { verifyPlot(it) }
+
+    if (bars != null && plot != null) {
+      val maxPlotIntensity = plot.intensity.last().relativeTime
+      val maxBarsIntensity = bars.last().x2
+
+      if (maxBarsIntensity > maxPlotIntensity) {
+        throw getInitException(
+          "Bars max relativeTime (${bars.last().x2}) cannot be greater than plot max relativeTime (${plot.intensity.last().relativeTime})."
+        )
+      }
+    }
   }
 
-  private fun verifyBars() {
-    bars?.let {
-      val barsComparator = Comparator { bar1: Bar, bar2: Bar -> compareBars(bar1, bar2) }
-      if (it != it.sortedWith(barsComparator))
+  private fun verifyBars(bars: ArrayList<Bar>) {
+
+    if (bars.isEmpty())
+      throw getInitException(
+        "Property bars is invalid. When bars is passed it must contain at least one bar."
+      )
+
+    val barsComparator = Comparator { bar1: Bar, bar2: Bar -> compareBars(bar1, bar2) }
+    if (bars != bars.sortedWith(barsComparator))
+      throw getInitException(
+        "Property bars is invalid. Bars start relative time should be in ascending order."
+      )
+
+    val nBars = bars.size
+    for (i in 0..nBars - 1) {
+      val currBar = bars[i]
+
+      checkIntensity(currBar.intensity)
+      checkSharpness(currBar.sharpness)
+
+      if (currBar.intensity == 0f) {
         throw getInitException(
-          "Property bars is invalid. Bars start relative time should be in ascending order."
+          "Found invalid bar: ${currBar.x1}-${currBar.x2}. Bar intensity cannot be 0."
         )
+      }
 
-      val nBars = it.size
-      for (i in 0..nBars - 1) {
-        val currBar = it[i]
+      if (currBar.x1 >= currBar.x2) {
+        throw getInitException(
+          "Found invalid bar: ${currBar.x1}-${currBar.x2}. Bar end must be greater than start."
+        )
+      }
 
-        checkIntensity(currBar.intensity)
-        checkSharpness(currBar.sharpness)
-
-        if (currBar.intensity == 0f) {
-          throw getInitException(
-            "Found invalid bar: ${currBar.x1}-${currBar.x2}. Bar intensity cannot be 0."
-          )
-        }
-
-        if (currBar.x1 >= currBar.x2) {
-          throw getInitException(
-            "Found invalid bar: ${currBar.x1}-${currBar.x2}. Bar end must be greater than start."
-          )
-        }
-
-        if (i > 0) {
-          val prevBar = it[i - 1]
-          if (prevBar.x2 > currBar.x1) {
-            throw getInitException("Found invalid bars: $prevBar, $currBar. Bars cannot overlap.")
-          }
+      if (i > 0) {
+        val prevBar = bars[i - 1]
+        if (prevBar.x2 > currBar.x1) {
+          throw getInitException("Found invalid bars: $prevBar, $currBar. Bars cannot overlap.")
         }
       }
     }
@@ -57,26 +77,48 @@ data class Preset(
     return diff.toInt()
   }
 
-  private fun verifyPoints() {
-    points?.let {
-      for (point in it) {
-        checkIntensity(point.intensity)
-        checkSharpness(point.sharpness)
-      }
+  private fun verifyPlot(plot: PresetPlot) { // TODO: check if sorted
+    val (intensity, sharpness) = plot
 
-      if (it.size < 2) {
-        throw getInitException("Property points is invalid. Points must contain at least 2 points.")
-      }
+    // intensity
+    if (intensity.size < 2) {
+      throw getInitException("Preset plot is invalid. Intensity must contain at least 2 points.")
+    }
 
-      if (it.first().relativeTime != 0L) {
-        throw getInitException("Property points is invalid. First element relativeTime must be 0.")
-      }
+    if (intensity.first().relativeTime != 0L) {
+      throw getInitException(
+        "Preset plot is invalid. Intensity first element relativeTime must be 0."
+      )
+    }
 
-      if (it.first().intensity != 0f || it.last().intensity != 0f) {
-        throw getInitException(
-          "Property points is invalid. First and last element intensity must be 0."
-        )
-      }
+    if (intensity.first().intensity != 0f || intensity.last().intensity != 0f) {
+      throw getInitException(
+        "Preset plot is invalid. Intensity first and last element intensity must be 0."
+      )
+    }
+
+    intensity.forEach { checkIntensity(it.intensity) }
+
+    // sharpness
+    if (sharpness.isEmpty()) {
+      throw getInitException("Preset plot is invalid. Sharpness cannot be empty.")
+    }
+
+    if (sharpness.first().relativeTime != 0L) {
+      throw getInitException(
+        "Preset plot is invalid. Sharpness first element relativeTime must be 0."
+      )
+    }
+
+    sharpness.forEach { checkSharpness(it.sharpness) }
+
+    // common
+    val intensityMaxRelativeTime = intensity.last().relativeTime
+    val sharpnessMaxRelativeTime = sharpness.last().relativeTime
+    if (intensityMaxRelativeTime < sharpnessMaxRelativeTime) {
+      throw getInitException(
+        "Preset plot is invalid. Sharpness max relativeTime cannot be greater than intensity max relativeTime."
+      )
     }
   }
 

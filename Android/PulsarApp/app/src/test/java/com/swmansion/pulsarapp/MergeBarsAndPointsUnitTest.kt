@@ -1,7 +1,9 @@
 package com.swmansion.pulsarapp
 
 import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.Point
+import com.swmansion.pulsarapp.types.IntensityPoint
+import com.swmansion.pulsarapp.types.PresetPlot
+import com.swmansion.pulsarapp.types.SharpnessPoint
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -12,7 +14,7 @@ import org.junit.Test
  */
 class MergeBarsAndPointsUnitTest {
   @Test
-  fun simpleAscendingTest() {
+  fun horizontalTest() {
     val bars =
       arrayListOf(
         Bar(0, 100, 1f, 1f), // beginning
@@ -20,128 +22,34 @@ class MergeBarsAndPointsUnitTest {
         Bar(400, 500, 1f, 1f), // end
       )
 
-    val points = arrayListOf(Point(0f, 1f, 0), Point(1f, 1f, 500), Point(0f, 1f, 500))
+    val intensity = arrayListOf(
+      IntensityPoint(0, 0f),
+      IntensityPoint(0, 0.2f),
+      IntensityPoint(500, 0.2f),
+      IntensityPoint(500, 0f)
+    )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 0),
-        Point(1f, 1f, 100),
-        Point(0.2f, 1f, 100),
-        Point(0.4f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 300),
-        Point(0.6f, 1f, 300),
-        Point(0.8f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 1f),
+        IntensityPoint(100, 1f),
+        IntensityPoint(100, 0.2f),
+        IntensityPoint(200, 0.2f),
+        IntensityPoint(200, 1f),
+        IntensityPoint(300, 1f),
+        IntensityPoint(300, 0.2f),
+        IntensityPoint(400, 0.2f),
+        IntensityPoint(400, 1f),
+        IntensityPoint(500, 1f),
+        IntensityPoint(500, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
-  fun simpleDescendingTest() {
-    val bars =
-      arrayListOf(
-        Bar(0, 100, 1f, 1f), // beginning
-        Bar(200, 300, 1f, 1f), // middle
-        Bar(400, 500, 1f, 1f), // end
-      )
-
-    val points = arrayListOf(Point(0f, 1f, 0), Point(1f, 1f, 0), Point(0f, 1f, 500))
-
-    val expectedResults =
-      arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 0),
-        Point(1f, 1f, 100),
-        Point(0.8f, 1f, 100),
-        Point(0.6f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 300),
-        Point(0.4f, 1f, 300),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
-      )
-
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
-  }
-
-  @Test
-  fun simpleConstantTest() {
-    val bars =
-      arrayListOf(
-        Bar(0, 100, 1f, 1f), // beginning
-        Bar(200, 300, 1f, 1f), // middle
-        Bar(400, 500, 1f, 1f), // end
-      )
-
-    val points =
-      arrayListOf(Point(0f, 1f, 0), Point(0.2f, 1f, 0), Point(0.2f, 1f, 500), Point(0f, 1f, 500))
-
-    val expectedResults =
-      arrayListOf(
-        Point(0f, 1f, 0),
-        Point(1f, 1f, 0),
-        Point(1f, 1f, 100),
-        Point(0.2f, 1f, 100),
-        Point(0.2f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 300),
-        Point(0.2f, 1f, 300),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
-      )
-
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
-  }
-
-  @Test
-  fun cutBarsTest() {
-    val bars =
-      arrayListOf(
-        Bar(100, 300, 0.4f, 1f), // cut bar
-        Bar(350, 400, 0.8f, 1f), // corner bar
-      )
-
-    val points = arrayListOf(Point(0f, 1f, 0), Point(1f, 1f, 500), Point(0f, 1f, 500))
-
-    val expectedResults =
-      arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 100),
-        Point(0.4f, 1f, 100),
-        Point(0.4f, 1f, 200),
-        Point(0.7f, 1f, 350),
-        Point(0.8f, 1f, 350),
-        Point(0.8f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0f, 1f, 500),
-      )
-
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
-  }
-
-  @Test
-  fun barWithCommonRelativeTimeTest() {
+  fun adjacentBarsTest() {
     val bars =
       arrayListOf(
         Bar(50, 100, 1f, 1f),
@@ -151,39 +59,40 @@ class MergeBarsAndPointsUnitTest {
         Bar(300, 350, 0.8f, 1f),
       )
 
-    val points =
-      arrayListOf(Point(0f, 1f, 0), Point(0.2f, 1f, 0), Point(0.2f, 1f, 500), Point(0f, 1f, 500))
+    val intensity = arrayListOf(
+      IntensityPoint(0, 0f),
+      IntensityPoint(0, 0.2f),
+      IntensityPoint(500, 0.2f),
+      IntensityPoint(500, 0f)
+    )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 50),
-        Point(1f, 1f, 50),
-        Point(1f, 1f, 100),
-        Point(0.8f, 1f, 100),
-        Point(0.8f, 1f, 150),
-        Point(0.2f, 1f, 150),
-        Point(0.2f, 1f, 200),
-        Point(0.8f, 1f, 200),
-        Point(0.8f, 1f, 250),
-        Point(1f, 1f, 250),
-        Point(1f, 1f, 300),
-        Point(0.8f, 1f, 300),
-        Point(0.8f, 1f, 350),
-        Point(0.2f, 1f, 350),
-        Point(0.2f, 1f, 500),
-        Point(0f, 1f, 500),
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 0.2f),
+        IntensityPoint(50, 0.2f),
+        IntensityPoint(50, 1f),
+        IntensityPoint(100, 1f),
+        IntensityPoint(100, 0.8f),
+        IntensityPoint(150, 0.8f),
+        IntensityPoint(150, 0.2f),
+        IntensityPoint(200, 0.2f),
+        IntensityPoint(200, 0.8f),
+        IntensityPoint(250, 0.8f),
+        IntensityPoint(250, 1f),
+        IntensityPoint(300, 1f),
+        IntensityPoint(300, 0.8f),
+        IntensityPoint(350, 0.8f),
+        IntensityPoint(350, 0.2f),
+        IntensityPoint(500, 0.2f),
+        IntensityPoint(500, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
-  fun multipleConnectedBarsWithSameAmplitudeTest() {
+  fun deleteRedundantLinePointsTest() {
     val bars =
       arrayListOf(
         Bar(50, 100, 1f, 1f),
@@ -194,94 +103,131 @@ class MergeBarsAndPointsUnitTest {
         Bar(350, 400, 1f, 1f),
       )
 
-    val points =
-      arrayListOf(Point(0f, 1f, 0), Point(0.2f, 1f, 0), Point(0.2f, 1f, 500), Point(0f, 1f, 500))
+    val intensity = arrayListOf(
+      IntensityPoint(0, 0f),
+      IntensityPoint(0, 0.2f),
+      IntensityPoint(500, 0.2f),
+      IntensityPoint(500, 0f)
+    )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 50),
-        Point(1f, 1f, 50),
-        Point(1f, 1f, 150),
-        Point(0.2f, 1f, 150),
-        Point(0.2f, 1f, 200),
-        Point(1f, 1f, 200),
-        Point(1f, 1f, 400),
-        Point(0.2f, 1f, 400),
-        Point(0.2f, 1f, 500),
-        Point(0f, 1f, 500),
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 0.2f),
+        IntensityPoint(50, 0.2f),
+        IntensityPoint(50, 1f),
+        IntensityPoint(150, 1f),
+        IntensityPoint(150, 0.2f),
+        IntensityPoint(200, 0.2f),
+        IntensityPoint(200, 1f),
+        IntensityPoint(400, 1f),
+        IntensityPoint(400, 0.2f),
+        IntensityPoint(500, 0.2f),
+        IntensityPoint(500, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    print(mergedPoints)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
-  fun differentFrequencyEdgeTest() {
-    val bars = arrayListOf(Bar(400, 500, 1f, 1f), Bar(500, 600, 0.8f, 1f))
-
-    val points =
+  fun barOverlappingMultipleLinesTest() {
+    val bars =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 500),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        Bar(50, 100, 1f, 1f),
+        Bar(100, 150, 1f, 1f),
+        Bar(200, 250, 1f, 1f),
+        Bar(250, 300, 1f, 1f),
+        Bar(300, 350, 1f, 1f),
+        Bar(350, 400, 1f, 1f),
       )
+
+    val instensity = arrayListOf(
+      IntensityPoint(0, 0f),
+      IntensityPoint(0, 0.2f),
+      IntensityPoint(500, 0.2f),
+      IntensityPoint(500, 0f)
+    )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 500),
-        Point(0.8f, 1f, 500),
-        Point(0.8f, 1f, 600),
-        Point(0.36f, 1f, 600),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 0.2f),
+        IntensityPoint(50, 0.2f),
+        IntensityPoint(50, 1f),
+        IntensityPoint(150, 1f),
+        IntensityPoint(150, 0.2f),
+        IntensityPoint(200, 0.2f),
+        IntensityPoint(200, 1f),
+        IntensityPoint(400, 1f),
+        IntensityPoint(400, 0.2f),
+        IntensityPoint(500, 0.2f),
+        IntensityPoint(500, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, generateComplexPlot(PresetPlot(instensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
-  fun sameFrequencyEdgeTest() {
-    val bars = arrayListOf(Bar(400, 500, 1f, 1f), Bar(500, 600, 1f, 1f))
-
-    val points =
+  fun complexTest() {
+    val intensity =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 500),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        IntensityPoint(0, 0f),
+        IntensityPoint(100, 0.2f),
+        IntensityPoint(200, 0.2f),
+        IntensityPoint(300, 1f),
+        IntensityPoint(500, 0f),
+        IntensityPoint(700, 0.2f),
+        IntensityPoint(800, 0.5f),
+        IntensityPoint(800, 0.7f),
+        IntensityPoint(900, 0.7f),
+        IntensityPoint(1000, 0.5f),
+        IntensityPoint(1200, 0f),
+        IntensityPoint(1200, 0.5f),
+        IntensityPoint(1200, 0f),
+        IntensityPoint(1300, 0.9f),
+        IntensityPoint(1600, 0.9f),
+        IntensityPoint(1600, 0f),
+      )
+
+    val bars =
+      arrayListOf(
+        Bar(50, 100, 1f, 1f), // end point
+        Bar(550, 650, 1f, 1f), // inside
+        Bar(750, 800, 1f, 1f), // vertical end
+        Bar(800, 950, 0.9f, 1f), // vertical start
+        Bar(1100, 1400, 1f, 1f), // overlapping
       )
 
     val expectedResults =
       arrayListOf(
-        Point(0f, 1f, 0),
-        Point(0.2f, 1f, 0),
-        Point(0.2f, 1f, 400),
-        Point(1f, 1f, 400),
-        Point(1f, 1f, 600),
-        Point(0.36f, 1f, 600),
-        Point(1f, 1f, 1000),
-        Point(0f, 1f, 1000),
+        IntensityPoint(0, 0f),
+        IntensityPoint(50, 0.1f),
+        IntensityPoint(50, 1f),
+        IntensityPoint(100, 1f),
+        IntensityPoint(100, 0.2f),
+        IntensityPoint(200, 0.2f),
+        IntensityPoint(300, 1f),
+        IntensityPoint(500, 0f),
+        IntensityPoint(550, 0.05f),
+        IntensityPoint(550, 1f),
+        IntensityPoint(650, 1f),
+        IntensityPoint(650, 0.15f),
+        IntensityPoint(700, 0.2f),
+        IntensityPoint(750, 0.35f),
+        IntensityPoint(750, 1f),
+        IntensityPoint(800, 1f),
+        IntensityPoint(800, 0.9f),
+        IntensityPoint(950, 0.9f),
+        IntensityPoint(950, 0.6f),
+        IntensityPoint(1000, 0.5f),
+        IntensityPoint(1100, 0.25f),
+        IntensityPoint(1100, 1f),
+        IntensityPoint(1400, 1f),
+        IntensityPoint(1400, 0.9f),
+        IntensityPoint(1600, 0.9f),
+        IntensityPoint(1600, 0f),
       )
 
-    val mergedPoints = mergePointsAndBars(points, bars)
-
-    assertEquals(expectedResults.size, mergedPoints.size)
-    assertEquals(expectedResults, mergedPoints)
+    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 }

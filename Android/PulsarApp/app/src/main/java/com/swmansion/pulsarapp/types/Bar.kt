@@ -10,6 +10,6 @@ package com.swmansion.pulsarapp.types
  *   envelopes.
  */
 data class Bar(val x1: Long, val x2: Long, val intensity: Float, val sharpness: Float) {
-  val point1 = Point(intensity, sharpness, x1)
-  val point2 = Point(intensity, sharpness, x2)
+  val point1 = IntensityPoint(x1, intensity)
+  val point2 = IntensityPoint(x2, intensity)
 }
