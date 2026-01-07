@@ -11,8 +11,10 @@ import com.swmansion.pulsarapp.types.ControlPoint
 import com.swmansion.pulsarapp.types.PlotPoint
 import com.swmansion.pulsarapp.types.Preset
 import com.swmansion.pulsarapp.types.PresetPlot
+import com.swmansion.pulsarapp.types.SubtractableItem
 import kotlin.collections.forEach
 import kotlin.collections.plusAssign
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -117,12 +119,14 @@ class VibrationBuilder(val vibrationService: Vibrator) {
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
   private fun createEnvelopeWaveform(plot: PresetPlot): VibrationEffect {
     val points = generatePlotPoints(plot) ?: ArrayList()
-    val controlPoints = convertPointsToControlPoints(points)
+
+    val vibrationTime = plot.intensity.last().relativeTime
+    val initialSharpness = plot.sharpness[0].sharpness
+    val controlPoints =
+      getVibrationControlPoints(vibrationTime, convertPointsToControlPoints(points))
 
     printPointsToPlot(points)
     printControlPointsToPlot(controlPoints)
-
-    val initialSharpness = plot.sharpness[0].sharpness
 
     return vibrationService.frequencyProfile?.let { frequencyProfile ->
       val builder = VibrationEffect.WaveformEnvelopeBuilder()
@@ -142,6 +146,81 @@ class VibrationBuilder(val vibrationService: Vibrator) {
         }
         builder.build()
       }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  private fun getVibrationControlPoints(
+    vibrationTime: Long,
+    controlPoints: ArrayList<ControlPoint>,
+  ): ArrayList<ControlPoint> {
+    val subtractableItems = getSubtractableItems(vibrationTime, controlPoints)
+    val result = ArrayList<ControlPoint>()
+
+    controlPoints.forEachIndexed { index, point ->
+      result +=
+        ControlPoint(
+          point.intensity,
+          point.sharpness,
+          point.duration - subtractableItems[index].value,
+        )
+    }
+
+    return result
+  }
+
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  private fun getSubtractableItems(
+    vibrationTime: Long,
+    controlPoints: ArrayList<ControlPoint>,
+  ): ArrayList<SubtractableItem> {
+    val minControlPointDuration = vibrationService.envelopeEffectInfo.minControlPointDurationMillis
+
+    val time = controlPoints.sumOf { it.duration }
+    val timeDiff = time - vibrationTime
+    val subtractableTime = controlPoints.sumOf { it.duration - minControlPointDuration }
+
+    if (subtractableTime < timeDiff) {
+      throw Exception("Subtractable items cannot be constructed.")
+    }
+
+    val subtractableItems = ArrayList<SubtractableItem>()
+
+    controlPoints.forEachIndexed { index, point ->
+      val maxValue = point.duration - minControlPointDuration
+      subtractableItems +=
+        SubtractableItem(
+          index,
+          maxValue,
+          if (maxValue > 0) {
+            val ratio = maxValue.toFloat() / subtractableTime
+            floor(ratio * timeDiff).toLong()
+          } else 0,
+        )
+    }
+
+    val valuesSum = subtractableItems.sumOf { it.value }
+    var leftTime = timeDiff - valuesSum
+
+    val nSubtractableItems = subtractableItems.size
+    for (i in 0..nSubtractableItems - 1) {
+      if (leftTime == 0L) {
+        break
+      }
+
+      val item = subtractableItems[i]
+      if (item.maxValue > item.value) {
+        item.value += 1
+        leftTime -= 1
+      }
+    }
+
+    return subtractableItems
+  }
+
+  private fun printSubtract(toSubtract: ArrayList<SubtractableItem>, title: String) {
+    Log.i(TAG, "------------------- $title ---------------------")
+    toSubtract.forEach { Log.i(TAG, "$it") }
+    Log.i(TAG, "----------------------------------------")
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
