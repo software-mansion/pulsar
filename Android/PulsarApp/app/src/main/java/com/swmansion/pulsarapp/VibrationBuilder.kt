@@ -23,7 +23,8 @@ const val MAX_INT_AMPLITUDE = 255
 
 class VibrationBuilder(val vibrationService: Vibrator) {
   fun createVibrationEffect(preset: Preset): VibrationEffect? {
-    val (_, bars, plot) = preset
+    val (_, impulses, plot) = preset
+    val bars = impulses?.let { convertImpulsesToBars(it) }
 
     if (bars == null && plot == null) {
       Log.w(TAG, "Vibration creation failed. No data in preset.")
@@ -215,12 +216,6 @@ class VibrationBuilder(val vibrationService: Vibrator) {
     }
 
     return subtractableItems
-  }
-
-  private fun printSubtract(toSubtract: ArrayList<SubtractableItem>, title: String) {
-    Log.i(TAG, "------------------- $title ---------------------")
-    toSubtract.forEach { Log.i(TAG, "$it") }
-    Log.i(TAG, "----------------------------------------")
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)

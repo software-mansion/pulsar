@@ -5,75 +5,78 @@ data class PresetPlot(
   val sharpness: ArrayList<SharpnessPoint>,
 )
 
+/**
+ * Represents single vibration impulse.
+ *
+ * @param x Impulse relative time.
+ * @param intensity Impulse intensity. Value range [0-1].
+ * @param sharpness Impulse sharpness. Value range (0-1]. Ignored for devices that do not support
+ *   envelopes.
+ */
+data class Impulse(val x: Long, val intensity: Float, val sharpness: Float)
+
 data class Preset(
   val name: String,
-  val bars: ArrayList<Bar>? = null,
+  val impulses: ArrayList<Impulse>? = null,
   val plot: PresetPlot? = null,
 ) {
   init {
-    if (bars == null && plot == null) {
-      throw getInitException("At least one of bars or plot must be declared.")
+    if (impulses == null && plot == null) {
+      throw getInitException("At least one of impulses or plot must be declared.")
     }
 
-    bars?.let { verifyBars(it) }
+    impulses?.let { verifyImpulses(it) }
     plot?.let { verifyPlot(it) }
 
-    if (bars != null && plot != null) {
-      val maxPlotIntensity = plot.intensity.last().relativeTime
-      val maxBarsIntensity = bars.last().x2
-
-      if (maxBarsIntensity > maxPlotIntensity) {
-        throw getInitException(
-          "Bars max relativeTime (${bars.last().x2}) cannot be greater than plot max relativeTime (${plot.intensity.last().relativeTime})."
-        )
-      }
-    }
+    //    TODO: There is no way to verify it now, but it needs to be done
+    //    if (bars != null && plot != null) {
+    //      val maxPlotIntensity = plot.intensity.last().relativeTime
+    //      val maxBarsIntensity = bars.last().x2
+    //
+    //      if (maxBarsIntensity > maxPlotIntensity) {
+    //        throw getInitException(
+    //          "Bars max relativeTime (${bars.last().x2}) cannot be greater than plot max
+    // relativeTime (${plot.intensity.last().relativeTime})."
+    //        )
+    //      }
+    //    }
   }
 
-  private fun verifyBars(bars: ArrayList<Bar>) {
+  private fun verifyImpulses(impulses: ArrayList<Impulse>) {
 
-    if (bars.isEmpty())
+    if (impulses.isEmpty())
       throw getInitException(
-        "Property bars is invalid. When bars is passed it must contain at least one bar."
+        "Property impulses is invalid. When impulses is passed it must contain at least one impulse."
       )
 
-    val barsComparator = Comparator { bar1: Bar, bar2: Bar -> compareBars(bar1, bar2) }
-    if (bars != bars.sortedWith(barsComparator))
+    val impulseComparator = Comparator { impulse1: Impulse, impulse2: Impulse -> compareImpulses(impulse1, impulse2) }
+    if (impulses != impulses.sortedWith(impulseComparator))
       throw getInitException(
-        "Property bars is invalid. Bars start relative time should be in ascending order."
+        "Property impulses is invalid. Impulses relative time should be in ascending order."
       )
 
-    val nBars = bars.size
-    for (i in 0..nBars - 1) {
-      val currBar = bars[i]
+    val nImpulses = impulses.size
+    for (i in 0..nImpulses - 1) {
+      val currImpulse = impulses[i]
 
-      checkIntensity(currBar.intensity)
-      checkSharpness(currBar.sharpness)
+      checkIntensity(currImpulse.intensity)
+      checkSharpness(currImpulse.sharpness)
 
-      if (currBar.intensity == 0f) {
-        throw getInitException(
-          "Found invalid bar: ${currBar.x1}-${currBar.x2}. Bar intensity cannot be 0."
-        )
-      }
-
-      if (currBar.x1 >= currBar.x2) {
-        throw getInitException(
-          "Found invalid bar: ${currBar.x1}-${currBar.x2}. Bar end must be greater than start."
-        )
+      if (currImpulse.intensity == 0f) {
+        throw getInitException("Found invalid impulse: $currImpulse. Impulse intensity cannot be 0.")
       }
 
       if (i > 0) {
-        val prevBar = bars[i - 1]
-        if (prevBar.x2 > currBar.x1) {
-          throw getInitException("Found invalid bars: $prevBar, $currBar. Bars cannot overlap.")
+        val prevImpulse = impulses[i - 1]
+        if (prevImpulse.x == currImpulse.x) {
+          throw getInitException("Found invalid impulse: $prevImpulse, $currImpulse. Impulses cannot have same relative time.")
         }
       }
     }
   }
 
-  private fun compareBars(b1: Bar, b2: Bar): Int {
-    val firstCoordinateDiff = b1.x1 - b2.x1
-    val diff = if (firstCoordinateDiff != 0L) firstCoordinateDiff else b1.x2 - b2.x2
+  private fun compareImpulses(impulse1: Impulse, impulse2: Impulse): Int {
+    val diff = impulse1.x - impulse2.x
     return diff.toInt()
   }
 

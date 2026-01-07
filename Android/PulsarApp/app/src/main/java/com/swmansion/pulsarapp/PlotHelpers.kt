@@ -13,8 +13,8 @@ fun printBarsToPlot(bars: ArrayList<Bar>) {
 
   Log.i(TAG, getPlotHeader())
   getBarsWithPauses(bars).forEach { bar ->
-    Log.i(TAG, "${bar.x1} ${bar.intensity}")
-    Log.i(TAG, "${bar.x2} ${bar.intensity}")
+    Log.i(TAG, "${bar.x1} ${bar.intensity} 1")
+    Log.i(TAG, "${bar.x2} ${bar.intensity} 1")
   }
 }
 

@@ -1,7 +1,10 @@
 package com.swmansion.pulsarapp
 
+import android.os.Build
+import android.os.Vibrator
 import android.util.Log
 import com.swmansion.pulsarapp.types.Bar
+import com.swmansion.pulsarapp.types.Impulse
 import com.swmansion.pulsarapp.types.IntensityPoint
 import com.swmansion.pulsarapp.types.Line
 import com.swmansion.pulsarapp.types.PlotPoint
@@ -9,9 +12,14 @@ import com.swmansion.pulsarapp.types.PresetPlot
 import com.swmansion.pulsarapp.types.SharpnessPoint
 import kotlin.collections.forEach
 import kotlin.math.abs
+import kotlin.math.max
 
 const val STEPS_PER_100_MS = 30
 const val DEFAULT_SHARPNESS = 1f
+
+const val MAX_BAR_DURATION_RANGE_MS = 70
+const val DEFAULT_BAR_MIN_DURATION =
+  70L // TODO: this needs to be checked - max min duration for devices
 
 fun generateBars(plot: PresetPlot): ArrayList<Bar> {
   val lines = generateLines(plot.intensity)
@@ -318,4 +326,49 @@ fun generatePlotPoints(plot: PresetPlot): ArrayList<PlotPoint> {
   }
 
   return result
+}
+
+fun convertImpulsesToBars(
+  vibrationService: Vibrator,
+  impulses: ArrayList<Impulse>,
+): ArrayList<Bar> {
+  val bars = impulses.map { getBar(vibrationService, it) }
+  val validBars = ArrayList<Bar>()
+
+  var prevBar: Bar? = null
+  bars.forEachIndexed { index, currBar ->
+    var validBar: Bar? = null
+
+    if (index == 0) {
+      validBar = currBar
+    } else if (currBar.x1 > prevBar!!.x1 && currBar.x2 > prevBar.x2) {
+      val start = max(prevBar.x2, currBar.x1)
+      validBar = Bar(start, currBar.x2, currBar.intensity, currBar.sharpness)
+    }
+
+    validBar?.let {
+      validBars += it
+      prevBar = it
+    }
+  }
+
+  return validBars
+}
+
+private fun getBar(vibrationService: Vibrator, impulse: Impulse): Bar {
+  val maxDuration = MAX_BAR_DURATION_RANGE_MS
+  val minDuration =
+    if (
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
+        vibrationService.areEnvelopeEffectsSupported()
+    )
+      vibrationService.envelopeEffectInfo.minControlPointDurationMillis
+    else DEFAULT_BAR_MIN_DURATION
+
+  val ratio = 1 - impulse.intensity
+  val duration = ratio * maxDuration + minDuration
+  val r = (duration / 2).toLong()
+
+  // TODO: it's shorter on the beginning and cut at the end
+  return Bar(max(0, impulse.x - r), impulse.x + r, impulse.intensity, impulse.sharpness)
 }
