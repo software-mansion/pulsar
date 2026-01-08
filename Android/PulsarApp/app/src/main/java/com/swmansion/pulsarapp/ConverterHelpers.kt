@@ -17,9 +17,10 @@ import kotlin.math.max
 const val STEPS_PER_100_MS = 30
 const val DEFAULT_SHARPNESS = 1f
 
-const val MAX_BAR_DURATION_RANGE_MS = 70
-const val DEFAULT_BAR_MIN_DURATION =
-  70L // TODO: this needs to be checked - max min duration for devices
+// TODO: adjust these values
+const val ENVELOPE_SUPPORT_BAR_DURATION_RANGE_MS = 40
+const val DEFAULT_BAR_DURATION_RANGE_MS = 70
+const val DEFAULT_MIN_BAR_DURATION_MS = 70L
 
 fun generateBars(plot: PresetPlot): ArrayList<Bar> {
   val lines = generateLines(plot.intensity)
@@ -65,11 +66,11 @@ private fun generateBars(lines: ArrayList<Line>): ArrayList<Bar> {
         val stepDuration = lineDuration / nSteps
         val stepValue = abs(intensityDiff) / nSteps
 
-        for (i in 0..nSteps - 1) { // TODO fix long last interval length ?
+        for (i in 0..nSteps - 1) { // TODO fix long last interval length ? - middle step
           val x1 = line.point1.relativeTime + stepDuration * i
           val x2 = if (i < nSteps - 1) x1 + stepDuration else line.point2.relativeTime
           val intensity =
-            if (isLineAscending) line.point1.intensity + stepValue * i // TODO: middle step
+            if (isLineAscending) line.point1.intensity + stepValue * i
             else line.point1.intensity - stepValue * i
 
           bars += Bar(x1, x2, intensity, DEFAULT_SHARPNESS)
@@ -332,7 +333,7 @@ fun convertImpulsesToBars(
   vibrationService: Vibrator,
   impulses: ArrayList<Impulse>,
 ): ArrayList<Bar> {
-  val bars = impulses.map { getBar(vibrationService, it) }
+  val bars = impulses.map { getBarBasedOnSharpness(vibrationService, it) }
   val validBars = ArrayList<Bar>()
 
   var prevBar: Bar? = null
@@ -341,7 +342,7 @@ fun convertImpulsesToBars(
 
     if (index == 0) {
       validBar = currBar
-    } else if (currBar.x1 > prevBar!!.x1 && currBar.x2 > prevBar.x2) {
+    } else if (currBar.x2 > prevBar!!.x2) {
       val start = max(prevBar.x2, currBar.x1)
       validBar = Bar(start, currBar.x2, currBar.intensity, currBar.sharpness)
     }
@@ -355,20 +356,20 @@ fun convertImpulsesToBars(
   return validBars
 }
 
-private fun getBar(vibrationService: Vibrator, impulse: Impulse): Bar {
-  val maxDuration = MAX_BAR_DURATION_RANGE_MS
-  val minDuration =
-    if (
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
-        vibrationService.areEnvelopeEffectsSupported()
-    )
-      vibrationService.envelopeEffectInfo.minControlPointDurationMillis
-    else DEFAULT_BAR_MIN_DURATION
+private fun getBarBasedOnSharpness(vibrationService: Vibrator, impulse: Impulse): Bar {
+  val isEnvelopeSupported =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
+      vibrationService.areEnvelopeEffectsSupported()
 
-  val ratio = 1 - impulse.intensity
-  val duration = ratio * maxDuration + minDuration
+  val durationRange =
+    if (isEnvelopeSupported) ENVELOPE_SUPPORT_BAR_DURATION_RANGE_MS else DEFAULT_BAR_DURATION_RANGE_MS
+  val minDuration =
+    if (isEnvelopeSupported) vibrationService.envelopeEffectInfo.minControlPointDurationMillis else DEFAULT_MIN_BAR_DURATION_MS
+
+  val ratio = 1 - impulse.sharpness
+  val duration = ratio * durationRange + minDuration
   val r = (duration / 2).toLong()
 
-  // TODO: it's shorter on the beginning and cut at the end
+  // TODO handle line when last bar is greater than last line point time
   return Bar(max(0, impulse.x - r), impulse.x + r, impulse.intensity, impulse.sharpness)
 }
