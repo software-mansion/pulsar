@@ -1,5 +1,7 @@
 package com.swmansion.pulsarapp.types
 
+// TODO: check if ascending order
+
 data class PresetPlot(
   val intensity: ArrayList<IntensityPoint>,
   val sharpness: ArrayList<SharpnessPoint>,

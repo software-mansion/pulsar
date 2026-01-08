@@ -95,7 +95,7 @@ fun generateComplexPlot(plot: PresetPlot, initBars: ArrayList<Bar>): PresetPlot 
         if (x1 < endPoint.relativeTime) {
           if (x2 <= endPoint.relativeTime) it
           else {
-            Bar(x1, endPoint.relativeTime, sharpness, intensity)
+            Bar(x1, endPoint.relativeTime, intensity, sharpness)
           }
         } else {
           null
@@ -348,26 +348,26 @@ fun convertImpulsesToBars(
   impulses: ArrayList<Impulse>,
 ): ArrayList<Bar> {
   val bars = impulses.map { getBarBasedOnSharpness(vibrationService, it) }
-  val validBars = ArrayList<Bar>()
+  val resultBars = ArrayList<Bar>()
 
   var prevBar: Bar? = null
   bars.forEachIndexed { index, currBar ->
-    var validBar: Bar? = null
+    var resultBar: Bar? = null
 
     if (index == 0) {
-      validBar = currBar
-    } else if (currBar.x2 > prevBar!!.x2) {
+      resultBar = currBar
+    } else if (currBar.x2 > prevBar!!.x2) { // cut beginning if bars overlap
       val start = max(prevBar.x2, currBar.x1)
-      validBar = Bar(start, currBar.x2, currBar.intensity, currBar.sharpness)
+      resultBar = Bar(start, currBar.x2, currBar.intensity, currBar.sharpness)
     }
 
-    validBar?.let {
-      validBars += it
+    resultBar?.let {
+      resultBars += it
       prevBar = it
     }
   }
 
-  return validBars
+  return resultBars
 }
 
 private fun getBarBasedOnSharpness(vibrationService: Vibrator, impulse: Impulse): Bar {
@@ -386,6 +386,5 @@ private fun getBarBasedOnSharpness(vibrationService: Vibrator, impulse: Impulse)
   val duration = ratio * durationRange + minDuration
   val r = (duration / 2).toLong()
 
-  // TODO handle line when last bar is greater than last line point time
   return Bar(max(0, impulse.x - r), impulse.x + r, impulse.intensity, impulse.sharpness)
 }

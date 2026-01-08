@@ -12,8 +12,8 @@ data class ControlPoint(val intensity: Float, val sharpness: Float, val duration
   init {
     // TODO: verify sharpness?
     verifyIntensity(intensity)
-    if (duration < 0) {
-      throw Exception("Duration cannot be negative.")
+    if (duration <= 0) {
+      throw Exception("duration should be greater than 0.")
     }
   }
 }
