@@ -209,47 +209,45 @@ fun getIntensityFromInterval(
   x2: Long,
   allLines: ArrayList<Line>,
 ): ArrayList<IntensityPoint>? {
-  // TODO: add else if
   if (x1 == x2) {
     return null
-  }
-  if (x1 > x2) {
+  } else if (x1 > x2) {
     Log.w(TAG, "This should not happen.")
     return null
-  }
+  } else {
+    // ignore vertical lines
+    val lines = allLines.filter { !it.isVertical() }
 
-  // ignore vertical lines
-  val lines = allLines.filter { !it.isVertical() }
+    var foundFirstLine = false
+    val intervalLines = ArrayList<Line>()
 
-  var foundFirstLine = false
-  val intervalLines = ArrayList<Line>()
+    for (currLine in lines) {
+      val x1LinePoint = currLine.getPoint(x1)
+      val x2LinePoint = currLine.getPoint(x2)
 
-  for (currLine in lines) {
-    val x1LinePoint = currLine.getPoint(x1)
-    val x2LinePoint = currLine.getPoint(x2)
-
-    // x1 and x2 are placed on the same line
-    if (!foundFirstLine && x1LinePoint != null && x2LinePoint != null) {
-      intervalLines += Line(x1LinePoint, x2LinePoint)
-      break
-    }
-
-    if (!foundFirstLine) { // add first line
-      if (x1LinePoint != null && x1LinePoint != currLine.point2) {
-        intervalLines += Line(x1LinePoint, currLine.point2)
-        foundFirstLine = true
-      }
-    } else {
-      if (x2LinePoint != null) { // add last line
-        intervalLines += Line(currLine.point1, x2LinePoint)
+      // x1 and x2 are placed on the same line
+      if (!foundFirstLine && x1LinePoint != null && x2LinePoint != null) {
+        intervalLines += Line(x1LinePoint, x2LinePoint)
         break
-      } else { // add lines between
-        intervalLines += currLine
+      }
+
+      if (!foundFirstLine) { // add first line
+        if (x1LinePoint != null && x1LinePoint != currLine.point2) {
+          intervalLines += Line(x1LinePoint, currLine.point2)
+          foundFirstLine = true
+        }
+      } else {
+        if (x2LinePoint != null) { // add last line
+          intervalLines += Line(currLine.point1, x2LinePoint)
+          break
+        } else { // add lines between
+          intervalLines += currLine
+        }
       }
     }
-  }
 
-  return convertLinesToPoints(intervalLines)
+    return convertLinesToPoints(intervalLines)
+  }
 }
 
 private fun deleteRedundantHorizontalLinePoints(points: ArrayList<IntensityPoint>) {
@@ -274,29 +272,28 @@ fun getSharpnessFromInterval(
   x2: Long,
   sharpness: ArrayList<SharpnessPoint>,
 ): ArrayList<SharpnessPoint>? {
-  // TODO: add else if
   if (x1 == x2) {
     return null
-  }
-  if (x1 > x2) {
+  } else if (x1 > x2) {
     Log.w(TAG, "This should not happen.")
     return null
+  } else {
+
+    // we need to include < sharpness - in case last sharpness change was within bar
+    val startSharpness = sharpness.findLast { it.relativeTime <= x1 }?.sharpness
+    val intervalSharpness = sharpness.filter { x1 < it.relativeTime && it.relativeTime < x2 }
+
+    val resultSharpness = ArrayList<SharpnessPoint>()
+
+    startSharpness?.let {
+      val point = SharpnessPoint(x1, it)
+      resultSharpness.add(point)
+    } ?: { Log.w(TAG, "This should not happen.") }
+
+    resultSharpness.addAll(intervalSharpness)
+
+    return resultSharpness
   }
-
-  // we need to include < sharpness - in case last sharpness change was within bar
-  val startSharpness = sharpness.findLast { it.relativeTime <= x1 }?.sharpness
-  val intervalSharpness = sharpness.filter { x1 < it.relativeTime && it.relativeTime < x2 }
-
-  val resultSharpness = ArrayList<SharpnessPoint>()
-
-  startSharpness?.let {
-    val point = SharpnessPoint(x1, it)
-    resultSharpness.add(point)
-  } ?: { Log.w(TAG, "This should not happen.") }
-
-  resultSharpness.addAll(intervalSharpness)
-
-  return resultSharpness
 }
 
 private fun deleteRedundantSharpness(sharpness: ArrayList<SharpnessPoint>) {
