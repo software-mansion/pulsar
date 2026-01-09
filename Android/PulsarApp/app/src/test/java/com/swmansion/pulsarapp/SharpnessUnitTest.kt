@@ -3,7 +3,7 @@ package com.swmansion.pulsarapp
 import com.swmansion.pulsarapp.types.Bar
 import com.swmansion.pulsarapp.types.IntensityPoint
 import com.swmansion.pulsarapp.types.PlotPoint
-import com.swmansion.pulsarapp.types.PresetPlot
+import com.swmansion.pulsarapp.types.Plot
 import com.swmansion.pulsarapp.types.SharpnessPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -78,7 +78,7 @@ class SharpnessUnitTest {
     val sharpness =
       arrayListOf(SharpnessPoint(0, 1f), SharpnessPoint(100, 0.8f), SharpnessPoint(1000, 0.2f))
 
-    val plot = PresetPlot(points, sharpness)
+    val plot = Plot(points, sharpness)
 
     val expectedResult =
       arrayListOf(
@@ -101,7 +101,7 @@ class SharpnessUnitTest {
       arrayListOf(SharpnessPoint(0, 0.5f), SharpnessPoint(100, 0.51f), SharpnessPoint(200, 0.52f))
 
     val intensity = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(1000, 0f))
-    val initPlot = PresetPlot(intensity, sharpness)
+    val initPlot = Plot(intensity, sharpness)
 
     // bars between sharpness points
     val barBetweenSharpness = Bar(50, 80, 1f, 0.9f)

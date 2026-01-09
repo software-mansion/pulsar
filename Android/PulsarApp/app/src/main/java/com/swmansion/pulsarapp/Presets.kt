@@ -1,9 +1,9 @@
 package com.swmansion.pulsarapp
 
-import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.Preset
 import com.swmansion.pulsarapp.types.Impulse
-import com.swmansion.pulsarapp.types.PresetPlot
+import com.swmansion.pulsarapp.types.IntensityPoint
+import com.swmansion.pulsarapp.types.Plot
+import com.swmansion.pulsarapp.types.Preset
 import com.swmansion.pulsarapp.types.SharpnessPoint
 import kotlin.collections.arrayListOf
 
@@ -34,7 +34,7 @@ val ENVELOPE_PRESET =
   Preset(
     name = "Envelope",
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -63,7 +63,7 @@ val EARTHQUAKE_PRESET =
   Preset(
     name = "Earthquake",
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -85,7 +85,7 @@ val RANDOM_PRESET =
   Preset(
     name = "Random",
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -113,7 +113,7 @@ val LONG_RISING_PRESET =
   Preset(
     name = "Long Rising",
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -128,7 +128,7 @@ val UP_PRESET =
   Preset(
     name = "Up",
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -158,7 +158,7 @@ val UP_AND_DOWN_PRESET =
   Preset(
     name = "Up and Down",
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -197,7 +197,7 @@ val COMPLEX_PRESET =
         Impulse(9200, 1f, 1f),
       ),
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -223,7 +223,7 @@ val TEST_PRESET =
         Impulse(1900, 1f, 1f),
       ),
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -245,7 +245,7 @@ val FREQUENCY_PRESET =
         Impulse(3400, 0.8f, 0.1f),
       ),
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
@@ -267,7 +267,7 @@ val MILK_PRESET =
   Preset(
     name = "Milk",
     plot =
-      PresetPlot(
+      Plot(
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),

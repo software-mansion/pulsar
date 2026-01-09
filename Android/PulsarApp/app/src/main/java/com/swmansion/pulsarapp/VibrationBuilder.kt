@@ -8,9 +8,9 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.swmansion.pulsarapp.types.Bar
 import com.swmansion.pulsarapp.types.ControlPoint
+import com.swmansion.pulsarapp.types.Plot
 import com.swmansion.pulsarapp.types.PlotPoint
 import com.swmansion.pulsarapp.types.Preset
-import com.swmansion.pulsarapp.types.PresetPlot
 import com.swmansion.pulsarapp.types.SubtractableItem
 import kotlin.collections.forEach
 import kotlin.collections.plusAssign
@@ -69,7 +69,7 @@ class VibrationBuilder(val vibrationService: Vibrator) {
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
-  private fun createWaveformFromPlot(plot: PresetPlot): VibrationEffect? {
+  private fun createWaveformFromPlot(plot: Plot): VibrationEffect? {
     return if (isEnvelopeSupported()) createEnvelopeWaveform(plot)
     else {
       val bars = generateBars(plot)
@@ -78,7 +78,7 @@ class VibrationBuilder(val vibrationService: Vibrator) {
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
-  private fun createComplexWaveform(plot: PresetPlot, bars: ArrayList<Bar>): VibrationEffect? {
+  private fun createComplexWaveform(plot: Plot, bars: ArrayList<Bar>): VibrationEffect? {
     val complexPlot = generateComplexPlot(plot, bars)
     return createWaveformFromPlot(complexPlot)
   }
@@ -118,7 +118,7 @@ class VibrationBuilder(val vibrationService: Vibrator) {
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
-  private fun createEnvelopeWaveform(plot: PresetPlot): VibrationEffect {
+  private fun createEnvelopeWaveform(plot: Plot): VibrationEffect {
     val points = generatePlotPoints(plot) ?: ArrayList()
 
     val vibrationTime = plot.intensity.last().relativeTime
@@ -181,7 +181,10 @@ class VibrationBuilder(val vibrationService: Vibrator) {
     val subtractableTime = controlPoints.sumOf { it.duration - minControlPointDuration }
 
     if (subtractableTime < timeDiff) {
-      Log.w(TAG, "There is not enough subtractable time to make exact adjustment. $subtractableTime/$timeDiff will be adjusted.")
+      Log.w(
+        TAG,
+        "There is not enough subtractable time to make exact adjustment. $subtractableTime/$timeDiff will be adjusted.",
+      )
       timeDiff = subtractableTime
     }
 

@@ -1,13 +1,17 @@
 package com.swmansion.pulsarapp.types
 
+/**
+ * Represents vibration preset. At least one of impulses or plot should be passed. If both of them
+ * are passed, the result will be a combination of plot and impulses.
+ */
 data class Preset(
   val name: String,
   val impulses: ArrayList<Impulse>? = null,
-  val plot: PresetPlot? = null,
+  val plot: Plot? = null,
 ) {
   init {
     if (impulses == null && plot == null) {
-      throw getInitException("At least one of impulses or plot must be declared.")
+      throwInitException("At least one of impulses or plot must be declared.")
     }
 
     impulses?.let { verifyImpulses(it) }
@@ -15,7 +19,7 @@ data class Preset(
 
   private fun verifyImpulses(impulses: ArrayList<Impulse>) {
     if (impulses.isEmpty())
-      throw getInitException(
+      throwInitException(
         "Property impulses is invalid. When impulses is passed it must contain at least one impulse."
       )
 
@@ -25,7 +29,7 @@ data class Preset(
         val prevImpulse = impulses[index - 1]
 
         if (prevImpulse.x == currImpulse.x) {
-          throw getInitException(
+          throwInitException(
             "Found invalid impulses: $prevImpulse, $currImpulse. Impulses cannot have same relative time."
           )
         }
@@ -36,7 +40,7 @@ data class Preset(
       compareImpulses(impulse1, impulse2)
     }
     if (impulses != impulses.sortedWith(impulseComparator))
-      throw getInitException(
+      throwInitException(
         "Property impulses is invalid. Impulses relative time should be in ascending order."
       )
   }
@@ -46,7 +50,7 @@ data class Preset(
     return diff.toInt()
   }
 
-  private fun getInitException(message: String): Exception {
-    return Exception("Failed to init ${name.uppercase()}_PRESET. $message")
+  private fun throwInitException(message: String) {
+    throw Exception("Failed to init ${name.uppercase()}_PRESET. $message")
   }
 }

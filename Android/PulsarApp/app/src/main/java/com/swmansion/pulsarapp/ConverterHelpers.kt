@@ -7,8 +7,8 @@ import com.swmansion.pulsarapp.types.Bar
 import com.swmansion.pulsarapp.types.Impulse
 import com.swmansion.pulsarapp.types.IntensityPoint
 import com.swmansion.pulsarapp.types.Line
+import com.swmansion.pulsarapp.types.Plot
 import com.swmansion.pulsarapp.types.PlotPoint
-import com.swmansion.pulsarapp.types.PresetPlot
 import com.swmansion.pulsarapp.types.SharpnessPoint
 import kotlin.collections.forEach
 import kotlin.math.abs
@@ -22,7 +22,7 @@ const val ENVELOPE_SUPPORT_BAR_DURATION_RANGE_MS = 40
 const val DEFAULT_BAR_DURATION_RANGE_MS = 70
 const val DEFAULT_MIN_BAR_DURATION_MS = 70L
 
-fun generateBars(plot: PresetPlot): ArrayList<Bar> {
+fun generateBars(plot: Plot): ArrayList<Bar> {
   val lines = generateLines(plot.intensity)
   val bars = generateBars(lines)
   return bars
@@ -81,7 +81,7 @@ private fun generateBars(lines: ArrayList<Line>): ArrayList<Bar> {
   return bars
 }
 
-fun generateComplexPlot(plot: PresetPlot, initBars: ArrayList<Bar>): PresetPlot {
+fun generateComplexPlot(plot: Plot, initBars: ArrayList<Bar>): Plot {
   val (intensity, sharpness) = plot
   val lines = generateLines(intensity)
 
@@ -165,7 +165,7 @@ fun generateComplexPlot(plot: PresetPlot, initBars: ArrayList<Bar>): PresetPlot 
   // remove redundant sharpness
   deleteDuplicatedSharpness(complexSharpness)
 
-  return PresetPlot(complexIntensity, complexSharpness)
+  return Plot(complexIntensity, complexSharpness)
 }
 
 fun shouldBarBeMerged(bar: Bar, lines: ArrayList<Line>): Boolean {
@@ -199,8 +199,8 @@ fun getLinePointsFromInterval(
   val intervalLines = ArrayList<Line>()
 
   for (currLine in lines) {
-    val x1LinePoint = currLine.getPointOnLine(x1.relativeTime)
-    val x2LinePoint = currLine.getPointOnLine(x2.relativeTime)
+    val x1LinePoint = currLine.getPoint(x1.relativeTime)
+    val x2LinePoint = currLine.getPoint(x2.relativeTime)
 
     // x1 and x2 are placed on the same line
     if (!addingStarted && x1LinePoint != null && x2LinePoint != null) {
@@ -284,18 +284,18 @@ private fun deleteDuplicatedSharpness(sharpness: ArrayList<SharpnessPoint>) {
   indexesToDelete.reversed().forEach { sharpness.removeAt(it) }
 }
 
-fun generatePlot(bars: ArrayList<Bar>): PresetPlot {
+fun generatePlot(bars: ArrayList<Bar>): Plot {
   val intensity = generateIntensity(bars)
   val sharpness = generateSharpness(bars)
 
-  return PresetPlot(intensity, sharpness)
+  return Plot(intensity, sharpness)
 }
 
 fun generateIntensity(bars: ArrayList<Bar>): ArrayList<IntensityPoint> {
   val intensity = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(bars.last().x2, 0f))
   val defaultSharpness = arrayListOf(SharpnessPoint(0, DEFAULT_SHARPNESS))
 
-  val plot = PresetPlot(intensity, defaultSharpness)
+  val plot = Plot(intensity, defaultSharpness)
   val complexPlot = generateComplexPlot(plot, bars)
   return complexPlot.intensity
 }
@@ -307,7 +307,7 @@ private fun generateSharpness(bars: ArrayList<Bar>): ArrayList<SharpnessPoint> {
   return sharpness
 }
 
-fun generatePlotPoints(plot: PresetPlot): ArrayList<PlotPoint> {
+fun generatePlotPoints(plot: Plot): ArrayList<PlotPoint> {
   val (plotPoints, plotSharpness) = plot
   val lines = generateLines(plotPoints)
 
@@ -324,7 +324,7 @@ fun generatePlotPoints(plot: PresetPlot): ArrayList<PlotPoint> {
       }
 
     lineSharpnessChanges.forEachIndexed { i, sharpnessChange ->
-      val changeLinePoint = line.getPointOnLine(lineSharpnessChanges[i].relativeTime)!!
+      val changeLinePoint = line.getPoint(lineSharpnessChanges[i].relativeTime)!!
       val newSharpness = sharpnessChange.sharpness
 
       if (i == 0 && line.point1.relativeTime == changeLinePoint.relativeTime) {

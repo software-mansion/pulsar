@@ -2,8 +2,7 @@ package com.swmansion.pulsarapp
 
 import com.swmansion.pulsarapp.types.Bar
 import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.PresetPlot
-import com.swmansion.pulsarapp.types.SharpnessPoint
+import com.swmansion.pulsarapp.types.Plot
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -45,7 +44,7 @@ class MergeBarsAndPointsUnitTest {
         IntensityPoint(500, 0f),
       )
 
-    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
+    assertEquals(expectedResults, generateComplexPlot(Plot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
@@ -88,7 +87,7 @@ class MergeBarsAndPointsUnitTest {
         IntensityPoint(500, 0f),
       )
 
-    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
+    assertEquals(expectedResults, generateComplexPlot(Plot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
@@ -126,7 +125,7 @@ class MergeBarsAndPointsUnitTest {
         IntensityPoint(500, 0f),
       )
 
-    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
+    assertEquals(expectedResults, generateComplexPlot(Plot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
@@ -164,7 +163,7 @@ class MergeBarsAndPointsUnitTest {
         IntensityPoint(500, 0f),
       )
 
-    assertEquals(expectedResults, generateComplexPlot(PresetPlot(instensity, CONST_PLOT_SHARPNESS), bars).intensity)
+    assertEquals(expectedResults, generateComplexPlot(Plot(instensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 
   @Test
@@ -228,6 +227,6 @@ class MergeBarsAndPointsUnitTest {
         IntensityPoint(1600, 0f),
       )
 
-    assertEquals(expectedResults, generateComplexPlot(PresetPlot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
+    assertEquals(expectedResults, generateComplexPlot(Plot(intensity, CONST_PLOT_SHARPNESS), bars).intensity)
   }
 }

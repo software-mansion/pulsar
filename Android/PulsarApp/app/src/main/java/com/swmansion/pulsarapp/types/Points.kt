@@ -1,54 +1,48 @@
 package com.swmansion.pulsarapp.types
 
-/**
- * Represents single point of intensity plot.
- *
- * @param relativeTime - time relative to the beginning of the vibration.
- * @param intensity - should be value from [0-1].
- */
 data class IntensityPoint(val relativeTime: Long, var intensity: Float) {
   init {
     verifyRelativeTime(relativeTime)
     verifyIntensity(intensity)
   }
-
-  override fun toString(): String {
-    return "(${relativeTime}, ${intensity})"
-  }
 }
 
-/**
- * Represents single sharpness point change applied to intensity plot.
- *
- * @param relativeTime - time relative to the beginning of the vibration.
- * @param sharpness - should be value from (0-1].
- */
 class SharpnessPoint(val relativeTime: Long, val sharpness: Float) {
   init {
     verifyRelativeTime(relativeTime)
     verifySharpness(sharpness)
   }
+}
 
-  override fun toString(): String {
-    return "(${relativeTime}, ${sharpness})"
+/**
+ * Represents single control point of envelope builder.
+ *
+ * @param intensity should be value from [0-1].
+ * @param sharpness can be passed as value from (0,1] or value in Hz based on used envelope type.
+ *   // TODO: verify sharpness ?
+ * @param duration - transition time in ms.
+ */
+data class ControlPoint(val intensity: Float, val sharpness: Float, val duration: Long) {
+  init {
+    verifyIntensity(intensity)
+
+    if (duration <= 0) {
+      throw Exception("duration should be greater than 0.")
+    }
   }
 }
 
 /**
  * Represents single point of result plot.
  *
- * @param relativeTime - time relative to the beginning of the vibration.
- * @param intensity - should be value from [0-1].
- * @param sharpness - should be value from (0-1] or greater if Hz.
+ * @param relativeTime time relative to the beginning of the vibration.
+ * @param intensity should be value from [0-1].
+ * @param sharpness can be passed as value from (0,1] or value in Hz based on used envelope type.
+ *   // TODO: verify sharpness ?
  */
 data class PlotPoint(val relativeTime: Long, var intensity: Float, val sharpness: Float) {
   init {
     verifyRelativeTime(relativeTime)
     verifyIntensity(intensity)
-    // TODO: verify sharpness ?
-  }
-
-  override fun toString(): String {
-    return "($relativeTime, $intensity, $sharpness)"
   }
 }
