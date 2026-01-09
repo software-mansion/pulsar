@@ -323,41 +323,66 @@ fun generatePlot(bars: ArrayList<Bar>): Plot {
   return generateComplexPlot(plot, bars)
 }
 
+// TODO: frequency change can be done on vertical lines ?
 fun generatePlotPoints(plot: Plot): ArrayList<PlotPoint> {
-  val (plotPoints, plotSharpness) = plot
-  val lines = generateLines(plotPoints)
+  val (intensity, sharpness) = plot
 
-  var prevSharpness = plotSharpness[0].sharpness
-  val result = arrayListOf(PlotPoint(0, 0f, prevSharpness))
+  val firstSharpness = sharpness[0].sharpness
+  var prevSharpness = firstSharpness
 
-  // TODO: check
-  lines.forEachIndexed { lineIndex, line ->
-    val lineSharpnessChanges =
-      plotSharpness.filter {
-        if (lineIndex == 0)
-          line.point1.relativeTime < it.relativeTime && it.relativeTime < line.point2.relativeTime
-        else
-          line.point1.relativeTime <= it.relativeTime && it.relativeTime < line.point2.relativeTime
-      }
+  val plotPoints = ArrayList<PlotPoint>()
 
-    lineSharpnessChanges.forEachIndexed { i, sharpnessChange ->
-      val changeLinePoint = line.getPoint(lineSharpnessChanges[i].relativeTime)!!
-      val newSharpness = sharpnessChange.sharpness
+  for (i in 0..intensity.size - 1) {
+    val currPoint = intensity[i]
+    val nextPoint = if (i + 1 < intensity.size) intensity[i + 1] else null
 
-      if (i == 0 && line.point1.relativeTime == changeLinePoint.relativeTime) {
-        result += PlotPoint(changeLinePoint.relativeTime, changeLinePoint.intensity, newSharpness)
-      } else {
-        result += PlotPoint(changeLinePoint.relativeTime, changeLinePoint.intensity, prevSharpness)
-        result += PlotPoint(changeLinePoint.relativeTime, changeLinePoint.intensity, newSharpness)
-      }
+    // add currPoint
+    val currPlotPoint =
+      PlotPoint(
+        currPoint.relativeTime,
+        currPoint.intensity,
+        if (i == 0) firstSharpness else prevSharpness,
+      )
+    plotPoints.add(currPlotPoint)
+
+    // duplicate point with changed sharpness if needed
+    val currPlotSharpnessChange =
+      sharpness.find {
+        currPoint.relativeTime == it.relativeTime && i != 0 && it.sharpness != prevSharpness
+      } // omit index 0 and do not duplicate point for vertical lines
+
+    currPlotSharpnessChange?.let {
+      val newSharpness = currPlotSharpnessChange.sharpness
+      val sharpnessChangePlotPoint =
+        PlotPoint(currPoint.relativeTime, currPoint.intensity, newSharpness)
+      plotPoints.add(sharpnessChangePlotPoint)
 
       prevSharpness = newSharpness
     }
 
-    result += PlotPoint(line.point2.relativeTime, line.point2.intensity, prevSharpness)
+    // add all sharpness change points between currPoint and nextPoint
+    nextPoint?.let {
+      val line = Line(currPoint, nextPoint)
+      val sharpnessOnLine =
+        sharpness.filter {
+          currPoint.relativeTime < it.relativeTime && it.relativeTime < nextPoint.relativeTime
+        }
+
+      sharpnessOnLine.forEach {
+        val newSharpness = it.sharpness
+        val sharpnessChangePoint = line.getPoint(it.relativeTime)
+
+        sharpnessChangePoint?.let { it ->
+          plotPoints += PlotPoint(it.relativeTime, it.intensity, prevSharpness)
+          plotPoints += PlotPoint(it.relativeTime, it.intensity, newSharpness)
+        } ?: run { Log.w(TAG, "This should not happen.") }
+
+        prevSharpness = newSharpness
+      }
+    }
   }
 
-  return result
+  return plotPoints
 }
 
 fun convertImpulsesToBars(

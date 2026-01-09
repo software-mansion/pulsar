@@ -76,7 +76,11 @@ class SharpnessUnitTest {
       )
 
     val sharpness =
-      arrayListOf(SharpnessPoint(0, 1f), SharpnessPoint(100, 0.8f), SharpnessPoint(1000, 0.2f))
+      arrayListOf(
+        SharpnessPoint(0, 1f),
+        SharpnessPoint(100, 0.8f),
+        SharpnessPoint(1000, 0.2f)
+      )
 
     val plot = Plot(points, sharpness)
 
@@ -90,6 +94,46 @@ class SharpnessUnitTest {
         PlotPoint(2000, 0f, 0.2f),
         PlotPoint(2500, 1f, 0.2f),
         PlotPoint(2500, 0f, 0.2f),
+      )
+
+    verifyPlotPoints(expectedResult, generatePlotPoints(plot))
+  }
+
+  @Test
+  fun generatePlotPointsVerticalTest() {
+    val points =
+      arrayListOf(
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 1f),
+        IntensityPoint(100, 1f),
+        IntensityPoint(100, 0f),
+        IntensityPoint(200, 0f),
+        IntensityPoint(200, 1f),
+        IntensityPoint(300, 1f),
+        IntensityPoint(300, 0f)
+      )
+
+    val sharpness =
+      arrayListOf(
+        SharpnessPoint(0, 1f),
+        SharpnessPoint(100, 0.8f),
+        SharpnessPoint(200, 0.9f)
+      )
+
+    val plot = Plot(points, sharpness)
+
+    val expectedResult =
+      arrayListOf(
+        PlotPoint(0, 0f, 1f),
+        PlotPoint(0, 1f, 1f),
+        PlotPoint(100, 1f, 1f),
+        PlotPoint(100, 1f, 0.8f),
+        PlotPoint(100, 0f, 0.8f),
+        PlotPoint(200, 0f, 0.8f),
+        PlotPoint(200, 0f, 0.9f),
+        PlotPoint(200, 1f, 0.9f),
+        PlotPoint(300, 1f, 0.9f),
+        PlotPoint(300, 0f, 0.9f),
       )
 
     verifyPlotPoints(expectedResult, generatePlotPoints(plot))
