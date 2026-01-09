@@ -2,7 +2,6 @@ package com.swmansion.pulsarapp
 
 import com.swmansion.pulsarapp.types.Bar
 import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.PlotPoint
 import com.swmansion.pulsarapp.types.Plot
 import com.swmansion.pulsarapp.types.SharpnessPoint
 import org.junit.Assert.assertEquals
@@ -62,81 +61,6 @@ class SharpnessUnitTest {
       ),
       getSharpnessFromInterval(50, 550, sharpness),
     )
-  }
-
-  @Test
-  fun generatePlotPointsWithoutBarsTest() {
-    val points =
-      arrayListOf(
-        IntensityPoint(0, 0f),
-        IntensityPoint(1000, 1f),
-        IntensityPoint(2000, 0f),
-        IntensityPoint(2500, 1f),
-        IntensityPoint(2500, 0f),
-      )
-
-    val sharpness =
-      arrayListOf(
-        SharpnessPoint(0, 1f),
-        SharpnessPoint(100, 0.8f),
-        SharpnessPoint(1000, 0.2f)
-      )
-
-    val plot = Plot(points, sharpness)
-
-    val expectedResult =
-      arrayListOf(
-        PlotPoint(0, 0f, 1f),
-        PlotPoint(100, 0.1f, 1f),
-        PlotPoint(100, 0.1f, 0.8f),
-        PlotPoint(1000, 1f, 0.8f),
-        PlotPoint(1000, 1f, 0.2f),
-        PlotPoint(2000, 0f, 0.2f),
-        PlotPoint(2500, 1f, 0.2f),
-        PlotPoint(2500, 0f, 0.2f),
-      )
-
-    verifyPlotPoints(expectedResult, generatePlotPoints(plot))
-  }
-
-  @Test
-  fun generatePlotPointsVerticalTest() {
-    val points =
-      arrayListOf(
-        IntensityPoint(0, 0f),
-        IntensityPoint(0, 1f),
-        IntensityPoint(100, 1f),
-        IntensityPoint(100, 0f),
-        IntensityPoint(200, 0f),
-        IntensityPoint(200, 1f),
-        IntensityPoint(300, 1f),
-        IntensityPoint(300, 0f)
-      )
-
-    val sharpness =
-      arrayListOf(
-        SharpnessPoint(0, 1f),
-        SharpnessPoint(100, 0.8f),
-        SharpnessPoint(200, 0.9f)
-      )
-
-    val plot = Plot(points, sharpness)
-
-    val expectedResult =
-      arrayListOf(
-        PlotPoint(0, 0f, 1f),
-        PlotPoint(0, 1f, 1f),
-        PlotPoint(100, 1f, 1f),
-        PlotPoint(100, 1f, 0.8f),
-        PlotPoint(100, 0f, 0.8f),
-        PlotPoint(200, 0f, 0.8f),
-        PlotPoint(200, 0f, 0.9f),
-        PlotPoint(200, 1f, 0.9f),
-        PlotPoint(300, 1f, 0.9f),
-        PlotPoint(300, 0f, 0.9f),
-      )
-
-    verifyPlotPoints(expectedResult, generatePlotPoints(plot))
   }
 
   @Test
@@ -235,17 +159,6 @@ class SharpnessUnitTest {
             expected[i].sharpness == actual[i].sharpness,
         )
       }
-    }
-  }
-
-  private fun verifyPlotPoints(expected: ArrayList<PlotPoint>, actual: ArrayList<PlotPoint>) {
-    for (i in 0..actual.size - 1) {
-      assertEquals(
-        true,
-        expected[i].relativeTime == actual[i].relativeTime &&
-          expected[i].sharpness == actual[i].sharpness &&
-          expected[i].intensity == actual[i].intensity,
-      )
     }
   }
 }

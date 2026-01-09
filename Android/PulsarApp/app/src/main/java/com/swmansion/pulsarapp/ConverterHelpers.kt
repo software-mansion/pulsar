@@ -382,6 +382,21 @@ fun generatePlotPoints(plot: Plot): ArrayList<PlotPoint> {
     }
   }
 
+  // remove middle transition on vertical lines to archive sharpness transition on vertical lines
+  val indexesToDelete = ArrayList<Int>()
+  val nPoints = plotPoints.size
+
+  for (index in 1..nPoints - 2) {
+    val prevPoint = plotPoints[index - 1]
+    val currPoint = plotPoints[index]
+    val nextPoint = plotPoints[index + 1]
+
+    if (prevPoint.relativeTime == currPoint.relativeTime && currPoint.relativeTime == nextPoint.relativeTime) {
+      indexesToDelete.add(index)
+    }
+  }
+
+  indexesToDelete.reversed().forEach { plotPoints.removeAt(it) }
   return plotPoints
 }
 
