@@ -66,7 +66,11 @@ class SharpnessUnitTest {
   @Test
   fun generateComplexPlotSharpnessTest() {
     val sharpness =
-      arrayListOf(SharpnessPoint(0, 0.5f), SharpnessPoint(100, 0.51f), SharpnessPoint(200, 0.52f))
+      arrayListOf(
+        SharpnessPoint(0, 0.5f),
+        SharpnessPoint(100, 0.51f),
+        SharpnessPoint(200, 0.52f)
+      )
 
     val intensity = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(1000, 0f))
 
@@ -152,12 +156,12 @@ class SharpnessUnitTest {
   ) {
     assertEquals(actual == null, false)
 
-    actual?.forEachIndexed {index, actualPoint ->
-        assertEquals(
-          true,
-          expected[index].relativeTime == actualPoint.relativeTime &&
-                  expected[index].sharpness == actualPoint.sharpness,
-        )
-      }
+    actual?.forEachIndexed { index, actualPoint ->
+      assertEquals(
+        true,
+        expected[index].relativeTime == actualPoint.relativeTime &&
+          expected[index].sharpness == actualPoint.sharpness,
+      )
     }
   }
+}

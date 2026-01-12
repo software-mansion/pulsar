@@ -16,17 +16,19 @@ class MergeBarsAndPointsUnitTest {
         Bar(400, 500, 1f, 1f), // end
       )
 
-    val plot = generateComplexPlot(
-      Plot(
-        arrayListOf(
-          IntensityPoint(0, 0f),
-          IntensityPoint(0, 0.2f),
-          IntensityPoint(500, 0.2f),
-          IntensityPoint(500, 0f)
+    val plot =
+      generateComplexPlot(
+        Plot(
+          arrayListOf(
+            IntensityPoint(0, 0f),
+            IntensityPoint(0, 0.2f),
+            IntensityPoint(500, 0.2f),
+            IntensityPoint(500, 0f),
+          ),
+          CONST_PLOT_SHARPNESS,
         ),
-        CONST_PLOT_SHARPNESS),
-      bars
-    )
+        bars,
+      )
 
     val expectedIntensity =
       arrayListOf(
@@ -44,7 +46,6 @@ class MergeBarsAndPointsUnitTest {
         IntensityPoint(500, 0f),
       )
 
-
     assertEquals(expectedIntensity, plot.intensity)
   }
 
@@ -59,12 +60,19 @@ class MergeBarsAndPointsUnitTest {
         Bar(300, 350, 0.8f, 1f),
       )
 
-    val plot = generateComplexPlot(Plot(arrayListOf(
-      IntensityPoint(0, 0f),
-      IntensityPoint(0, 0.2f),
-      IntensityPoint(500, 0.2f),
-      IntensityPoint(500, 0f)
-    ), CONST_PLOT_SHARPNESS), bars)
+    val plot =
+      generateComplexPlot(
+        Plot(
+          arrayListOf(
+            IntensityPoint(0, 0f),
+            IntensityPoint(0, 0.2f),
+            IntensityPoint(500, 0.2f),
+            IntensityPoint(500, 0f),
+          ),
+          CONST_PLOT_SHARPNESS,
+        ),
+        bars,
+      )
 
     val expectedIntensity =
       arrayListOf(
@@ -103,12 +111,19 @@ class MergeBarsAndPointsUnitTest {
         Bar(350, 400, 1f, 1f),
       )
 
-    val plot = generateComplexPlot(Plot(arrayListOf(
-      IntensityPoint(0, 0f),
-      IntensityPoint(0, 0.2f),
-      IntensityPoint(500, 0.2f),
-      IntensityPoint(500, 0f)
-    ), CONST_PLOT_SHARPNESS), bars)
+    val plot =
+      generateComplexPlot(
+        Plot(
+          arrayListOf(
+            IntensityPoint(0, 0f),
+            IntensityPoint(0, 0.2f),
+            IntensityPoint(500, 0.2f),
+            IntensityPoint(500, 0f),
+          ),
+          CONST_PLOT_SHARPNESS,
+        ),
+        bars,
+      )
 
     val expectedIntensity =
       arrayListOf(
@@ -141,12 +156,19 @@ class MergeBarsAndPointsUnitTest {
         Bar(350, 400, 1f, 1f),
       )
 
-    val plot = generateComplexPlot(Plot(arrayListOf(
-      IntensityPoint(0, 0f),
-      IntensityPoint(0, 0.2f),
-      IntensityPoint(500, 0.2f),
-      IntensityPoint(500, 0f)
-    ), CONST_PLOT_SHARPNESS), bars)
+    val plot =
+      generateComplexPlot(
+        Plot(
+          arrayListOf(
+            IntensityPoint(0, 0f),
+            IntensityPoint(0, 0.2f),
+            IntensityPoint(500, 0.2f),
+            IntensityPoint(500, 0f),
+          ),
+          CONST_PLOT_SHARPNESS,
+        ),
+        bars,
+      )
 
     val expectedIntensity =
       arrayListOf(
@@ -191,13 +213,13 @@ class MergeBarsAndPointsUnitTest {
 
     val bars =
       arrayListOf(
-        Bar(50, 100, 1f, 1f),    // end point
-        Bar(550, 650, 1f, 1f),   // inside
-        Bar(750, 800, 1f, 1f),   // vertical end
+        Bar(50, 100, 1f, 1f), // end point
+        Bar(550, 650, 1f, 1f), // inside
+        Bar(750, 800, 1f, 1f), // vertical end
         Bar(800, 950, 0.9f, 1f), // vertical start
         Bar(1100, 1400, 1f, 1f), // overlapping
       )
-    
+
     val plot = generateComplexPlot(Plot(intensity, CONST_PLOT_SHARPNESS), bars)
 
     val expectedIntensity =

@@ -66,12 +66,13 @@ class GenerateIntensityBasedOnBarsTest {
 
     val intensity = generateIntensity(bars)
 
-    val expectedIntensity = arrayListOf(
-      IntensityPoint(0, 0f),
-      IntensityPoint(0, 0.3f),
-      IntensityPoint(100, 0.3f),
-      IntensityPoint(100, 0f)
-    )
+    val expectedIntensity =
+      arrayListOf(
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 0.3f),
+        IntensityPoint(100, 0.3f),
+        IntensityPoint(100, 0f),
+      )
 
     assertEquals(expectedIntensity, intensity)
   }

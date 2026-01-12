@@ -9,11 +9,11 @@ class ShouldBarBeMergedTest {
   @Test
   fun singleIntervalAscendingTest() {
     val intensity =
-        arrayListOf(
-            IntensityPoint(0, 0f),
-            IntensityPoint(1000, 0.5f),
-            IntensityPoint(1000, 0f)
-        )
+      arrayListOf(
+        IntensityPoint(0, 0f),
+        IntensityPoint(1000, 0.5f),
+        IntensityPoint(1000, 0f)
+      )
 
     val lines = generateLines(intensity)
 
@@ -41,11 +41,11 @@ class ShouldBarBeMergedTest {
   @Test
   fun singleIntervalDescendingTest() {
     val intensity =
-        arrayListOf(
-            IntensityPoint(0, 0f),
-            IntensityPoint(0, 0.5f),
-            IntensityPoint(1000, 0f)
-        )
+      arrayListOf(
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 0.5f),
+        IntensityPoint(1000, 0f)
+      )
 
     val lines = generateLines(intensity)
 
@@ -73,12 +73,12 @@ class ShouldBarBeMergedTest {
   @Test
   fun singleIntervalHorizontalTest() {
     val intensity =
-        arrayListOf(
-            IntensityPoint(0, 0f),
-            IntensityPoint(0, 0.5f),
-            IntensityPoint(1000, 0.5f),
-            IntensityPoint(1000, 0f)
-        )
+      arrayListOf(
+        IntensityPoint(0, 0f),
+        IntensityPoint(0, 0.5f),
+        IntensityPoint(1000, 0.5f),
+        IntensityPoint(1000, 0f),
+      )
 
     val lines = generateLines(intensity)
 
