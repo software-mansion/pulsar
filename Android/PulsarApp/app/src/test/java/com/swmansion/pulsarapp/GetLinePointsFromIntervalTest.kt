@@ -1,62 +1,56 @@
 package com.swmansion.pulsarapp
 
-import com.swmansion.pulsarapp.types.Bar
 import com.swmansion.pulsarapp.types.IntensityPoint
 import org.junit.Assert.*
 import org.junit.Test
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 class GetLinePointsFromIntervalTest {
   @Test
   fun singleLineTest() {
-    val points = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(1000, 1f))
+    val intensity = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(1000, 1f))
 
-    val start = IntensityPoint(0, 0f)
-    val middle1 = IntensityPoint(400, 0f)
-    val middle2 = IntensityPoint(800, 0f)
-    val end = IntensityPoint(1000, 0f)
+    val startTime = 0L
+    val middleTime1 = 400L
+    val middleTime2 = 800L
+    val endTime = 1000L
 
-    val startLinePoint = IntensityPoint(0, 0f)
-    val middle1LinePoint = IntensityPoint(400, 0.4f)
-    val middle2LinePoint = IntensityPoint(800, 0.8f)
-    val endLinePoint = IntensityPoint(1000, 1f)
+    val startLinePoint = intensity.first()
+    val middle1LinePoint = IntensityPoint(middleTime1, 0.4f)
+    val middle2LinePoint = IntensityPoint(middleTime2, 0.8f)
+    val endLinePoint = intensity.last()
 
-    val lines = generateLines(points)
+    val lines = generateLines(intensity)
 
     // start / end
     assertEquals(
       arrayListOf(startLinePoint, middle1LinePoint),
-      getIntensityFromInterval(start.relativeTime, middle1.relativeTime, lines),
+      getIntensityFromInterval(startTime, middleTime1, lines),
     )
     assertEquals(
       arrayListOf(middle2LinePoint, endLinePoint),
-      getIntensityFromInterval(middle2.relativeTime, end.relativeTime, lines),
+      getIntensityFromInterval(middleTime2, endTime, lines),
     )
 
     // middle
     assertEquals(
       arrayListOf(middle1LinePoint, middle2LinePoint),
-      getIntensityFromInterval(middle1.relativeTime, middle2.relativeTime, lines),
+      getIntensityFromInterval(middleTime1, middleTime2, lines),
     )
     assertEquals(
       arrayListOf(middle2LinePoint, endLinePoint),
-      getIntensityFromInterval(middle2.relativeTime, end.relativeTime, lines),
+      getIntensityFromInterval(middleTime2, endTime, lines),
     )
 
     // whole
     assertEquals(
       arrayListOf(startLinePoint, endLinePoint),
-      getIntensityFromInterval(start.relativeTime, end.relativeTime, lines),
+      getIntensityFromInterval(startTime, endTime, lines),
     )
   }
 
   @Test
   fun multipleLinesFromStartTest() {
-    val points =
+    val intensity =
       arrayListOf(
         IntensityPoint(0, 0f),
         IntensityPoint(200, 0.3f),
@@ -66,26 +60,24 @@ class GetLinePointsFromIntervalTest {
         IntensityPoint(1000, 0f),
       )
 
-    val lines = generateLines(points)
+    val lines = generateLines(intensity)
 
-    val point1 = IntensityPoint(100, 1f)
-    val point2 = IntensityPoint(300, 1f)
-    val point3 = IntensityPoint(800, 1f)
+    val pointTime1 = 100L
+    val pointTime2 = 300L
+    val pointTime3 = 800L
 
-    val expectedPoints1 = arrayListOf(points[0], IntensityPoint(100, 0.15f))
+    val expectedIntensity1 = arrayListOf(intensity[0], IntensityPoint(pointTime1, 0.15f))
+    val expectedIntensity2 = arrayListOf(intensity[0], intensity[1], IntensityPoint(pointTime2, 0.4f))
+    val expectedIntensity3 = arrayListOf(intensity[0], intensity[1], intensity[2], intensity[3], intensity[4])
 
-    val expectedPoints2 = arrayListOf(points[0], points[1], IntensityPoint(300, 0.4f))
-
-    val expectedPoints3 = arrayListOf(points[0], points[1], points[2], points[3], IntensityPoint(800, 0.7f))
-
-    assertEquals(expectedPoints1, getIntensityFromInterval(points[0].relativeTime, point1.relativeTime, lines))
-    assertEquals(expectedPoints2, getIntensityFromInterval(points[0].relativeTime, point2.relativeTime, lines))
-    assertEquals(expectedPoints3, getIntensityFromInterval(points[0].relativeTime, point3.relativeTime, lines))
+    assertEquals(expectedIntensity1, getIntensityFromInterval(0, pointTime1, lines))
+    assertEquals(expectedIntensity2, getIntensityFromInterval(0, pointTime2, lines))
+    assertEquals(expectedIntensity3, getIntensityFromInterval(0, pointTime3, lines))
   }
 
   @Test
   fun multipleLinesFromEndTest() {
-    val points =
+    val intensity =
       arrayListOf(
         IntensityPoint(0, 0f),
         IntensityPoint(200, 0.3f),
@@ -95,27 +87,27 @@ class GetLinePointsFromIntervalTest {
         IntensityPoint(1000, 0f),
       )
 
-    val lines = generateLines(points)
+    val lines = generateLines(intensity)
 
-    val point1 = IntensityPoint(100, 1f)
-    val point2 = IntensityPoint(300, 1f)
-    val point3 = IntensityPoint(800, 1f)
+    val pointTime1 = 100L
+    val pointTime2 = 300L
+    val pointTime3 = 800L
 
-    val expectedPoints1 =
-      arrayListOf(IntensityPoint(100, 0.15f), points[1], points[2], points[3], points[4], points[5])
+    val endRelativeTime = intensity.last().relativeTime
 
-    val expectedPoints2 = arrayListOf(IntensityPoint(300, 0.4f), points[2], points[3], points[4], points[5])
+    val expectedIntensity1 =
+      arrayListOf(IntensityPoint(pointTime1, 0.15f), intensity[1], intensity[2], intensity[3], intensity[4], intensity[5])
+    val expectedIntensity2 = arrayListOf(IntensityPoint(pointTime2, 0.4f), intensity[2], intensity[3], intensity[4], intensity[5])
+    val expectedIntensity3 = arrayListOf(intensity[4], intensity[5])
 
-    val expectedPoints3 = arrayListOf(points[4], points[5])
-
-    assertEquals(expectedPoints1, getIntensityFromInterval(point1.relativeTime, points[5].relativeTime, lines))
-    assertEquals(expectedPoints2, getIntensityFromInterval(point2.relativeTime, points[5].relativeTime, lines))
-    assertEquals(expectedPoints3, getIntensityFromInterval(point3.relativeTime, points[5].relativeTime, lines))
+    assertEquals(expectedIntensity1, getIntensityFromInterval(pointTime1, endRelativeTime, lines))
+    assertEquals(expectedIntensity2, getIntensityFromInterval(pointTime2, endRelativeTime, lines))
+    assertEquals(expectedIntensity3, getIntensityFromInterval(pointTime3, endRelativeTime, lines))
   }
 
   @Test
   fun verticalLineStartEndTest() {
-    val points =
+    val intensity =
       arrayListOf(
         IntensityPoint(0, 0f),
         IntensityPoint(100, 0.5f),
@@ -127,33 +119,33 @@ class GetLinePointsFromIntervalTest {
         IntensityPoint(400, 0f),
       )
 
-    val lines = generateLines(points)
+    val lines = generateLines(intensity)
 
-    val start = IntensityPoint(200L, 1f)
-    val middle = IntensityPoint(250L, 1f)
-    val end = IntensityPoint(300L, 1f)
+    val startTime = 200L
+    val middleTime = 250L
+    val endTime = 300L
 
-    val startLinePoint = points[3]
-    val middleLinePoint = IntensityPoint(250, 0f)
-    val endLinePoint = points[4]
+    val startLinePoint = intensity[3]
+    val middleLinePoint = IntensityPoint(middleTime, 0f)
+    val endLinePoint = intensity[4]
 
     assertEquals(
       arrayListOf(startLinePoint, middleLinePoint),
-      getIntensityFromInterval(start.relativeTime, middle.relativeTime, lines),
+      getIntensityFromInterval(startTime, middleTime, lines),
     )
     assertEquals(
       arrayListOf(middleLinePoint, endLinePoint),
-      getIntensityFromInterval(middle.relativeTime, end.relativeTime, lines),
+      getIntensityFromInterval(middleTime, endTime, lines),
     )
     assertEquals(
       arrayListOf(startLinePoint, endLinePoint),
-      getIntensityFromInterval(start.relativeTime, end.relativeTime, lines),
+      getIntensityFromInterval(startTime, endTime, lines),
     )
   }
 
   @Test
-  fun multipleVerticalAndHorizontalLineTest() {
-    val points =
+  fun multipleVerticalAndHorizontalLinesTest() {
+    val intensity =
       arrayListOf(
         IntensityPoint(0, 0f),
         IntensityPoint(100, 0f),
@@ -165,14 +157,14 @@ class GetLinePointsFromIntervalTest {
         IntensityPoint(400, 0f),
       )
 
-    val lines = generateLines(points)
+    val lines = generateLines(intensity)
 
-    val point1 = IntensityPoint(80, 1f)
-    val point2 = IntensityPoint(300, 0.2f)
+    val pointTime1 = 80L
+    val pointTime2 = 300L
 
-    val expectedPoints =
-      arrayListOf(IntensityPoint(80, 0f), points[1], points[2], points[3], points[4], points[5])
+    val expectedIntensity =
+      arrayListOf(IntensityPoint(pointTime1, 0f), intensity[1], intensity[2], intensity[3], intensity[4], intensity[5])
 
-    assertEquals(expectedPoints, getIntensityFromInterval(point1.relativeTime, point2.relativeTime, lines))
+    assertEquals(expectedIntensity, getIntensityFromInterval(pointTime1, pointTime2, lines))
   }
 }

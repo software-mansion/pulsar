@@ -10,8 +10,8 @@ import org.junit.Test
 
 class PlotPointsUnitTest {
     @Test
-    fun generatePlotPointsWithoutBarsTest() {
-        val points =
+    fun withoutBarsTest() {
+        val intensity =
             arrayListOf(
                 IntensityPoint(0, 0f),
                 IntensityPoint(1000, 1f),
@@ -27,9 +27,9 @@ class PlotPointsUnitTest {
                 SharpnessPoint(1000, 0.2f)
             )
 
-        val plot = Plot(points, sharpness)
+        val plot = Plot(intensity, sharpness)
 
-        val expectedResult =
+        val expectedPlotPoints =
             arrayListOf(
                 PlotPoint(0, 0f, 1f),
                 PlotPoint(100, 0.1f, 1f),
@@ -41,12 +41,12 @@ class PlotPointsUnitTest {
                 PlotPoint(2500, 0f, 0.2f),
             )
 
-        verifyPlotPoints(expectedResult, generatePlotPoints(plot))
+        assertEquals(expectedPlotPoints, generatePlotPoints(plot))
     }
 
     @Test
-    fun generatePlotPointsOnlyBarsAdjacentTest() {
-        val points =
+    fun onlyBarsAdjacentTest() {
+        val intensity =
             arrayListOf(
                 IntensityPoint(0, 0f),
                 IntensityPoint(1000, 0f),
@@ -64,9 +64,9 @@ class PlotPointsUnitTest {
             Bar(400, 500, 1f, 0.4f)  // upper
         )
 
-        val plot = generateComplexPlot(Plot(points, sharpness), bars)
+        val plot = generateComplexPlot(Plot(intensity, sharpness), bars)
 
-        val expectedResult =
+        val expectedPlotPoints =
             arrayListOf(
                 PlotPoint(0, 0f, 1f),
                 PlotPoint(100, 0f, 1f),
@@ -81,12 +81,12 @@ class PlotPointsUnitTest {
                 PlotPoint(500, 0f, 1f),
                 PlotPoint(1000, 0f, 1f),)
 
-        verifyPlotPoints(expectedResult, generatePlotPoints(plot))
+        assertEquals(expectedPlotPoints, generatePlotPoints(plot))
     }
 
     @Test
-    fun generatePlotPointsBarsWithGapTest() {
-        val points =
+    fun onlyBarsGapTest() {
+        val intensity =
             arrayListOf(
                 IntensityPoint(0, 0f),
                 IntensityPoint(1000, 0f),
@@ -104,9 +104,9 @@ class PlotPointsUnitTest {
             Bar(400, 450, 1f, 0.4f)
         )
 
-        val plot = generateComplexPlot(Plot(points, sharpness), bars)
+        val plot = generateComplexPlot(Plot(intensity, sharpness), bars)
 
-        val expectedResult =
+        val expectedPlotPoints =
             arrayListOf(
                 PlotPoint(0, 0f, 1f),
                 PlotPoint(100, 0f, 1f),
@@ -128,12 +128,12 @@ class PlotPointsUnitTest {
                 PlotPoint(1000, 0f, 1f)
             )
 
-        verifyPlotPoints(expectedResult, generatePlotPoints(plot))
+        assertEquals(expectedPlotPoints, generatePlotPoints(plot))
     }
 
     @Test
-    fun generatePlotPointsComplexTest() {
-        val points =
+    fun complexTest() {
+        val intensity =
             arrayListOf(
                 IntensityPoint(0, 0f),
                 IntensityPoint(1000, 0f),
@@ -155,13 +155,9 @@ class PlotPointsUnitTest {
             Bar(400, 450, 1f, 0.4f)
         )
 
-        val plot = generateComplexPlot(Plot(points, sharpness), bars)
+        val plot = generateComplexPlot(Plot(intensity, sharpness), bars)
 
-        plot.sharpness.forEach {
-            println("shrap: ${it.relativeTime} ${it.sharpness}")
-        }
-
-        val expectedResult =
+        val expectedPlotPoints =
             arrayListOf(
                 PlotPoint(0, 0f, 1f),
                 PlotPoint(100, 0f, 1f),
@@ -185,12 +181,12 @@ class PlotPointsUnitTest {
                 PlotPoint(1000, 0f, 0.7f)
             )
 
-        verifyPlotPoints(expectedResult, generatePlotPoints(plot))
+        assertEquals(expectedPlotPoints, generatePlotPoints(plot))
     }
 
     @Test
-    fun generatePlotPointsVerticalFrequencyTest() {
-        val points =
+    fun verticalSharpnessTest() {
+        val intensity =
             arrayListOf(
                 IntensityPoint(0, 0f),
                 IntensityPoint(0, 1f),
@@ -209,9 +205,9 @@ class PlotPointsUnitTest {
                 SharpnessPoint(200, 0.9f)
             )
 
-        val plot = Plot(points, sharpness)
+        val plot = Plot(intensity, sharpness)
 
-        val expectedResult =
+        val expectedPlotPoints =
             arrayListOf(
                 PlotPoint(0, 0f, 1f),
                 PlotPoint(0, 1f, 1f),
@@ -223,17 +219,6 @@ class PlotPointsUnitTest {
                 PlotPoint(300, 0f, 0.9f),
             )
 
-        verifyPlotPoints(expectedResult, generatePlotPoints(plot))
-    }
-
-    private fun verifyPlotPoints(expected: ArrayList<PlotPoint>, actual: ArrayList<PlotPoint>) {
-        for (i in 0..actual.size - 1) {
-            assertEquals(
-                true,
-                expected[i].relativeTime == actual[i].relativeTime &&
-                        expected[i].sharpness == actual[i].sharpness &&
-                        expected[i].intensity == actual[i].intensity,
-            )
-        }
+        assertEquals(expectedPlotPoints, generatePlotPoints(plot))
     }
 }

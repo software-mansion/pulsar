@@ -5,17 +5,7 @@ import com.swmansion.pulsarapp.types.IntensityPoint
 import org.junit.Assert.*
 import org.junit.Test
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-class ConvertBarsToPointsUnitTest {
-  fun generateIntensity(bars: ArrayList<Bar>): ArrayList<IntensityPoint> {
-    val complexPlot = generatePlot(bars)
-    return complexPlot.intensity
-  }
-
+class GenerateIntensityBasedOnBarsTest {
   @Test
   fun separatedBarsTest() {
     val bars =
@@ -24,15 +14,10 @@ class ConvertBarsToPointsUnitTest {
         Bar(300, 500, 0.6f, 0.6f),
         Bar(600, 800, 1f, 0.3f)
       )
-      arrayListOf(
-        Bar(100, 200, 0.3f, 1f),
-        Bar(300, 500, 0.6f, 0.6f),
-        Bar(600, 800, 1f, 0.3f)
-      )
 
-    val points = generateIntensity(bars)
+    val intensity = generateIntensity(bars)
 
-    val expectedPoints =
+    val expectedIntensity =
       arrayListOf(
         IntensityPoint(0, 0f),
         IntensityPoint(100, 0f),
@@ -49,19 +34,19 @@ class ConvertBarsToPointsUnitTest {
         IntensityPoint(800, 0f),
       )
 
-    assertEquals(expectedPoints, points)
+    assertEquals(expectedIntensity, intensity)
   }
 
   @Test
-  fun connectedBarsTest() {
+  fun adjacentBarsTest() {
     val bars = arrayListOf(
       Bar(100, 200, 0.3f, 0.8f),
       Bar(200, 300, 0.6f, 0.6f)
     )
 
-    val points = generateIntensity(bars)
+    val intensity = generateIntensity(bars)
 
-    val expectedPoints =
+    val expectedIntensity =
       arrayListOf(
         IntensityPoint(0, 0f),
         IntensityPoint(100, 0f),
@@ -72,24 +57,27 @@ class ConvertBarsToPointsUnitTest {
         IntensityPoint(300, 0f),
       )
 
-    assertEquals(expectedPoints, points)
+    assertEquals(expectedIntensity, intensity)
   }
 
   @Test
-  fun startWithoutPauseTest() {
-    val bars = arrayListOf(
-      Bar(0, 100, 0.3f, 0.8f)
-    )
+  fun startLineWithBarTest() {
+    val bars = arrayListOf(Bar(0, 100, 0.3f, 0.8f))
 
-    val points = generateIntensity(bars)
+    val intensity = generateIntensity(bars)
 
-    val expectedPoints = arrayListOf(
+    val expectedIntensity = arrayListOf(
       IntensityPoint(0, 0f),
       IntensityPoint(0, 0.3f),
       IntensityPoint(100, 0.3f),
       IntensityPoint(100, 0f)
     )
 
-    assertEquals(expectedPoints, points)
+    assertEquals(expectedIntensity, intensity)
+  }
+
+  private fun generateIntensity(bars: ArrayList<Bar>): ArrayList<IntensityPoint> {
+    val complexPlot = generatePlot(bars)
+    return complexPlot.intensity
   }
 }

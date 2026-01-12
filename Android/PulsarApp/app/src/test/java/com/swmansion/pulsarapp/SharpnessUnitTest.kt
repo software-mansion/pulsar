@@ -64,12 +64,13 @@ class SharpnessUnitTest {
   }
 
   @Test
-  fun complexSharpnessTest() {
+  fun generateComplexPlotSharpnessTest() {
     val sharpness =
       arrayListOf(SharpnessPoint(0, 0.5f), SharpnessPoint(100, 0.51f), SharpnessPoint(200, 0.52f))
 
     val intensity = arrayListOf(IntensityPoint(0, 0f), IntensityPoint(1000, 0f))
-    val initPlot = Plot(intensity, sharpness)
+
+    val plot = Plot(intensity, sharpness)
 
     // bars between sharpness points
     val barBetweenSharpness = Bar(50, 80, 1f, 0.9f)
@@ -81,7 +82,7 @@ class SharpnessUnitTest {
         sharpness[1],
         sharpness[2],
       ),
-      generateComplexPlot(initPlot, arrayListOf(barBetweenSharpness)).sharpness,
+      generateComplexPlot(plot, arrayListOf(barBetweenSharpness)).sharpness,
     )
 
     // bar on intensity line start
@@ -93,7 +94,7 @@ class SharpnessUnitTest {
         sharpness[1],
         sharpness[2],
       ),
-      generateComplexPlot(initPlot, arrayListOf(barLineStart)).sharpness,
+      generateComplexPlot(plot, arrayListOf(barLineStart)).sharpness,
     )
 
     // bar starts with sharpness point
@@ -105,7 +106,7 @@ class SharpnessUnitTest {
         SharpnessPoint(barStartsWithSharpness.x2, sharpness[1].sharpness),
         sharpness[2],
       ),
-      generateComplexPlot(initPlot, arrayListOf(barStartsWithSharpness)).sharpness,
+      generateComplexPlot(plot, arrayListOf(barStartsWithSharpness)).sharpness,
     )
 
     // bar ends with sharpness point
@@ -117,7 +118,7 @@ class SharpnessUnitTest {
         SharpnessPoint(barEndWithSharpness.x1, barEndWithSharpness.sharpness),
         SharpnessPoint(barEndWithSharpness.x2, sharpness[2].sharpness),
       ),
-      generateComplexPlot(initPlot, arrayListOf(barEndWithSharpness)).sharpness,
+      generateComplexPlot(plot, arrayListOf(barEndWithSharpness)).sharpness,
     )
 
     // bar ends with line start
@@ -130,7 +131,7 @@ class SharpnessUnitTest {
         SharpnessPoint(barLineEnd.x1, barLineEnd.sharpness),
         SharpnessPoint(barLineEnd.x2, sharpness[2].sharpness),
       ),
-      generateComplexPlot(initPlot, arrayListOf(barLineEnd)).sharpness,
+      generateComplexPlot(plot, arrayListOf(barLineEnd)).sharpness,
     )
 
     // bar overlaps multiple sharpness points
@@ -141,7 +142,7 @@ class SharpnessUnitTest {
         SharpnessPoint(barOverlap.x1, barOverlap.sharpness),
         SharpnessPoint(barOverlap.x2, sharpness[2].sharpness),
       ),
-      generateComplexPlot(initPlot, arrayListOf(barOverlap)).sharpness,
+      generateComplexPlot(plot, arrayListOf(barOverlap)).sharpness,
     )
   }
 
@@ -151,14 +152,12 @@ class SharpnessUnitTest {
   ) {
     assertEquals(actual == null, false)
 
-    actual?.let {
-      for (i in 0..actual.size - 1) {
+    actual?.forEachIndexed {index, actualPoint ->
         assertEquals(
           true,
-          expected[i].relativeTime == actual[i].relativeTime &&
-            expected[i].sharpness == actual[i].sharpness,
+          expected[index].relativeTime == actualPoint.relativeTime &&
+                  expected[index].sharpness == actualPoint.sharpness,
         )
       }
     }
   }
-}
