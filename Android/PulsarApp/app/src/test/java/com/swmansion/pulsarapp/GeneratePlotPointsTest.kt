@@ -8,7 +8,7 @@ import com.swmansion.pulsarapp.types.SharpnessPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class PlotPointsUnitTest {
+class GeneratePlotPointsTest {
   @Test
   fun withoutBarsTest() {
     val intensity =

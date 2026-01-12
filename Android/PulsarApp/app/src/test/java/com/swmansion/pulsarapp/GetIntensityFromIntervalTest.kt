@@ -4,7 +4,7 @@ import com.swmansion.pulsarapp.types.IntensityPoint
 import org.junit.Assert.*
 import org.junit.Test
 
-class GetLinePointsFromIntervalTest {
+class GetIntensityFromIntervalTest {
   @Test
   fun singleLineTest() {
     val intensity =

@@ -6,7 +6,7 @@ import com.swmansion.pulsarapp.types.Plot
 import org.junit.Assert.*
 import org.junit.Test
 
-class MergeBarsAndPointsUnitTest {
+class GenerateComplexPlotIntensityTest {
   @Test
   fun horizontalTest() {
     val bars =

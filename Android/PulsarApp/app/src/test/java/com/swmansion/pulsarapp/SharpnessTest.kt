@@ -7,7 +7,7 @@ import com.swmansion.pulsarapp.types.SharpnessPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class SharpnessUnitTest {
+class SharpnessTest {
 
   @Test
   fun getSharpnessFromIntervalTest() {
