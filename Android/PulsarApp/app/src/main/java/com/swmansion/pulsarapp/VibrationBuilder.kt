@@ -98,7 +98,9 @@ class VibrationBuilder(val vibrationService: Vibrator) {
       amplitudes += (it.intensity * MAX_INT_AMPLITUDE).roundToInt()
     }
 
-    return VibrationEffect.createWaveform(timings, amplitudes, -1)
+    return if(vibrationService.hasAmplitudeControl())
+      VibrationEffect.createWaveform(timings, amplitudes, -1)
+     else VibrationEffect.createWaveform(timings, -1)
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
