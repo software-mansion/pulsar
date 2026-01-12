@@ -15,7 +15,7 @@ val SUCCESS_PRESET =
       arrayListOf(
         Impulse(0, 0.809f, 0.616f),
         Impulse(150, 0.809f, 0.619f),
-        Impulse(450, 1f, 1f),
+        Impulse(453, 1f, 1f),
       ),
   )
 
@@ -26,7 +26,7 @@ val FAIL_PRESET =
       arrayListOf(
         Impulse(0, 0.809f, 0.616f),
         Impulse(150, 0.809f, 0.619f),
-        Impulse(450, 0.591f, 0.309f),
+        Impulse(453, 0.591f, 0.309f),
       ),
   )
 
@@ -104,8 +104,8 @@ val RANDOM_PRESET =
       ),
     impulses =
       arrayListOf(
-        Impulse(834, 0.834f, 1f),
-        Impulse(941, 0.897f, 1f),
+        Impulse(834, 0.834f, 0.3f),
+        Impulse(941, 0.897f, 0.3f),
       ),
   )
 
@@ -271,8 +271,9 @@ val MILK_PRESET =
         intensity =
           arrayListOf(
             IntensityPoint(0, 0f),
-            IntensityPoint(850, 0.813f),
-            IntensityPoint(850, 0f),
+            IntensityPoint(651, 0.813f),
+            IntensityPoint(651, 0f),
+            IntensityPoint(700, 0f)
           ),
         sharpness =
           arrayListOf(
@@ -281,11 +282,11 @@ val MILK_PRESET =
       ),
     impulses =
       arrayListOf(
-        Impulse(50, 0.897f, 0.209f),
-        Impulse(200, 0.897f, 0.322f),
-        Impulse(350, 0.903f, 0.484f),
-        Impulse(500, 0.903f, 0.716f),
-        Impulse(650, 0.906f, 0.803f),
-        Impulse(800, 0.906f, 1f),
+        Impulse(13, 0.897f, 0.209f),
+        Impulse(117, 0.897f, 0.322f),
+        Impulse(253, 0.903f, 0.484f),
+        Impulse(400, 0.903f, 0.716f),
+        Impulse(546, 0.906f, 0.803f),
+        Impulse(651, 0.906f, 1f),
       ),
   )
