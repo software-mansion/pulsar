@@ -19,7 +19,7 @@ fun printBarsToPlot(bars: ArrayList<Bar>) {
     Log.i(TAG, "${bar.x1} ${bar.intensity} 1")
     Log.i(TAG, "${bar.x2} ${bar.intensity} 1")
 
-    if(index == bars.size - 1){
+    if (index == bars.size - 1) {
       // end
       Log.i(TAG, "${bar.x2} 0 1")
     }

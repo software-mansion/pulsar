@@ -98,9 +98,9 @@ class VibrationBuilder(val vibrationService: Vibrator) {
       amplitudes += (it.intensity * MAX_INT_AMPLITUDE).roundToInt()
     }
 
-    return if(vibrationService.hasAmplitudeControl())
+    return if (vibrationService.hasAmplitudeControl())
       VibrationEffect.createWaveform(timings, amplitudes, -1)
-     else VibrationEffect.createWaveform(timings, -1)
+    else VibrationEffect.createWaveform(timings, -1)
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
@@ -121,7 +121,11 @@ class VibrationBuilder(val vibrationService: Vibrator) {
       controlPoints.forEach {
         builder
           .setInitialFrequencyHz(getSharpnessInHz(initialSharpness, frequencyProfile))
-          .addControlPoint(it.intensity, getSharpnessInHz(it.sharpness, frequencyProfile), it.duration)
+          .addControlPoint(
+            it.intensity,
+            getSharpnessInHz(it.sharpness, frequencyProfile),
+            it.duration,
+          )
       }
       builder.build()
     }

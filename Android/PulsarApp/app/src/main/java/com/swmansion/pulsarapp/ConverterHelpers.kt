@@ -387,7 +387,7 @@ fun generatePlotPoints(plot: Plot): ArrayList<PlotPoint> {
   return plotPoints
 }
 
-private fun removeVerticalMiddlePlotPoint(plotPoints: ArrayList<PlotPoint>){
+private fun removeVerticalMiddlePlotPoint(plotPoints: ArrayList<PlotPoint>) {
   val indexesToDelete = ArrayList<Int>()
   val nPoints = plotPoints.size
 
@@ -396,7 +396,10 @@ private fun removeVerticalMiddlePlotPoint(plotPoints: ArrayList<PlotPoint>){
     val currPoint = plotPoints[index]
     val nextPoint = plotPoints[index + 1]
 
-    if (prevPoint.relativeTime == currPoint.relativeTime && currPoint.relativeTime == nextPoint.relativeTime) {
+    if (
+      prevPoint.relativeTime == currPoint.relativeTime &&
+        currPoint.relativeTime == nextPoint.relativeTime
+    ) {
       indexesToDelete.add(index)
     }
   }
