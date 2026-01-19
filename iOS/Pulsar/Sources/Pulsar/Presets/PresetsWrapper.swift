@@ -186,12 +186,10 @@ private extension Bundle {
     let barPoints = convertBarPattern(barPattern)
     let playgroundData = PlaygroundData(linePoints: linePoints, barPoints: barPoints)
     
-    // Play haptics using PatternComposer
     haptics?.PatternComposer().playPattern(hapticsData: playgroundData)
     
-    // Play audio using AudioSimulator
     if playSound {
-      audioSimulator?.render(from: playgroundData)
+      audioSimulator?.parsePattern(from: playgroundData)
       audioSimulator?.play()
     }
   }
@@ -238,8 +236,8 @@ private extension Bundle {
 @objc public class EarthquakePreset : Player, Preset {
   public static let name: String = "Earthquake"
   private var linePattern = [
-    [[0.0, 0.0], [1.0, 1.0]],
-    [[0.0, 0.0], [1.0, 1.0]],
+    [[0.0, 0.0], [0.3, 0.8], [0.3, 0.0], [0.4, 0.0], [0.6, 0.8], [0.6, 0.0]],
+    [[0.0, 0.8], [0.6, 0.8]],
   ]
   private var barPattern = [[0.0, 1.0, 1.0]]
   

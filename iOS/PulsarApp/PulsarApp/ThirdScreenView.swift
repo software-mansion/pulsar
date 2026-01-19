@@ -12,13 +12,8 @@ struct ThirdScreenView: View {
                 .font(.largeTitle)
                 .padding()
             
-            Button(action: handlePress) {
-                Text("Press Me")
-                    .font(.title2)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+            Button("Click") {
+                pulsar.Presets().Earthquake()
             }
 
             Spacer()
@@ -41,21 +36,13 @@ struct ThirdScreenView: View {
                 ]
                 let data = PlaygroundData(linePoints: [amplitude, frequency], barPoints: barPoints)
 
-                let duration = simulator.render(from: data)
+                simulator.parsePattern(from: data)
                 simulator.play()
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.1) {
-                    simulator.stop()
-                }
             }
             
             Spacer()
         }
         .padding()
-    }
-    
-    func handlePress() {
-      pulsar.Presets().Success()
     }
 }
 
