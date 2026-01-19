@@ -55,7 +55,7 @@ class WebSocketManager: ObservableObject, WebSocketDelegate {
           self.message = jsonData
           self.statusInfo = "You are connected! 🎉"
           print("Received text: \(jsonData)")
-          self.composer.playPattern(hapticsData: self.composer.parseJSON(jsonData));
+          self.composer.PatternComposer().playPattern(hapticsData: self.composer.PatternComposer().parseJSON(jsonData));
         }
         
     case .error(let error):

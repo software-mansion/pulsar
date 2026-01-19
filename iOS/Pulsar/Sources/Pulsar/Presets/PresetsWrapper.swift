@@ -203,7 +203,7 @@ private extension Bundle {
       audioPlayer?.currentTime = 0
       audioPlayer?.play()
     }
-    haptics?.playPattern(hapticsData: PlaygroundData(line: linePattern, bar: barPattern))
+    haptics?.PatternComposer().playPattern(hapticsData: PlaygroundData(line: linePattern, bar: barPattern))
   }
   
   @objc public func enableSound(state: Bool) {
