@@ -29,7 +29,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class PresetsWrapper : NSObject {
   private var playSound: Bool = true
   private var useCache: Bool = true
@@ -164,7 +164,7 @@ private extension Bundle {
   static var name: String { get }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class Player : NSObject {
   private var audioPlayer: AVAudioPlayer?
   private var haptics: Pulsar?
@@ -211,7 +211,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class EarthquakePreset : Player, Preset {
   public static let name: String = "Earthquake"
   private var linePattern = [
@@ -233,7 +233,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SuccessPreset : Player, Preset {
   public static let name: String = "Success"
   private var linePattern: [[[Double]]] = [[], []]
@@ -256,7 +256,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class FailPreset : Player, Preset {
   public static let name: String = "Fail"
   private var linePattern: [[[Double]]] = [[], []]
@@ -279,7 +279,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class TapPreset : Player, Preset {
   public static let name: String = "Tap"
   private var linePattern: [[[Double]]] = [[], []]
@@ -300,7 +300,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemImpactLightPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemImpactLight"
   private var linePattern: [[[Double]]] = [[], []]
@@ -326,7 +326,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemImpactMediumPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemImpactMedium"
   private var linePattern: [[[Double]]] = [[], []]
@@ -352,7 +352,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemImpactHeavyPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemImpactHeavy"
   private var linePattern: [[[Double]]] = [[], []]
@@ -378,7 +378,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemImpactSoftPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemImpactSoft"
   private var linePattern: [[[Double]]] = [[], []]
@@ -404,7 +404,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemImpactRigidPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemImpactRigid"
   private var linePattern: [[[Double]]] = [[], []]
@@ -430,7 +430,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemNotificationSuccessPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemNotificationSuccess"
   private var linePattern: [[[Double]]] = [[], []]
@@ -456,7 +456,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemNotificationWarningPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemNotificationWarning"
   private var linePattern: [[[Double]]] = [[], []]
@@ -482,7 +482,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemNotificationErrorPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemNotificationError"
   private var linePattern: [[[Double]]] = [[], []]
@@ -508,7 +508,7 @@ private extension Bundle {
   }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+
 @objc public class SystemSelectionPreset : Player, @preconcurrency Preset {
   public static let name: String = "SystemSelection"
   private var linePattern: [[[Double]]] = [[], []]

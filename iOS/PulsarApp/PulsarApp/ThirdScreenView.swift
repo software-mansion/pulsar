@@ -1,7 +1,8 @@
 import SwiftUI
+import Pulsar
 
 struct ThirdScreenView: View {
-    @State private var pressCount = 0
+    private var pulsar = Pulsar()
     
     var body: some View {
         VStack {
@@ -18,19 +19,13 @@ struct ThirdScreenView: View {
                     .cornerRadius(10)
             }
             
-            Text("Pressed \(pressCount) times")
-                .font(.body)
-                .foregroundColor(.gray)
-                .padding(.top, 10)
-            
             Spacer()
         }
         .padding()
     }
     
     func handlePress() {
-        pressCount += 1
-        print("Button pressed! Count: \(pressCount)")
+      pulsar.Presets().Earthquake()
     }
 }
 
