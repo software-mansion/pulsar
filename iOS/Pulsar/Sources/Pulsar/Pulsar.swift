@@ -128,9 +128,9 @@ import UIKit
       }
     }
     do {
-      var continousPlayer: CHHapticPatternPlayer?;
+      var continuousPlayer: CHHapticPatternPlayer?;
       if (!intensityCurveLine.isEmpty && !sharpnessCurveLine.isEmpty) {
-        let continousPattern = try CHHapticPattern(
+        let continuousPattern = try CHHapticPattern(
           events: [
             CHHapticEvent(
               eventType: .hapticContinuous,
@@ -147,7 +147,7 @@ import UIKit
             sharpnessCurveLine.getCurve
           ]
         )
-        continousPlayer = try engine?.makePlayer(with: continousPattern)
+        continuousPlayer = try engine?.makePlayer(with: continuousPattern)
       }
       
       var discretePlayer: CHHapticPatternPlayer?;
@@ -159,8 +159,8 @@ import UIKit
         discretePlayer = try engine?.makePlayer(with: discretePattern)
       }
       
-      if (continousPlayer != nil) {
-        try continousPlayer?.start(atTime: 0)
+      if (continuousPlayer != nil) {
+        try continuousPlayer?.start(atTime: 0)
       }
       if (discretePlayer != nil) {
         try discretePlayer?.start(atTime: 0)
