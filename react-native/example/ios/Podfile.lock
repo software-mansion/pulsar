@@ -2823,7 +2823,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: eb10572db306a79a59ba09d76b5fad04f97e7835
-  Pulsar: f57ce72b1902bc0349774f665888196d0937772b
+  Pulsar: 23a7a80efa8212acdd1a6168abdb5620ea807ce5
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
   RCTRequired: 7be34aabb0b77c3cefe644528df0fa0afad4e4d0

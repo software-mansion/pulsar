@@ -14,15 +14,11 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/piaskowyk/react-native-pulsar.git", :tag => "#{s.version}" }
 
   s.source_files = [
-    "ios/**/*.{h,m,mm,cpp}",
+    "ios/**/*.{h,m,mm,cpp,swift}",
     "deps/Pulsar/Sources/Pulsar/*.swift",
-    "deps/Pulsar/Sources/Pulsar/Lines/*.swift",
-    "deps/Pulsar/Sources/Pulsar/Presets/*.swift",
+    "deps/Pulsar/Sources/Pulsar/*/*.swift",
   ]
   s.private_header_files = "ios/**/*.h"
-  s.resources = [
-    "deps/Pulsar/Sources/Pulsar/Resources/*.wav"
-  ]
 
   s.pod_target_xcconfig = {
     "DEFINES_MODULE" => "YES",
