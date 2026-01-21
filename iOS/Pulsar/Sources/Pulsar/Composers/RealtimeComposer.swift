@@ -18,7 +18,7 @@ public class RealtimeComposerImpl: NSObject {
 
   public func start(intensity: Float = 0.5, sharpness: Float = 0.5) {
     guard initialized, !isPlaying else { return }
-    
+    stop()
     do {
       continuousPlayer = engine?.getRealtimePlayer()
       isPlaying = true
@@ -76,7 +76,7 @@ public class RealtimeComposerImpl: NSObject {
     return isPlaying
   }
   
-  public func playTransient(intensity: Float = 1.0, sharpness: Float = 0.5) {
+  public func playDiscrete(intensity: Float = 1.0, sharpness: Float = 0.5) {
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
   
     let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity)
