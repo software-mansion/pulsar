@@ -76,6 +76,7 @@ struct MultiTouchPad: UIViewRepresentable {
 }
 
 struct NewScreenView: View {
+    @State private var pulsar = Pulsar()
     @State private var composer: RealtimeComposerImpl?
     @State private var pointerLocation: CGPoint = .zero
     @State private var isDragging = false
@@ -146,7 +147,7 @@ struct NewScreenView: View {
         }
         .padding()
         .onAppear {
-             composer = RealtimeComposerImpl()
+             composer = pulsar.RealtimeComposer()
         }
     }
     
@@ -164,7 +165,7 @@ struct NewScreenView: View {
         // Show tap dot without affecting drag pointer
         tapLocation = location
         showTapDot = true
-        composer?.playTransient(intensity: getIntensity(at: location), sharpness: getSharpness(at: location))
+        composer?.playDiscrete(amplitude: getIntensity(at: location), frequency: getSharpness(at: location))
         
         // Auto-hide tap dot after 100ms
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -178,7 +179,7 @@ struct NewScreenView: View {
         if !isDragging {
             isDragging = true
         }
-        composer?.updateParameters(intensity: getIntensity(), sharpness: getSharpness())
+        composer?.update(amplitude: getIntensity(), frequency: getSharpness())
     }
     
     func handleDragEnd() {

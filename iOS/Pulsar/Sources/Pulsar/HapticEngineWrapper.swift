@@ -1,5 +1,6 @@
 import Foundation
 import CoreHaptics
+import SwiftUI
 
 public class HapticEngineWrapper {
 

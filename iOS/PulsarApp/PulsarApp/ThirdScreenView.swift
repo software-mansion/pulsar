@@ -34,10 +34,10 @@ struct ThirdScreenView: View {
                     BarChartPoint(x: 0.6, y1: 0.9, y2: 0.3),
                     BarChartPoint(x: 0.9, y1: 0.7, y2: 0.8),
                 ]
-                let data = PlaygroundData(linePoints: [amplitude, frequency], barPoints: barPoints)
+                let data = PatternData(linePoints: [amplitude, frequency], barPoints: barPoints)
 
-                simulator.parsePattern(from: data)
-                simulator.play()
+                
+                simulator.play(buffer: simulator.parsePattern(from: data))
             }
             
             Spacer()
