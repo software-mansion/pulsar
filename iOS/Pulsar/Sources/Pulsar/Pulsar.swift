@@ -3,9 +3,9 @@ import UIKit
 
 @objc public class Pulsar: NSObject {
   private var engine = HapticEngineWrapper()
+  private var audioSimulator = AudioSimulator()
   private var presets: PresetsWrapper?
   private var realtimeComposer: RealtimeComposerImpl!
-  private var audioSimulator: AudioSimulator = AudioSimulator()
   
   @objc public override init() {
     realtimeComposer = RealtimeComposerImpl(engine: self.engine)
@@ -25,16 +25,24 @@ import UIKit
     }
   }
   
+  @objc public func enableSound(state: Bool) {
+    audioSimulator.enableSound(state)
+  }
+  
+  @objc public func enableCache(state: Bool) {
+    self.Presets().enableCache(state: state)
+  }
+  
+  @objc public func clearChace() {
+    self.Presets().resetCache()
+  }
+  
   @objc public func PatternComposer() -> PatternComposerImpl {
-    return PatternComposerImpl(engine: engine)
+    return PatternComposerImpl(engine: engine, audioSimulator: audioSimulator)
   }
   
   @objc public func RealtimeComposer() -> RealtimeComposerImpl {
     return realtimeComposer
-  }
-  
-  public func getAudioSimulator() -> AudioSimulator {
-    return audioSimulator
   }
   
 }

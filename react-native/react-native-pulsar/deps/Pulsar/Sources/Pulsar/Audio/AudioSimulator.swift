@@ -5,13 +5,12 @@ public class AudioSimulator: NSObject {
 	private let sampleRate: Double = 44100
 	private var audioContext: AVAudioEngine = AVAudioEngine()
 	private var offlineContext: AVAudioEngine?
-	private var renderedBuffer: AVAudioPCMBuffer?
 	private var currentSource: AVAudioPlayerNode?
 	private var playerNode: AVAudioPlayerNode = AVAudioPlayerNode()
 	private var filterNode: AVAudioUnitEQ = AVAudioUnitEQ(numberOfBands: 1)
 	private var isInitialized = false
 	private var isEngineConfigured = false
-	private var currentConfig: AudioPatternConfig?
+  private var playSound: Bool = true
     
 	public override init() {
 		super.init()
@@ -20,19 +19,22 @@ public class AudioSimulator: NSObject {
   #endif
 	}
 
-	public func parsePattern(from data: PlaygroundData) {
+	public func parsePattern(from data: PatternData) -> AVAudioPCMBuffer? {
     #if NDEBUG
-      return
+      return nil
     #endif
-		renderedBuffer = nil
 		
-		currentConfig = AudioPatternConfig(
+		let currentConfig = AudioPatternConfig(
       discreteData: generateDiscreteAudioConfig(from: data),
       continuousData: generateContinuousAudioConfig(from: data)
     )
 		
-		renderPattern(config: currentConfig!)
+		return renderPattern(config: currentConfig)
 	}
+ 
+  public func enableSound(_ value: Bool) {
+    self.playSound = value
+  }
     
 	private func configureAudioContext() {
 		guard !isEngineConfigured else { return }
@@ -89,7 +91,7 @@ public class AudioSimulator: NSObject {
 		}
 	}
     
-	private func generateDiscreteAudioConfig(from data: PlaygroundData) -> [DiscreteAudioConfig] {
+	private func generateDiscreteAudioConfig(from data: PatternData) -> [DiscreteAudioConfig] {
 		var discreteData: [DiscreteAudioConfig] = []
 		
 		let sources = 3
@@ -150,7 +152,7 @@ public class AudioSimulator: NSObject {
 		return discreteData
 	}
 	
-	private func generateContinuousAudioConfig(from data: PlaygroundData) -> [ContinuousAudioConfig] {
+	private func generateContinuousAudioConfig(from data: PatternData) -> [ContinuousAudioConfig] {
 		let amplitudePoints: [ChartPoint] = data.line.count > 0 ? data.line[0] : []
 		let frequencyPoints: [ChartPoint] = data.line.count > 1 ? data.line[1] : []
 		
@@ -186,7 +188,7 @@ public class AudioSimulator: NSObject {
 		return continuousConfigs
 	}
 	
-	private func renderPattern(config: AudioPatternConfig) {
+	private func renderPattern(config: AudioPatternConfig) -> AVAudioPCMBuffer? {
 		let discreteData = config.discreteData
 		let continuousData = config.continuousData
     
@@ -216,8 +218,7 @@ public class AudioSimulator: NSObject {
 		let frameCount = AVAudioFrameCount(Int(totalDuration * sampleRate) + 1)
 		let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
 		guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
-			renderedBuffer = nil
-			return
+			return nil
 		}
 		buffer.frameLength = frameCount
 		let out = buffer.floatChannelData![0]
@@ -316,18 +317,19 @@ public class AudioSimulator: NSObject {
 			out[i] = Float(sampleValue)
 		}
         
-		renderedBuffer = buffer
+		return buffer
 	}
   
-	public func play() {
+	public func play(buffer: AVAudioPCMBuffer?) {
     #if NDEBUG
       return
-    #endif 
-		guard let buffer = renderedBuffer else { return }
+    #endif
+    guard buffer != nil && playSound else { return }
 		configureAudioContext()
         
 		if playerNode.isPlaying { playerNode.stop() }
-		playerNode.scheduleBuffer(buffer, at: nil, options: []) { [weak self] in
+    
+		playerNode.scheduleBuffer(buffer!, at: nil, options: []) { [weak self] in
 			DispatchQueue.main.async {
 				self?.stop()
 			}

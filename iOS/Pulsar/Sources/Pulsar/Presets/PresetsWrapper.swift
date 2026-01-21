@@ -30,17 +30,6 @@ import AVFAudio
     self.haptics = haptics
   }
   
-  public func enableSound(state: Bool) {
-    self.playSound = state
-    for key in cache.keys {
-      cache[key]?.enableSound(state: state)
-    }
-  }
-  
-  public func isSoundEnabled() -> Bool {
-    return self.playSound
-  }
-  
   public func enableCache(state: Bool) {
     self.useCache = state
     if (!state) {

@@ -1,6 +1,7 @@
 import Foundation
 import CoreHaptics
 import UIKit
+import AVFAudio
 
 public class PatternComposerImpl: NSObject {
   private var engine: HapticEngineWrapper!
@@ -8,10 +9,13 @@ public class PatternComposerImpl: NSObject {
   private var continuousLine = ContinuousLine()
   private var continuousPlayer: CHHapticPatternPlayer?
   private var discretePlayer: CHHapticPatternPlayer?
+  private var audioBuffer: AVAudioPCMBuffer?
+  private var audioSimulator: AudioSimulator!
     
-  public convenience init(engine: HapticEngineWrapper) {
+  public convenience init(engine: HapticEngineWrapper, audioSimulator: AudioSimulator) {
     self.init()
     self.engine = engine
+    self.audioSimulator = audioSimulator
   }
   
   deinit {
@@ -21,17 +25,17 @@ public class PatternComposerImpl: NSObject {
     } catch {}
   }
   
-  public func parseJSON(_ jsonData: String) -> PlaygroundData {
+  public func parseJSON(_ jsonData: String) -> PatternData {
     let decoder = JSONDecoder()
     do {
-      let hapticData = try decoder.decode(PlaygroundData.self, from: jsonData.data(using: .utf8)!)
+      let hapticData = try decoder.decode(PatternData.self, from: jsonData.data(using: .utf8)!)
       return hapticData
     } catch {
-      return PlaygroundData(line: [[], []], bar: [])
+      return PatternData(line: [[], []], bar: [])
     }
   }
   
-  public func parsePattern(hapticsData: PlaygroundData) {
+  @objc public func parsePattern(hapticsData: PatternData) {
     discreteLine.reset()
     continuousLine.reset()
     
@@ -84,19 +88,32 @@ public class PatternComposerImpl: NSObject {
     } catch {
       print("Error playing pattern: \(error.localizedDescription)")
     }
+    
+    audioBuffer = audioSimulator.parsePattern(from: hapticsData)
   }
   
-  public func playPattern(hapticsData: PlaygroundData) {
+  public func playPattern(hapticsData: PatternData) {
     self.parsePattern(hapticsData: hapticsData)
     self.play()
   }
   
-  public func play() {
+  @objc public func play() {
     do {
+      audioSimulator.play(buffer: audioBuffer)
       try continuousPlayer?.start(atTime: 0)
       try discretePlayer?.start(atTime: 0)
     } catch {
       print("Error playing pattern: \(error.localizedDescription)")
+    }
+  }
+  
+  public func stop() {
+    do {
+      audioSimulator.stop()
+      try continuousPlayer?.stop(atTime: 0)
+      try discretePlayer?.stop(atTime: 0)
+    } catch {
+      print("Error stopping pattern: \(error.localizedDescription)")
     }
   }
   

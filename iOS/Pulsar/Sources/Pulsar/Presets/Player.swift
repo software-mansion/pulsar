@@ -4,40 +4,28 @@ import Foundation
 import AVFAudio
 
 @objc public class Player : NSObject {
-  private var audioSimulator: AudioSimulator = AudioSimulator()
-  private var haptics: Pulsar!
-  private var playSound: Bool = true
   private var patternComposer: PatternComposerImpl!
   
-  public init(_ haptics: Pulsar, linePattern: [[[Double]]] = [], barPattern: [[Double]] = []) {
+  public init(_ haptics: Pulsar, rawContinuesPattern: [[[Double]]] = [], rawDiscretePattern: [[Double]] = []) {
     super.init()
-    self.haptics = haptics
     patternComposer = haptics.PatternComposer()
     
-    let linePoints = convertLinePattern(linePattern)
-    let barPoints = convertBarPattern(barPattern)
-    let playgroundData = PlaygroundData(linePoints: linePoints, barPoints: barPoints)
+    let continuesPoints = convertContinuesPattern(rawContinuesPattern)
+    let discretePoints = convertDiscretePattern(rawDiscretePattern)
+    let patternData = PatternData(linePoints: continuesPoints, barPoints: discretePoints)
     
-    patternComposer.parsePattern(hapticsData: playgroundData)
-    audioSimulator.parsePattern(from: playgroundData)
+    patternComposer.parsePattern(hapticsData: patternData)
   }
   
   @objc public func play() {
-    if playSound {
-      audioSimulator.play()
-    }
     patternComposer.play()
   }
   
   @objc public func stop() {
-    audioSimulator.stop()
+    patternComposer.stop()
   }
   
-  @objc public func enableSound(state: Bool) {
-    self.playSound = state
-  }
-  
-  private func convertLinePattern(_ linePattern: [[[Double]]]) -> [[ChartPoint]] {
+  private func convertContinuesPattern(_ linePattern: [[[Double]]]) -> [[ChartPoint]] {
     var lines: [[ChartPoint]] = []
     for line in linePattern {
       var points: [ChartPoint] = []
@@ -51,7 +39,7 @@ import AVFAudio
     return lines
   }
   
-  private func convertBarPattern(_ barPattern: [[Double]]) -> [BarChartPoint] {
+  private func convertDiscretePattern(_ barPattern: [[Double]]) -> [BarChartPoint] {
     var points: [BarChartPoint] = []
     for bar in barPattern {
       if bar.count >= 3 {

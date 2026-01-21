@@ -16,13 +16,13 @@ public class RealtimeComposerImpl: NSObject {
     initialized = false
   }
 
-  public func start(intensity: Float = 0.5, sharpness: Float = 0.5) {
+  public func start(amplitude: Float = 0.5, frequency: Float = 0.5) {
     guard initialized, !isPlaying else { return }
     stop()
     do {
       continuousPlayer = engine?.getRealtimePlayer()
       isPlaying = true
-      update(intensity: intensity, sharpness: sharpness)
+      update(amplitude: amplitude, frequency: frequency)
       try continuousPlayer?.start(atTime: 0)
       isPlaying = true
     } catch {
@@ -30,22 +30,22 @@ public class RealtimeComposerImpl: NSObject {
     }
   }
   
-  public func update(intensity: Float, sharpness: Float) {
+  @objc public func update(amplitude: Float, frequency: Float) {
     if (!isPlaying) {
-      start(intensity: intensity, sharpness: sharpness)
+      start(amplitude: amplitude, frequency: frequency)
     }
     guard let player = continuousPlayer, isPlaying else { return }
     
     var parameters: [CHHapticDynamicParameter] = []
     
-    let clampedIntensity = min(max(intensity, 0), 1)
+    let clampedIntensity = min(max(amplitude, 0), 1)
     parameters.append(CHHapticDynamicParameter(
       parameterID: .hapticIntensityControl,
       value: clampedIntensity,
       relativeTime: 0
     ))
     
-    let clampedSharpness = min(max(sharpness, 0), 1)
+    let clampedSharpness = min(max(frequency, 0), 1)
     parameters.append(CHHapticDynamicParameter(
       parameterID: .hapticSharpnessControl,
       value: clampedSharpness,
@@ -59,7 +59,7 @@ public class RealtimeComposerImpl: NSObject {
     }
   }
   
-  public func stop() {
+  @objc public func stop() {
     guard isPlaying else { return }
     
     do {
@@ -72,15 +72,15 @@ public class RealtimeComposerImpl: NSObject {
     isPlaying = false
   }
   
-  public var isActive: Bool {
+  @objc public var isActive: Bool {
     return isPlaying
   }
   
-  public func playDiscrete(intensity: Float = 1.0, sharpness: Float = 0.5) {
+  @objc public func playDiscrete(amplitude: Float = 1.0, frequency: Float = 0.5) {
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
   
-    let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity)
-    let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
+    let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: amplitude)
+    let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: frequency)
     
     let event = CHHapticEvent(eventType: .hapticTransient, parameters: [intensityParam, sharpnessParam], relativeTime: 0)
     

@@ -3,7 +3,7 @@ import Foundation
 @objc public class ChartPoint: NSObject, Codable {
   let x: Double
   let y: Float
-  public init(x: Double, y: Float) {
+  @objc public init(x: Double, y: Float) {
     self.x = x
     self.y = y
   }
@@ -13,17 +13,17 @@ import Foundation
   let x: Double
   let y1: Float
   let y2: Float
-  public init(x: Double, y1: Float, y2: Float) {
+  @objc public init(x: Double, y1: Float, y2: Float) {
     self.x = x
     self.y1 = y1
     self.y2 = y2
   }
 }
 
-@objc public class PlaygroundData: NSObject, Codable {
+@objc public class PatternData: NSObject, Codable {
   let line: [[ChartPoint]]
   let bar: [BarChartPoint]
-  public init(linePoints: [[ChartPoint]], barPoints: [BarChartPoint]) {
+  @objc public init(linePoints: [[ChartPoint]], barPoints: [BarChartPoint]) {
     self.line = linePoints
     self.bar = barPoints
   }
