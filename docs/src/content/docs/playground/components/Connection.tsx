@@ -36,7 +36,7 @@ export default function Connection({hideSubtitle = false, children}: {hideSubtit
       const statusWs = new WebSocket(`${SOCKET_SERVER_URL}?status=true&channel=${channelNumber}`);
       statusWs.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        
+        console.log(data)
         switch(data.type) {
           case 'initial_status': {
             console.log('Connected to status server');
