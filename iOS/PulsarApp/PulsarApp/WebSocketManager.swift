@@ -15,7 +15,8 @@ class WebSocketManager: ObservableObject, WebSocketDelegate {
   var playAnimation: Bool = false
   
   func connect() {
-    var request = URLRequest(url: URL(string: "wss://haptics-server.onrender.com?channel=" + channel)!)
+    // var request = URLRequest(url: URL(string: "wss://haptics-server.onrender.com?channel=" + channel)!)
+    var request = URLRequest(url: URL(string: "ws://192.168.92.124:8080?channel=" + channel)!)
     request.timeoutInterval = 5
     
     UserDefaults.standard.set(channel, forKey: "channel")
@@ -31,7 +32,7 @@ class WebSocketManager: ObservableObject, WebSocketDelegate {
       self.statusInfo = "Unable to server connect.\nPlease try again later."
     }
     
-    connectToPlayground()
+//    connectToPlayground()
     composer = pulsar.PatternComposer()
   }
   

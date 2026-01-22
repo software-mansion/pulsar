@@ -2,6 +2,7 @@
 import { useRef, useState } from 'react';
 import Modal from './Modal';
 import { TagsInfo } from './Tags';
+import { API_SERVER_URL } from './config';
 
 function ModalContent({ tagInfo }: { tagInfo: { name: string, description: string, usage: string } }) {
   return <div>
@@ -45,7 +46,7 @@ export default function Example(
   function handleDeviceClick() {
     const channel = localStorage.getItem('hapticsChannel');
     const token = localStorage.getItem('hapticsBroadcastToken');
-    fetch(`https://haptics-server.onrender.com/broadcast?channel=${channel}&token=${token}`, {
+    fetch(`${API_SERVER_URL}/broadcast?channel=${channel}&token=${token}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: props.data,

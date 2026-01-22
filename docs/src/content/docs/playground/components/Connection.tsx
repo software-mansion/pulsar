@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "./Modal";
+import { API_SERVER_URL, SOCKET_SERVER_URL } from "./config";
 
 declare global {
   interface Window {
@@ -19,7 +20,7 @@ export default function Connection({hideSubtitle = false, children}: {hideSubtit
     const preferredChannel = localStorage.getItem('hapticsChannel');
     const preferredChannelQuery = preferredChannel ? `&preferred=${preferredChannel}` : '';
 
-    fetch(`http://haptics-server.onrender.com/generate-channel?${preferredChannelQuery}${clientIdQuery}`)
+    fetch(`${API_SERVER_URL}/generate-channel?${preferredChannelQuery}${clientIdQuery}`)
     .then(response => response.json())
     .then(data => {
       if (!data.success) {
@@ -32,7 +33,7 @@ export default function Connection({hideSubtitle = false, children}: {hideSubtit
       localStorage.setItem('hapticsChannel', channelNumber);
       localStorage.setItem('hapticsBroadcastToken', data.token);
 
-      const statusWs = new WebSocket(`wss://haptics-server.onrender.com?status=true&channel=${channelNumber}`);
+      const statusWs = new WebSocket(`${SOCKET_SERVER_URL}?status=true&channel=${channelNumber}`);
       statusWs.onmessage = (event) => {
         const data = JSON.parse(event.data);
         
