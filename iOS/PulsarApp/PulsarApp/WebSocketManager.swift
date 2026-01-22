@@ -8,7 +8,8 @@ class WebSocketManager: ObservableObject, WebSocketDelegate {
   var socketPlayground: WebSocket?
   @Published var message: String = ""
   @Published var statusInfo: String = "You are not connected 😕"
-  let composer = Pulsar()
+  let pulsar: Pulsar = Pulsar()
+  var composer: PatternComposerImpl? = nil
   var channel: String = "1234"
   var isConnected: Bool = false
   var playAnimation: Bool = false
@@ -31,10 +32,11 @@ class WebSocketManager: ObservableObject, WebSocketDelegate {
     }
     
     connectToPlayground()
+    composer = pulsar.PatternComposer()
   }
   
   func connectToPlayground() {
-    var request = URLRequest(url: URL(string: "ws://192.168.92.62:8080")!)
+    var request = URLRequest(url: URL(string: "ws://192.168.92.124:8080")!)
     request.timeoutInterval = 5
     socketPlayground = WebSocket(request: request)
     socketPlayground?.delegate = self
@@ -55,7 +57,10 @@ class WebSocketManager: ObservableObject, WebSocketDelegate {
           self.message = jsonData
           self.statusInfo = "You are connected! 🎉"
           print("Received text: \(jsonData)")
-          self.composer.PatternComposer().playPattern(hapticsData: self.composer.PatternComposer().parseJSON(jsonData));
+          let pattern = self.composer?.parseJSON(jsonData)
+          if (pattern != nil) {
+            self.composer?.playPattern(hapticsData: pattern!);
+          }
         }
         
     case .error(let error):

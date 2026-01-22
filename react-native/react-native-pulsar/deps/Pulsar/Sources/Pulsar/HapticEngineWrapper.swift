@@ -52,7 +52,7 @@ public class HapticEngineWrapper {
     do {
       return try engine?.makePlayer(with: pattern ?? CHHapticPattern(events: [], parameters: []))
     } catch {
-        print("Error playing pattern: \(error.localizedDescription)")
+        print("Error making pattern: \(error.localizedDescription)")
     }
     return nil
   }

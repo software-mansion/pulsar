@@ -47,39 +47,38 @@ RCT_EXPORT_MODULE()
 
 - (void)Pulsar_clearCache:(BOOL)state {
   if (state) {
-    [pulsar_ clearChace];
+    [pulsar_ clearCache];
   }
 }
 
 // PatternComposer -----------------------------------------------------------------
 
 static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) {
-  NSMutableArray<ChartPoint *> *amplitudePoints = [NSMutableArray array];
-  NSMutableArray<ChartPoint *> *frequencyPoints = [NSMutableArray array];
+  NSMutableArray<PatternPoint *> *amplitudePoints = [NSMutableArray array];
+  NSMutableArray<PatternPoint *> *frequencyPoints = [NSMutableArray array];
 
   auto continuous = data.continuesPattern();
   for (const auto &point : continuous.amplitude()) {
-    ChartPoint *cp = [[ChartPoint alloc] initWithX:point.time() y:(float)point.value()];
-    [amplitudePoints addObject:cp];
+    PatternPoint *pp = [[PatternPoint alloc] initWithTime:point.time() value:(float)point.value()];
+    [amplitudePoints addObject:pp];
   }
   for (const auto &point : continuous.frequency()) {
-    ChartPoint *cp = [[ChartPoint alloc] initWithX:point.time() y:(float)point.value()];
-    [frequencyPoints addObject:cp];
+    PatternPoint *pp = [[PatternPoint alloc] initWithTime:point.time() value:(float)point.value()];
+    [frequencyPoints addObject:pp];
   }
 
-  NSMutableArray<NSMutableArray<ChartPoint *> *> *linePoints = [NSMutableArray arrayWithCapacity:2];
-  [linePoints addObject:amplitudePoints];
-  [linePoints addObject:frequencyPoints];
+  ContinuesPattern *continuesPattern = [[ContinuesPattern alloc] initWithAmplitude:amplitudePoints
+                                                                         frequency:frequencyPoints];
 
-  NSMutableArray<BarChartPoint *> *barPoints = [NSMutableArray array];
+  NSMutableArray<DiscretePoint *> *discretePoints = [NSMutableArray array];
   for (const auto &point : data.discretePattern()) {
-    BarChartPoint *bp = [[BarChartPoint alloc] initWithX:point.time()
-                                                      y1:(float)point.amplitude()
-                                                      y2:(float)point.frequency()];
-    [barPoints addObject:bp];
+    DiscretePoint *dp = [[DiscretePoint alloc] initWithTime:point.time()
+                                                  amplitude:(float)point.amplitude()
+                                                  frequency:(float)point.frequency()];
+    [discretePoints addObject:dp];
   }
 
-  return [[PatternData alloc] initWithLinePoints:linePoints barPoints:barPoints];
+  return [[PatternData alloc] initWithContinuesPattern:continuesPattern discretePattern:discretePoints];
 }
 
 - (nonnull NSNumber *)PatternComposer_parsePattern:(JS::NativeRNPulsar::Pattern &)data {

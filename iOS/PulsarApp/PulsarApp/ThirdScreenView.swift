@@ -4,8 +4,8 @@ import Pulsar
 struct ThirdScreenView: View {
     private var pulsar = Pulsar()
     private var simulator = AudioSimulator()
+    @State var tmp: PatternComposerImpl?
 
-    
     var body: some View {
         VStack {
             Text("Third Screen")
@@ -13,30 +13,32 @@ struct ThirdScreenView: View {
                 .padding()
             
             Button("Click") {
-                pulsar.Presets().Earthquake()
+                pulsar.Presets().Success()
             }
 
             Spacer()
 
             Button("Play Example Pattern") {
-                let amplitude: [ChartPoint] = [
-                    ChartPoint(x: 0.0,   y: 0.538),
-                    ChartPoint(x: 0.997, y: 1.0),
-                    ChartPoint(x: 1.015, y: 0.0),
+                let amplitude: [PatternPoint] = [
+                    PatternPoint(time: 0.0,   value: 0.538),
+                    PatternPoint(time: 0.997, value: 1.0),
+                    PatternPoint(time: 1.015, value: 0.0),
                 ]
-                let frequency: [ChartPoint] = [
-                    ChartPoint(x: 0.0,   y: 0.675),
-                    ChartPoint(x: 0.996, y: 0.478),
+                let frequency: [PatternPoint] = [
+                    PatternPoint(time: 0.0,   value: 0.675),
+                    PatternPoint(time: 0.996, value: 0.478),
                 ]
-                let barPoints: [BarChartPoint] = [
-                    BarChartPoint(x: 0.1, y1: 0.8, y2: 0.5),
-                    BarChartPoint(x: 0.3, y1: 0.6, y2: 0.7),
-                    BarChartPoint(x: 0.6, y1: 0.9, y2: 0.3),
-                    BarChartPoint(x: 0.9, y1: 0.7, y2: 0.8),
+                let discretePattern: [DiscretePoint] = [
+                    DiscretePoint(time: 0.1, amplitude: 0.8, frequency: 0.5),
+                    DiscretePoint(time: 0.3, amplitude: 0.6, frequency: 0.7),
+                    DiscretePoint(time: 0.6, amplitude: 0.9, frequency: 0.3),
+                    DiscretePoint(time: 0.9, amplitude: 0.7, frequency: 0.8),
                 ]
-                let data = PatternData(linePoints: [amplitude, frequency], barPoints: barPoints)
+                let data = PatternData(continuesPattern: ContinuesPattern(amplitude: amplitude, frequency: frequency), discretePattern: discretePattern)
 
-                
+                tmp = pulsar.PatternComposer()
+                tmp?.parsePattern(hapticsData: data)
+                tmp?.play()
                 simulator.play(buffer: simulator.parsePattern(from: data))
             }
             

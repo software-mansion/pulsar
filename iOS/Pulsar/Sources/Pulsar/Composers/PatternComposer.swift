@@ -25,13 +25,13 @@ public class PatternComposerImpl: NSObject {
     } catch {}
   }
   
-  public func parseJSON(_ jsonData: String) -> PatternData {
+  public func parseJSON(_ jsonData: String) -> PatternData? {
     let decoder = JSONDecoder()
     do {
       let hapticData = try decoder.decode(PatternData.self, from: jsonData.data(using: .utf8)!)
       return hapticData
     } catch {
-      return PatternData(line: [[], []], bar: [])
+      return nil
     }
   }
   
@@ -42,22 +42,20 @@ public class PatternComposerImpl: NSObject {
     let intensityCurveLine = continuousLine.intensityCurveLine
     let sharpnessCurveLine = continuousLine.sharpnessCurveLine
     
-    for bar in hapticsData.bar {
-      discreteLine.addEvent(timestamp: bar.x, intensity: bar.y1, sharpness: bar.y2)
+    for discretePoint in hapticsData.discretePattern {
+      discreteLine.addEvent(timestamp: discretePoint.time, intensity: discretePoint.amplitude, sharpness: discretePoint.frequency)
     }
     
-    for intensityPoint in hapticsData.line[0] {
-      intensityCurveLine.addPoint(time: intensityPoint.x, value: intensityPoint.y)
+    for intensityPoint in hapticsData.continuesPattern.amplitude {
+      intensityCurveLine.addPoint(time: intensityPoint.time, value: intensityPoint.value)
     }
-    for sharpnessPoint in hapticsData.line[1] {
-      sharpnessCurveLine.addPoint(time: sharpnessPoint.x, value: sharpnessPoint.y)
+    for sharpnessPoint in hapticsData.continuesPattern.frequency {
+      sharpnessCurveLine.addPoint(time: sharpnessPoint.time, value: sharpnessPoint.value)
     }
     
     do {
-      var continuousPattern: CHHapticPattern?;
-      var discretePattern: CHHapticPattern?;
       if (!intensityCurveLine.isEmpty && !sharpnessCurveLine.isEmpty) {
-        continuousPattern = try CHHapticPattern(
+        let continuousPattern = try CHHapticPattern(
           events: [
             CHHapticEvent(
               eventType: .hapticContinuous,
@@ -74,17 +72,16 @@ public class PatternComposerImpl: NSObject {
             sharpnessCurveLine.getCurve
           ]
         )
+        continuousPlayer = engine.getPlayer(pattern: continuousPattern)
       }
       
       if (!discreteLine.getEvents.isEmpty) {
-        discretePattern = try CHHapticPattern(
+        let discretePattern = try CHHapticPattern(
           events: discreteLine.getEvents,
           parameters: []
         )
+        discretePlayer = engine.getPlayer(pattern: discretePattern)
       }
-      
-      continuousPlayer = engine.getPlayer(pattern: continuousPattern)
-      discretePlayer = engine.getPlayer(pattern: discretePattern)
     } catch {
       print("Error playing pattern: \(error.localizedDescription)")
     }

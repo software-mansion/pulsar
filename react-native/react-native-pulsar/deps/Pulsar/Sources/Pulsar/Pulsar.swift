@@ -33,7 +33,7 @@ import UIKit
     self.Presets().enableCache(state: state)
   }
   
-  @objc public func clearChace() {
+  @objc public func clearCache() {
     self.Presets().resetCache()
   }
   

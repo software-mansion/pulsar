@@ -51,12 +51,16 @@ public class AudioSimulator: NSObject {
 		audioContext.attach(playerNode)
         
 		let band = filterNode.bands.first!
-		band.filterType = .lowPass
-		band.frequency = 700
-		band.bandwidth = 1.0
-		band.gain = 1
-		band.bypass = false
-		audioContext.attach(filterNode)
+    do {
+			band.filterType = .lowPass
+      band.frequency = 700
+      band.bandwidth = 1.0
+      band.gain = 1
+      band.bypass = false
+      audioContext.attach(filterNode)
+		} catch {
+			print("Failed to configure filterNode: \(error)")
+		}
         
 		let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
 		audioContext.connect(playerNode, to: filterNode, format: format)
@@ -106,10 +110,10 @@ public class AudioSimulator: NSObject {
 			return Float(0.1 / Double(sources) + 0.9 / Double(sources) * Double(x))
 		}
 		
-		for bar in data.bar {
-			let baseFrequency = normalizeFrequency(bar.y2)
+		for discretePoint in data.discretePattern {
+			let baseFrequency = normalizeFrequency(discretePoint.frequency)
 			let targetFrequency = baseFrequency * 0.2
-			let volume = alignVolume(bar.y1, sources: sources)
+			let volume = alignVolume(discretePoint.amplitude, sources: sources)
 			
 			// Base oscillator
 			discreteData.append(DiscreteAudioConfig(
@@ -118,7 +122,7 @@ public class AudioSimulator: NSObject {
 					envelope: (attack: 0.002, decay: 0, sustainLevel: 1, sustainDuration: 0, release: 0.014),
 					waveform: .sine
 				),
-				timestamp: Double(bar.x) * 1000,
+				timestamp: Double(discretePoint.time) * 1000,
 				volume: volume
 			))
 			
@@ -131,7 +135,7 @@ public class AudioSimulator: NSObject {
 					envelope: (attack: 0, decay: 0, sustainLevel: 1, sustainDuration: 0, release: 0.015),
 					waveform: .sine
 				),
-				timestamp: Double(bar.x) * 1000,
+				timestamp: Double(discretePoint.time) * 1000,
 				volume: volume
 			))
 			
@@ -144,7 +148,7 @@ public class AudioSimulator: NSObject {
 					envelope: (attack: 0.005, decay: 0, sustainLevel: 1, sustainDuration: 0, release: 0.018),
 					waveform: .sine
 				),
-				timestamp: Double(bar.x) * 1000,
+				timestamp: Double(discretePoint.time) * 1000,
 				volume: volume
 			))
 		}
@@ -153,19 +157,19 @@ public class AudioSimulator: NSObject {
 	}
 	
 	private func generateContinuousAudioConfig(from data: PatternData) -> [ContinuousAudioConfig] {
-		let amplitudePoints: [ChartPoint] = data.line.count > 0 ? data.line[0] : []
-		let frequencyPoints: [ChartPoint] = data.line.count > 1 ? data.line[1] : []
+		let amplitudePoints: [PatternPoint] = data.continuesPattern.amplitude.count > 0 ? data.continuesPattern.amplitude : []
+		let frequencyPoints: [PatternPoint] = data.continuesPattern.frequency.count > 1 ? data.continuesPattern.frequency : []
 		
 		func normalizeFrequency(_ x: Float) -> Double {
 			return 80.0 + (230.0 - 80.0) * Double(x)
 		}
 		
-		func applyModifiers(amplitude: [ChartPoint], frequency: [ChartPoint], ampMod: Double, freqMod: Double) -> (amplitude: [ChartPoint], frequency: [ChartPoint]) {
+		func applyModifiers(amplitude: [PatternPoint], frequency: [PatternPoint], ampMod: Double, freqMod: Double) -> (amplitude: [PatternPoint], frequency: [PatternPoint]) {
 			let modifiedAmplitude = amplitude.map { point in
-				ChartPoint(x: point.x, y: Float(Double(point.y) * ampMod))
+				PatternPoint(time: point.time, value: Float(Double(point.value) * ampMod))
 			}
 			let modifiedFrequency = frequency.map { point in
-				ChartPoint(x: point.x, y: Float(normalizeFrequency(point.y) * freqMod))
+				PatternPoint(time: point.time, value: Float(normalizeFrequency(point.value) * freqMod))
 			}
 			return (modifiedAmplitude, modifiedFrequency)
 		}
@@ -196,7 +200,7 @@ public class AudioSimulator: NSObject {
       var continuousDuration: Double = 0
       for wave in continuousData {
         if !wave.data.amplitude.isEmpty {
-          continuousDuration = max(continuousDuration, wave.data.amplitude.last!.x)
+          continuousDuration = max(continuousDuration, wave.data.amplitude.last!.time)
         }
       }
       continuousDuration += 0.01
@@ -230,21 +234,21 @@ public class AudioSimulator: NSObject {
 		var phasesDiscrete: [Double] = Array(repeating: 0, count: discreteData.count)
 		let twoPi = Double.pi * 2
         
-		func valueForTime(_ points: [ChartPoint], _ t: Double) -> Float {
+		func valueForTime(_ points: [PatternPoint], _ t: Double) -> Float {
 			if points.isEmpty { return 0 }
-			if t <= points[0].x { return points[0].y }
-			if t >= points.last!.x { return points.last!.y }
+			if t <= points[0].time { return points[0].value }
+			if t >= points.last!.time { return points.last!.value }
 			for i in 1..<points.count {
 				let p1 = points[i - 1]
 				let p2 = points[i]
-				if t <= p2.x {
-					let t0 = p1.x, t1 = p2.x
-					let v0 = p1.y, v1 = p2.y
+				if t <= p2.time {
+					let t0 = p1.time, t1 = p2.time
+					let v0 = p1.value, v1 = p2.value
 					let ratio = Float((t - t0) / (t1 - t0))
 					return v0 + (v1 - v0) * ratio
 				}
 			}
-			return points.last!.y
+			return points.last!.value
 		}
         
 		func normalizeFrequency(_ y: Float) -> Double {

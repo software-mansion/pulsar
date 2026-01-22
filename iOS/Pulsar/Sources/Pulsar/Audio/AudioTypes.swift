@@ -1,35 +1,47 @@
 import Foundation
 
-@objc public class ChartPoint: NSObject, Codable {
-  let x: Double
-  let y: Float
-  @objc public init(x: Double, y: Float) {
-    self.x = x
-    self.y = y
+@objc public class PatternPoint: NSObject, Codable {
+  let time: Double
+  let value: Float
+  @objc public init(time: Double, value: Float) {
+    self.time = time
+    self.value = value
   }
 }
  
-@objc public class BarChartPoint: NSObject, Codable {
-  let x: Double
-  let y1: Float
-  let y2: Float
-  @objc public init(x: Double, y1: Float, y2: Float) {
-    self.x = x
-    self.y1 = y1
-    self.y2 = y2
+@objc public class DiscretePoint: NSObject, Codable {
+  let time: Double
+  let amplitude: Float
+  let frequency: Float
+  @objc public init(time: Double, amplitude: Float, frequency: Float) {
+    self.time = time
+    self.amplitude = amplitude
+    self.frequency = frequency
+  }
+}
+
+@objc public class ContinuesPattern: NSObject, Codable {
+  let amplitude: [PatternPoint]
+  let frequency: [PatternPoint]
+  @objc public init(amplitude: [PatternPoint], frequency: [PatternPoint]) {
+    self.amplitude = amplitude
+    self.frequency = frequency
   }
 }
 
 @objc public class PatternData: NSObject, Codable {
-  let line: [[ChartPoint]]
-  let bar: [BarChartPoint]
-  @objc public init(linePoints: [[ChartPoint]], barPoints: [BarChartPoint]) {
-    self.line = linePoints
-    self.bar = barPoints
+  let continuesPattern: ContinuesPattern
+  let discretePattern: [DiscretePoint]
+  @objc public init(continuesPattern: ContinuesPattern, discretePattern: [DiscretePoint]) {
+    self.continuesPattern = continuesPattern
+    self.discretePattern = discretePattern
   }
   public init(line: [[[Double]]], bar: [[Double]]) {
-    self.line = line.map { $0.map { ChartPoint(x: Double($0[0]), y: Float($0[1])) } }
-    self.bar = bar.map { BarChartPoint(x: Double($0[0]), y1: Float($0[1]), y2: Float($0[2])) }
+    self.continuesPattern = ContinuesPattern(
+      amplitude: line[0].map { PatternPoint(time: Double($0[0]), value: Float($0[1])) },
+      frequency: line[1].map { PatternPoint(time: Double($0[0]), value: Float($0[1])) }
+    )
+    self.discretePattern = bar.map { DiscretePoint(time: Double($0[0]), amplitude: Float($0[1]), frequency: Float($0[2])) }
   }
 }
 
@@ -54,7 +66,7 @@ struct DiscreteAudioConfig {
 
 struct ContinuousAudioConfig {
 	let type: String
-	let data: (amplitude: [ChartPoint], frequency: [ChartPoint])
+	let data: (amplitude: [PatternPoint], frequency: [PatternPoint])
 }
 
 struct AudioPatternConfig {
