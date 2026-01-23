@@ -1,20 +1,21 @@
 package com.swmansion.pulsar
 
+import android.content.Context
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.composers.PatternComposerImpl
 import com.swmansion.pulsar.composers.RealtimeComposerImpl
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.presets.PresetsWrapper
 
-class Pulsar {
-    private val engine = HapticEngineWrapper()
+class Pulsar(context: Context) {
+    public val engine = HapticEngineWrapper(context)
     private val audioSimulator = AudioSimulator()
     private var presets: PresetsWrapper? = null
-    private val realtimeComposer: RealtimeComposerImpl = RealtimeComposerImpl(engine = engine)
+    private val realtimeComposer: RealtimeComposerImpl = RealtimeComposerImpl(engine)
 
     fun Presets(): PresetsWrapper {
         if (presets == null) {
-            presets = PresetsWrapper(haptics = this)
+            presets = PresetsWrapper(this)
         }
         return presets!!
     }
@@ -31,7 +32,7 @@ class Pulsar {
     }
 
     fun enableCache(state: Boolean) {
-        this.Presets().enableCache(state = state)
+        this.Presets().enableCache(state)
     }
 
     fun clearCache() {
@@ -39,7 +40,7 @@ class Pulsar {
     }
 
     fun PatternComposer(): PatternComposerImpl {
-        return PatternComposerImpl(engine = engine, audioSimulator = audioSimulator)
+        return PatternComposerImpl(engine, audioSimulator)
     }
 
     fun RealtimeComposer(): RealtimeComposerImpl {

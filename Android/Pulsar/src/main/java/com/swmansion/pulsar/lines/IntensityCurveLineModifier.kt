@@ -6,7 +6,7 @@ class IntensityCurveLineModifier : CurveLineModifier {
     private val points = mutableListOf<PatternPoint>()
 
     override fun addPoint(time: Double, value: Float) {
-        points.add(PatternPoint(time, value.coerceIn(0f, 1f)))
+        points.add(PatternPoint(time.toFloat(), value.coerceIn(0f, 1f)))
         points.sortBy { it.time }
     }
 
@@ -16,7 +16,7 @@ class IntensityCurveLineModifier : CurveLineModifier {
 
     override fun isEmpty(): Boolean = points.isEmpty()
 
-    override fun getDuration(): Double = points.lastOrNull()?.time ?: 0.0
+    override fun getDuration(): Double = points.lastOrNull()?.time?.toDouble() ?: 0.0
 
     override fun getCurve(): List<PatternPoint> = points.toList()
 }

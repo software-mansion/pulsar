@@ -28,13 +28,13 @@ class RealtimeComposerImpl(
         val durationMs = 50L
         val amplitudeInt = (clampedIntensity * 255).toInt()
 
-        engine.vibrate(duration = durationMs, amplitude = amplitudeInt)
+//        engine.vibrate(duration = durationMs, amplitude = amplitudeInt)
     }
 
     fun stop() {
         if (!isPlaying) return
 
-        engine.cancel()
+//        engine.stop()
         isPlaying = false
     }
 

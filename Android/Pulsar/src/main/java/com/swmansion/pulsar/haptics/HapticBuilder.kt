@@ -19,8 +19,9 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 const val MAX_INT_AMPLITUDE = 255
+const val TAG = "Pulsar"
 
-class VibrationBuilder(val vibrationService: Vibrator) {
+class HapticBuilder(val vibrationService: Vibrator) {
   fun createVibrationEffect(preset: Preset): VibrationEffect? {
     val (_, impulses, plot) = preset
     val bars = impulses?.let { convertImpulsesToBars(vibrationService, it) }

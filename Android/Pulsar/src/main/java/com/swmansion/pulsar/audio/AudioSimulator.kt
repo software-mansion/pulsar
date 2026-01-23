@@ -122,7 +122,7 @@ class AudioSimulator {
                     ),
                     waveform = WaveformType.SINE
                 ),
-                timestamp = point.time,
+                timestamp = point.time.toDouble(),
                 volume = point.amplitude
             )
         }
@@ -178,10 +178,10 @@ class AudioSimulator {
 
         for (continuous in config.continuousData) {
             for (point in continuous.data.amplitude) {
-                maxDuration = maxOf(maxDuration, point.time)
+                maxDuration = maxOf(maxDuration, point.time.toDouble())
             }
             for (point in continuous.data.frequency) {
-                maxDuration = maxOf(maxDuration, point.time)
+                maxDuration = maxOf(maxDuration, point.time.toDouble())
             }
         }
 

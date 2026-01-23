@@ -3,18 +3,24 @@ package com.swmansion.pulsar.haptics
 import android.Manifest
 import android.content.Context
 import android.os.Build
-import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
+import com.swmansion.pulsar.types.Preset
 
-class HapticEngineWrapper(private val context: Context? = null) {
+class HapticEngineWrapper(context: Context) {
+
+    private val vibrationService = context.getSystemService(Vibrator::class.java)
     private var vibrator: Vibrator? = null
     private var initialized: Boolean = false
 
+    private val hapticBuilder = HapticBuilder(vibrationService)
+
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            context?.let {
+            context.let {
                 vibrator = ContextCompat.getSystemService(it, Vibrator::class.java)
                 if (vibrator?.hasVibrator() == true) {
                     initialized = true
@@ -22,53 +28,47 @@ class HapticEngineWrapper(private val context: Context? = null) {
             }
         } else {
             @Suppress("DEPRECATION")
-            vibrator = context?.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
             if (vibrator?.hasVibrator() == true) {
                 initialized = true
             }
         }
     }
 
-    @RequiresPermission(Manifest.permission.VIBRATE)
-    fun vibrate(pattern: LongArray, amplitude: IntArray? = null) {
-        if (!initialized || vibrator == null) return
+    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresPermission(value = "android.permission.VIBRATE")
+    fun playPresetVibration(preset: Preset) {
+        val vibrationEffect = hapticBuilder.createVibrationEffect(preset)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val effect = if (amplitude != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                VibrationEffect.createWaveform(pattern, amplitude, -1)
-            } else {
-                VibrationEffect.createWaveform(pattern, -1)
-            }
-            vibrator?.vibrate(effect)
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(pattern, -1)
+        vibrationEffect?.let {
+            Log.i(TAG, "Vibrate...")
+            vibrationService.vibrate(it)
         }
     }
 
-    @RequiresPermission(Manifest.permission.VIBRATE)
-    fun vibrate(duration: Long, amplitude: Int = 128) {
-        if (!initialized || vibrator == null) return
+    fun vibrate() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val effect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                VibrationEffect.createOneShot(duration, amplitude)
-            } else {
-                VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE)
-            }
-            vibrator?.vibrate(effect)
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator?.vibrate(duration)
-        }
     }
 
     @RequiresPermission(Manifest.permission.VIBRATE)
-    fun cancel() {
+    fun stop() {
+        if (!initialized) {
+            return
+        }
         vibrator?.cancel()
     }
 
-    fun hasVibrator(): Boolean {
-        return initialized && vibrator?.hasVibrator() == true
+    fun isAmplitudeSupported(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && vibrationService.hasAmplitudeControl()
+    }
+
+    fun isEnvelopeSupported(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
+                vibrationService.areEnvelopeEffectsSupported()
+    }
+
+    fun isFrequencyProfileSupported(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
+                vibrationService.frequencyProfile !== null
     }
 }

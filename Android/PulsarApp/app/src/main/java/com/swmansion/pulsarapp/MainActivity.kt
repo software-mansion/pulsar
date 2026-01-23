@@ -3,6 +3,8 @@ package com.swmansion.pulsarapp
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,6 +21,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.swmansion.pulsar.Pulsar
+import com.swmansion.pulsar.audio.ContinuesPattern
+import com.swmansion.pulsar.audio.DiscretePoint
+import com.swmansion.pulsar.audio.PatternData
+import com.swmansion.pulsar.audio.PatternPoint
+import com.swmansion.pulsar.composers.PatternComposerImpl
 import com.swmansion.pulsar.haptics.COMPLEX_PRESET
 import com.swmansion.pulsar.haptics.EARTHQUAKE_PRESET
 import com.swmansion.pulsar.haptics.ENVELOPE_PRESET
@@ -32,17 +40,20 @@ import com.swmansion.pulsar.haptics.SUCCESS_PRESET
 import com.swmansion.pulsar.haptics.TEST_PRESET
 import com.swmansion.pulsar.haptics.UP_AND_DOWN_PRESET
 import com.swmansion.pulsar.haptics.UP_PRESET
-import com.swmansion.pulsar.haptics.VibrationHandler
 import com.swmansion.pulsar.types.Preset
 import com.swmansion.pulsarapp.ui.theme.PulsarAppTheme
 
 class MainActivity : ComponentActivity() {
-  private var hapticsHandler: VibrationHandler? = null
+
+  private var pulsar: Pulsar? = null
+  private var composer: PatternComposerImpl? = null
+
+  private val vibrator by lazy { getSystemService(Vibrator::class.java) }
 
   @SuppressLint("NewApi")
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onCreate(savedInstanceState: Bundle?) {
-    hapticsHandler = VibrationHandler(this)
+    pulsar = Pulsar(this)
 
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
@@ -54,6 +65,112 @@ class MainActivity : ComponentActivity() {
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           DeviceInfo()
+
+        
+          Button(
+            modifier = Modifier.padding(6.dp),
+            onClick = {
+//              pulsar.Presets().Earthquake()
+
+//              val timings: LongArray = longArrayOf(
+//                50, 50, 50, 50, 50, 100, 350, 25, 25, 25, 25, 200)
+//              val amplitudes: IntArray = intArrayOf(
+//                33, 51, 75, 113, 170, 255, 0, 38, 62, 100, 160, 255)
+//              val repeatIndex = -1 // Don't repeat.
+//
+//              vibrator.vibrate(
+//                VibrationEffect.createWaveform(
+//                timings, amplitudes, repeatIndex))
+
+//              val delayMs = 100
+//              vibrator.vibrate(
+//                VibrationEffect.startComposition().addPrimitive(
+//                  VibrationEffect.Composition.PRIMITIVE_SPIN, 0.8f
+//                ).addPrimitive(
+//                  VibrationEffect.Composition.PRIMITIVE_SPIN, 0.6f
+//                ).addPrimitive(
+//                  VibrationEffect.Composition.PRIMITIVE_THUD, 1.0f, delayMs
+//                ).compose())
+
+//              vibrator.vibrate(VibrationEffect.BasicEnvelopeBuilder()
+//                .setInitialSharpness(0.0f)
+//                .addControlPoint(1.0f, 1.0f, 500)
+//                .addControlPoint(0.0f, 1.0f, 100)
+//                .build()
+//              )
+
+              val profile = vibrator?.frequencyProfile
+
+//              vibrator.vibrate(VibrationEffect.BasicEnvelopeBuilder()
+//                .setInitialSharpness(0.0f)
+//                .addControlPoint(1.0f, 1.0f, 1000)
+//                .addControlPoint(0.0f, 0.0f, 1000)
+//                .build()
+//              )
+//              vibrator.vibrate(VibrationEffect.BasicEnvelopeBuilder()
+//                .setInitialSharpness(0.0f)
+//                .addControlPoint(1.0f, .5f, 100)
+//                .addControlPoint(1.0f, .5f, 3000)
+//                .addControlPoint(.0f, .5f, 100)
+//                .build()
+//              )
+
+//              vibrator.vibrate(
+//                VibrationEffect.BasicEnvelopeBuilder()
+//                .setInitialSharpness(0.0f)
+//                .addControlPoint(1.0f, 1.0f, 1)
+//                .addControlPoint(1.0f, 1.0f, 10)
+//                .addControlPoint(.0f, .0f, 1)
+//                .build()
+//              )
+
+              if (composer == null) {
+                composer = pulsar?.PatternComposer()
+              }
+              composer?.parsePattern(PatternData(
+                ContinuesPattern(
+                  listOf(
+                    PatternPoint(0f, 0f),
+                    PatternPoint(100f, 1f),
+                    PatternPoint(200f, 0f),
+                  ),
+                  listOf(
+                    PatternPoint(0f, 0f),
+                    PatternPoint(100f, 1f),
+                    PatternPoint(200f, 0f),
+                  )
+                ),
+                listOf(
+                  DiscretePoint(50f, 1f, 1f),
+                  DiscretePoint(150f, 1f, 1f),
+                )
+              ))
+              composer?.play()
+            },
+          ) {
+            Text("mleko1")
+          }
+          Button(
+            modifier = Modifier.padding(6.dp),
+            onClick = {
+//              vibrator.vibrate(VibrationEffect.WaveformEnvelopeBuilder()
+//                .setInitialFrequencyHz(50f)
+//                .addControlPoint(1.0f, 109f, 100)
+//                .addControlPoint(1.0f, 109f, 3000)
+//                .addControlPoint(.0f, 109f, 100)
+//                .build()
+//              )
+//              vibrator.vibrate(VibrationEffect.WaveformEnvelopeBuilder()
+//                .addControlPoint(1.0f, 60f, 50)
+//                .addControlPoint(1.0f, 120f, 100)
+//                .addControlPoint(1.0f, 120f, 200)
+//                .addControlPoint(0.0f, 60f, 50)
+//                .build()
+//              )
+            },
+          ) {
+            Text("mleko2")
+          }
 
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("Docs presets:")
@@ -112,7 +229,7 @@ class MainActivity : ComponentActivity() {
   private fun VibrationButton(preset: Preset) {
     Button(
       modifier = Modifier.padding(6.dp),
-      onClick = { hapticsHandler?.playPresetVibration(preset) },
+      onClick = { pulsar?.engine?.playPresetVibration(preset) },
     ) {
       Text(preset.name)
     }
@@ -121,9 +238,9 @@ class MainActivity : ComponentActivity() {
   @Composable
   private fun DeviceInfo() {
     Column {
-      Text("Device supports amplitude: ${hapticsHandler?.isAmplitudeSupported()}")
-      Text("Device supports envelope: ${hapticsHandler?.isEnvelopeSupported()}")
-      Text("Device supports frequency profile: ${hapticsHandler?.isFrequencyProfileSupported()}")
+      Text("Device supports amplitude: ${pulsar?.engine?.isAmplitudeSupported()}")
+      Text("Device supports envelope: ${pulsar?.engine?.isEnvelopeSupported()}")
+      Text("Device supports frequency profile: ${pulsar?.engine?.isFrequencyProfileSupported()}")
     }
   }
 }

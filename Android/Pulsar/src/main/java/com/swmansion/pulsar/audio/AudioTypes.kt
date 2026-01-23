@@ -1,12 +1,12 @@
 package com.swmansion.pulsar.audio
 
 data class PatternPoint(
-    val time: Double,
+    val time: Float,
     val value: Float
 )
 
 data class DiscretePoint(
-    val time: Double,
+    val time: Float,
     val amplitude: Float,
     val frequency: Float
 )
@@ -22,10 +22,10 @@ data class PatternData(
 ) {
     constructor(line: List<List<List<Double>>>, bar: List<List<Double>>) : this(
         continuesPattern = ContinuesPattern(
-            amplitude = line[0].map { PatternPoint(time = it[0], value = it[1].toFloat()) },
-            frequency = line[1].map { PatternPoint(time = it[0], value = it[1].toFloat()) }
+            amplitude = line[0].map { PatternPoint(time = it[0].toFloat(), value = it[1].toFloat()) },
+            frequency = line[1].map { PatternPoint(time = it[0].toFloat(), value = it[1].toFloat()) }
         ),
-        discretePattern = bar.map { DiscretePoint(time = it[0], amplitude = it[1].toFloat(), frequency = it[2].toFloat()) }
+        discretePattern = bar.map { DiscretePoint(time = it[0].toFloat(), amplitude = it[1].toFloat(), frequency = it[2].toFloat()) }
     )
 }
 
