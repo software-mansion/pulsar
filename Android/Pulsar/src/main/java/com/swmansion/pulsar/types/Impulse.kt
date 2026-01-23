@@ -1,4 +1,4 @@
-package com.swmansion.pulsarapp.types
+package com.swmansion.pulsar.types
 
 /**
  * Represents single vibration impulse.

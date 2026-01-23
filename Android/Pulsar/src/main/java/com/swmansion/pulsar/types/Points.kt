@@ -1,4 +1,4 @@
-package com.swmansion.pulsarapp.types
+package com.swmansion.pulsar.types
 
 data class IntensityPoint(val relativeTime: Long, var intensity: Float) {
   init {

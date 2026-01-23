@@ -1,4 +1,4 @@
-package com.swmansion.pulsarapp.types
+package com.swmansion.pulsar.types
 
 fun verifyRelativeTime(relativeTime: Long) {
   if (relativeTime < 0) {
@@ -7,7 +7,7 @@ fun verifyRelativeTime(relativeTime: Long) {
 }
 
 fun verifyIntensity(intensity: Float) {
-  if (!(0 <= intensity && intensity <= 1)) {
+  if (intensity !in 0.0..1.0) {
     throw Exception("Intensity must be from interval [0,1].")
   }
 }

@@ -1,4 +1,4 @@
-package com.swmansion.pulsarapp.types
+package com.swmansion.pulsar.types
 
 data class Bar(val x1: Long, val x2: Long, val intensity: Float, val sharpness: Float) {
   init {

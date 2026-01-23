@@ -1,8 +1,8 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
-import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.Plot
+import com.swmansion.pulsar.types.Bar
+import com.swmansion.pulsar.types.IntensityPoint
+import com.swmansion.pulsar.types.Plot
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -17,18 +17,18 @@ class GenerateComplexPlotIntensityTest {
       )
 
     val plot =
-      generateComplexPlot(
-        Plot(
-          arrayListOf(
-            IntensityPoint(0, 0f),
-            IntensityPoint(0, 0.2f),
-            IntensityPoint(500, 0.2f),
-            IntensityPoint(500, 0f),
-          ),
-          CONST_PLOT_SHARPNESS,
-        ),
-        bars,
-      )
+        generateComplexPlot(
+            Plot(
+                arrayListOf(
+                    IntensityPoint(0, 0f),
+                    IntensityPoint(0, 0.2f),
+                    IntensityPoint(500, 0.2f),
+                    IntensityPoint(500, 0f),
+                ),
+                CONST_PLOT_SHARPNESS,
+            ),
+            bars,
+        )
 
     val expectedIntensity =
       arrayListOf(
@@ -61,18 +61,18 @@ class GenerateComplexPlotIntensityTest {
       )
 
     val plot =
-      generateComplexPlot(
-        Plot(
-          arrayListOf(
-            IntensityPoint(0, 0f),
-            IntensityPoint(0, 0.2f),
-            IntensityPoint(500, 0.2f),
-            IntensityPoint(500, 0f),
-          ),
-          CONST_PLOT_SHARPNESS,
-        ),
-        bars,
-      )
+        generateComplexPlot(
+            Plot(
+                arrayListOf(
+                    IntensityPoint(0, 0f),
+                    IntensityPoint(0, 0.2f),
+                    IntensityPoint(500, 0.2f),
+                    IntensityPoint(500, 0f),
+                ),
+                CONST_PLOT_SHARPNESS,
+            ),
+            bars,
+        )
 
     val expectedIntensity =
       arrayListOf(
@@ -112,18 +112,18 @@ class GenerateComplexPlotIntensityTest {
       )
 
     val plot =
-      generateComplexPlot(
-        Plot(
-          arrayListOf(
-            IntensityPoint(0, 0f),
-            IntensityPoint(0, 0.2f),
-            IntensityPoint(500, 0.2f),
-            IntensityPoint(500, 0f),
-          ),
-          CONST_PLOT_SHARPNESS,
-        ),
-        bars,
-      )
+        generateComplexPlot(
+            Plot(
+                arrayListOf(
+                    IntensityPoint(0, 0f),
+                    IntensityPoint(0, 0.2f),
+                    IntensityPoint(500, 0.2f),
+                    IntensityPoint(500, 0f),
+                ),
+                CONST_PLOT_SHARPNESS,
+            ),
+            bars,
+        )
 
     val expectedIntensity =
       arrayListOf(
@@ -157,18 +157,18 @@ class GenerateComplexPlotIntensityTest {
       )
 
     val plot =
-      generateComplexPlot(
-        Plot(
-          arrayListOf(
-            IntensityPoint(0, 0f),
-            IntensityPoint(0, 0.2f),
-            IntensityPoint(500, 0.2f),
-            IntensityPoint(500, 0f),
-          ),
-          CONST_PLOT_SHARPNESS,
-        ),
-        bars,
-      )
+        generateComplexPlot(
+            Plot(
+                arrayListOf(
+                    IntensityPoint(0, 0f),
+                    IntensityPoint(0, 0.2f),
+                    IntensityPoint(500, 0.2f),
+                    IntensityPoint(500, 0f),
+                ),
+                CONST_PLOT_SHARPNESS,
+            ),
+            bars,
+        )
 
     val expectedIntensity =
       arrayListOf(

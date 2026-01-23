@@ -1,4 +1,4 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
 import android.os.Build
 import android.os.VibrationEffect
@@ -6,13 +6,12 @@ import android.os.Vibrator
 import android.os.vibrator.VibratorFrequencyProfile
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.ControlPoint
-import com.swmansion.pulsarapp.types.Plot
-import com.swmansion.pulsarapp.types.PlotPoint
-import com.swmansion.pulsarapp.types.Preset
-import com.swmansion.pulsarapp.types.SubtractableItem
-import kotlin.collections.forEach
+import com.swmansion.pulsar.types.Bar
+import com.swmansion.pulsar.types.ControlPoint
+import com.swmansion.pulsar.types.Plot
+import com.swmansion.pulsar.types.PlotPoint
+import com.swmansion.pulsar.types.Preset
+import com.swmansion.pulsar.types.SubtractableItem
 import kotlin.collections.plusAssign
 import kotlin.math.floor
 import kotlin.math.max
@@ -85,7 +84,7 @@ class VibrationBuilder(val vibrationService: Vibrator) {
 
   @RequiresApi(Build.VERSION_CODES.O)
   private fun createWaveform(bars: ArrayList<Bar>): VibrationEffect {
-    printBarsToPlot(bars)
+      printBarsToPlot(bars)
 
     val barsWithPauses = getBarsWithPauses(bars)
 
@@ -113,8 +112,8 @@ class VibrationBuilder(val vibrationService: Vibrator) {
 
     val initialSharpness = plot.sharpness[0].sharpness
 
-    printPointsToPlot(points)
-    printControlPointsToPlot(controlPoints)
+      printPointsToPlot(points)
+      printControlPointsToPlot(controlPoints)
 
     return vibrationService.frequencyProfile?.let { frequencyProfile ->
       val builder = VibrationEffect.WaveformEnvelopeBuilder()

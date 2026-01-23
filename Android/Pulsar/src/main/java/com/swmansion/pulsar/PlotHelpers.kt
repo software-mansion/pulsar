@@ -1,10 +1,9 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
 import android.util.Log
-import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.ControlPoint
-import com.swmansion.pulsarapp.types.PlotPoint
-import kotlin.collections.forEach
+import com.swmansion.pulsar.types.Bar
+import com.swmansion.pulsar.types.ControlPoint
+import com.swmansion.pulsar.types.PlotPoint
 
 // helper functions for plotting only
 

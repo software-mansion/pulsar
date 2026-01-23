@@ -1,4 +1,4 @@
-package com.swmansion.pulsarapp.types
+package com.swmansion.pulsar.types
 
 /**
  * Contains values needed to adjust control point in order to archive specific vibration duration.

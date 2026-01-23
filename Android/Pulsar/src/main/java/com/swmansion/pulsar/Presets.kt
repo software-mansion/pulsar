@@ -1,10 +1,10 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
-import com.swmansion.pulsarapp.types.Impulse
-import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.Plot
-import com.swmansion.pulsarapp.types.Preset
-import com.swmansion.pulsarapp.types.SharpnessPoint
+import com.swmansion.pulsar.types.Impulse
+import com.swmansion.pulsar.types.IntensityPoint
+import com.swmansion.pulsar.types.Plot
+import com.swmansion.pulsar.types.Preset
+import com.swmansion.pulsar.types.SharpnessPoint
 import kotlin.collections.arrayListOf
 
 val CONST_PLOT_SHARPNESS = arrayListOf(SharpnessPoint(0, 1f))

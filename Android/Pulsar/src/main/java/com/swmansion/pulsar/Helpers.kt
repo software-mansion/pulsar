@@ -1,15 +1,15 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
 import android.os.Build
 import android.os.Vibrator
 import android.util.Log
-import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.Impulse
-import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.Line
-import com.swmansion.pulsarapp.types.Plot
-import com.swmansion.pulsarapp.types.PlotPoint
-import com.swmansion.pulsarapp.types.SharpnessPoint
+import com.swmansion.pulsar.types.Bar
+import com.swmansion.pulsar.types.Impulse
+import com.swmansion.pulsar.types.IntensityPoint
+import com.swmansion.pulsar.types.Line
+import com.swmansion.pulsar.types.Plot
+import com.swmansion.pulsar.types.PlotPoint
+import com.swmansion.pulsar.types.SharpnessPoint
 import kotlin.collections.forEach
 import kotlin.math.abs
 import kotlin.math.max

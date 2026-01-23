@@ -1,11 +1,11 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
 import android.content.Context
 import android.os.Build
 import android.os.Vibrator
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.swmansion.pulsarapp.types.Preset
+import com.swmansion.pulsar.types.Preset
 
 const val TAG = "VibrationHandler"
 

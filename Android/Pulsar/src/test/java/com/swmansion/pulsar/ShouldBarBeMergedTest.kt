@@ -1,7 +1,7 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
-import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.IntensityPoint
+import com.swmansion.pulsar.types.Bar
+import com.swmansion.pulsar.types.IntensityPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

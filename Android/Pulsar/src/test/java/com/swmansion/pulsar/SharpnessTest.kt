@@ -1,9 +1,9 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
-import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.Plot
-import com.swmansion.pulsarapp.types.SharpnessPoint
+import com.swmansion.pulsar.types.Bar
+import com.swmansion.pulsar.types.IntensityPoint
+import com.swmansion.pulsar.types.Plot
+import com.swmansion.pulsar.types.SharpnessPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -24,31 +24,31 @@ class SharpnessTest {
     // start with frequency change
     verifySharpnessPoints(
       arrayListOf(sharpness1),
-      getSharpnessFromInterval(sharpness1.relativeTime, 50, sharpness),
+        getSharpnessFromInterval(sharpness1.relativeTime, 50, sharpness),
     )
     verifySharpnessPoints(
       arrayListOf(sharpness2),
-      getSharpnessFromInterval(sharpness2.relativeTime, 150, sharpness),
+        getSharpnessFromInterval(sharpness2.relativeTime, 150, sharpness),
     )
 
     // end with frequency change
     verifySharpnessPoints(
       arrayListOf(sharpness1),
-      getSharpnessFromInterval(sharpness1.relativeTime, sharpness2.relativeTime, sharpness),
+        getSharpnessFromInterval(sharpness1.relativeTime, sharpness2.relativeTime, sharpness),
     )
     verifySharpnessPoints(
       arrayListOf(sharpness1, sharpness2),
-      getSharpnessFromInterval(sharpness1.relativeTime, sharpness3.relativeTime, sharpness),
+        getSharpnessFromInterval(sharpness1.relativeTime, sharpness3.relativeTime, sharpness),
     )
 
     // multiple frequency changes within interval
     verifySharpnessPoints(
       arrayListOf(sharpness1, sharpness2, sharpness3, sharpness4, sharpness5, sharpness6),
-      getSharpnessFromInterval(sharpness1.relativeTime, 600, sharpness),
+        getSharpnessFromInterval(sharpness1.relativeTime, 600, sharpness),
     )
     verifySharpnessPoints(
       arrayListOf(sharpness5, sharpness6),
-      getSharpnessFromInterval(sharpness5.relativeTime, 600, sharpness),
+        getSharpnessFromInterval(sharpness5.relativeTime, 600, sharpness),
     )
     verifySharpnessPoints(
       arrayListOf(
@@ -59,7 +59,7 @@ class SharpnessTest {
         sharpness5,
         sharpness6,
       ),
-      getSharpnessFromInterval(50, 550, sharpness),
+        getSharpnessFromInterval(50, 550, sharpness),
     )
   }
 

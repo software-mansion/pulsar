@@ -1,10 +1,10 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
-import com.swmansion.pulsarapp.types.Bar
-import com.swmansion.pulsarapp.types.IntensityPoint
-import com.swmansion.pulsarapp.types.Plot
-import com.swmansion.pulsarapp.types.PlotPoint
-import com.swmansion.pulsarapp.types.SharpnessPoint
+import com.swmansion.pulsar.types.Bar
+import com.swmansion.pulsar.types.IntensityPoint
+import com.swmansion.pulsar.types.Plot
+import com.swmansion.pulsar.types.PlotPoint
+import com.swmansion.pulsar.types.SharpnessPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

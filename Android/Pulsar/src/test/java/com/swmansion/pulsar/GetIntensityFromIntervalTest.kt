@@ -1,6 +1,6 @@
-package com.swmansion.pulsarapp
+package com.swmansion.pulsar
 
-import com.swmansion.pulsarapp.types.IntensityPoint
+import com.swmansion.pulsar.types.IntensityPoint
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -28,27 +28,27 @@ class GetIntensityFromIntervalTest {
     // start / end
     assertEquals(
       arrayListOf(startLinePoint, middle1LinePoint),
-      getIntensityFromInterval(startTime, middleTime1, lines),
+        getIntensityFromInterval(startTime, middleTime1, lines),
     )
     assertEquals(
       arrayListOf(middle2LinePoint, endLinePoint),
-      getIntensityFromInterval(middleTime2, endTime, lines),
+        getIntensityFromInterval(middleTime2, endTime, lines),
     )
 
     // middle
     assertEquals(
       arrayListOf(middle1LinePoint, middle2LinePoint),
-      getIntensityFromInterval(middleTime1, middleTime2, lines),
+        getIntensityFromInterval(middleTime1, middleTime2, lines),
     )
     assertEquals(
       arrayListOf(middle2LinePoint, endLinePoint),
-      getIntensityFromInterval(middleTime2, endTime, lines),
+        getIntensityFromInterval(middleTime2, endTime, lines),
     )
 
     // whole
     assertEquals(
       arrayListOf(startLinePoint, endLinePoint),
-      getIntensityFromInterval(startTime, endTime, lines),
+        getIntensityFromInterval(startTime, endTime, lines),
     )
   }
 
@@ -151,15 +151,15 @@ class GetIntensityFromIntervalTest {
 
     assertEquals(
       arrayListOf(startLinePoint, middleLinePoint),
-      getIntensityFromInterval(startTime, middleTime, lines),
+        getIntensityFromInterval(startTime, middleTime, lines),
     )
     assertEquals(
       arrayListOf(middleLinePoint, endLinePoint),
-      getIntensityFromInterval(middleTime, endTime, lines),
+        getIntensityFromInterval(middleTime, endTime, lines),
     )
     assertEquals(
       arrayListOf(startLinePoint, endLinePoint),
-      getIntensityFromInterval(startTime, endTime, lines),
+        getIntensityFromInterval(startTime, endTime, lines),
     )
   }
 

@@ -19,7 +19,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.swmansion.pulsarapp.types.Preset
+import com.swmansion.pulsar.COMPLEX_PRESET
+import com.swmansion.pulsar.EARTHQUAKE_PRESET
+import com.swmansion.pulsar.ENVELOPE_PRESET
+import com.swmansion.pulsar.FAIL_PRESET
+import com.swmansion.pulsar.FALLING_BRICKS
+import com.swmansion.pulsar.FREQUENCY_PRESET
+import com.swmansion.pulsar.LONG_RISING_PRESET
+import com.swmansion.pulsar.MILK_PRESET
+import com.swmansion.pulsar.RANDOM_PRESET
+import com.swmansion.pulsar.SUCCESS_PRESET
+import com.swmansion.pulsar.TEST_PRESET
+import com.swmansion.pulsar.UP_AND_DOWN_PRESET
+import com.swmansion.pulsar.UP_PRESET
+import com.swmansion.pulsar.VibrationHandler
+import com.swmansion.pulsar.types.Preset
 import com.swmansion.pulsarapp.ui.theme.PulsarAppTheme
 
 class MainActivity : ComponentActivity() {

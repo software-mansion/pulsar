@@ -1,4 +1,4 @@
-package com.swmansion.pulsarapp.types
+package com.swmansion.pulsar.types
 
 /**
  * Represents vibration preset. At least one of impulses or plot should be passed. If both of them
