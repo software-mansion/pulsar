@@ -1,47 +1,20 @@
-import express from 'express';
-import http from 'http';
-import { ChannelManager } from './channel-manager';
-import { WebSocketHandlers } from './websocket-handlers';
-import { setupMiddleware } from './middleware';
-import { setupRoutes } from './routes';
-import { setupWebSocket } from './websocket';
-import { PORT } from './constants';
+import { PORT } from './config';
+import { createApp } from './app';
 
-// ===== APPLICATION SETUP =====
-
-const app = express();
-const server = http.createServer(app);
-const channelManager = new ChannelManager();
-const wsHandlers = new WebSocketHandlers(channelManager);
-
-// ===== INITIALIZE =====
-
-setupMiddleware(app);
-setupRoutes(app, channelManager);
-setupWebSocket(server, wsHandlers);
-
-// ===== SERVER STARTUP =====
+const { server } = createApp();
 
 server.listen(PORT, () => {
-  logServerStartup();
+  console.log('='.repeat(50));
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  console.log(`🔌 WebSocket server is running on ws://localhost:${PORT}`);
+  console.log('='.repeat(50));
+  console.log('\n📍 Available endpoints:');
+  console.log(`   GET  http://localhost:${PORT}/api/health`);
+  console.log(`   GET  http://localhost:${PORT}/api/data?id=<id>`);
+  console.log(`   POST http://localhost:${PORT}/api/message`);
+  console.log(`   POST http://localhost:${PORT}/api/broadcast`);
+  console.log('\n🔌 WebSocket:');
+  console.log(`   Connect to: ws://localhost:${PORT}`);
+  console.log(`   Send JSON: {"message": "hello", "broadcast": true}`);
+  console.log('='.repeat(50));
 });
-
-function logServerStartup(): void {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`WebSocket server is running on ws://localhost:${PORT}`);
-  console.log('');
-  console.log('Available endpoints:');
-  console.log(`  POST http://localhost:${PORT}/broadcast?channel=<number>&token=<token> - Send JSON data with valid token`);
-  console.log(`  GET  http://localhost:${PORT}/health - Check server status`);
-  console.log(`  GET  http://localhost:${PORT}/generate-channel?preferred=<number>&lastClientId=<id> - Get channel number and token`);
-  console.log('');
-  console.log('WebSocket usage:');
-  console.log(`  Connect to data channel: ws://localhost:${PORT}?channel=<number>`);
-  console.log(`  Connect to status updates (all channels): ws://localhost:${PORT}?status=true`);
-  console.log(`  Connect to status updates (specific channel): ws://localhost:${PORT}?status=true&channel=<number>`);
-  console.log('');
-  console.log('Security:');
-  console.log('  - Channel tokens are required for broadcasting');
-  console.log('  - Generate channel numbers to receive tokens');
-  console.log('  - Tokens are automatically cleaned up when channels become empty');
-}

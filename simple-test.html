@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Test</title>
+</head>
+<body>
+  <button onclick="connect()">Connect WebSocket</button>
+  <button onclick="fetchData()">Fetch Request</button>
+
+  <script>
+    let ws;
+
+    function connect() {
+      ws = new WebSocket('ws://localhost:8080');
+      
+      ws.onopen = () => {
+        console.log('Connected!');
+        ws.send(JSON.stringify({ message: 'Hello' }));
+      };
+
+      ws.onmessage = (e) => {
+        console.log('Received:', JSON.parse(e.data));
+      };
+
+      ws.onerror = (e) => console.error('Error:', e);
+      ws.onclose = () => console.log('Closed');
+    }
+
+    function fetchData() {
+      fetch('http://localhost:8080/api/create-channel')
+        .then(r => r.json())
+        .then(d => console.log('Fetch:', d))
+        .catch(e => console.error('Fetch Error:', e));
+    }
+  </script>
+</body>
+</html>
