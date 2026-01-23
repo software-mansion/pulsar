@@ -1,5 +1,7 @@
 package com.swmansion.pulsar
 
+import com.swmansion.pulsar.haptics.convertIntensityToLines
+import com.swmansion.pulsar.haptics.getIntensityFromInterval
 import com.swmansion.pulsar.types.IntensityPoint
 import org.junit.Assert.*
 import org.junit.Test

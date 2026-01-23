@@ -1,5 +1,7 @@
 package com.swmansion.pulsar
 
+import com.swmansion.pulsar.haptics.CONST_PLOT_SHARPNESS
+import com.swmansion.pulsar.haptics.generateComplexPlot
 import com.swmansion.pulsar.types.Bar
 import com.swmansion.pulsar.types.IntensityPoint
 import com.swmansion.pulsar.types.Plot

@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.haptics
 
 import android.content.Context
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.haptics
 
 import com.swmansion.pulsar.types.Impulse
 import com.swmansion.pulsar.types.IntensityPoint

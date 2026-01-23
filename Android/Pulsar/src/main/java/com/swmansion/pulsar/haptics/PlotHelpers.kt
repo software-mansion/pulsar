@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.haptics
 
 import android.util.Log
 import com.swmansion.pulsar.types.Bar
