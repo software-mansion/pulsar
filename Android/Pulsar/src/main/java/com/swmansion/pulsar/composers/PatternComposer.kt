@@ -27,13 +27,13 @@ class PatternComposerImpl(
 //        }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
     fun parsePattern(hapticsData: PatternData) {
         vibrationEffect = engine.getHapticBuilder().createVibrationEffect(hapticsData)
-//        audioBuffer = audioSimulator.parsePattern(hapticsData)
+        audioBuffer = audioSimulator.parsePattern(hapticsData)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
     @RequiresPermission(Manifest.permission.VIBRATE)
     fun playPattern(hapticsData: PatternData) {
         this.parsePattern(hapticsData)
@@ -43,7 +43,7 @@ class PatternComposerImpl(
     @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.VIBRATE)
     fun play() {
-//        audioSimulator.play(audioBuffer)
+        audioSimulator.play(audioBuffer)
         vibrationEffect?.let { engine.vibrate(it) }
     }
 

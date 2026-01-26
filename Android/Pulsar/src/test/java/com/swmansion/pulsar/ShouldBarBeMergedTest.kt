@@ -3,7 +3,6 @@ package com.swmansion.pulsar
 import com.swmansion.pulsar.haptics.DEFAULT_SHARPNESS
 import com.swmansion.pulsar.haptics.convertIntensityToLines
 import com.swmansion.pulsar.haptics.shouldBarBeMerged
-import com.swmansion.pulsar.types.Bar
 import com.swmansion.pulsar.types.IntensityPoint
 import org.junit.Assert.assertEquals
 import org.junit.Test

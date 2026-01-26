@@ -18,17 +18,3 @@ data class ControlPoint(val intensity: Float, val sharpness: Float, val duration
   }
 }
 
-/**
- * Represents single point of result plot.
- *
- * @param relativeTime time relative to the beginning of the vibration.
- * @param intensity should be value from [0-1].
- * @param sharpness should be value from [0-1].
- */
-data class PlotPoint(val relativeTime: Long, var intensity: Float, val sharpness: Float) {
-  init {
-    verifyRelativeTime(relativeTime)
-    verifyIntensity(intensity)
-    verifySharpness(sharpness)
-  }
-}

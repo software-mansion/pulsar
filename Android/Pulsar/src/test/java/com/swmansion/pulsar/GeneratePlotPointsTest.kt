@@ -2,7 +2,6 @@ package com.swmansion.pulsar
 
 import com.swmansion.pulsar.haptics.generateComplexPlot
 import com.swmansion.pulsar.haptics.generatePlotPoints
-import com.swmansion.pulsar.types.Bar
 import com.swmansion.pulsar.types.IntensityPoint
 import com.swmansion.pulsar.types.PlotPoint
 import com.swmansion.pulsar.types.SharpnessPoint

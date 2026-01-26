@@ -3,12 +3,7 @@ package com.swmansion.pulsar.types
 data class ValuePoint(
     val time: Float,
     val value: Float
-) {
-    init {
-        verifyRelativeTime(time.toLong())
-        verifyIntensity(value)
-    }
-}
+)
 
 /**
  * Represents single vibration impulse.
