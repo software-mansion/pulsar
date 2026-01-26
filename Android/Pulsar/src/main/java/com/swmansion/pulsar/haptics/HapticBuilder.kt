@@ -4,8 +4,6 @@ import android.os.VibrationEffect
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.types.ControlPoint
 
-const val DEFAULT_SHARPNESS = 1f
-
 class HapticBuilder(engine: HapticEngineWrapper) {
 
   private var vibrationEffectsGenerator = VibrationEffectsGenerator(engine)

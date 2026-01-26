@@ -1,16 +1,13 @@
 package com.swmansion.pulsarapp
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,14 +28,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.swmansion.pulsar.Pulsar
-import com.swmansion.pulsar.composers.PatternComposerImpl
+import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsarapp.screens.EmptyScreen
 import com.swmansion.pulsarapp.ui.theme.PulsarAppTheme
 
 class MainActivity : ComponentActivity() {
 
   private var pulsar: Pulsar? = null
-  private var composer: PatternComposerImpl? = null
+  private var composer: PatternComposer? = null
 
   private val vibrator by lazy { getSystemService(Vibrator::class.java) }
 

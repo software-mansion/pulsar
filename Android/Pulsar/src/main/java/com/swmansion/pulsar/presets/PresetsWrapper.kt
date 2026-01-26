@@ -1,6 +1,7 @@
 package com.swmansion.pulsar.presets
 
 import com.swmansion.pulsar.Pulsar
+import com.swmansion.pulsar.types.Preset
 
 class PresetsWrapper(
     private val haptics: Pulsar

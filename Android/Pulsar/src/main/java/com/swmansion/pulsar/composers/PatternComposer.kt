@@ -8,7 +8,7 @@ import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 
-class PatternComposerImpl(
+class PatternComposer(
     private val engine: HapticEngineWrapper,
     private val audioSimulator: AudioSimulator
 ) {

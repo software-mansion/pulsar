@@ -1,6 +1,4 @@
-package com.swmansion.pulsar.presets
-
-import com.swmansion.pulsar.Pulsar
+package com.swmansion.pulsar.types
 
 interface Preset {
     fun play()

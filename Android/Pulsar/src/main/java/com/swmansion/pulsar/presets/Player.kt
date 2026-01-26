@@ -1,18 +1,16 @@
 package com.swmansion.pulsar.presets
 
 import android.Manifest
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.types.PatternData
-import com.swmansion.pulsar.composers.PatternComposerImpl
+import com.swmansion.pulsar.composers.PatternComposer
 
 open class Player(
     haptics: Pulsar,
     pattern: PatternData,
 ) {
-    private var composer: PatternComposerImpl = haptics.PatternComposer()
+    private var composer: PatternComposer = haptics.getPatternComposer()
 
     init {
         composer.parsePattern(pattern)

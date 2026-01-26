@@ -2,7 +2,7 @@ package com.swmansion.pulsar.composers
 
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 
-class RealtimeComposerImpl(
+class RealtimeComposer(
     private val engine: HapticEngineWrapper
 ) {
     private var isPlaying = false
@@ -14,7 +14,7 @@ class RealtimeComposerImpl(
         }
         isPlaying = true
         initialized = true
-        update(amplitude = amplitude, frequency = frequency)
+
     }
 
     fun update(amplitude: Float, frequency: Float) {
@@ -22,13 +22,6 @@ class RealtimeComposerImpl(
             start(amplitude = amplitude, frequency = frequency)
         }
 
-        val clampedIntensity = amplitude.coerceIn(0f, 1f)
-        val clampedSharpness = frequency.coerceIn(0f, 1f)
-
-        val durationMs = 50L
-        val amplitudeInt = (clampedIntensity * 255).toInt()
-
-//        engine.vibrate(duration = durationMs, amplitude = amplitudeInt)
     }
 
     fun stop() {

@@ -8,8 +8,6 @@ import com.swmansion.pulsar.types.ControlPoint
 import kotlin.collections.plus
 import kotlin.math.roundToInt
 
-const val MAX_INT_AMPLITUDE = 255
-
 class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
     fun convertToVibrationEffect(controlPoints: List<ControlPoint>) : VibrationEffect {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
@@ -71,18 +69,20 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
         return builder.build()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun convertToAmplitudeWaveform(controlPoints: List<ControlPoint>): VibrationEffect {
         var timings = longArrayOf()
         var amplitudes = intArrayOf()
-
+        val maxAmplitude = 255
         controlPoints.forEach {
             timings += it.duration
-            amplitudes += (it.intensity * MAX_INT_AMPLITUDE).roundToInt()
+            amplitudes += (it.intensity * maxAmplitude).roundToInt()
         }
 
         return VibrationEffect.createWaveform(timings, amplitudes, -1)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun convertToTimingWaveform(controlPoints: List<ControlPoint>): VibrationEffect {
         var timings = longArrayOf()
 

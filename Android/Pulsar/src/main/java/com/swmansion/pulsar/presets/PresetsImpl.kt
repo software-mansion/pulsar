@@ -4,6 +4,8 @@ import android.Manifest
 import androidx.annotation.RequiresPermission
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.Preset
+import com.swmansion.pulsar.types.PresetWithName
 
 class EarthquakePreset(haptics: Pulsar) :
     Preset,
