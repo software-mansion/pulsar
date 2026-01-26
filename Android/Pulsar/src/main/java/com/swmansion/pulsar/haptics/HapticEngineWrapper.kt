@@ -5,6 +5,8 @@ import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.vibrator.VibratorEnvelopeEffectInfo
+import android.os.vibrator.VibratorFrequencyProfile
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
@@ -15,7 +17,7 @@ class HapticEngineWrapper(context: Context) {
     private var vibrator: Vibrator? = null
     private var initialized: Boolean = false
 
-    private val hapticBuilder = HapticBuilder(vibrationService)
+    private val hapticBuilder = HapticBuilder(this)
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -64,5 +66,15 @@ class HapticEngineWrapper(context: Context) {
     fun isFrequencyProfileSupported(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
                 vibrationService.frequencyProfile !== null
+    }
+
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+    fun getEnvelopConfig(): VibratorEnvelopeEffectInfo {
+        return vibrationService.envelopeEffectInfo
+    }
+
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+    fun getFrequencyProfile() : VibratorFrequencyProfile? {
+        return vibrator?.frequencyProfile
     }
 }

@@ -3,7 +3,6 @@ package com.swmansion.pulsarapp
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
-import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,10 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.swmansion.pulsar.Pulsar
-import com.swmansion.pulsar.audio.ContinuesPattern
-import com.swmansion.pulsar.audio.DiscretePoint
-import com.swmansion.pulsar.audio.PatternData
-import com.swmansion.pulsar.audio.PatternPoint
 import com.swmansion.pulsar.composers.PatternComposerImpl
 import com.swmansion.pulsar.haptics.COMPLEX_PRESET
 import com.swmansion.pulsar.haptics.EARTHQUAKE_PRESET

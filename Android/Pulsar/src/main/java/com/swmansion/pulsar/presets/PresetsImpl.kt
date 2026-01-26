@@ -12,21 +12,24 @@ class EarthquakePreset(haptics: Pulsar) :
     Preset,
     Player(haptics, PatternData(
         rawContinuesPattern = listOf(
+            listOf(),
+            listOf(),
+//            listOf(listOf(0.1 * 1000, 0.5), listOf(0.5 * 1000, 0.5))
 //            listOf(listOf(0.1 * 1000, 1.0), listOf(0.5 * 1000, 0.5)),
 //            listOf(listOf(0.1 * 1000, 0.5), listOf(0.5 * 1000, 0.5))
-            listOf(listOf(0.0 * 1000, 1.0), listOf(0.5 * 1000, 0.5)),
-            listOf(listOf(0.0 * 1000, 0.5), listOf(0.5 * 1000, 0.5))
+//            listOf(listOf(0.0 * 1000, 1.0), listOf(0.5 * 1000, 0.5), listOf(0.6 * 1000, 0.5)),
+//            listOf(listOf(0.0 * 1000, 0.5), listOf(0.5 * 1000, 0.5), listOf(0.6 * 1000, 0.5))
         ),
 //        rawContinuesPattern = listOf(
 //            listOf(),
 //            listOf(),
 //        ),
         rawDiscretePattern = listOf(
-//            listOf(0.1 * 2000, 0.9, 0.5),
-//            listOf(0.2 * 2000, 0.8, 0.5),
-//            listOf(0.8 * 2000, 0.8, 0.5),
-//            listOf(1.0 * 2000, 0.8, 0.5),
-//            listOf(1.5 * 2000, 1.0, 1.0),
+            listOf(0.1 * 2000, 0.9, 0.5),
+            listOf(0.2 * 2000, 0.8, 0.5),
+            listOf(0.8 * 2000, 0.8, 0.5),
+            listOf(1.0 * 2000, 0.8, 0.5),
+            listOf(1.5 * 2000, 1.0, 1.0),
         )
     )) {
     companion object: PresetWithName {
@@ -39,8 +42,8 @@ class SuccessPreset(haptics: Pulsar) :
     Preset,
     Player(haptics, PatternData(
         rawContinuesPattern = listOf(
-            listOf(listOf(0.0, 0.0), listOf(0.1 * 1000, 1.0), listOf(0.5 * 1000, 0.5)),
-            listOf(listOf(0.0, 0.0), listOf(0.1 * 1000, 0.5), listOf(0.5 * 1000, 0.5))
+            listOf(listOf(0.0, 0.0), listOf(0.1 * 1000, 1.0), listOf(0.5 * 1000, 0.5), listOf(0.6 * 1000, 0.5)),
+            listOf(listOf(0.0, 0.0), listOf(0.1 * 1000, 0.5), listOf(0.5 * 1000, 0.5), listOf(0.6 * 1000, 0.5))
         ),
         rawDiscretePattern = listOf(
 //            listOf(0.1 * 2000, 0.9, 0.5),

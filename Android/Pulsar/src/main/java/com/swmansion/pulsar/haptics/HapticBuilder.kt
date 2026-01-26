@@ -1,21 +1,18 @@
 package com.swmansion.pulsar.haptics
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.os.VibrationEffect
-import android.os.Vibrator
 import android.os.vibrator.VibratorFrequencyProfile
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.swmansion.pulsar.audio.DiscretePoint
+import com.swmansion.pulsar.audio.ContinuesPattern
+import com.swmansion.pulsar.audio.ConfigPoint
 import com.swmansion.pulsar.audio.PatternData
-import com.swmansion.pulsar.audio.PatternPoint
+import com.swmansion.pulsar.audio.ValuePoint
 import com.swmansion.pulsar.types.Bar
 import com.swmansion.pulsar.types.ControlPoint
 import com.swmansion.pulsar.types.Line
-import com.swmansion.pulsar.types.Plot
 import com.swmansion.pulsar.types.PlotPoint
-import com.swmansion.pulsar.types.Preset
 import com.swmansion.pulsar.types.SubtractableItem
 import kotlin.collections.forEach
 import kotlin.collections.plusAssign
@@ -25,7 +22,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-const val MAX_INT_AMPLITUDE = 255
+
 const val TAG = "Pulsar"
 
 const val STEPS_PER_100_MS = 30
@@ -34,37 +31,95 @@ const val ENVELOPE_SUPPORT_BAR_DURATION_RANGE_MS = 30
 const val DEFAULT_BAR_DURATION_RANGE_MS = 70
 const val DEFAULT_MIN_BAR_DURATION_MS = 30L
 
-class HapticBuilder(val vibrationService: Vibrator) {
+class HapticBuilder(val engine: HapticEngineWrapper) {
   @RequiresApi(Build.VERSION_CODES.O)
-  fun createVibrationEffect(preset: PatternData): VibrationEffect? {
-    val (continuesPattern, discretePattern) = preset
-    val plotPattern = Plot(continuesPattern.amplitude, continuesPattern.frequency)
-    val barsPattern = convertImpulsesToBars(vibrationService, discretePattern)
+  private var vibrationEffectsGenerator = VibrationEffectsGenerator(engine)
 
-    if (discretePattern.isNotEmpty() && continuesPattern.isNotEmpty()) {
-      val complexWaveform = createComplexWaveform(plotPattern, barsPattern)
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  fun createVibrationEffect(preset: PatternData): VibrationEffect {
 
-      complexWaveform?.let { Log.i(TAG, "Complex vibration created.") }
-        ?: run { Log.w(TAG, "Complex vibration creation failed.") }
+    val controlPoints = convertToControlPoints(preset)
+    return vibrationEffectsGenerator.convertToVibrationEffect(controlPoints)
 
-      return complexWaveform
-    } else {
-      if (discretePattern.isNotEmpty()) {
-        Log.i(TAG, "Vibration created based on bars.")
-        return createWaveformFromBars(barsPattern)
-      } else if (continuesPattern.isNotEmpty()) {
-        Log.i(TAG, "Vibration created based on points.")
-        return createWaveformFromPlot(plotPattern)
-      } else {
-        Log.w(TAG, "Vibration creation failed.")
-        return null
-      }
+//    val (continuesPattern, discretePattern) = preset
+//    val barsPattern = convertImpulsesToBars(discretePattern)
+//
+//    if (discretePattern.isNotEmpty() && continuesPattern.isNotEmpty()) {
+//      val complexWaveform = createComplexWaveform(continuesPattern, barsPattern)
+//
+//      complexWaveform?.let { Log.i(TAG, "Complex vibration created.") }
+//        ?: run { Log.w(TAG, "Complex vibration creation failed.") }
+//
+//      return complexWaveform
+//    } else {
+//      if (discretePattern.isNotEmpty()) {
+//        Log.i(TAG, "Vibration created based on bars.")
+//        return createWaveformForDiscretePattern(barsPattern)
+//      } else if (continuesPattern.isNotEmpty()) {
+//        Log.i(TAG, "Vibration created based on points.")
+//        return createWaveformForContinuesPattern(continuesPattern)
+//      } else {
+//        Log.w(TAG, "Vibration creation failed.")
+//        return null
+//      }
+//    }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  private fun convertToControlPoints(preset: PatternData): List<ControlPoint> {
+    val amplitudeLine = ValueLineBuilder()
+    preset.continuesPattern.amplitude.forEach {
+      amplitudeLine.pushPoint(ValuePoint(it.time, it.value))
     }
+
+    val frequencyLine = ValueLineBuilder()
+    preset.continuesPattern.frequency.forEach {
+      frequencyLine.pushPoint(ValuePoint(it.time, it.value))
+    }
+
+    val discreteAmplitudeLine = convertDiscretePatternToContinuesPattern(preset.discretePattern, amplitudeLine, true)
+    val discreteFrequencyLine = convertDiscretePatternToContinuesPattern(preset.discretePattern, frequencyLine, false)
+
+    amplitudeLine.mergeLine(discreteAmplitudeLine)
+    frequencyLine.mergeLine(discreteFrequencyLine)
+
+    val configLine = ConfigLineBuilder(amplitudeLine, frequencyLine)
+    val controlLine = ControlLineBuilder(configLine)
+
+    return controlLine.points
+  }
+
+  private fun convertDiscretePatternToContinuesPattern(pattern: List<ConfigPoint>, baseline: ValueLineBuilder, useAmplitude: Boolean): ValueLineBuilder {
+    val line = ValueLineBuilder()
+    pattern.forEach {
+      val value = if (useAmplitude) { it.amplitude } else { it.frequency }
+      val timings = peakTiming(it.time)
+      val startPeak = ValuePoint(timings[0], baseline.valueForX(timings[0]))
+      val reachMax = ValuePoint(timings[1], value)
+      val leaveMax = ValuePoint(timings[2], value)
+      val endPeak = ValuePoint(timings[3], baseline.valueForX(timings[3]))
+      line.pushPoint(startPeak)
+      line.pushPoint(reachMax)
+      line.pushPoint(leaveMax)
+      line.pushPoint(endPeak)
+    }
+    return line
+  }
+
+  private fun peakTiming(time: Float): List<Float> {
+    val slopeDuration = 20
+    val peakDuration = 10
+    return listOf(
+      time - slopeDuration - peakDuration / 2,
+      time - peakDuration / 2,
+      time + peakDuration / 2,
+      time + peakDuration / 2 + 1,
+    )
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
-  private fun createWaveformFromBars(bars: List<Bar>): VibrationEffect {
-    return if (areEnvelopesSupported()) {
+  private fun createWaveformForDiscretePattern(bars: List<Bar>): VibrationEffect {
+    return if (engine.isEnvelopeSupported()) {
       val plot = generatePlotFromBars(bars)
       createEnvelopeWaveform(plot)
     } else {
@@ -73,21 +128,20 @@ class HapticBuilder(val vibrationService: Vibrator) {
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
-  private fun createWaveformFromPlot(plot: Plot): VibrationEffect? {
-    return if (areEnvelopesSupported()) createEnvelopeWaveform(plot)
+  private fun createWaveformForContinuesPattern(continuesPattern: ContinuesPattern): VibrationEffect? {
+    return if (engine.isEnvelopeSupported()) createEnvelopeWaveform(continuesPattern)
     else {
-      val bars = generateBarsFromPlot(plot)
+      val bars = generateBarsFromPlot(continuesPattern)
       createWaveform(bars)
     }
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
-  private fun createComplexWaveform(plot: Plot, bars: List<Bar>): VibrationEffect? {
-    val complexPlot = generateComplexPlot(plot, bars)
-    return createWaveformFromPlot(complexPlot)
+  private fun createComplexWaveform(continuesPattern: ContinuesPattern, bars: List<Bar>): VibrationEffect? {
+    val complexPlot = generateComplexPlot(continuesPattern, bars)
+    return createWaveformForContinuesPattern(complexPlot)
   }
 
-  @RequiresApi(Build.VERSION_CODES.O)
   private fun createWaveform(bars: List<Bar>): VibrationEffect {
       printBarsToPlot(bars)
 
@@ -102,47 +156,24 @@ class HapticBuilder(val vibrationService: Vibrator) {
       amplitudes += (it.intensity * MAX_INT_AMPLITUDE).roundToInt()
     }
 
-    return if (vibrationService.hasAmplitudeControl())
+    return if (engine.isAmplitudeSupported())
       VibrationEffect.createWaveform(timings, amplitudes, -1)
     else VibrationEffect.createWaveform(timings, -1)
   }
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
-  private fun createEnvelopeWaveform(plot: Plot): VibrationEffect {
-    val points = generatePlotPoints(plot)
+  private fun createEnvelopeWaveform(continuesPattern: ContinuesPattern): VibrationEffect {
+    val points = generatePlotPoints(continuesPattern)
 
-    val expectedVibrationTime = plot.intensity.last().time.toLong()
+    val expectedVibrationTime = continuesPattern.amplitude.last().time.toLong()
     val controlPoints =
       getShortenControlPoints(expectedVibrationTime, convertPointsToControlPoints(points))
-
-    val initialSharpness = plot.sharpness[0].value
 
     printPointsToPlot(points)
     printControlPointsToPlot(controlPoints)
 
-    return vibrationService.frequencyProfile?.let { frequencyProfile ->
-      val builder = VibrationEffect.WaveformEnvelopeBuilder()
-      controlPoints.forEach {
-        builder
-          .setInitialFrequencyHz(getSharpnessInHz(initialSharpness, frequencyProfile))
-          .addControlPoint(
-            it.intensity,
-            getSharpnessInHz(it.sharpness, frequencyProfile),
-            it.duration,
-          )
-      }
-      builder.build()
-    }
-      ?: run {
-        val builder = VibrationEffect.BasicEnvelopeBuilder()
-        controlPoints.forEach {
-          builder
-            .setInitialSharpness(initialSharpness)
-            .addControlPoint(it.intensity, it.sharpness, it.duration)
-        }
-        builder.build()
-      }
-  }
+    return vibrationEffectsGenerator.convertToVibrationEffect(controlPoints)
+}
 
   // shorten some intervals to archive deterministic vibration length
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
@@ -170,7 +201,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
     expectedVibrationTime: Long,
     controlPoints: ArrayList<ControlPoint>,
   ): ArrayList<SubtractableItem> {
-    val minControlPointDuration = vibrationService.envelopeEffectInfo.minControlPointDurationMillis
+    val minControlPointDuration = engine.getEnvelopConfig().minControlPointDurationMillis
 
     val time = controlPoints.sumOf { it.duration }
     var timeDiff = time - expectedVibrationTime
@@ -236,7 +267,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
 
   @RequiresApi(Build.VERSION_CODES.BAKLAVA)
   private fun createControlPoint(intensity: Float, sharpness: Float, duration: Long): ControlPoint {
-    val envelopeInfo = vibrationService.envelopeEffectInfo
+    val envelopeInfo = engine.getEnvelopConfig()
 
     val minDuration = envelopeInfo.minControlPointDurationMillis
     val maxDuration = envelopeInfo.maxControlPointDurationMillis
@@ -255,12 +286,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
     }
   }
 
-  private fun areEnvelopesSupported(): Boolean {
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
-      vibrationService.areEnvelopeEffectsSupported()
-  }
-
-  fun convertIntensityToLines(intensity: List<PatternPoint>): ArrayList<Line> {
+  fun convertIntensityToLines(intensity: List<ValuePoint>): ArrayList<Line> {
     val lines = ArrayList<Line>()
 
     for (i in 1..< intensity.size) {
@@ -274,8 +300,8 @@ class HapticBuilder(val vibrationService: Vibrator) {
 
   // TODO: sharpness of these bars will never be used - this function should be used only on devices
 // that do not support envelopes, because they do not use sharpness
-  fun generateBarsFromPlot(plot: Plot): ArrayList<Bar> {
-    val lines = convertIntensityToLines(plot.intensity)
+  fun generateBarsFromPlot(continuesPattern: ContinuesPattern): ArrayList<Bar> {
+    val lines = convertIntensityToLines(continuesPattern.amplitude)
     val bars = ArrayList<Bar>()
 
     lines
@@ -318,8 +344,13 @@ class HapticBuilder(val vibrationService: Vibrator) {
     return bars
   }
 
-  fun generateComplexPlot(plot: Plot, initBars: List<Bar>): Plot {
-    val (intensity, sharpness) = plot
+  fun generateComplexPlot(continuesPattern: ContinuesPattern, initBars: List<Bar>): ContinuesPattern {
+    val (intensity, sharpness) = continuesPattern
+
+    if (!intensity.isEmpty() && !sharpness.isEmpty()) {
+
+    }
+
     val lines = convertIntensityToLines(intensity)
 
     val startPoint = intensity.first()
@@ -345,13 +376,13 @@ class HapticBuilder(val vibrationService: Vibrator) {
         .filter { shouldBarBeMerged(it, lines) } // use only bars above plot
 
     if (bars.isEmpty()) {
-      return plot
+      return continuesPattern
     }
 
     // create complex plot
 
     var complexIntensity = arrayListOf(startPoint)
-    val complexSharpness = arrayListOf<PatternPoint>()
+    val complexSharpness = arrayListOf<ValuePoint>()
 
     val nBars = bars.size
     for (i in 0..< nBars) {
@@ -375,7 +406,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
       complexIntensity.add(currBar.point2)
 
       // add bar sharpness
-      complexSharpness.add(PatternPoint(currBar.x1.toFloat(), currBar.sharpness))
+      complexSharpness.add(ValuePoint(currBar.x1.toFloat(), currBar.sharpness))
 
       // handle interval between currBar and nextBar
       nextBar?.let { nextBar ->
@@ -412,7 +443,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
     // remove redundant changes caused by adding bars to plot
     deleteRedundantSharpness(complexSharpness)
 
-    return Plot(complexIntensity, complexSharpness)
+    return ContinuesPattern(complexIntensity, complexSharpness)
   }
 
   fun shouldBarBeMerged(bar: Bar, lines: ArrayList<Line>): Boolean {
@@ -429,9 +460,9 @@ class HapticBuilder(val vibrationService: Vibrator) {
     x1: Long,
     x2: Long,
     lines: List<Line>,
-    sharpness: List<PatternPoint>,
-    complexIntensity: List<PatternPoint>,
-    complexSharpness: List<PatternPoint>,
+    sharpness: List<ValuePoint>,
+    complexIntensity: List<ValuePoint>,
+    complexSharpness: List<ValuePoint>,
   ) {
     val intensityPoints = getIntensityFromInterval(x1, x2, lines)
     val sharpnessPoints = getSharpnessFromInterval(x1, x2, sharpness)
@@ -444,7 +475,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
     x1: Long,
     x2: Long,
     allLines: List<Line>,
-  ): List<PatternPoint>? {
+  ): List<ValuePoint>? {
     if (x1 == x2) {
       return null
     } else if (x1 > x2) {
@@ -489,8 +520,8 @@ class HapticBuilder(val vibrationService: Vibrator) {
   fun getSharpnessFromInterval(
     x1: Long,
     x2: Long,
-    sharpness: List<PatternPoint>,
-  ): List<PatternPoint>? {
+    sharpness: List<ValuePoint>,
+  ): List<ValuePoint>? {
     if (x1 == x2) {
       return null
     } else if (x1 > x2) {
@@ -502,10 +533,10 @@ class HapticBuilder(val vibrationService: Vibrator) {
       val startSharpness = sharpness.findLast { it.time <= x1 }?.value
       val intervalSharpness = sharpness.filter { x1 < it.time && it.time < x2 }
 
-      val resultSharpness = ArrayList<PatternPoint>()
+      val resultSharpness = ArrayList<ValuePoint>()
 
       startSharpness?.let {
-        val point = PatternPoint(x1.toFloat(), it)
+        val point = ValuePoint(x1.toFloat(), it)
         resultSharpness.add(point)
       } ?: { Log.w(TAG, "This should not happen.") }
 
@@ -515,7 +546,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
     }
   }
 
-  private fun deleteRedundantHorizontalLinePoints(points: List<PatternPoint>) {
+  private fun deleteRedundantHorizontalLinePoints(points: List<ValuePoint>) {
     val indexesToDelete = ArrayList<Int>()
     val nPoints = points.size
 
@@ -532,7 +563,7 @@ class HapticBuilder(val vibrationService: Vibrator) {
     indexesToDelete.reversed().forEach { (points as MutableList).removeAt(it) }
   }
 
-  private fun deleteRedundantSharpness(sharpness: List<PatternPoint>) {
+  private fun deleteRedundantSharpness(sharpness: List<ValuePoint>) {
     val indexesToDelete = ArrayList<Int>()
     val nPoints = sharpness.size
 
@@ -548,26 +579,30 @@ class HapticBuilder(val vibrationService: Vibrator) {
     indexesToDelete.reversed().forEach { (sharpness as MutableList).removeAt(it) }
   }
 
-  fun generatePlotFromBars(bars: List<Bar>): Plot {
+  fun generatePlotFromBars(bars: List<Bar>): ContinuesPattern {
     // create simple plot
-    val plotIntensity = arrayListOf(PatternPoint(0f, 0f), PatternPoint(bars.last().x2.toFloat(), 0f))
+    val plotIntensity = arrayListOf(ValuePoint(0f, 0f), ValuePoint(bars.last().x2.toFloat(), 0f))
     val plotSharpness =
-      arrayListOf(PatternPoint(0f, bars.firstOrNull()?.sharpness ?: DEFAULT_SHARPNESS))
+      arrayListOf(ValuePoint(0f, bars.firstOrNull()?.sharpness ?: DEFAULT_SHARPNESS))
 
-    val plot = Plot(plotIntensity, plotSharpness)
+    val plot = ContinuesPattern(plotIntensity, plotSharpness)
 
     return generateComplexPlot(plot, bars)
   }
 
-  fun generatePlotPoints(plot: Plot): ArrayList<PlotPoint> {
-    val (intensity, sharpness) = plot
+  fun generatePlotPoints(continuesPattern: ContinuesPattern): ArrayList<PlotPoint> {
+    val (intensity, sharpness) = continuesPattern
+
+    if (intensity.isEmpty() || sharpness.isEmpty()) {
+      return ArrayList()
+    }
 
     val firstSharpness = sharpness[0].value
     var prevSharpness = firstSharpness
 
     val plotPoints = ArrayList<PlotPoint>()
 
-    for (i in 0..intensity.size - 1) {
+    for (i in 0..< intensity.size) {
       val currPoint = intensity[i]
       val nextPoint = if (i + 1 < intensity.size) intensity[i + 1] else null
 
@@ -644,10 +679,9 @@ class HapticBuilder(val vibrationService: Vibrator) {
   }
 
   fun convertImpulsesToBars(
-    vibrationService: Vibrator,
-    impulses: List<DiscretePoint>,
+    impulses: List<ConfigPoint>,
   ): List<Bar> {
-    val bars = impulses.map { convertImpulseToBar(vibrationService, it) }
+    val bars = impulses.map { convertImpulseToBar(it) }
     val resultBars = ArrayList<Bar>()
 
     var prevBar: Bar? = null
@@ -674,16 +708,14 @@ class HapticBuilder(val vibrationService: Vibrator) {
     return resultBars
   }
 
-  private fun convertImpulseToBar(vibrationService: Vibrator, impulse: DiscretePoint): Bar {
-    val isEnvelopeSupported =
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
-              vibrationService.areEnvelopeEffectsSupported()
+  private fun convertImpulseToBar(impulse: ConfigPoint): Bar {
+    val isEnvelopeSupported = engine.isEnvelopeSupported()
 
     val durationRange =
       if (isEnvelopeSupported) ENVELOPE_SUPPORT_BAR_DURATION_RANGE_MS
       else DEFAULT_BAR_DURATION_RANGE_MS
     val minDuration =
-      if (isEnvelopeSupported) vibrationService.envelopeEffectInfo.minControlPointDurationMillis
+      if (isEnvelopeSupported) engine.getEnvelopConfig().minControlPointDurationMillis
       else DEFAULT_MIN_BAR_DURATION_MS
 
     val ratio = 1 - impulse.frequency
@@ -693,8 +725,8 @@ class HapticBuilder(val vibrationService: Vibrator) {
     return Bar(max(0, impulse.time.toLong() - r), impulse.time.toLong() + r, impulse.amplitude, impulse.frequency)
   }
 
-  private fun convertLinesToIntensity(lines: List<Line>): List<PatternPoint> {
-    val points = ArrayList<PatternPoint>()
+  private fun convertLinesToIntensity(lines: List<Line>): List<ValuePoint> {
+    val points = ArrayList<ValuePoint>()
 
     lines.forEach {
       points.add(it.point1)

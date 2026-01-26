@@ -1,10 +1,10 @@
 package com.swmansion.pulsar.types
 
-import com.swmansion.pulsar.audio.PatternPoint
+import com.swmansion.pulsar.audio.ValuePoint
 import kotlin.math.pow
 import kotlin.math.round
 
-data class Line(val point1: PatternPoint, val point2: PatternPoint) {
+data class Line(val point1: ValuePoint, val point2: ValuePoint) {
   init {
     if (point1.time > point2.time) {
       throw Exception(
@@ -26,12 +26,12 @@ data class Line(val point1: PatternPoint, val point2: PatternPoint) {
     return point1.value == point2.value
   }
 
-  fun getPoint(x: Long): PatternPoint? {
+  fun getPoint(x: Long): ValuePoint? {
     if (isVertical()) {
       return null
     }
     return if (point1.time <= x && x <= point2.time)
-      PatternPoint(x.toFloat(), roundDecimal(a * x + b))
+      ValuePoint(x.toFloat(), roundDecimal(a * x + b))
     else null
   }
 

@@ -241,7 +241,7 @@ class AudioSimulator {
         }
     }
 
-    private fun interpolateValue(points: List<PatternPoint>, time: Double): Double {
+    private fun interpolateValue(points: List<ValuePoint>, time: Double): Double {
         if (points.isEmpty()) return 0.0
         if (points.size == 1) return points[0].value.toDouble()
 
