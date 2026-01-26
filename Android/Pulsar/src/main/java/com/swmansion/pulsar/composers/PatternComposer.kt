@@ -10,7 +10,7 @@ import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.audio.PatternData
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.haptics.TAG
-import com.swmansion.pulsar.haptics.convertImpulsesToBars
+//import com.swmansion.pulsar.haptics.convertImpulsesToBars
 import com.swmansion.pulsar.types.Preset
 
 class PatternComposerImpl(

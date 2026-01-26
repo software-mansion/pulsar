@@ -54,7 +54,7 @@ data class Plot(
 
     val sharpnessTime = sharpness.map { it.time }
     if (sharpnessTime != sharpnessTime.sorted()) {
-//      throwInitException("Sharpness relative time must be in ascending order.")
+      throwInitException("Sharpness relative time must be in ascending order.")
     }
 
     if (sharpnessTime != sharpnessTime.distinct()) {
