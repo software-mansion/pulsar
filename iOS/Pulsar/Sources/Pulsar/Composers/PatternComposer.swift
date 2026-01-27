@@ -113,12 +113,4 @@ public class PatternComposerImpl: NSObject {
       print("Error stopping pattern: \(error.localizedDescription)")
     }
   }
-  
-  public func getDiscreteLine() -> DiscreteLine {
-    return discreteLine
-  }
-  
-  public func getContinuousLine() -> ContinuousLine {
-    return continuousLine
-  }
 }

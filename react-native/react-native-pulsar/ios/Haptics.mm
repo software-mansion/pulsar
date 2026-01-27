@@ -54,25 +54,25 @@ RCT_EXPORT_MODULE()
 // PatternComposer -----------------------------------------------------------------
 
 static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) {
-  NSMutableArray<PatternPoint *> *amplitudePoints = [NSMutableArray array];
-  NSMutableArray<PatternPoint *> *frequencyPoints = [NSMutableArray array];
+  NSMutableArray<ValuePoint *> *amplitudePoints = [NSMutableArray array];
+  NSMutableArray<ValuePoint *> *frequencyPoints = [NSMutableArray array];
 
   auto continuous = data.continuesPattern();
   for (const auto &point : continuous.amplitude()) {
-    PatternPoint *pp = [[PatternPoint alloc] initWithTime:point.time() value:(float)point.value()];
+    ValuePoint *pp = [[ValuePoint alloc] initWithTime:point.time() value:(float)point.value()];
     [amplitudePoints addObject:pp];
   }
   for (const auto &point : continuous.frequency()) {
-    PatternPoint *pp = [[PatternPoint alloc] initWithTime:point.time() value:(float)point.value()];
+    ValuePoint *pp = [[ValuePoint alloc] initWithTime:point.time() value:(float)point.value()];
     [frequencyPoints addObject:pp];
   }
 
   ContinuesPattern *continuesPattern = [[ContinuesPattern alloc] initWithAmplitude:amplitudePoints
                                                                          frequency:frequencyPoints];
 
-  NSMutableArray<DiscretePoint *> *discretePoints = [NSMutableArray array];
+  NSMutableArray<ConfigPoint *> *discretePoints = [NSMutableArray array];
   for (const auto &point : data.discretePattern()) {
-    DiscretePoint *dp = [[DiscretePoint alloc] initWithTime:point.time()
+    ConfigPoint *dp = [[ConfigPoint alloc] initWithTime:point.time()
                                                   amplitude:(float)point.amplitude()
                                                   frequency:(float)point.frequency()];
     [discretePoints addObject:dp];

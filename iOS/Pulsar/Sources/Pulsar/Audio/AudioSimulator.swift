@@ -157,19 +157,19 @@ public class AudioSimulator: NSObject {
 	}
 	
 	private func generateContinuousAudioConfig(from data: PatternData) -> [ContinuousAudioConfig] {
-		let amplitudePoints: [PatternPoint] = data.continuesPattern.amplitude.count > 0 ? data.continuesPattern.amplitude : []
-		let frequencyPoints: [PatternPoint] = data.continuesPattern.frequency.count > 1 ? data.continuesPattern.frequency : []
+		let amplitudePoints: [ValuePoint] = data.continuesPattern.amplitude.count > 0 ? data.continuesPattern.amplitude : []
+		let frequencyPoints: [ValuePoint] = data.continuesPattern.frequency.count > 1 ? data.continuesPattern.frequency : []
 		
 		func normalizeFrequency(_ x: Float) -> Double {
 			return 80.0 + (230.0 - 80.0) * Double(x)
 		}
 		
-		func applyModifiers(amplitude: [PatternPoint], frequency: [PatternPoint], ampMod: Double, freqMod: Double) -> (amplitude: [PatternPoint], frequency: [PatternPoint]) {
+		func applyModifiers(amplitude: [ValuePoint], frequency: [ValuePoint], ampMod: Double, freqMod: Double) -> (amplitude: [ValuePoint], frequency: [ValuePoint]) {
 			let modifiedAmplitude = amplitude.map { point in
-				PatternPoint(time: point.time, value: Float(Double(point.value) * ampMod))
+				ValuePoint(time: point.time, value: Float(Double(point.value) * ampMod))
 			}
 			let modifiedFrequency = frequency.map { point in
-				PatternPoint(time: point.time, value: Float(normalizeFrequency(point.value) * freqMod))
+				ValuePoint(time: point.time, value: Float(normalizeFrequency(point.value) * freqMod))
 			}
 			return (modifiedAmplitude, modifiedFrequency)
 		}
@@ -234,7 +234,7 @@ public class AudioSimulator: NSObject {
 		var phasesDiscrete: [Double] = Array(repeating: 0, count: discreteData.count)
 		let twoPi = Double.pi * 2
         
-		func valueForTime(_ points: [PatternPoint], _ t: Double) -> Float {
+		func valueForTime(_ points: [ValuePoint], _ t: Double) -> Float {
 			if points.isEmpty { return 0 }
 			if t <= points[0].time { return points[0].value }
 			if t >= points.last!.time { return points.last!.value }

@@ -1,6 +1,6 @@
 import Foundation
 
-@objc public class PatternPoint: NSObject, Codable {
+@objc public class ValuePoint: NSObject, Codable {
   let time: Double
   let value: Float
   @objc public init(time: Double, value: Float) {
@@ -9,7 +9,7 @@ import Foundation
   }
 }
  
-@objc public class DiscretePoint: NSObject, Codable {
+@objc public class ConfigPoint: NSObject, Codable {
   let time: Double
   let amplitude: Float
   let frequency: Float
@@ -21,9 +21,9 @@ import Foundation
 }
 
 @objc public class ContinuesPattern: NSObject, Codable {
-  let amplitude: [PatternPoint]
-  let frequency: [PatternPoint]
-  @objc public init(amplitude: [PatternPoint], frequency: [PatternPoint]) {
+  let amplitude: [ValuePoint]
+  let frequency: [ValuePoint]
+  @objc public init(amplitude: [ValuePoint], frequency: [ValuePoint]) {
     self.amplitude = amplitude
     self.frequency = frequency
   }
@@ -31,17 +31,17 @@ import Foundation
 
 @objc public class PatternData: NSObject, Codable {
   let continuesPattern: ContinuesPattern
-  let discretePattern: [DiscretePoint]
-  @objc public init(continuesPattern: ContinuesPattern, discretePattern: [DiscretePoint]) {
+  let discretePattern: [ConfigPoint]
+  @objc public init(continuesPattern: ContinuesPattern, discretePattern: [ConfigPoint]) {
     self.continuesPattern = continuesPattern
     self.discretePattern = discretePattern
   }
   public init(line: [[[Double]]], bar: [[Double]]) {
     self.continuesPattern = ContinuesPattern(
-      amplitude: line[0].map { PatternPoint(time: Double($0[0]), value: Float($0[1])) },
-      frequency: line[1].map { PatternPoint(time: Double($0[0]), value: Float($0[1])) }
+      amplitude: line[0].map { ValuePoint(time: Double($0[0]), value: Float($0[1])) },
+      frequency: line[1].map { ValuePoint(time: Double($0[0]), value: Float($0[1])) }
     )
-    self.discretePattern = bar.map { DiscretePoint(time: Double($0[0]), amplitude: Float($0[1]), frequency: Float($0[2])) }
+    self.discretePattern = bar.map { ConfigPoint(time: Double($0[0]), amplitude: Float($0[1]), frequency: Float($0[2])) }
   }
 }
 
@@ -66,7 +66,7 @@ struct DiscreteAudioConfig {
 
 struct ContinuousAudioConfig {
 	let type: String
-	let data: (amplitude: [PatternPoint], frequency: [PatternPoint])
+	let data: (amplitude: [ValuePoint], frequency: [ValuePoint])
 }
 
 struct AudioPatternConfig {
