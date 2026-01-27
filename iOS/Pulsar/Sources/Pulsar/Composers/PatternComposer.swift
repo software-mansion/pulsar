@@ -3,7 +3,7 @@ import CoreHaptics
 import UIKit
 import AVFAudio
 
-public class PatternComposerImpl: NSObject {
+public class PatternComposer: NSObject {
   private var engine: HapticEngineWrapper!
   private var discreteLine = DiscreteLine()
   private var continuousLine = ContinuousLine()

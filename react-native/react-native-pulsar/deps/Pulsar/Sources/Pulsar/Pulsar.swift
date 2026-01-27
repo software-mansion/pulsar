@@ -5,13 +5,13 @@ import UIKit
   private var engine = HapticEngineWrapper()
   private var audioSimulator = AudioSimulator()
   private var presets: PresetsWrapper?
-  private var realtimeComposer: RealtimeComposerImpl!
+  private var realtimeComposer: RealtimeComposer!
   
   @objc public override init() {
-    realtimeComposer = RealtimeComposerImpl(engine: self.engine)
+    realtimeComposer = RealtimeComposer(engine: self.engine)
   }
   
-  @objc public func Presets() -> PresetsWrapper {
+  @objc public func getPresets() -> PresetsWrapper {
     if (presets == nil) {
       presets = PresetsWrapper(haptics: self)
     }
@@ -19,7 +19,7 @@ import UIKit
   }
   
   @objc public func preloadPresets(presetNames: Array<String>) {
-    let presets = self.Presets()
+    let presets = self.getPresets()
     for (presetName) in presetNames {
       presets.preloadPresetByName(presetName)
     }
@@ -30,18 +30,18 @@ import UIKit
   }
   
   @objc public func enableCache(state: Bool) {
-    self.Presets().enableCache(state: state)
+    self.getPresets().enableCache(state: state)
   }
   
   @objc public func clearCache() {
-    self.Presets().resetCache()
+    self.getPresets().resetCache()
   }
   
-  @objc public func PatternComposer() -> PatternComposerImpl {
-    return PatternComposerImpl(engine: engine, audioSimulator: audioSimulator)
+  @objc public func getPatternComposer() -> PatternComposer {
+    return PatternComposer(engine: engine, audioSimulator: audioSimulator)
   }
   
-  @objc public func RealtimeComposer() -> RealtimeComposerImpl {
+  @objc public func getRealtimeComposer() -> RealtimeComposer {
     return realtimeComposer
   }
   

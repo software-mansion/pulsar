@@ -3,9 +3,9 @@
 
 @implementation RNPulsar {
   Pulsar *pulsar_;
-  RealtimeComposerImpl *realtimeComposer_;
+  RealtimeComposer *realtimeComposer_;
   int nextId;
-  NSMutableDictionary<NSNumber*, PatternComposerImpl*> *patternComposersRegistry_;
+  NSMutableDictionary<NSNumber*, PatternComposer*> *patternComposersRegistry_;
 }
 RCT_EXPORT_MODULE()
 
@@ -14,7 +14,7 @@ RCT_EXPORT_MODULE()
   self = [super init];
   if (self) {
     pulsar_ = [[Pulsar alloc] init];
-    realtimeComposer_ = [pulsar_ RealtimeComposer];
+    realtimeComposer_ = [pulsar_ getRealtimeComposer];
     nextId = 1;
     patternComposersRegistry_ = [NSMutableDictionary new];
   }
@@ -30,7 +30,7 @@ RCT_EXPORT_MODULE()
 // Pulsar -----------------------------------------------------------------
 
 - (void)Pulsar_play:(nonnull NSString *)name {
-  [[[pulsar_ Presets] getByName:name] play];
+  [[[pulsar_ getPresets] getByName:name] play];
 }
 
 - (void)Pulsar_preloadPresets:(nonnull NSArray *)presetNames {
@@ -82,7 +82,7 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
 }
 
 - (nonnull NSNumber *)PatternComposer_parsePattern:(JS::NativeRNPulsar::Pattern &)data {
-  auto patternComposer = [pulsar_ PatternComposer];
+  auto patternComposer = [pulsar_ getPatternComposer];
 
   PatternData *patternData = PatternDataFromJSPattern(data);
   [patternComposer parsePatternWithHapticsData:patternData];

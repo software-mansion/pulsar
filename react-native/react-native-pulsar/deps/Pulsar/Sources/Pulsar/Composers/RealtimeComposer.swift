@@ -1,7 +1,7 @@
 import Foundation
 import CoreHaptics
 
-public class RealtimeComposerImpl: NSObject {
+public class RealtimeComposer: NSObject {
   private var engine: HapticEngineWrapper!
   private var continuousPlayer: CHHapticAdvancedPatternPlayer?
   private var isPlaying = false

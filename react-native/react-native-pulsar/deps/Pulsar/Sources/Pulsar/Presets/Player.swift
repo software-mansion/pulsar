@@ -4,11 +4,11 @@ import Foundation
 import AVFAudio
 
 @objc public class Player : NSObject {
-  private var patternComposer: PatternComposerImpl!
+  private var patternComposer: PatternComposer!
   
   public init(_ haptics: Pulsar, rawContinuesPattern: [[[Double]]] = [], rawDiscretePattern: [[Double]] = []) {
     super.init()
-    patternComposer = haptics.PatternComposer()
+    patternComposer = haptics.getPatternComposer()
     
     let continuesPoints = convertContinuesPattern(rawContinuesPattern)
     let discretePoints = convertDiscretePattern(rawDiscretePattern)
