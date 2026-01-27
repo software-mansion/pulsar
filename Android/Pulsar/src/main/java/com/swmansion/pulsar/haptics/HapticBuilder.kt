@@ -34,8 +34,8 @@ class HapticBuilder(engine: HapticEngineWrapper) {
     return controlLine.points
   }
 
-  fun simulateCompatibilityMode(compatibilityMode: CompatibilityMode) {
-    vibrationEffectsGenerator.simulateCompatibilityMode(compatibilityMode)
+  fun simulateCompatibilityMode(mode: CompatibilityMode) {
+    vibrationEffectsGenerator.simulateCompatibilityMode(mode)
   }
 
 }

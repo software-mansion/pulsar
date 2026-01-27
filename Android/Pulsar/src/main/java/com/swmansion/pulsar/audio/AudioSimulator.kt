@@ -5,6 +5,7 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import com.swmansion.pulsar.types.AudioDataConfig
 import com.swmansion.pulsar.types.AudioPatternConfig
+import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.ContinuousAudioConfig
 import com.swmansion.pulsar.types.DiscreteAudioConfig
 import com.swmansion.pulsar.types.EnvelopeConfig
@@ -20,7 +21,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class AudioSimulator {
+class AudioSimulator(
+    private var compatibilityMode: CompatibilityMode
+) {
     companion object {
         private const val MAX_FREQUENCY = 440.0
         private const val MIN_FREQUENCY = 60.0
@@ -415,5 +418,9 @@ class AudioSimulator {
             byteArray[i * 2 + 1] = ((sample shr 8) and 0xFF).toByte()
         }
         return byteArray
+    }
+
+    fun setCompatibilityMode(mode: CompatibilityMode) {
+        compatibilityMode = mode
     }
 }

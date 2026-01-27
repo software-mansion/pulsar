@@ -210,9 +210,7 @@ class MainActivity : ComponentActivity() {
   @Composable
   private fun DeviceInfo() {
     Column {
-      Text("Device supports amplitude: ${pulsar?.engine?.isAmplitudeSupported()}")
-      Text("Device supports envelope: ${pulsar?.engine?.isEnvelopeSupported()}")
-      Text("Device supports frequency profile: ${pulsar?.engine?.isFrequencyProfileSupported()}")
+      Text("Device compatibility mode: ${pulsar?.getCompatibilityMode()}")
     }
   }
 }

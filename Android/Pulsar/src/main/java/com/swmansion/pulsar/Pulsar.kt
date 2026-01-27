@@ -10,8 +10,8 @@ import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.RealtimeComposerStrategy
 
 class Pulsar(context: Context) {
-    val engine = HapticEngineWrapper(context)
-    private val audioSimulator = AudioSimulator()
+    private val engine = HapticEngineWrapper(context)
+    private val audioSimulator = AudioSimulator(engine.getRealCompatibilityMode())
     private var presets: PresetsWrapper? = null
     private var realtimeComposer: RealtimeComposer? = null
 
@@ -52,7 +52,12 @@ class Pulsar(context: Context) {
         return realtimeComposer!!
     }
 
-    fun simulateCompatibilityMode(compatibilityMode: CompatibilityMode) {
-        engine.simulateCompatibilityMode(compatibilityMode)
+    fun getCompatibilityMode(): CompatibilityMode {
+        return engine.getRealCompatibilityMode()
+    }
+
+    fun simulateCompatibilityMode(mode: CompatibilityMode) {
+        engine.simulateCompatibilityMode(mode)
+        audioSimulator.setCompatibilityMode(mode)
     }
 }

@@ -11,18 +11,22 @@ import kotlin.math.roundToInt
 
 class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
 
-    private var compatibilityMode = CompatibilityMode.MINIMAL_SUPPORT
+    private var forcedCompatibilityMode = CompatibilityMode.ADVANCED_SUPPORT
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun convertToVibrationEffect(controlPoints: List<ControlPoint>) : VibrationEffect {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA && compatibilityMode >= CompatibilityMode.STANDARD_SUPPORT) {
-            if (engine.isFrequencyProfileSupported() && compatibilityMode == CompatibilityMode.ADVANCED_SUPPORT) {
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
+            && engine.isEnvelopeSupported()
+            && forcedCompatibilityMode >= CompatibilityMode.STANDARD_SUPPORT
+        ) {
+            if (engine.isFrequencyProfileSupported() && forcedCompatibilityMode == CompatibilityMode.ADVANCED_SUPPORT) {
                 convertToAdvanceEnvelope(controlPoints)
             } else {
                 convertToBasicEnvelope(controlPoints)
             }
         } else {
-            if (engine.isAmplitudeSupported() && compatibilityMode >= CompatibilityMode.LIMITED_SUPPORT) {
+            if (engine.isAmplitudeSupported() && forcedCompatibilityMode >= CompatibilityMode.LIMITED_SUPPORT) {
                 convertToAmplitudeWaveform(controlPoints)
             } else {
                 convertToTimingWaveform(controlPoints)
@@ -111,7 +115,7 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
         return (s * 1000).toLong()
     }
 
-    fun simulateCompatibilityMode(compatibilityMode: CompatibilityMode) {
-        this.compatibilityMode = compatibilityMode
+    fun simulateCompatibilityMode(mode: CompatibilityMode) {
+        this.forcedCompatibilityMode = mode
     }
 }

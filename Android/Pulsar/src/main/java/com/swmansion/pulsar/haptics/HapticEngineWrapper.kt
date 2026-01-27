@@ -76,7 +76,23 @@ class HapticEngineWrapper(context: Context) {
         }
     }
 
-    fun simulateCompatibilityMode(compatibilityMode: CompatibilityMode) {
-        hapticBuilder.simulateCompatibilityMode(compatibilityMode)
+    fun simulateCompatibilityMode(mode: CompatibilityMode) {
+        hapticBuilder.simulateCompatibilityMode(mode)
+    }
+
+    fun getRealCompatibilityMode(): CompatibilityMode {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            if (isFrequencyProfileSupported()) {
+                CompatibilityMode.ADVANCED_SUPPORT
+            } else {
+                CompatibilityMode.STANDARD_SUPPORT
+            }
+        } else {
+            if (isAmplitudeSupported()) {
+                CompatibilityMode.LIMITED_SUPPORT
+            } else {
+                CompatibilityMode.MINIMAL_SUPPORT
+            }
+        }
     }
 }
