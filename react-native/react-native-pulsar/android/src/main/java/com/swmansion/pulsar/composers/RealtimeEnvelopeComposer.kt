@@ -1,5 +1,6 @@
 package com.swmansion.pulsar.composers
 
+import android.os.Build
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.haptics.VibrationEffectsGenerator
 import com.swmansion.pulsar.types.ControlPoint
@@ -21,6 +22,7 @@ class RealtimeEnvelopeComposer(
     }
 
     private var isPlaying = false
+    private var isDiscreteScheduled = false
     private var currentAmplitude = 0.0f
     private var currentFrequency = 0.0f
     private var schedulerJob: Job? = null
@@ -37,11 +39,19 @@ class RealtimeEnvelopeComposer(
     }
 
     override fun update(amplitude: Float, frequency: Float) {
+        if (isDiscreteScheduled) {
+            return
+        }
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
         if (!isPlaying) {
             start(currentAmplitude, currentFrequency)
         }
+    }
+
+    override fun playDiscrete(amplitude: Float, frequency: Float) {
+        update(amplitude, frequency)
+        isDiscreteScheduled = true
     }
 
     override fun stop() {
@@ -55,12 +65,18 @@ class RealtimeEnvelopeComposer(
     override fun isActive(): Boolean = isPlaying
 
     private fun scheduleSequentialHaptics() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
+        }
         schedulerJob?.cancel()
         schedulerJob = scope.launch {
             while (isPlaying) {
                 val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
                     ControlPoint(currentAmplitude, currentFrequency, SEGMENT_DURATION_MS.toFloat())
                 ))
+                if (isDiscreteScheduled) {
+                    isDiscreteScheduled = false
+                }
                 engine.vibrate(effect)
                 delay(SEGMENT_DURATION_MS)
             }

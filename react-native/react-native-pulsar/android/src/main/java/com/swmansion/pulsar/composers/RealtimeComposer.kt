@@ -19,6 +19,10 @@ class RealtimeComposer(
         delegate.update(amplitude, frequency)
     }
 
+    override fun playDiscrete(amplitude: Float, frequency: Float) {
+        delegate.playDiscrete(amplitude, frequency)
+    }
+
     override fun stop() {
         delegate.stop()
     }

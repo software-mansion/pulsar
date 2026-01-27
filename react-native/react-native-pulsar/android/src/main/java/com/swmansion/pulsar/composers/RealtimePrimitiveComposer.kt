@@ -19,6 +19,7 @@ class RealtimePrimitiveComposer(
     }
 
     private var isPlaying = false
+    private var isDiscreteScheduled = false
     private var currentAmplitude = 0.0f
     private var currentFrequency = 0.0f
     private var currentIntervalMs: Long = 50L
@@ -37,6 +38,9 @@ class RealtimePrimitiveComposer(
     }
 
     override fun update(amplitude: Float, frequency: Float) {
+        if (isDiscreteScheduled) {
+            return
+        }
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
         currentIntervalMs = (MIN_INTERVAL_MS + frequency * (MAX_INTERVAL_MS - MIN_INTERVAL_MS)).toLong()
@@ -44,6 +48,11 @@ class RealtimePrimitiveComposer(
         if (!isPlaying) {
             start(currentAmplitude, currentFrequency)
         }
+    }
+
+    override fun playDiscrete(amplitude: Float, frequency: Float) {
+        update(amplitude, frequency)
+        isDiscreteScheduled = true
     }
 
     override fun stop() {
@@ -62,6 +71,11 @@ class RealtimePrimitiveComposer(
         }
 
         val effect = createCompositionEffect(currentAmplitude, currentFrequency)
+
+        if (isDiscreteScheduled) {
+            isDiscreteScheduled = false
+        }
+
         engine.vibrate(effect)
 
         handler.postDelayed(loopRunnable, currentIntervalMs)
