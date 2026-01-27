@@ -2,9 +2,11 @@ package com.swmansion.pulsar.composers
 
 import android.os.Build
 import android.os.VibrationEffect
+import android.util.Log
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
+import kotlinx.serialization.json.Json
 
 class PatternComposer(
     private val engine: HapticEngineWrapper,
