@@ -52,7 +52,7 @@ class Pulsar(context: Context) {
         return realtimeComposer!!
     }
 
-    fun getCompatibilityMode(): CompatibilityMode {
+    fun isHapticsSupported(): CompatibilityMode {
         return engine.getRealCompatibilityMode()
     }
 

@@ -210,7 +210,7 @@ class MainActivity : ComponentActivity() {
   @Composable
   private fun DeviceInfo() {
     Column {
-      Text("Device compatibility mode: ${pulsar?.getCompatibilityMode()}")
+      Text("Device compatibility mode: ${pulsar?.isHapticsSupported()}")
     }
   }
 }
