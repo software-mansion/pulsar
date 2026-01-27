@@ -6,4 +6,4 @@ npm link ../react-native-pulsar
 cp ../react-native-pulsar/scripts/exampleApp/data/react-native.config.js react-native.config.js
 cp ../react-native-pulsar/scripts/exampleApp/data/metro.config.js metro.config.js
 cp ../react-native-pulsar/scripts/exampleApp/data/babel.config.js babel.config.js
-cp ../react-native-pulsar/scripts/exampleApp/data/App.tsx App.tsx
+cp ../react-native-pulsar/scripts/exampleApp/data/App.txt App.tsx

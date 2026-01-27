@@ -1,10 +1,9 @@
-package com.pulsar
+package com.swmansion.pulsar
 
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
-import com.rnpulsar.NativeRNPulsarSpec
 
 @ReactModule(name = PulsarModule.NAME)
 class PulsarModule(reactContext: ReactApplicationContext) :

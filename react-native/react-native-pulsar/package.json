@@ -30,7 +30,8 @@
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
-    "!**/.*"
+    "!**/.*",
+    "!scripts"
   ],
   "scripts": {
     "example": "yarn workspace react-native-pulsar-example",
@@ -154,7 +155,7 @@
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "com.rnpulsar"
+      "javaPackageName": "com.swmansion.pulsar"
     }
   },
   "create-react-native-library": {
