@@ -36,10 +36,15 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
 
     @RequiresApi(Build.VERSION_CODES.BAKLAVA)
     private fun convertToAdvanceEnvelope(controlPoints: List<ControlPoint>): VibrationEffect {
-        val frequencyProfile = engine.getFrequencyProfile()
         val builder = VibrationEffect.WaveformEnvelopeBuilder()
+        if (controlPoints.isEmpty()) {
+            builder.addControlPoint(0f, 1f, 1)
+            return builder.build()
+        }
 
-        val initialSharpness = controlPoints[0].sharpness
+        val frequencyProfile = engine.getFrequencyProfile()
+
+        val initialSharpness = controlPoints.first().sharpness
         builder.setInitialFrequencyHz(getSharpnessInHz(initialSharpness, frequencyProfile!!))
 
         controlPoints.forEach {
@@ -66,6 +71,10 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
     @RequiresApi(Build.VERSION_CODES.BAKLAVA)
     private fun convertToBasicEnvelope(controlPoints: List<ControlPoint>): VibrationEffect {
         val builder = VibrationEffect.BasicEnvelopeBuilder()
+        if (controlPoints.isEmpty()) {
+            builder.addControlPoint(0f, 1f, 1)
+            return builder.build()
+        }
 
         val initialSharpness = controlPoints.first().sharpness
 

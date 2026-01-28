@@ -6,6 +6,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
+import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ContinuesPattern
 import com.swmansion.pulsar.types.PatternData
@@ -35,6 +36,17 @@ class PulsarModule(reactContext: ReactApplicationContext) :
         it.getString(i)?.let { name -> names.add(name) }
       }
       pulsar.preloadPresets(names)
+    }
+  }
+
+  override fun Pulsar_hapticSupport(): Double {
+    val hapticSupport = pulsar.hapticSupport()
+    return when (hapticSupport) {
+        CompatibilityMode.NO_SUPPORT -> { 0.toDouble() }
+        CompatibilityMode.MINIMAL_SUPPORT -> { 1.toDouble() }
+        CompatibilityMode.LIMITED_SUPPORT -> { 2.toDouble() }
+        CompatibilityMode.STANDARD_SUPPORT -> { 3.toDouble() }
+        else -> { 4.toDouble() }
     }
   }
 
@@ -156,6 +168,6 @@ class PulsarModule(reactContext: ReactApplicationContext) :
   }
 
   companion object {
-    const val NAME = "Pulsar"
+    const val NAME = "RNPulsar"
   }
 }

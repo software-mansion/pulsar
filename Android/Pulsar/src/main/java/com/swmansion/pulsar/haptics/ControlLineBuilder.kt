@@ -10,7 +10,8 @@ class ControlLineBuilder(configLine: ConfigLineBuilder) {
         val stepsPerSecond = 200
 
         val stepDurationMs = 1f / stepsPerSecond
-        val maxTime = configLine.points.maxOf { it.time }
+
+        val maxTime = if (configLine.points.isEmpty()) { 0f } else configLine.points.maxOf { it.time }
 
         var currentTime = 0f
         while (currentTime < maxTime) {
