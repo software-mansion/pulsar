@@ -121,4 +121,9 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
   return [realtimeComposer_ isActive] ? @1 : @0;
 }
 
+- (nonnull NSNumber *)Pulsar_hapticSupport { 
+  return [pulsar_ hapticSupport] ? @(4) : @(0);
+}
+
+
 @end
