@@ -1,11 +1,15 @@
 package com.swmansion.pulsarapp
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.HapticFeedbackConstants
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -27,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat.performHapticFeedback
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsarapp.screens.EmptyScreen
@@ -84,6 +89,7 @@ class MainActivity : ComponentActivity() {
     }
   }
 
+  @RequiresApi(Build.VERSION_CODES.R)
   @Composable
   private fun HomeContent() {
     Column(
@@ -97,6 +103,10 @@ class MainActivity : ComponentActivity() {
           Button(
             modifier = Modifier.padding(6.dp),
             onClick = {
+              vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+//              pulsar?.test()
+
+
 //              pulsar.Presets().Earthquake()
 
 //              val timings: LongArray = longArrayOf(
@@ -152,7 +162,7 @@ class MainActivity : ComponentActivity() {
 //              )
 
 
-                pulsar?.getPresets()?.Earthquake()
+//                pulsar?.getPresets()?.Earthquake()
 
 //              if (composer == null) {
 //                composer = pulsar?.PatternComposer()
@@ -210,7 +220,7 @@ class MainActivity : ComponentActivity() {
   @Composable
   private fun DeviceInfo() {
     Column {
-      Text("Device compatibility mode: ${pulsar?.isHapticsSupported()}")
+      Text("Device compatibility mode: ${pulsar?.hapticSupport()}")
     }
   }
 }

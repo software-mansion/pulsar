@@ -1,6 +1,10 @@
 package com.swmansion.pulsar
 
+import android.app.Activity
 import android.content.Context
+import android.os.Build
+import android.view.HapticFeedbackConstants
+import androidx.annotation.RequiresApi
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
@@ -9,7 +13,7 @@ import com.swmansion.pulsar.presets.PresetsWrapper
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.RealtimeComposerStrategy
 
-class Pulsar(context: Context) {
+class Pulsar(private var context: Context) {
     private val engine = HapticEngineWrapper(context)
     private val audioSimulator = AudioSimulator(engine.getRealCompatibilityMode())
     private var presets: PresetsWrapper? = null
@@ -17,7 +21,7 @@ class Pulsar(context: Context) {
 
     fun getPresets(): PresetsWrapper {
         if (presets == null) {
-            presets = PresetsWrapper(this)
+            presets = PresetsWrapper(this, context, engine)
         }
         return presets!!
     }

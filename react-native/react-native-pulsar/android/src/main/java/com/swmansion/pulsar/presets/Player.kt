@@ -7,6 +7,7 @@ import com.swmansion.pulsar.composers.PatternComposer
 open class Player(
     haptics: Pulsar,
     pattern: PatternData,
+    private var audioOnly: Boolean = false
 ) {
     private var composer: PatternComposer = haptics.getPatternComposer()
 
@@ -14,7 +15,11 @@ open class Player(
         composer.parsePattern(pattern)
     }
 
-    fun play() {
+    open fun play() {
+        if (audioOnly) {
+            composer.playAudioOnly()
+            return
+        }
         composer.play()
     }
 

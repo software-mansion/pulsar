@@ -41,7 +41,7 @@ data class PatternData(
   val continuesPattern: ContinuesPattern,
   val discretePattern: List<ConfigPoint>,
 ) {
-  constructor(rawContinuesPattern: List<List<List<Float>>>, rawDiscretePattern: List<List<Float>>) : this(
+  constructor(rawContinuesPattern: List<List<List<Float>>> = listOf(listOf(), listOf()), rawDiscretePattern: List<List<Float>> = listOf()) : this(
     continuesPattern = ContinuesPattern(
       amplitude = rawContinuesPattern[0].map { ValuePoint(time = it[0], value = it[1]) },
       frequency = rawContinuesPattern[1].map { ValuePoint(time = it[0], value = it[1]) }

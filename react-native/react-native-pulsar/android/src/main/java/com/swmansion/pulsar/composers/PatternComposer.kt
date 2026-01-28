@@ -36,6 +36,10 @@ class PatternComposer(
         vibrationEffect?.let { engine.vibrate(it) }
     }
 
+    fun playAudioOnly() {
+        audioSimulator.play(audioBuffer)
+    }
+
     fun stop() {
         engine.stop()
     }
