@@ -1,5 +1,8 @@
 ---
-import Test from '../components/Test';
+import { BasicLayout } from './components/Layouts/BasicLayout';
+import { TopBar } from './components/TopBar/TopBar';
+import { TopBanner } from './components/TopBanner/TopBanner';
+import './index.css';
 ---
 
 <!doctype html>
@@ -10,6 +13,11 @@ import Test from '../components/Test';
 		<title>title</title>
 	</head>
 	<body>
-		
+
+		<BasicLayout>
+			<TopBar />
+		</BasicLayout>
+		<TopBanner />
+	
 	</body>
 </html>

@@ -1,14 +1,24 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-
 import react from '@astrojs/react';
 
-// https://astro.build/config
 export default defineConfig({
+  vite: {
+    css: {
+      modules: {
+        localsConvention: 'camelCase',
+        generateScopedName: '[name]__[local]',
+      },
+    },
+    ssr: {
+      external: ['react', 'react-dom'],
+    },
+  },
   integrations: [starlight({
     title: 'Happytic',
     customCss: [
+      './src/pages/index.css',
       './src/content/docs/custom.css',
       '@fontsource/bebas-neue/400.css',
     ],

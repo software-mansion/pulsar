@@ -9,6 +9,8 @@
   ],
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    "jsxImportSource": "react",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true
   }
 }

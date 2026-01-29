@@ -1,0 +1,19 @@
+@font-face {
+  font-family: 'Aeonik';
+  src: url('/assets/fonts/Aeonik.otf') format('otf');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aeonik';
+  src: url('/assets/fonts/Aeonik-bold.otf') format('otf');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  font-family: 'Aeonik', system-ui, sans-serif;
+}
