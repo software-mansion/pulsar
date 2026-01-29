@@ -2,8 +2,12 @@
 import { BasicLayout } from './components/Layouts/BasicLayout';
 import { TopBar } from './components/TopBar/TopBar';
 import { TopBanner } from './components/TopBanner/TopBanner';
+import { SectionHeader } from './components/SectionHeader/SectionHeader';
+import { Button } from './components/Button/Button';
+import { VisitComposer } from './components/VisitComposer/VisitComposer';
 import './index.css';
 import commonStyle from './common.module.scss'
+import { VisitPlayground } from './components/VisitPlayground/VisitPlayground';
 ---
 
 <!doctype html>
@@ -25,6 +29,17 @@ import commonStyle from './common.module.scss'
 		</div>
 
 		<TopBanner />
+
+		<BasicLayout className={[commonStyle.centerColumn, commonStyle.spaceTopLarge].join(' ')}>
+			<SectionHeader 
+				title='Get to know Pulsar presets'
+				subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
+			/>
+			<Button label='See all presets' />
+			<VisitComposer className={commonStyle.spaceTopMedium} />
+		</BasicLayout>
+
+		<VisitPlayground className={commonStyle.spaceTopLarge} />
 	
 	</body>
 </html>

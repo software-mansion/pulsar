@@ -1,14 +1,24 @@
 :root {
   --color-primary: #001A72;
+
   --color-blue-10: #E1F3FA;
   --color-blue-20: #B5E1F1;
+  --color-blue-30: #87CCE8;
   --color-blue-50: #38ACDD;
+  --color-blue-60: #2B85AB;
 
+  --color-yellow-60: #FFE780;
+
+  --font-size-2xs: 14px;
   --font-size-xs: 14px;
+  --font-size-md: 18px;
   --font-size-lg: 20px;
+  --font-size-xl: 26px;
+  --font-size-2xl: 40px;
   --font-size-3xl: 52px;
 
   --font-weight-regular: 400;
+  --font-weight-medium: 500;
   --font-weight-bold: 600;
 
   --font-line-height-xs: 20px;
@@ -46,4 +56,5 @@ html {
 body {
   padding: 0px;
   margin: 0px;
+  padding-bottom: 200px;
 }

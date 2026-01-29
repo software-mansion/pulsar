@@ -1,0 +1,47 @@
+.background {
+  background-color: var(--color-blue-50);
+  border-radius: 4px;
+  .section {
+    border: solid 2px var(--color-blue-50);
+    border-radius: 4px;
+    background-color: var(--color-blue-10);
+    display: flex;
+    transform: translateX(3px) translateY(-3px);
+    .stars {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      left: -30px;
+      top: -30px;
+      .star1 {
+        width: 80px;
+      }
+      .star2 {
+        transform: translateX(-15px) rotate(35deg);
+        margin-top: 15px;
+        width: 80px;
+      }
+    }
+    .leftBar {
+      padding: 48px;
+      .header {
+        font-weight: var(--font-weight-bold);
+        font-size: var(--font-size-xl);
+      }
+      .text {
+        font-size: var(--font-size-lg);
+        line-height: var(--font-line-height-lg);
+        padding: 25px 0;
+      }
+      .link {
+        font-size: var(--font-size-lg);
+        text-decoration: underline;
+      }
+    }
+    .rightBar {
+      position: relative;
+      top: 5px;
+      padding-top: 48px;
+    }
+  }
+}

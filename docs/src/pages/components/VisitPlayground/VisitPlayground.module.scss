@@ -1,0 +1,14 @@
+.section {
+  border: solid 2px var(--color-blue-50);
+  background-color: var(--color-blue-10);
+  padding: 80px 0px 80px 0;
+  .layout {
+    background-image: url('../../../assets/landing-page/pattern.svg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    .emojiBar {
+      display: flex;
+    }
+  }
+}

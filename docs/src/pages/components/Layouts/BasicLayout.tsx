@@ -1,4 +1,4 @@
-import styles from './BasicLayout.module.scss';
+import styles from './Layout.module.scss';
 
 export function BasicLayout({ 
   children,

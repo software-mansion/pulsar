@@ -2,7 +2,6 @@
   background-color: var(--color-blue-50);
   width: fit-content;
   border-radius: 4px;
-  
 }
 .innerHolder {
   display: flex;
@@ -10,6 +9,7 @@
   border: solid 2px var(--color-blue-50);
   border-radius: 4px;
   transform: translateX(3px) translateY(-3px);
+  font-size: var(--font-size-md);
   img {
     margin-left: 5px;
   }

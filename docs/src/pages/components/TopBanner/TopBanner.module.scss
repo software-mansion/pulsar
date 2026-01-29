@@ -2,11 +2,17 @@
   border: solid 2px var(--color-blue-50);
   background-color: var(--color-blue-10);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  max-height: 644px;
   .leftBar {
     max-width: 480px;
     padding: 80px 0;
+    padding-right: 450px;
+    z-index: 2;
     .authors {
       display: flex;
       align-items: center;
@@ -29,22 +35,97 @@
       }
     }
     .buttonHolder {
-      margin-top: 50px;
+      margin-top: 80px;
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
-  }
+  } 
   .rightBar {
-    .circle {}
+    position: absolute;
+    z-index: 1;
+    transform: translateX(25%) translateY(-20%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 1000px;
+    .circle1 {
+      padding: 100px;
+      border-radius: 100%;
+      background-color: #d8eff8;
+      border: dashed 2px #cfe8f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .circle2 {
+        padding: 100px;
+        border-radius: 100%;
+        background-color: #d0ebf6;
+        border: dashed 2px #c8e4f1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .circle3 {
+        padding: 100px;
+        border-radius: 100%;
+        background-color: #c9e8f5;
+        border: dashed 2px #c0e1ee;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .circle4 {
+        width: 400px;
+        height: 400px;
+        border-radius: 100%;
+        background-color: #c2e5f4;
+        border: dashed 2px #b9deee;
+      }
+    }
     .phoneBackground {
+      background-color: var(--color-blue-50);
+      width: fit-content;
+      border-radius: 24px;
+      transform: translateY(-750px);
       .phone {
-        .notch {}
+        border: solid 2px var(--color-blue-50);
+        border-radius: 24px;
+        background-color: white;
+        transform: translateX(10px) translateY(-8px);
+        padding-bottom: 300px;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+        .notch {
+          background-color: var(--color-blue-50);
+          width: 120px;
+          height: 44px;
+          border-radius: 22px;
+          position: absolute;
+          transform: translateX(115px) translateY(-22px);
+        }
         .buttonHolder {
+          padding: 50px 30px;
           .row {
+            display: flex;
             .buttonBackground {
+              background-color: var(--color-blue-50);
+              border-radius: 4px;
+              margin: 20px;
               .button {
-                .emoji {}
+                background-color: white;
+                border: solid 2px var(--color-blue-50);
+                border-radius: 4px;
+                padding: 8px;
+                transform: translateX(3px) translateY(-3px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .emoji {
+                  width: 80px;
+                  height: 80px;
+                }
               }
             }
           }
@@ -53,7 +134,28 @@
     }
   }
   .soundBanner {
-    .text {}
-    .icon {}
+    z-index: 2;
+    width: 100%;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    transform: translateY(-20px);
+    padding-right: 20px;
+    .text {
+      font-size: var(--font-size-2xs);
+      background-color: var(--color-yellow-60);
+      padding: 10px 15px 10px 15px;
+      border-radius: 4px;
+      line-height: 100%;
+    }
+    .icon {
+      border-radius: 4px;
+      background-color: white;
+      margin-left: 10px;
+      padding: 7px;
+      width: 20px;
+      height: 20px;
+    }
   }
 }

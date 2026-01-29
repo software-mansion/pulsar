@@ -1,7 +1,9 @@
 import styles from './TopBanner.module.scss';
 
 import swmLogo from '../../../assets/swm-logo.svg';
+import volume from '../../../assets/landing-page/volume.png';
 import { Button } from '../Button/Button';
+import { EmojiButton } from '../EmojiButton/EmojiButton';
 
 export function TopBanner() {
   return(<div className={styles.banner}>
@@ -31,10 +33,10 @@ export function TopBanner() {
 
     <div className={styles.rightBar}>
 
-      <div className={styles.circle}>
-        <div className={styles.circle}>
-          <div className={styles.circle}>
-            <div className={styles.circle}></div>
+      <div className={styles.circle1}>
+        <div className={styles.circle2}>
+          <div className={styles.circle3}>
+            <div className={styles.circle4}></div>
           </div>
         </div>
       </div>
@@ -45,46 +47,26 @@ export function TopBanner() {
           <div className={styles.buttonHolder}>
 
             <div className={styles.row}>
-              <div className={styles.buttonBackground}>
-                <div className={styles.button}>
-                  <div className={styles.emoji}></div>
-                </div>
-              </div>
-              <div className={styles.buttonBackground}>
-                <div className={styles.button}>
-                  <div className={styles.emoji}></div>
-                </div>
-              </div>
+              <EmojiButton emoji="emoji1" />
+              <EmojiButton emoji="emoji2" />
             </div>
 
             <div className={styles.row}>
-              <div className={styles.buttonBackground}>
-                <div className={styles.button}>
-                  <div className={styles.emoji}></div>
-                </div>
-              </div>
-              <div className={styles.buttonBackground}>
-                <div className={styles.button}>
-                  <div className={styles.emoji}></div>
-                </div>
-              </div>
+              <EmojiButton emoji="emoji3" />
+              <EmojiButton emoji="emoji4" />
             </div>
 
           </div>
         </div>
       </div>
-
-      <div className={styles.soundBanner}>
-        <div className={styles.text}>
-          Keep you sound on for the best experience
-        </div>
-        <div className={styles.icon}>
-          <img src='' />
-        </div>
-      </div>
-      
     </div>
 
+    <div className={styles.soundBanner}>
+      <div className={styles.text}>
+        🔊 Keep you sound on for the best experience
+      </div>
+      <img className={styles.icon} src={volume.src} />
+    </div>
 
   </div>)
 }
