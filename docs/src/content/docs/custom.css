@@ -9,6 +9,10 @@
   --color-blue-50: #38ACDD;
   --color-blue-60: #2B85AB;
 
+  /* Layout width adjustments */
+  /* --sl-content-width: 920px;
+  --sl-sidebar-width: 200px; */
+
   /* Starlight custom colors */
 	--sl-color-accent-low: #6f6f6f;
 	--sl-color-accent: #364bff;
