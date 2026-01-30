@@ -1,0 +1,53 @@
+.section {
+  border-top: solid 1px var(--color-blue-50);
+  background-color: var(--color-blue-10);
+  background-image: url('../../../assets/landing-page/ellipses_bg.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 85%;
+  text-align: center;
+  padding-top: 50px;
+  .logo {
+    width: 75px;
+  }
+  .arrows {
+    position: absolute;
+    z-index: 0;
+    transform: translateX(250px) translateY(-80px);
+  }
+  .zOrder {
+    z-index: 2;
+    position: relative;
+  }
+  .wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px 70px;
+    .text {
+      font-size: var(--font-size-lg);
+      line-height: var(--font-line-height-lg);
+      max-width: 350px;
+      text-align: left;
+    }
+  }
+  .iconBar {
+    padding: 70px 0 60px 0;
+    img {
+      width: 24px;
+      height: 24px;
+      margin: 9px;
+    }
+  }
+}
+.cardBackground {
+  margin-top: 30px;
+  border-radius: 4px;
+  background-color: var(--color-blue-50);
+  .cardContent {
+    border: solid 2px var(--color-blue-50);
+    border-radius: 4px;
+    transform: translateX(3px) translateY(-3px);
+    background-color: white;
+  }
+}

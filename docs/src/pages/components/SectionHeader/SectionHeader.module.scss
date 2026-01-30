@@ -1,9 +1,17 @@
 .header {
   max-width: 600px;
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 20px 0px 20px 0px;
+  padding: 25px 0px 25px 0px;
+  
+  &.center {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  &.left {
+    text-align: left;
+  }
+  
   .title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);

@@ -8,6 +8,9 @@ import { VisitComposer } from './components/VisitComposer/VisitComposer';
 import './index.css';
 import commonStyle from './common.module.scss'
 import { VisitPlayground } from './components/VisitPlayground/VisitPlayground';
+import { SdkSection } from './components/SdkSection/SdkSection';
+import { Tutorials } from './components/Tutorials/Tutorials';
+import { SwmSection } from './components/SwmSection/SwmSection';
 ---
 
 <!doctype html>
@@ -41,5 +44,15 @@ import { VisitPlayground } from './components/VisitPlayground/VisitPlayground';
 
 		<VisitPlayground className={commonStyle.spaceTopLarge} />
 	
+		<BasicLayout className={commonStyle.spaceTopLarge}>
+			<SdkSection />
+		</BasicLayout>
+
+		<BasicLayout className={commonStyle.spaceTopLarge}>
+			<Tutorials />
+		</BasicLayout>
+
+		<SwmSection className={commonStyle.spaceTopLarge} />
+
 	</body>
 </html>
