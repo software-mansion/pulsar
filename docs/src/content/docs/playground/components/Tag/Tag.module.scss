@@ -1,0 +1,30 @@
+.tag {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+
+  &.white {
+    background-color: white;
+    color: var(--color-blue-80);
+    border: 1px solid var(--color-blue-20);
+
+    &:hover {
+      border-color: var(--color-blue-50);
+      background-color: var(--color-blue-5);
+    }
+  }
+
+  &.blue {
+    background-color: var(--color-blue-50);
+    color: white;
+    border: 1px solid var(--color-blue-100);
+
+    &:hover {
+      background-color: var(--color-blue-100);
+    }
+  }
+}

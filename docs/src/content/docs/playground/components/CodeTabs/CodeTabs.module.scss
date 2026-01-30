@@ -1,0 +1,59 @@
+.codeTabs {
+  width: 100%;
+
+  .tabsHeader {
+    display: flex;
+    border-bottom: 2px solid var(--color-blue-20);
+    background-color: var(--color-blue-5);
+    border-radius: 8px 8px 0 0;
+
+    .tab {
+      padding: 16px 24px;
+      background-color: transparent;
+      border: none;
+      color: var(--color-blue-70);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+
+      &:hover {
+        color: var(--color-blue-80);
+      }
+
+      &.active {
+        color: var(--color-blue-100);
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background-color: var(--color-blue-100);
+        }
+      }
+    }
+  }
+
+  .contentArea {
+    background-color: var(--color-blue-10);
+    border: 2px solid var(--color-blue-20);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 24px;
+    overflow-x: auto;
+
+    .code {
+      margin: 0;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: var(--font-size-sm);
+      color: var(--color-blue-80);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  }
+}

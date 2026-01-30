@@ -1,4 +1,5 @@
 import { SelectBox } from '../SelectBox/SelectBox';
+import { Tag } from '../Tag/Tag';
 import style from './Filters.module.scss';
 
 interface Props {
@@ -38,5 +39,9 @@ export function Filters({ index, children }: Props) {
       ]}
       onOptionsChange={(options) => console.log(options)}
     />
+
+    <Tag label="New" />
+    <Tag label="Featured" variant="blue" />
+    <Tag label="Active" variant="white" className="custom-class" />
   </div>
 }
