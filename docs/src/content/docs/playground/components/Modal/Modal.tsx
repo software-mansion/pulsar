@@ -13,9 +13,9 @@ export function Modal({ title, children, onClose }: Props) {
       <div className={style.modal} onClick={(e) => e.stopPropagation()}>
         <div className={style.header}>
           <h2 className={style.title}>{title}</h2>
-          <button className={style.closeButton} onClick={onClose}>
+          <div className={style.closeButton} onClick={onClose}>
             <img src={xIcon.src} alt="Close" />
-          </button>
+          </div>
         </div>
         <div className={style.content}>
           {children}

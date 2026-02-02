@@ -3,13 +3,17 @@ import infoIcon from '../../../assets/new_assets/info.svg'
 import { Filters } from '../Filters/Filters';
 import { Preset } from '../Preset/Preset';
 import { Modal } from '../Modal/Modal';
+import { useState } from 'react';
+import { Tab, Tabs } from '../Tabs/Tabs';
 
 export function PresetsList() {
+  const [showModal, setShowModal] = useState<boolean>(true);
+  
   return <div className={['not-content', style.presets].join(' ')}>
 
     <div className={style.header}>
       <div className={style.title}>Presets</div>
-      <div className={style.info}>
+      <div className={style.info} onClick={() => setShowModal(true)}>
         <div>Learn more about tags</div>
         <img src={infoIcon.src} />
       </div>
@@ -44,8 +48,20 @@ export function PresetsList() {
         { label: "Happy", variant: "blue" }
       ]} 
     />
-    {/* <Modal title="Connection guide" onClose={() => {}}>
-      content
-    </Modal> */}
+    {showModal && (
+      <Modal title="Connection guide" onClose={() => setShowModal(false)}>
+        <Tabs defaultTab={0}>
+          <Tab name="Swift">
+            <div>Your content here1</div>
+          </Tab>
+          <Tab name="React Native">
+            <div>Your content here2</div>
+          </Tab>
+          <Tab name="Android">
+            <div>Your content here3</div>
+          </Tab>
+        </Tabs>
+      </Modal>
+    )}
   </div>
 }
