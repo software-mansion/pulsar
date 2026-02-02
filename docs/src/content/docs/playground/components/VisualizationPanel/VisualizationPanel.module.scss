@@ -1,21 +1,17 @@
 .visualizationPanel {
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: space-between;
   padding: 20px;
   background-color: white;
-  border: 2px solid var(--color-blue-20);
+  border: 1px solid var(--color-blue-10);
   border-radius: 8px;
 
   .visualization {
-    flex: 1;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    min-height: 300px;
+    height: 180px;
     background-color: var(--color-blue-5);
     border-radius: 4px;
-    padding: 20px;
+    padding-right: 20px;
 
     .image {
       width: 100%;
@@ -30,12 +26,10 @@
     gap: 16px;
 
     .controlButton {
-      width: 48px;
-      height: 48px;
-      border: 2px solid var(--color-blue-50);
-      border-radius: 8px;
-      background-color: white;
-      color: var(--color-blue-80);
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      background-color: var(--color-blue-10);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -43,9 +37,8 @@
       transition: all 0.2s ease;
 
       svg {
-        width: 24px;
-        height: 24px;
-        stroke: currentColor;
+        width: 20px;
+        height: 20px;
       }
 
       &:hover {

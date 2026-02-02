@@ -1,57 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 .codeTabs {
-  width: 100%;
-
+  margin-top: 5px;
   .tabsHeader {
     display: flex;
-    border-bottom: 2px solid var(--color-blue-20);
-    background-color: var(--color-blue-5);
-    border-radius: 8px 8px 0 0;
 
     .tab {
-      padding: 16px 24px;
-      background-color: transparent;
+      padding: 8px 32px;
       border: none;
-      color: var(--color-blue-70);
-      font-size: var(--font-size-lg);
+      font-size: var(--font-size-xs);
       font-weight: var(--font-weight-semibold);
       cursor: pointer;
       transition: all 0.2s ease;
-      position: relative;
+      border-bottom: 2px solid var(--color-blue-10);
 
-      &:hover {
-        color: var(--color-blue-80);
-      }
+      &:hover {}
 
       &.active {
-        color: var(--color-blue-100);
-
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: -2px;
-          left: 0;
-          right: 0;
-          height: 2px;
-          background-color: var(--color-blue-100);
-        }
+        border-bottom: 2px solid var(--color-blue-50);
+        background-color: var(--color-blue-10);
       }
     }
   }
 
   .contentArea {
     background-color: var(--color-blue-10);
-    border: 2px solid var(--color-blue-20);
-    border-top: none;
-    border-radius: 0 0 8px 8px;
+    border-radius: 4px;
     padding: 24px;
     overflow-x: auto;
+    margin-top: 10px;
 
     .code {
-      margin: 0;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: var(--font-size-sm);
+      font-family: "DM Mono", monospace;
+      font-size: 16px;
       color: var(--color-blue-80);
-      line-height: 1.6;
+      line-height: 140%;
       white-space: pre-wrap;
       word-wrap: break-word;
     }

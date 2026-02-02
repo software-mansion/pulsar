@@ -6,13 +6,14 @@ interface AccordionProps {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  className?: string;
 }
 
-export function Accordion({ title, children, defaultOpen = false }: AccordionProps) {
+export function Accordion({ title, children, defaultOpen = false, className }: AccordionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className={styles.accordion}>
+    <div className={`${styles.accordion} ${className || ''}`}>
       <div 
         className={styles.header} 
         onClick={() => setIsOpen(!isOpen)}

@@ -18,18 +18,18 @@ export function CodeTabs({ swift, reactNative, className = '' }: CodeTabsProps) 
   return (
     <div className={`${styles.codeTabs} ${className}`}>
       <div className={styles.tabsHeader}>
-        <button
+        <div
           className={`${styles.tab} ${activeTab === 'swift' ? styles.active : ''}`}
           onClick={() => setActiveTab('swift')}
         >
           Swift
-        </button>
-        <button
+        </div>
+        <div
           className={`${styles.tab} ${activeTab === 'reactNative' ? styles.active : ''}`}
           onClick={() => setActiveTab('reactNative')}
         >
           React Native
-        </button>
+        </div>
       </div>
 
       <div className={styles.contentArea}>

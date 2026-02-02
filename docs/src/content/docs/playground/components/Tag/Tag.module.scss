@@ -1,30 +1,33 @@
 .tag {
-  display: inline-block;
-  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 8px;
   border-radius: 20px;
   font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-medium);
   white-space: nowrap;
   transition: all 0.2s ease;
+  line-height: 100%;
+
+  &:hover {
+    cursor: pointer;
+  }
 
   &.white {
     background-color: white;
-    color: var(--color-blue-80);
-    border: 1px solid var(--color-blue-20);
-
-    &:hover {
-      border-color: var(--color-blue-50);
-      background-color: var(--color-blue-5);
-    }
+    &:hover {}
   }
 
   &.blue {
-    background-color: var(--color-blue-50);
-    color: white;
-    border: 1px solid var(--color-blue-100);
+    background-color: var(--color-blue-20);
 
-    &:hover {
-      background-color: var(--color-blue-100);
-    }
+    &:hover {}
+  }
+
+  .xIcon {
+    width: 15px;
+    height: 15px;
+    margin-left: 4px;
+    cursor: pointer;
   }
 }

@@ -9,16 +9,40 @@ export function PresetsList() {
     <div className={style.header}>
       <div className={style.title}>Presets</div>
       <div className={style.info}>
-        Learn more about tags
+        <div>Learn more about tags</div>
         <img src={infoIcon.src} />
       </div>
     </div>
 
     <Filters />
 
-    <Preset />
-    <Preset />
-    <Preset />
-
+    <Preset
+      name='🧱 Falling Bricks'
+      shortName='FallingBricks'
+      description="That feeling when some bricks fall onto your foot!"
+      tags={[
+        { label: "Short", variant: "blue" },
+        { label: "Happy", variant: "blue" }
+      ]} 
+    />
+    <Preset
+      name='🧱 Falling Bricks'
+      shortName='FallingBricks'
+      description="That feeling when some bricks fall onto your foot!"
+      tags={[
+        { label: "Short", variant: "blue" },
+        { label: "Happy", variant: "blue" }
+      ]} 
+    />
+    <Preset
+      name='🧱 Falling Bricks'
+      shortName='FallingBricks'
+      description="That feeling when some bricks fall onto your foot!"
+      tags={[
+        { label: "Short", variant: "blue" },
+        { label: "Happy", variant: "blue" }
+      ]} 
+    />
+    
   </div>
 }

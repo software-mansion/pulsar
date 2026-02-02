@@ -50,6 +50,12 @@
     animation: slideDown 0.2s ease;
     padding: 15px;
 
+    .title {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-medium);
+      margin-bottom: 10px;
+    }
+
     .optionsContainer {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));

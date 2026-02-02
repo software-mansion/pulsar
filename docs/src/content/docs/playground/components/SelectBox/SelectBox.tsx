@@ -17,7 +17,7 @@ interface SelectBoxProps {
 }
 
 export function SelectBox({ title, options: initialOptions, onOptionsChange, className = '' }: SelectBoxProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState(initialOptions);
 
   useEffect(() => {
@@ -61,6 +61,9 @@ export function SelectBox({ title, options: initialOptions, onOptionsChange, cla
 
       {isOpen && (
         <div className={styles.dropdown}>
+
+          <div className={styles.title}>{title}</div>
+
           <div className={styles.optionsContainer}>
             {options.map(option => (
               <Checkbox
@@ -87,6 +90,7 @@ export function SelectBox({ title, options: initialOptions, onOptionsChange, cla
               Deselect all
             </div>
           </div>
+
         </div>
       )}
     </div>
