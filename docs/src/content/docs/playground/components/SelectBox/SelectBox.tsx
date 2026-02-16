@@ -11,11 +11,11 @@ interface SelectOption {
 interface SelectBoxProps {
   title: string;
   options: SelectOption[];
-  onOptionsChange: (options: SelectOption[]) => void;
+  onOptionChange: (options: SelectOption[]) => void;
   className?: string;
 }
 
-export function SelectBox({ title, options: initialOptions, onOptionsChange, className = '' }: SelectBoxProps) {
+export function SelectBox({ title, options: initialOptions, onOptionChange: onOptionChange, className = '' }: SelectBoxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState(initialOptions);
   const selectBoxRef = useRef<HTMLDivElement>(null);
@@ -61,24 +61,16 @@ export function SelectBox({ title, options: initialOptions, onOptionsChange, cla
     }
   }, [isOpen]);
 
-  const handleToggle = (label: string) => {
-    const updated = options.map(opt => 
-      opt.label === label ? { ...opt, checked: !opt.checked } : opt
-    );
-    setOptions(updated);
-    onOptionsChange(updated);
-  };
-
   const handleSelectAll = () => {
     const updated = options.map(opt => ({ ...opt, checked: true }));
     setOptions(updated);
-    onOptionsChange(updated);
+    onOptionChange(updated);
   };
 
   const handleDeselectAll = () => {
     const updated = options.map(opt => ({ ...opt, checked: false }));
     setOptions(updated);
-    onOptionsChange(updated);
+    onOptionChange(updated);
   };
 
   return (
@@ -113,7 +105,7 @@ export function SelectBox({ title, options: initialOptions, onOptionsChange, cla
                     opt.label === label ? { ...opt, checked } : opt
                   );
                   setOptions(updated);
-                  onOptionsChange(updated);
+                  onOptionChange([{label, checked}]);
                 }}
               />
             ))}

@@ -6,7 +6,7 @@ interface TagProps {
   variant?: 'white' | 'blue';
   className?: string;
   cancellable?: boolean;
-  onCancel?: () => void;
+  onCancel?: (label: string) => void;
   onClick?: () => void;
 }
 
@@ -26,7 +26,7 @@ export function Tag(
   return (
     <div className={`${styles.tag} ${variantClass} ${className}`} onClick={onClick}>
       {label}
-      {cancellable && <img src={xIcon.src} alt="remove" className={styles.xIcon} onClick={onCancel} />}
+      {cancellable && <img src={xIcon.src} alt="remove" className={styles.xIcon} onClick={() => onCancel && onCancel(label)} />}
     </div>
   );
 }
