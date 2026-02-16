@@ -3,52 +3,9 @@ import infoIcon from '../../../assets/new_assets/info.svg'
 import { Filters } from '../Filters/Filters';
 import { Preset } from '../Preset/Preset';
 import { useState, useMemo } from 'react';
-import type { PresetProps } from '../Preset/types';
 import { TagsModal } from '../TagsModal/TagsModal';
 import { TagsInfo } from './Tags';
-
-const presets: Array<PresetProps> = [
-  {
-    name: '🧱 Falling Bricks',
-    shortName: 'FallingBricks',
-    description: "That feeling when some bricks fall onto your foot!",
-    tags: [
-      { label: "Short", variant: "blue" },
-      { label: "Happiness", variant: "blue" }
-    ],
-    duration: 10000
-  },
-  {
-    name: '🧱 Falling Bricks 2',
-    shortName: 'FallingBricks',
-    description: "That feeling when some bricks fall onto your foot!",
-    tags: [
-      { label: "Super short", variant: "blue" },
-      { label: "Sadness", variant: "blue" }
-    ],
-    duration: 300
-  },
-  {
-    name: '🧱 Falling Bricks 3',
-    shortName: 'FallingBricks',
-    description: "That feeling when some bricks fall onto your foot!",
-    tags: [
-      { label: "Super short", variant: "blue" },
-      { label: "Happiness", variant: "blue" }
-    ],
-    duration: 1000
-  },
-  {
-    name: '🧱 Falling Bricks 4',
-    shortName: 'FallingBricks',
-    description: "That feeling when some bricks fall onto your foot!",
-    tags: [
-      { label: "Super short", variant: "blue" },
-      { label: "Happiness", variant: "blue" }
-    ],
-    duration: 2000
-  },
-];
+import { PresetsConfig } from './PresetsConfig';
 
 export function PresetsList() {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -73,10 +30,10 @@ export function PresetsList() {
   
   const filteredPresets = useMemo(() => {
     if (selectedTags.length === 0) {
-      return presets;
+      return PresetsConfig;
     }
     
-    return presets.filter(preset => {
+    return PresetsConfig.filter(preset => {
       const presetTagLabels = preset.tags.map(tag => tag.label);
       
       for (const groupName in selectedTagsByGroup) {
