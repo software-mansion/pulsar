@@ -34,8 +34,6 @@ export default defineConfig({
         label: 'Playground',
         items: [
           { label: 'Presets', slug: 'playground/presets' },
-          { label: 'Presets_legacy', slug: 'playground/presets_legacy' },
-          { label: 'Tags legend', slug: 'playground/tags-legend' },
           { label: 'Interactive mode', slug: 'playground/interactive-mode' },
         ],
       },
