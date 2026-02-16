@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './SelectBox.module.scss';
 import arrowIcon from '../../../assets/new_assets/arrow.svg';
 import { Checkbox } from '../Checkbox/Checkbox';
 
 interface SelectOption {
-  id: string;
   label: string;
   checked: boolean;
 }
@@ -19,14 +18,52 @@ interface SelectBoxProps {
 export function SelectBox({ title, options: initialOptions, onOptionsChange, className = '' }: SelectBoxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState(initialOptions);
+  const selectBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setOptions(initialOptions);
   }, [initialOptions]);
 
-  const handleToggle = (id: string) => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!selectBoxRef.current) return;
+
+      const header = selectBoxRef.current.querySelector(`.${styles.header}`) as HTMLElement;
+      const dropdown = selectBoxRef.current.querySelector(`.${styles.dropdown}`) as HTMLElement;
+
+      const headerRect = header?.getBoundingClientRect();
+      const dropdownRect = dropdown?.getBoundingClientRect();
+
+      const isClickInHeader = headerRect &&
+        event.clientX >= headerRect.left &&
+        event.clientX <= headerRect.right &&
+        event.clientY >= headerRect.top &&
+        event.clientY <= headerRect.bottom;
+
+      const isClickInDropdown = dropdownRect && 
+        event.clientX >= dropdownRect.left &&
+        event.clientX <= dropdownRect.right &&
+        event.clientY >= dropdownRect.top &&
+        event.clientY <= dropdownRect.bottom;
+
+      const isClickInside = isClickInHeader || isClickInDropdown;
+
+      if (!isClickInside && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen]);
+
+  const handleToggle = (label: string) => {
     const updated = options.map(opt => 
-      opt.id === id ? { ...opt, checked: !opt.checked } : opt
+      opt.label === label ? { ...opt, checked: !opt.checked } : opt
     );
     setOptions(updated);
     onOptionsChange(updated);
@@ -45,7 +82,7 @@ export function SelectBox({ title, options: initialOptions, onOptionsChange, cla
   };
 
   return (
-    <div className={`${styles.selectBox} ${className}`}>
+    <div className={`${styles.selectBox} ${className}`} ref={selectBoxRef}>
       <div
         className={styles.header}
         onClick={() => setIsOpen(!isOpen)}
@@ -60,20 +97,20 @@ export function SelectBox({ title, options: initialOptions, onOptionsChange, cla
       </div>
 
       {isOpen && (
-        <div className={styles.dropdown}>
+        <div className={styles.dropdown} onClick={(e) => e.stopPropagation()}>
 
           <div className={styles.title}>{title}</div>
 
           <div className={styles.optionsContainer}>
             {options.map(option => (
               <Checkbox
-                key={option.id}
-                id={option.id}
+                key={option.label}
+                id={option.label}
                 label={option.label}
                 checked={option.checked}
-                onChange={(id, checked) => {
+                onChange={(label, checked) => {
                   const updated = options.map(opt =>
-                    opt.id === id ? { ...opt, checked } : opt
+                    opt.label === label ? { ...opt, checked } : opt
                   );
                   setOptions(updated);
                   onOptionsChange(updated);

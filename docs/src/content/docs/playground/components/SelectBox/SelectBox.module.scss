@@ -1,7 +1,7 @@
 .selectBox {
   position: relative;
   user-select: none;
-  width: 100%;
+  // width: 100%;
 
   .header {
     width: 100%;
@@ -23,6 +23,7 @@
 
     .headerText {
       text-align: left;
+      white-space: nowrap;
     }
 
     .arrow {
