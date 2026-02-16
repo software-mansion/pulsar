@@ -3,19 +3,19 @@ export interface Tag {
   variant: "white" | "blue";
 }
 
+export type DiscretePoint = { time: number, amplitude: number, frequency: number };
+export type ContinuesPattern = {
+  amplitude: { time: number, value: number }[],
+  frequency: { time: number, value: number }[],
+}
+export type PatternData = {
+  discretePattern: DiscretePoint[],
+  continuesPattern: ContinuesPattern,
+}
+
 export type PresetConfig = { 
   image: ImageMetadata; 
-  data: { 
-    continuesPattern: { 
-      frequency: number[];
-      amplitude: number[];
-    };
-    discretePattern: {
-      time: number;
-      amplitude: number;
-      frequency: number;
-    }[];
-  };
+  data: PatternData;
 }
 
 export interface PresetProps {

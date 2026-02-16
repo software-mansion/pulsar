@@ -1,10 +1,11 @@
+import { useRef } from 'react';
 import { CodeTabs } from '../CodeTabs/CodeTabs';
 import style from './Preset.module.scss';
-import placeholderImage from '../../../assets/new_assets/chart_placeholder.png';
 import { VisualizationPanel } from '../VisualizationPanel/VisualizationPanel';
 import { Accordion } from '../Accordion/Accordion';
 import { Tag } from '../Tag/Tag';
 import type { PresetProps } from './types';
+import { AudioPatternUtility } from './audio-player';
 
 function getSwiftPresetImport(shortName: string) {
   return `import Pulsar\n\nPulsar.${shortName}.play()`;
@@ -14,7 +15,32 @@ function getReactNativePresetImport(shortName: string) {
   return `import { Pulsar } from '@haptics/library';\n\nPulsar.${shortName}.play();`;
 }
 
-export function Preset({ name, shortName, description, tags, duration = 1000 }: PresetProps) {
+export function Preset({ name, shortName, description, tags, duration = 0, visualization }: PresetProps) {
+  const audioPlayerRef = useRef<AudioPatternUtility | null>(null);
+  const isParsed = useRef<boolean>(false);
+
+  if (!audioPlayerRef.current) {
+    audioPlayerRef.current = new AudioPatternUtility();
+  }
+
+  const handlePlayClick = async () => {
+    const audioPlayer = audioPlayerRef.current;
+    if (!audioPlayer) return;
+
+    if (audioPlayer.isPlaying()) {
+      audioPlayer.stop();
+    } else {
+      try {
+        if (!isParsed.current) {
+          await audioPlayer.parsePattern(visualization.data);
+          isParsed.current = true;
+        }
+        await audioPlayer.play();
+      } catch (error) {
+        console.error('Error playing audio:', error);
+      }
+    }
+  };
   return <div className={style.preset}>
 
     {tags && tags.length > 0 && (
@@ -31,9 +57,9 @@ export function Preset({ name, shortName, description, tags, duration = 1000 }: 
     </div>
     
     <VisualizationPanel
-      image={placeholderImage}
+      image={visualization.image}
       duration={duration}
-      onPlayClick={() => console.log('Play')}
+      onPlayClick={handlePlayClick}
       onRecordClick={() => console.log('Record')}
     />
     <Accordion title='Usage' className={style.marginTop}>
