@@ -2,19 +2,14 @@ import { SelectBox } from '../SelectBox/SelectBox';
 import { Tag } from '../Tag/Tag';
 import style from './Filters.module.scss';
 import { TagsInfo } from '../PresetsList/Tags';
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
-interface Props {}
-
-function toOptions(tags: { name: string; description: string; usage: string }[]) {
-  return tags.map(tag => ({
-    label: tag.name,
-    checked: false,
-  }));
+interface Props {
+  selectedTags: string[];
+  setSelectedTags: (tags: string[] | ((tags: string[]) => string[])) => void;
 }
 
-export function Filters({}: Props) {
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+export function Filters({ selectedTags, setSelectedTags }: Props) {
   const onOptionChange = useCallback((options: { label: string; checked: boolean }[]) => {
     setSelectedTags(current => {
       const tags = new Set(current);
@@ -23,7 +18,7 @@ export function Filters({}: Props) {
       });
       return Array.from(tags);
     });
-  }, []);
+  }, [setSelectedTags]);
 
   const renderGroups = useMemo(() => {
     return TagsInfo.map((group) => ({
@@ -53,6 +48,7 @@ export function Filters({}: Props) {
         <Tag 
           key={tag}
           label={tag}
+          className={style.tagMargin}
           cancellable
           onCancel={(label) => {
             setSelectedTags(current => current.filter(t => t !== label));
@@ -62,13 +58,12 @@ export function Filters({}: Props) {
       {selectedTags.length > 0 && 
         <Tag
           label="Clear all"
+          className={style.tagMargin}
           onClick={() => {
             setSelectedTags([]);
           }}
         />}
     </div>
-
-    <div className={style.resultCount}>3 results</div>
 
   </div>
 }

@@ -39,7 +39,7 @@
 
   .dropdown {
     position: absolute;
-    width: 280px;
+    width: 300px;
     top: 100%;
     left: 0;
     right: 0;
@@ -59,7 +59,7 @@
 
     .optionsContainer {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 10px;
       font-size: var(--font-size-2xs);
     }

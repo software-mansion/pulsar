@@ -1,6 +1,6 @@
 .filters {
   padding-top: 20px;
-  margin-bottom: 20px;
+  padding-bottom: 16px;
   position: sticky;
   top: 55px;
   background-color: var(--color-blue-10);
@@ -13,10 +13,9 @@
   .tagsBar {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 16px;
+    column-gap: 10px;
   }
-  .resultCount {
-    margin-top: 12px;
+  .tagMargin {
+    margin-top: 16px;
   }
 }

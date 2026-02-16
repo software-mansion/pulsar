@@ -35,7 +35,7 @@ export function Preset({ name, shortName, description, tags }: PresetProps) {
       onPlayClick={() => console.log('Play')}
       onRecordClick={() => console.log('Record')}
     />
-    <Accordion title='Usage' defaultOpen={true} className={style.marginTop}>
+    <Accordion title='Usage' className={style.marginTop}>
       <CodeTabs 
         swift={getSwiftPresetImport(shortName || '')}
         reactNative={getReactNativePresetImport(shortName || '')}
