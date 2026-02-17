@@ -25,8 +25,8 @@ export function TopBanner() {
       </div>
 
       <div className={styles.buttonHolder}>
-        <Button label='Preset playground' />
-        <Button label='Read the docs' variant='filled' />
+        <Button label='Preset playground' url={'/presets'} />
+        <Button label='Read the docs' variant='filled' url={'/docs'} />
       </div>
 
     </div>

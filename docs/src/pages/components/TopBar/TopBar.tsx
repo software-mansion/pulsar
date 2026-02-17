@@ -10,7 +10,7 @@ export function TopBar() {
       <span>Pulsar</span>
     </div>
     <div className={styles.menuItems}>
-      <a href='#'>Presets</a>
+      <a href='presets'>Presets</a>
       <a href='#'>Live Preview</a>
       <a href='#'>Tutorials</a>
     </div>

@@ -39,7 +39,7 @@ export default defineConfig({
       },
       {
         label: 'Pulsar studio',
-        slug: 'haptic-studio',
+        slug: 'pulsar-studio',
         badge: { 
           text: 'Soon',
           variant: 'note'
@@ -48,6 +48,7 @@ export default defineConfig({
       {
         label: 'SDK',
         items: [
+          { label: 'Overview', slug: 'sdk' },
           { label: 'iOS', slug: 'sdk/ios' },
           { label: 'Android', slug: 'sdk/android' },
           { label: 'React Native', slug: 'sdk/react-native' },

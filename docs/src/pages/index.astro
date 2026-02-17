@@ -14,11 +14,14 @@ import { SwmSection } from './components/SwmSection/SwmSection';
 ---
 
 <!doctype html>
-<html lang="en" class="bg-black">
+<html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>title</title>
+		<meta name="description" content="Pulsar is a rich and ready-to-use haptics presets library that you can hear and feel with Live Preview." />
+		<title>Pulsar - Rich and ready-to use haptics presets library</title>
+		<link rel="icon" type="image/svg+xml" href="/src/assets/logo.svg" />
+		<meta property="og:image" content="/src/assets/og.png" />
 	</head>
 	<body>
 
@@ -35,7 +38,7 @@ import { SwmSection } from './components/SwmSection/SwmSection';
 				title='Get to know Pulsar presets'
 				subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
 			/>
-			<Button label='See all presets' />
+			<Button label='See all presets' url={'/presets'} />
 			<VisitComposer className={commonStyle.spaceTopMedium} />
 		</BasicLayout>
 
