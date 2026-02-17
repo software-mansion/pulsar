@@ -1,7 +1,6 @@
 import styles from './TopBanner.module.scss';
 
 import swmLogo from '../../../assets/swm-logo.svg';
-import volume from '../../../assets/landing-page/volume.png';
 import { Button } from '../Button/Button';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 import { SoundBar } from '../SoundBar/SoundBar';
@@ -9,6 +8,7 @@ import { useState } from 'react';
 
 export function TopBanner() {
   const [colorClass, setColorClass] = useState('');
+  const [backgroundAnimation, setBackgroundAnimation] = useState(styles.wave);
   
   return(<div className={`${styles.banner} ${colorClass}`}>
 
@@ -37,12 +37,12 @@ export function TopBanner() {
 
     <div className={styles.rightBar}>
 
-      <svg width="1000" height="1000" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle className={`${styles.circle1}  ${colorClass}`} opacity="0.1" cx="600" cy="600" r="500" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
-        <circle className={`${styles.circle2}  ${colorClass}`} opacity="0.1" cx="600" cy="600" r="400" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
-        <circle className={`${styles.circle3}  ${colorClass}`} opacity="0.1" cx="600" cy="600" r="300" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
-        <circle className={`${styles.circle4}  ${colorClass}`} opacity="0.1" cx="600" cy="600" r="200" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
-        <circle className={`${styles.circle5}  ${colorClass}`} opacity="0.1" cx="600" cy="600" r="100" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
+      <svg className={`${styles.svgWave} ${colorClass} ${backgroundAnimation}`} width="1000" height="1000" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle opacity="0.1" cx="600" cy="600" r="500" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
+        <circle opacity="0.1" cx="600" cy="600" r="400" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
+        <circle opacity="0.1" cx="600" cy="600" r="300" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
+        <circle opacity="0.1" cx="600" cy="600" r="200" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
+        <circle opacity="0.1" cx="600" cy="600" r="100" fill="#87CCE8" stroke="#2B85AB" stroke-miterlimit="16" stroke-dasharray="8 8"/>
       </svg>
 
 
@@ -52,13 +52,25 @@ export function TopBanner() {
           <div className={styles.buttonHolder}>
 
             <div className={styles.row}>
-              <EmojiButton emoji="emoji1" onClick={() => setColorClass('')} />
-              <EmojiButton emoji="emoji2" onClick={() => setColorClass(styles.yellow)} />
+              <EmojiButton emoji="emoji1" onClick={() => {
+                setColorClass('');
+                setBackgroundAnimation(styles.wave);
+              }} />
+              <EmojiButton emoji="emoji2" onClick={() => {
+                setColorClass(styles.yellow);
+                setBackgroundAnimation(styles.sonar);
+              }} />
             </div>
 
             <div className={styles.row}>
-              <EmojiButton emoji="emoji3" onClick={() => setColorClass(styles.red)} />
-              <EmojiButton emoji="emoji4" onClick={() => setColorClass(styles.green)} />
+              <EmojiButton emoji="emoji3" onClick={() => {
+                setColorClass(styles.red);
+                setBackgroundAnimation(styles.quake);
+              }} />
+              <EmojiButton emoji="emoji4" onClick={() => {
+                setColorClass(styles.green);
+                setBackgroundAnimation(styles.heartbeat);
+              }} />
             </div>
 
           </div>

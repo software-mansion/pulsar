@@ -9,10 +9,11 @@
   overflow: hidden;
   max-height: 644px;
   .leftBar {
+    z-index: 1;
+    pointer-events: none;
     max-width: 480px;
     padding: 80px 0;
     padding-right: 450px;
-    z-index: 2;
     .authors {
       display: flex;
       align-items: center;
@@ -35,6 +36,7 @@
       }
     }
     .buttonHolder {
+      pointer-events: auto;
       margin-top: 80px;
       display: flex;
       flex-direction: column;
@@ -43,7 +45,6 @@
   } 
   .rightBar {
     position: relative;
-    z-index: 3;
     transform: translateX(25%) translateY(-43%);
     display: flex;
     flex-direction: column;
@@ -104,57 +105,165 @@
   }
 }
 
-@keyframes circle1AnimationWave {
-  0%, 100% { r: 500; }
-  50% { r: 580; }
-}
-.circle1 {
-  transition: all 0.2s;
-  animation: circle1AnimationWave 5s ease-in-out infinite;
-}
-@keyframes circle2AnimationWave {
-  0%, 100% { r: 400; }
-  50% { r: 480; }
-}
-.circle2 {
-  transition: all 0.2s;
-  animation: circle2AnimationWave 5s ease-in-out infinite;
-  animation-delay: 0.5s;
-}
-@keyframes circle3AnimationWave {
-  0%, 100% { r: 300; }
-  50% { r: 380; }
-}
-.circle3 {
-  transition: all 0.2s;
-  animation: circle3AnimationWave 5s ease-in-out infinite;
-  animation-delay: 1s;
-}
-@keyframes circle4AnimationWave {
-  0%, 100% { r: 200; }
-  50% { r: 280; }
-}
-.circle4 {
-  transition: all 0.2s;
-  animation: circle4AnimationWave 5s ease-in-out infinite;
-  animation-delay: 1.5s;
-}
-
 .red {
   // #ff6259
   background-color: #ff817a;
-  fill: #cc4e47;
-  stroke: #993b35;
+  svg { background-color: transparent; }
+  circle {
+    fill: #cc4e47;
+    stroke: #993b35;
+  }
 }
 .yellow {
   // #ffe04b
   background-color: #ffe66f;
-  fill: #ccb33c;
-  stroke: #99862d;
+  svg { background-color: transparent; }
+  circle {
+    fill: #ccb33c;
+    stroke: #99862d;
+  }
 }
 .green {
   // #82cab2
   background-color: #9bd5c1;
-  fill: #68a28e;
-  stroke: #4e796b;
+  svg { background-color: transparent; }
+  circle {
+    fill: #68a28e;
+    stroke: #4e796b;
+  }
 }
+
+.svgWave {
+  z-index: 0;
+  circle {
+    transition: all 0.2s;
+  }
+}
+
+// --------------------------------------------------
+// wave animation
+// --------------------------------------------------
+.wave circle {
+  animation-duration: 4s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.wave circle:nth-child(1) { animation-name: wave-1; }
+.wave circle:nth-child(2) { animation-name: wave-2; animation-delay: 0.5s; }
+.wave circle:nth-child(3) { animation-name: wave-3; animation-delay: 1s; }
+.wave circle:nth-child(4) { animation-name: wave-4; animation-delay: 1.5s; }
+.wave circle:nth-child(5) { animation-name: wave-5; animation-delay: 2s; }
+
+@mixin waveGenerator($prefix, $initialSize) {
+  @keyframes wave-#{$prefix} {
+    0%, 100% { r: $initialSize; }
+    50% { r: $initialSize * 1.16; }
+  }
+}
+
+@include waveGenerator("1", 500);
+@include waveGenerator("2", 400);
+@include waveGenerator("3", 300);
+@include waveGenerator("4", 200);
+@include waveGenerator("5", 100);
+
+// --------------------------------------------------
+// heartbeat animation
+// --------------------------------------------------
+.heartbeat circle {
+  stroke-width: 1;
+  opacity: 0.1;
+  animation-duration: 1.2s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.heartbeat circle:nth-child(1) { animation-name: heartbeat-1; animation-delay: 0.32s; }
+.heartbeat circle:nth-child(2) { animation-name: heartbeat-2; animation-delay: 0.24s; }
+.heartbeat circle:nth-child(3) { animation-name: heartbeat-3; animation-delay: 0.16s; }
+.heartbeat circle:nth-child(4) { animation-name: heartbeat-4; animation-delay: 0.08s; }
+.heartbeat circle:nth-child(5) { animation-name: heartbeat-5; animation-delay: 0s; }
+
+@mixin heartbeatGenerator($prefix, $initialSize) {
+  @keyframes heartbeat-#{$prefix} {
+    0%   { r: $initialSize * 1;    opacity: 0.1; }
+    14%  { r: $initialSize * 1.08; opacity: 0.5;   stroke-width: 2; }
+    28%  { r: $initialSize * 0.97; opacity: 0.3; stroke-width: 1; }
+    42%  { r: $initialSize * 1.04; opacity: 0.45; }
+    70%  { r: $initialSize * 1;    opacity: 0.15; }
+    100% { r: $initialSize * 1;    opacity: 0.15; }
+  }
+}
+
+@include heartbeatGenerator("1", 500);
+@include heartbeatGenerator("2", 400);
+@include heartbeatGenerator("3", 300);
+@include heartbeatGenerator("4", 200);
+@include heartbeatGenerator("5", 100);
+
+// --------------------------------------------------
+// sonar animation
+// --------------------------------------------------
+.sonar circle {
+  stroke-width: 1.2;
+  opacity: 0;
+  animation-duration: 2.8s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.sonar circle:nth-child(1) { animation-name: sonar-1; animation-delay: 1.12s; }
+.sonar circle:nth-child(2) { animation-name: sonar-2; animation-delay: 0.84s; }
+.sonar circle:nth-child(3) { animation-name: sonar-3; animation-delay: 0.56s; }
+.sonar circle:nth-child(4) { animation-name: sonar-4; animation-delay: 0.28s; }
+.sonar circle:nth-child(5) { animation-name: sonar-5; animation-delay: 0s; }
+
+@mixin sonarGenerator($prefix, $initialSize) {
+  @keyframes sonar-#{$prefix} {
+    0%   { opacity: 0;    r: $initialSize * 0.2; stroke-width: 3; }
+    12%  { opacity: 0.45; r: $initialSize * 1;   stroke-width: 1.2; }
+    100% { opacity: 0;    r: $initialSize * 1.2; stroke-width: 0.3; }
+  }
+}
+
+@include sonarGenerator("1", 500);
+@include sonarGenerator("2", 400);
+@include sonarGenerator("3", 300);
+@include sonarGenerator("4", 200);
+@include sonarGenerator("5", 100);
+
+// --------------------------------------------------
+// quake animation
+// --------------------------------------------------
+.quake circle {
+  stroke-width: 1;
+  opacity: 0.1;
+  animation-duration: 0.1s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.quake circle:nth-child(odd)  { animation-direction: alternate; }
+.quake circle:nth-child(even) { animation-direction: alternate-reverse; }
+.quake circle:nth-child(1) { animation-name: quake-1; animation-duration: 0.07s; }
+.quake circle:nth-child(2) { animation-name: quake-2; animation-duration: 0.09s; }
+.quake circle:nth-child(3) { animation-name: quake-3; animation-duration: 0.06s; }
+.quake circle:nth-child(4) { animation-name: quake-4; animation-duration: 0.11s; }
+.quake circle:nth-child(5) { animation-name: quake-5; animation-duration: 0.08s; }
+
+@mixin quakeGenerator($prefix, $initialSize) {
+  @keyframes quake-#{$prefix} {
+    0%   { transform: translate(-1.5px, 1px); r: $initialSize * 0.99; }
+    25%  { transform: translate(1px, -1.5px); r: $initialSize * 1.01; }
+    50%  { transform: translate(-0.5px, -1px); r: $initialSize * 0.98; }
+    75%  { transform: translate(1.5px, 0.5px); r: $initialSize * 1.02; }
+    100% { transform: translate(-1px, 1.5px); r: $initialSize * 1.0; }
+  }
+}
+
+@include quakeGenerator("1", 500);
+@include quakeGenerator("2", 400);
+@include quakeGenerator("3", 300);
+@include quakeGenerator("4", 200);
+@include quakeGenerator("5", 100);
