@@ -10,8 +10,22 @@
   border-radius: 4px;
   transform: translateX(3px) translateY(-3px);
   font-size: var(--font-size-md);
+
   img {
     margin-left: 5px;
+    transform: translateX(0px);
+    transition: transform 0.2s;
+  }
+
+  cursor: pointer;
+  transition: transform 0.2s;
+  &:hover {
+    img {
+      transform: translateX(3px);
+    }
+  }
+  &:active {
+    transform: translateX(0) translateY(0);
   }
 }
 .filled {

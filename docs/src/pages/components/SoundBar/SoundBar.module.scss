@@ -1,0 +1,25 @@
+.soundBanner {
+  z-index: 2;
+  width: 100%;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  transform: translateY(-20px);
+  padding-right: 20px;
+  .text {
+    font-size: var(--font-size-2xs);
+    background-color: var(--color-yellow-60);
+    padding: 10px 15px 10px 15px;
+    border-radius: 4px;
+    line-height: 100%;
+  }
+  .icon {
+    border-radius: 4px;
+    background-color: white;
+    margin-left: 10px;
+    padding: 7px;
+    width: 20px;
+    height: 20px;
+  }
+}

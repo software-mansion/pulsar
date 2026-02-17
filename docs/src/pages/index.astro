@@ -11,6 +11,7 @@ import { VisitPlayground } from './components/VisitPlayground/VisitPlayground';
 import { SdkSection } from './components/SdkSection/SdkSection';
 import { Tutorials } from './components/Tutorials/Tutorials';
 import { SwmSection } from './components/SwmSection/SwmSection';
+import { PresetsList } from './components/PresetsList/PresetsList';
 ---
 
 <!doctype html>
@@ -31,13 +32,14 @@ import { SwmSection } from './components/SwmSection/SwmSection';
 			</BasicLayout>
 		</div>
 
-		<TopBanner />
+		<TopBanner client:load />
 
 		<BasicLayout className={[commonStyle.centerColumn, commonStyle.spaceTopLarge].join(' ')}>
 			<SectionHeader 
 				title='Get to know Pulsar presets'
 				subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
 			/>
+			<PresetsList client:load />
 			<Button label='See all presets' url={'/presets'} />
 			<VisitComposer className={commonStyle.spaceTopMedium} />
 		</BasicLayout>

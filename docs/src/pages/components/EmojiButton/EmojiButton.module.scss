@@ -13,6 +13,15 @@
     justify-content: center;
     align-items: center;
 
+    cursor: pointer;
+    transition: transform 0.2s;
+    &:hover {
+      transform: translateX(4px) translateY(-4px);
+    }
+    &:active {
+      transform: translateX(0) translateY(0);
+    }
+
     .emoji {
       width: 80px;
       height: 80px;
