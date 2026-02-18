@@ -1,6 +1,16 @@
 .header {
   max-width: 600px;
   padding: 25px 0px 25px 0px;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 20px 0px 20px 0px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 16px 0px 16px 0px;
+  }
   
   &.center {
     text-align: center;
@@ -16,9 +26,18 @@
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
   }
+  
   .subtitle {
     padding-top: 24px;
     font-size: var(--font-size-lg);
     line-height: var(--font-line-height-lg);
+    
+    @media (max-width: 768px) {
+      padding-top: 16px;
+    }
+    
+    @media (max-width: 480px) {
+      padding-top: 12px;
+    }
   }
 }

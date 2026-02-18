@@ -14,10 +14,28 @@
 }
 .spaceTopSmall {
   margin-top: 20px;
+  @media (max-width: 768px) {
+    margin-top: 16px;
+  }
+  @media (max-width: 480px) {
+    margin-top: 12px;
+  }
 }
 .spaceTopMedium {
   margin-top: 60px;
+  @media (max-width: 768px) {
+    margin-top: 40px;
+  }
+  @media (max-width: 480px) {
+    margin-top: 24px;
+  }
 }
 .spaceTopLarge {
   margin-top: 100px;
+  @media (max-width: 768px) {
+    margin-top: 60px;
+  }
+  @media (max-width: 480px) {
+    margin-top: 40px;
+  }
 }

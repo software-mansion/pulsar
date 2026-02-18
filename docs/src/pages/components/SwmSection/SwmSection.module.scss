@@ -7,47 +7,148 @@
   background-size: 85%;
   text-align: center;
   padding-top: 50px;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding-top: 40px;
+    background-size: 120%;
+  }
+  
+  @media (max-width: 480px) {
+    padding-top: 30px;
+    background-size: 150%;
+  }
+  
   .logo {
     width: 75px;
+    
+    @media (max-width: 768px) {
+      width: 60px;
+    }
+    
+    @media (max-width: 480px) {
+      width: 48px;
+    }
   }
+  
   .arrows {
     position: absolute;
     z-index: 0;
     transform: translateX(250px) translateY(-80px);
+    
+    @media (max-width: 1024px) {
+      display: none;
+    }
   }
+  
   .zOrder {
     z-index: 2;
     position: relative;
   }
+  
   .wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 40px 70px;
+    box-sizing: border-box;
+    gap: 20px;
+    
+    @media (max-width: 1024px) {
+      flex-direction: column;
+      padding: 30px 40px;
+    }
+    
+    @media (max-width: 768px) {
+      padding: 24px 24px;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 16px 16px;
+    }
+    
     .text {
       font-size: var(--font-size-lg);
       line-height: var(--font-line-height-lg);
       max-width: 350px;
       text-align: left;
+      
+      @media (max-width: 1024px) {
+        text-align: center;
+        max-width: 100%;
+      }
     }
   }
+  
   .iconBar {
     padding: 70px 0 60px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    width: 100%;
+    
+    @media (max-width: 768px) {
+      padding: 40px 0 30px 0;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 20px 0 16px 0;
+    }
+    
     img {
       width: 24px;
       height: 24px;
       margin: 9px;
+      flex-shrink: 0;
+      
+      @media (max-width: 768px) {
+        width: 20px;
+        height: 20px;
+        margin: 6px;
+      }
+      
+      @media (max-width: 480px) {
+        width: 18px;
+        height: 18px;
+        margin: 4px;
+      }
     }
   }
 }
+
 .cardBackground {
   margin-top: 30px;
   border-radius: 4px;
   background-color: var(--color-blue-50);
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    margin-top: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-top: 16px;
+    border-radius: 2px;
+  }
+  
   .cardContent {
     border: solid 2px var(--color-blue-50);
     border-radius: 4px;
     transform: translateX(3px) translateY(-3px);
     background-color: white;
+    box-sizing: border-box;
+    
+    @media (max-width: 768px) {
+      transform: translateX(2px) translateY(-2px);
+    }
+    
+    @media (max-width: 480px) {
+      border-radius: 2px;
+      border: solid 1px var(--color-blue-50);
+      transform: translateX(1px) translateY(-1px);
+    }
   }
 }

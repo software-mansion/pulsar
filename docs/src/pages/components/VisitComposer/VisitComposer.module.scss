@@ -1,18 +1,40 @@
 .background {
   background-color: var(--color-blue-50);
   border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  
   .section {
     border: solid 2px var(--color-blue-50);
     border-radius: 4px;
     background-color: var(--color-blue-10);
     display: flex;
     transform: translateX(3px) translateY(-3px);
+    box-sizing: border-box;
+    position: relative;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transform: translateX(2px) translateY(-2px);
+    }
+    
+    @media (max-width: 480px) {
+      transform: translateX(1px) translateY(-1px);
+    }
+    
     .stars {
       position: absolute;
       display: flex;
       flex-direction: column;
       left: -30px;
       top: -30px;
+      
+      @media (max-width: 1024px) {
+        display: none;
+      }
+      
       .star1 {
         width: 90px;
         transform: translateX(-10px) translateY(-5px) rotate(195deg);
@@ -24,6 +46,21 @@
     }
     .leftBar {
       padding: 48px;
+      flex: 1;
+      
+      @media (max-width: 1024px) {
+        padding: 40px 32px;
+        width: 100%;
+      }
+      
+      @media (max-width: 768px) {
+        padding: 32px 24px;
+      }
+      
+      @media (max-width: 480px) {
+        padding: 20px 16px;
+      }
+      
       .header {
         font-weight: var(--font-weight-bold);
         font-size: var(--font-size-xl);
@@ -32,6 +69,14 @@
         font-size: var(--font-size-lg);
         line-height: var(--font-line-height-lg);
         padding: 25px 0;
+        
+        @media (max-width: 768px) {
+          padding: 16px 0;
+        }
+        
+        @media (max-width: 480px) {
+          padding: 12px 0;
+        }
       }
       .link {
         font-size: var(--font-size-lg);
@@ -42,6 +87,28 @@
       position: relative;
       top: 5px;
       padding-top: 48px;
+      flex-shrink: 0;
+      
+      @media (max-width: 1024px) {
+        top: 0;
+        padding-top: 0;
+        padding: 0 32px 32px 32px;
+        width: 100%;
+      }
+      
+      @media (max-width: 768px) {
+        padding: 0 24px 24px 24px;
+      }
+      
+      @media (max-width: 480px) {
+        padding: 0 16px 16px 16px;
+      }
+      
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
     }
   }
 }

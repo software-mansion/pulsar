@@ -2,6 +2,16 @@
   background-color: var(--color-blue-50);
   border-radius: 4px;
   margin: 20px;
+  
+  @media (max-width: 768px) {
+    margin: 12px;
+    // border-radius: 2px;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 6px;
+    // border-radius: 2px;
+  }
 
   .button {
     background-color: white;
@@ -12,6 +22,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    @media (max-width: 768px) {
+      padding: 6px;
+      transform: translateX(2px) translateY(-2px);
+      // border-radius: 2px;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 4px;
+      transform: translateX(1px) translateY(-1px);
+      // border-radius: 2px;
+      border: solid 1px var(--color-blue-50);
+    }
 
     cursor: pointer;
     transition: transform 0.2s;
@@ -32,6 +55,16 @@
     .emoji {
       width: 80px;
       height: 80px;
+      
+      @media (max-width: 768px) {
+        width: 60px;
+        height: 60px;
+      }
+      
+      @media (max-width: 480px) {
+        width: 40px;
+        height: 40px;
+      }
     }
   }
 
@@ -39,6 +72,16 @@
     .emoji {
       width: 40px;
       height: 40px;
+      
+      @media (max-width: 768px) {
+        width: 32px;
+        height: 32px;
+      }
+      
+      @media (max-width: 480px) {
+        width: 24px;
+        height: 24px;
+      }
     }
   }
 }

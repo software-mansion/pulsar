@@ -28,6 +28,30 @@
   --font-line-height-3xl: 62px;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --font-size-2xs: 12px;
+    --font-size-xs: 13px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 22px;
+    --font-size-2xl: 32px;
+    --font-size-3xl: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --font-size-2xs: 11px;
+    --font-size-xs: 12px;
+    --font-size-md: 14px;
+    --font-size-lg: 16px;
+    --font-size-xl: 20px;
+    --font-size-2xl: 28px;
+    --font-size-3xl: 32px;
+  }
+}
+
 @font-face {
   font-family: 'Aeonik';
   src: url('/assets/fonts/Aeonik.otf') format('otf');

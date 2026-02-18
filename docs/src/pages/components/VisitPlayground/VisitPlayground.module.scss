@@ -2,13 +2,39 @@
   border: solid 2px var(--color-blue-50);
   background-color: var(--color-blue-10);
   padding: 80px 0px 80px 0;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 60px 0px 60px 0;
+    border: solid 1px var(--color-blue-50);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 40px 0px 40px 0;
+  }
+  
   .layout {
     background-image: url('../../../assets/landing-page/pattern.svg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    width: 100%;
+    box-sizing: border-box;
+    
     .emojiBar {
       display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      
+      @media (max-width: 768px) {
+        gap: 4px;
+      }
+      
+      @media (max-width: 480px) {
+        gap: 2px;
+      }
     }
   }
 }

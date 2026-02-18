@@ -5,13 +5,43 @@
   margin-bottom: 16px;
   background-color: var(--color-blue-10);
   box-shadow: -3px 3px 0px var(--color-blue-50);
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 2px;
+    border: 1px solid var(--color-blue-50);
+    box-shadow: -2px 2px 0px var(--color-blue-50);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  
   .tagsBar {
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
+    flex-wrap: wrap;
+    
+    @media (max-width: 480px) {
+      gap: 6px;
+    }
   }
+  
   .header {
     margin-bottom: 20px;
+    
+    @media (max-width: 768px) {
+      margin-bottom: 12px;
+    }
+    
+    @media (max-width: 480px) {
+      margin-bottom: 8px;
+    }
+    
     .name {
       font-weight: var(--font-weight-bold);
       font-size: var(--font-size-xl);

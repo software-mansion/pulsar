@@ -2,6 +2,10 @@
   background-color: var(--color-blue-50);
   width: fit-content;
   border-radius: 4px;
+  
+  @media (max-width: 480px) {
+    border-radius: 2px;
+  }
 }
 .innerHolder {
   display: flex;
@@ -10,11 +14,31 @@
   border-radius: 4px;
   transform: translateX(3px) translateY(-3px);
   font-size: var(--font-size-md);
+  align-items: center;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    padding: 12px 20px;
+    font-size: var(--font-size-md);
+    transform: translateX(2px) translateY(-2px);
+    border-width: 2px;
+    border-radius: 2px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 16px;
+  }
 
   img {
     margin-left: 5px;
     transform: translateX(0px);
     transition: transform 0.2s;
+    
+    @media (max-width: 480px) {
+      width: 16px;
+      height: 16px;
+      margin-left: 4px;
+    }
   }
 
   cursor: pointer;
