@@ -1,11 +1,11 @@
 .soundBanner {
-  z-index: 2;
   width: 100%;
   text-align: right;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  transform: translateY(-20px);
+  position: absolute;
+  top: 680px;
   padding-right: 20px;
   .text {
     font-size: var(--font-size-2xs);
