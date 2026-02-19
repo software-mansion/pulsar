@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "name": "Radon IDE panel",
+      "type": "radon-ide",
+      "request": "launch",
+      "appRoot": "./PulsarApp",
+      "env": {},
+      "ios": {},
+      "android": {},
+      "usePrebuild": false
+    }
+  ]
+}

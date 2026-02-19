@@ -1,98 +1,160 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Card from '@/components/Card';
+import BasicLayout from '@/components/BasicLayout';
+import Button from '@/components/Button';
+import Input from '@/components/Input';
+import { Collapsible } from '@/components/ui/collapsible';
+import Point from '@/components/Point';
+import { ExternalLink } from '@/components/external-link';
+import ConnectionIndicator from '@/components/ConnectionIndicator';
+
+const logo = require('@/assets/images/logo.png');
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'waiting'>('disconnected');
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+  const handleOnConnect = () => {
+    setConnectionStatus('waiting');
+    setTimeout(() => {
+      setConnectionStatus('connected');
+    }, 2000);
+  }
+
+  return <SafeAreaView>
+    <BasicLayout>
+
+      <View style={styles.titleContainer}>
+        <ThemedText type="title">
+          Welcome to Pulsar!
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+        <Image source={logo} style={styles.logo} />
+      </View>
+
+      <View>
+        <ConnectionIndicator status={connectionStatus} style={styles.indicator} />
+
+        <Card>
+          <ThemedText type="subtitle">Connect device</ThemedText>
+          <ThemedText style={styles.marginTop2X}>
+            Connect your haptic device first. Pair it with the app now so you can test the presets.
+          </ThemedText>
+
+          {connectionStatus === 'connected' && <>
+            <View style={[styles.marginTop4X, styles.infoBox]}>
+              <ThemedText style={styles.infoBoxText}>You are connected with the browser!</ThemedText>
+            </View>
+
+            <TouchableOpacity style={styles.marginTop2X} onPress={() => setConnectionStatus('disconnected')}>
+              <ThemedText style={styles.disconnect}>
+                Disconnect
+              </ThemedText>
+            </TouchableOpacity>
+          </>}
+
+          {connectionStatus !== 'connected' && <>
+            <Input placeholder='Connecting code' style={styles.marginTop4X} />
+            <Button
+              label='Connect'
+              style={styles.marginTop3X}
+              state={connectionStatus === 'waiting' ? 'loading' : 'default'}
+              onPress={handleOnConnect}
+            />
+            <Collapsible title="How to connect a device? 🤔" style={styles.marginTop4X}>
+              <Point index={1}>
+                <ThemedText>Download the PulsarApp for App Store or Play Store.</ThemedText>
+              </Point>
+              <Point index={2}>
+                <ThemedText>Open Playground and find Device Connection section.</ThemedText>
+              </Point>
+              <Point index={3}>
+                <ThemedText>
+                  Type Paring code into PulsarApp and click Connect button. 
+                  <ExternalLink href="https://docs.expo.dev/router/introduction">
+                    <ThemedText type="link"> Test link.</ThemedText>
+                  </ExternalLink>
+                </ThemedText>
+              </Point>
+            </Collapsible>
+          </>}
+
+          {/* <Link href="/modal">
+            <Link.Trigger>
+              <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+            </Link.Trigger>
+            <Link.Preview />
+            <Link.Menu>
+              <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+              <Link.MenuAction
+                title="Share"
+                icon="square.and.arrow.up"
+                onPress={() => alert('Share pressed')}
+              />
+              <Link.Menu title="More" icon="ellipsis">
+                <Link.MenuAction
+                  title="Delete"
+                  icon="trash"
+                  destructive
+                  onPress={() => alert('Delete pressed')}
+                />
+              </Link.Menu>
+            </Link.Menu>
+          </Link> */}
+
+        </Card>
+      </View>
+    </BasicLayout>
+  </SafeAreaView>
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    marginTop: 30,
+    marginBottom: 30,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  logo: {
+    width: 50,
+    height: 50,
+    marginTop: -10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  indicator: {
     position: 'absolute',
+    top: -12,
+    right: -8,
+  },
+  marginTop1X: {
+    marginTop: 5,
+  },
+  marginTop2X: {
+    marginTop: 10,
+  },
+  marginTop3X: {
+    marginTop: 15,
+  },
+  marginTop4X: {
+    marginTop: 20,
+  },
+
+  infoBox: {
+    padding: 10,
+    backgroundColor: '#E1F3FA',
+    borderRadius: 4,
+  },
+  infoBoxText: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#57B495',
+  },
+  disconnect: {
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });
