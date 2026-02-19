@@ -12,6 +12,8 @@ import { Collapsible } from '@/components/ui/collapsible';
 import Point from '@/components/Point';
 import { ExternalLink } from '@/components/external-link';
 import ConnectionIndicator from '@/components/ConnectionIndicator';
+import { Margins } from '@/constants/theme';
+import { Link } from 'expo-router';
 
 const logo = require('@/assets/images/logo.png');
 
@@ -40,16 +42,16 @@ export default function HomeScreen() {
 
         <Card>
           <ThemedText type="subtitle">Connect device</ThemedText>
-          <ThemedText style={styles.marginTop2X}>
+          <ThemedText style={Margins.marginTop2X}>
             Connect your haptic device first. Pair it with the app now so you can test the presets.
           </ThemedText>
 
           {connectionStatus === 'connected' && <>
-            <View style={[styles.marginTop4X, styles.infoBox]}>
+            <View style={[Margins.marginTop4X, styles.infoBox]}>
               <ThemedText style={styles.infoBoxText}>You are connected with the browser!</ThemedText>
             </View>
 
-            <TouchableOpacity style={styles.marginTop2X} onPress={() => setConnectionStatus('disconnected')}>
+            <TouchableOpacity style={Margins.marginTop2X} onPress={() => setConnectionStatus('disconnected')}>
               <ThemedText style={styles.disconnect}>
                 Disconnect
               </ThemedText>
@@ -57,14 +59,14 @@ export default function HomeScreen() {
           </>}
 
           {connectionStatus !== 'connected' && <>
-            <Input placeholder='Connecting code' style={styles.marginTop4X} />
+            <Input placeholder='Connecting code' style={Margins.marginTop4X} />
             <Button
               label='Connect'
-              style={styles.marginTop3X}
+              style={Margins.marginTop3X}
               state={connectionStatus === 'waiting' ? 'loading' : 'default'}
               onPress={handleOnConnect}
             />
-            <Collapsible title="How to connect a device? 🤔" style={styles.marginTop4X}>
+            <Collapsible title="How to connect a device? 🤔" style={Margins.marginTop4X}>
               <Point index={1}>
                 <ThemedText>Download the PulsarApp for App Store or Play Store.</ThemedText>
               </Point>
@@ -128,18 +130,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -12,
     right: -8,
-  },
-  marginTop1X: {
-    marginTop: 5,
-  },
-  marginTop2X: {
-    marginTop: 10,
-  },
-  marginTop3X: {
-    marginTop: 15,
-  },
-  marginTop4X: {
-    marginTop: 20,
   },
 
   infoBox: {

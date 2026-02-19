@@ -3,7 +3,7 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-import { Platform } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 const tintColorLight = '#001A72';
 const tintColorDark = '#fff';
@@ -63,5 +63,20 @@ export const Fonts = Platform.select({
     serif: "Georgia, 'Times New Roman', serif",
     rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  },
+});
+
+export const Margins = StyleSheet.create({
+  marginTop1X: {
+    marginTop: 5,
+  },
+  marginTop2X: {
+    marginTop: 10,
+  },
+  marginTop3X: {
+    marginTop: 15,
+  },
+  marginTop4X: {
+    marginTop: 20,
   },
 });
