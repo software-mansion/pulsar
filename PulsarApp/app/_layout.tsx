@@ -21,6 +21,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters' }} />
           <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags' }} />
+          <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground' }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
