@@ -41,8 +41,8 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
   },
   defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 18,
+    lineHeight: 28,
     fontWeight: '600',
     fontFamily: Fonts.sans,
   },
@@ -53,7 +53,8 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 22,
+    lineHeight: 32,
     fontWeight: 'bold',
     fontFamily: Fonts.sans,
   },

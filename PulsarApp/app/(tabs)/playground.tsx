@@ -9,6 +9,7 @@ import { Link } from 'expo-router';
 
 const gridImage = require('@/assets/images/grid.svg');
 const handImage = require('@/assets/images/hand.png');
+const infoIcon = require('@/assets/images/info.svg');
 
 const defaultEdges = {
   top: 'additive',
@@ -19,23 +20,24 @@ const defaultEdges = {
 
 export default function PlaygroundScreen() {
   const borderColor = useThemeColor({}, 'borderColor');
-  const textColor = useThemeColor({}, 'text');
 
   return (
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
       <ThemedView style={styles.container}>
-        {/* Header */}
+
         <View style={styles.header}>
           <ThemedText type="title" style={styles.title}>Playground</ThemedText>
-          <TouchableOpacity style={styles.howItWorksButton}>
-            <ThemedText style={styles.howItWorksText}>How does it work?</ThemedText>
-            <View style={[styles.infoIcon, { borderColor: textColor }]}>
-              <ThemedText style={styles.infoIconText}>i</ThemedText>
-            </View>
-          </TouchableOpacity>
+          <Link href="/playgroundModal">
+            <Link.Trigger>
+              <View style={styles.howItWorksButton}>
+                <ThemedText style={styles.howItWorksText}>How does it work?</ThemedText>
+                <Image source={infoIcon} style={styles.infoIcon} />
+              </View>
+            </Link.Trigger>
+          </Link>
         </View>
 
-        {/* Grid with Hand Pointer */}
+
         <View style={styles.gridContainer}>
           <Image
             source={gridImage}
@@ -55,7 +57,6 @@ export default function PlaygroundScreen() {
           </Link.Trigger>
         </Link>
 
-        {/* Control Buttons */}
         <View style={styles.controlsContainer}>
           <TouchableOpacity style={[styles.controlButton, { borderColor }]}>
             <ThemedText style={styles.playIcon}>▶</ThemedText>
@@ -70,6 +71,7 @@ export default function PlaygroundScreen() {
             <ThemedText style={styles.downloadIcon}>↓</ThemedText>
           </TouchableOpacity>
         </View>
+        
       </ThemedView>
     </SafeAreaView>
   );
@@ -103,12 +105,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   infoIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 18,
+    height: 18,
   },
   infoIconText: {
     fontSize: 12,
