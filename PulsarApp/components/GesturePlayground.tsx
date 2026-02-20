@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, Share } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedRef, useAnimatedStyle, useSharedValue, measure } from 'react-native-reanimated';
-import { runOnUIAsync } from 'react-native-worklets';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 
 const gridImage = require('@/assets/images/grid.svg');
@@ -41,12 +39,10 @@ export default function GesturePlayground() {
 
   const clampIndicatorPosition = (x: number, y: number) => {
     'worklet';
-    // Allow hidden state: { x: -100, y: -100 }
     if (x === -100 && y === -100) {
       return { x, y };
     }
     
-    // Clamp to grid bounds (indicator is 30x30 centered on position, so subtract 15)
     const clampedX = Math.max(15, Math.min(x, containerSize.value.width - 15));
     const clampedY = Math.max(15, Math.min(y, containerSize.value.height - 15));
     
