@@ -6,6 +6,8 @@ const loaderIcon = require('../assets/images/loader.svg');
 import { Image } from 'expo-image';
 
 const arrowIcon = require('@/assets/images/arrow.svg');
+const playIcon = require('@/assets/images/play.svg');
+const stopIcon = require('@/assets/images/stop.svg');
 
 interface Props {
   label: string;
@@ -13,7 +15,7 @@ interface Props {
   onClick?: () => void;
   onComplete?: () => void;
   state?: 'loading' | 'default';
-  showIcon?: 'arrow' | 'none';
+  showIcon?: 'arrow' | 'play' | 'stop' | 'none';
 }
 
 function Button({ label, style, onClick, onComplete, state = 'default', showIcon = 'none', ...props }: Props & ViewProps) {
@@ -60,6 +62,8 @@ function Button({ label, style, onClick, onComplete, state = 'default', showIcon
           <View style={styles.row}>
             <Text style={styles.text}>{label}</Text>
             {showIcon === 'arrow' && <Image source={arrowIcon} style={styles.arrowIcon} />}
+            {showIcon === 'play' && <Image source={playIcon} style={styles.arrowIcon} />}
+            {showIcon === 'stop' && <Image source={stopIcon} style={styles.arrowIcon} />}
           </View>
         )}
       </Animated.View>
