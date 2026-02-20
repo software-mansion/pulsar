@@ -1,9 +1,10 @@
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Image } from 'expo-image';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import Button from '@/components/Button';
 
 import { Link } from 'expo-router';
 
@@ -18,19 +19,30 @@ const defaultEdges = {
   right: 'additive',
 };
 
+const stringToShare = "Example preset content";
+
 export default function PlaygroundScreen() {
-  const borderColor = useThemeColor({}, 'borderColor');
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: stringToShare,
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
 
   return (
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
-      <ThemedView style={styles.container}>
+      <View style={styles.container}>
 
         <View style={styles.header}>
           <ThemedText type="title" style={styles.title}>Playground</ThemedText>
           <Link href="/playgroundModal">
             <Link.Trigger>
               <View style={styles.howItWorksButton}>
-                <ThemedText style={styles.howItWorksText}>How does it work?</ThemedText>
+                <ThemedText>How does it work?</ThemedText>
                 <Image source={infoIcon} style={styles.infoIcon} />
               </View>
             </Link.Trigger>
@@ -44,35 +56,21 @@ export default function PlaygroundScreen() {
             style={styles.grid}
             contentFit="contain"
           />
-          <Image
+        </View>
+
+        {/* <Image
             source={handImage}
             style={styles.handPointer}
             contentFit="contain"
-          />
-        </View>
-
-        <Link href="/playgroundModal">
-          <Link.Trigger>
-            <Text>test</Text>
-          </Link.Trigger>
-        </Link>
+          /> */}
 
         <View style={styles.controlsContainer}>
-          <TouchableOpacity style={[styles.controlButton, { borderColor }]}>
-            <ThemedText style={styles.playIcon}>▶</ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.recordButton, { borderColor }]}>
-            <View style={styles.recordDot} />
-            <ThemedText style={styles.recordText}>Record</ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.controlButton, { borderColor }]}>
-            <ThemedText style={styles.downloadIcon}>↓</ThemedText>
-          </TouchableOpacity>
+          <Button onClick={() => {}} showIcon="play" largeIcon={true} />
+          <Button label="Record" onClick={() => {}} showIcon="record" fullWidth={true} />
+          <Button onClick={handleShare} showIcon="download" largeIcon={true} />
         </View>
         
-      </ThemedView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -90,7 +88,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 20,
-    paddingBottom: 20,
   },
   title: {
     fontSize: 32,
@@ -100,9 +97,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  howItWorksText: {
-    fontSize: 14,
   },
   infoIcon: {
     width: 18,
@@ -121,7 +115,6 @@ const styles = StyleSheet.create({
   grid: {
     width: '100%',
     height: '100%',
-    maxHeight: 500,
   },
   handPointer: {
     width: 80,
@@ -131,12 +124,10 @@ const styles = StyleSheet.create({
   controlsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     paddingBottom: 20,
     gap: 12,
   },
   controlButton: {
-    backgroundColor: 'white',
     borderWidth: 2,
     borderRadius: 8,
     width: 80,
@@ -153,7 +144,6 @@ const styles = StyleSheet.create({
   },
   recordButton: {
     flex: 1,
-    backgroundColor: 'white',
     borderWidth: 3,
     borderColor: '#E74C3C',
     borderRadius: 8,

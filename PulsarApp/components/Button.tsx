@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ViewProps } from 'react-native';
+import { View, StyleSheet, Text, ViewProps, Dimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 const loaderIcon = require('../assets/images/loader.svg');
@@ -8,17 +8,33 @@ import { Image } from 'expo-image';
 const arrowIcon = require('@/assets/images/arrow.svg');
 const playIcon = require('@/assets/images/play.svg');
 const stopIcon = require('@/assets/images/stop.svg');
+const downloadIcon = require('@/assets/images/download.svg');
+const recordIcon = require('@/assets/images/record.svg');
+const squareIcon = require('@/assets/images/square.svg');
+
+const { width } = Dimensions.get('window');
 
 interface Props {
-  label: string;
+  label?: string;
   style?: ViewProps['style'];
   onClick?: () => void;
   onComplete?: () => void;
   state?: 'loading' | 'default';
-  showIcon?: 'arrow' | 'play' | 'stop' | 'none';
+  showIcon?: 'arrow' | 'play' | 'stop' | 'download' | 'record' | 'square' | 'none';
+  largeIcon?: boolean;
+  fullWidth?: boolean;
 }
 
-function Button({ label, style, onClick, onComplete, state = 'default', showIcon = 'none', ...props }: Props & ViewProps) {
+function Button({ 
+  label, 
+  style, 
+  onClick, 
+  onComplete, 
+  state = 'default', 
+  showIcon = 'none', 
+  largeIcon = false, 
+  fullWidth = false,
+  ...props }: Props & ViewProps) {
   const [pressed, setPressed] = useState(false);
   const isLoading = state === 'loading';
 
@@ -45,7 +61,8 @@ function Button({ label, style, onClick, onComplete, state = 'default', showIcon
     styles.container,
     isLoading ? styles.loadingContainer : null,
     style,
-    pressed ? styles.pressAnimation : null
+    pressed ? showIcon === 'record' ? styles.pressAnimationRecord : styles.pressAnimation : null,
+    showIcon === 'record' ? { width: width - 200, borderColor: '#FF6259', boxShadow: '-3px 3px 0px #FF6259' } : null,
   ];
 
   return (
@@ -59,11 +76,14 @@ function Button({ label, style, onClick, onComplete, state = 'default', showIcon
             />
           </Animated.View>
         ) : (
-          <View style={styles.row}>
-            <Text style={styles.text}>{label}</Text>
-            {showIcon === 'arrow' && <Image source={arrowIcon} style={styles.arrowIcon} />}
-            {showIcon === 'play' && <Image source={playIcon} style={styles.arrowIcon} />}
-            {showIcon === 'stop' && <Image source={stopIcon} style={styles.arrowIcon} />}
+          <View style={largeIcon ? styles.largeIconRow : styles.row}>
+            {label && <Text style={styles.text}>{label}</Text>}
+            {showIcon === 'arrow' && <Image source={arrowIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
+            {showIcon === 'play' && <Image source={playIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
+            {showIcon === 'stop' && <Image source={stopIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
+            {showIcon === 'download' && <Image source={downloadIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
+            {showIcon === 'record' && <Image source={recordIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
+            {showIcon === 'square' && <Image source={squareIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
           </View>
         )}
       </Animated.View>
@@ -72,9 +92,6 @@ function Button({ label, style, onClick, onComplete, state = 'default', showIcon
 }
 
 const styles = StyleSheet.create({
-  containerTouchable: {
-    alignSelf: 'flex-start',
-  },
   container: {
     backgroundColor: 'white',
     boxShadow: '-3px 3px 0px #38ACDD',
@@ -83,6 +100,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderColor: '#38ACDD',
     borderWidth: 2,
+    justifyContent: 'center',
   },
   loadingContainer: {
     backgroundColor: '#B5E1F1',
@@ -109,6 +127,17 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     alignSelf: 'center',
   },
+  largeArrowIcon: {
+    width: 22,
+    height: 22,
+    alignSelf: 'center',
+  },
+  largeIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
   pressAnimation: {
     animationDuration: 200,
     animationTimingFunction: 'ease-in',
@@ -134,6 +163,34 @@ const styles = StyleSheet.create({
           { translateY: 0 }
         ],
         boxShadow: '-3px 3px 0px #38ACDD',
+       },
+    },
+  },
+  pressAnimationRecord: {
+    animationDuration: 200,
+    animationTimingFunction: 'ease-in',
+    animationFillMode: 'forwards',
+    animationName: {
+      '0%': { 
+        transform: [
+          { translateX: 0 },
+          { translateY: 0 }
+        ],
+        boxShadow: '-3px 3px 0px #FF6259',
+      },
+      '50%': { 
+        transform: [
+          { translateX: -3 },
+          { translateY: 3 }
+        ],
+        boxShadow: '0px 0px 0px #FF6259',
+      },
+      '100%': { 
+        transform: [
+          { translateX: 0 },
+          { translateY: 0 }
+        ],
+        boxShadow: '-3px 3px 0px #FF6259',
        },
     },
   },
