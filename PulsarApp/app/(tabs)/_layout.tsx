@@ -2,17 +2,12 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import SvgIcon from '@/components/SvgIcon';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
@@ -20,28 +15,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <SvgIcon iconName="home" state={focused ? 'active' : 'default'} />,
         }}
       />
       <Tabs.Screen
         name="presets"
         options={{
           title: 'Presets',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <SvgIcon iconName="list" state={focused ? 'active' : 'default'} />,
         }}
       />
       <Tabs.Screen
         name="playground"
         options={{
           title: 'Playground',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <SvgIcon iconName="brush" state={focused ? 'active' : 'default'} />,
         }}
       />
       <Tabs.Screen
         name="demos"
         options={{
           title: 'Demos',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <SvgIcon iconName="sparkles" state={focused ? 'active' : 'default'} />,
         }}
       />
     </Tabs>
