@@ -16,6 +16,7 @@ export default function PresetList() {
           }))}
           image={preset.image}
           onPress={preset.play}
+          duration={preset.duration}
         />
       ))}
     </View>

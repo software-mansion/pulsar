@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useAnimatedReaction, useAnimatedRef, scrollTo } from 'react-native-reanimated';
 
 import Card from './Card';
 import { ThemedText } from './themed-text';
@@ -18,13 +19,61 @@ export interface PresetProps {
 	tags: PresetTag[];
 	image: ImageSourcePropType;
 	onPress: () => void;
+	duration?: number;
 }
 
-function Preset({ title, subtitle, tags = [], image, onPress }: PresetProps) {
+function Preset({ title, subtitle, tags = [], image, onPress, duration }: PresetProps) {
 	const imageMeta = Image.resolveAssetSource(image);
 	const imageAspectRatio =
 		imageMeta?.width && imageMeta?.height ? imageMeta.width / imageMeta.height : undefined;
 	const imageWidth = imageAspectRatio ? IMAGE_HEIGHT * imageAspectRatio : undefined;
+
+	const [isPlaying, setIsPlaying] = useState(false);
+	const [viewportWidth, setViewportWidth] = useState(0);
+	const progress = useSharedValue(0);
+	const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
+
+	useAnimatedReaction(
+		() => progress.value,
+		(currentProgress) => {
+			if (imageWidth && viewportWidth > 0 && currentProgress > 0) {
+				const indicatorPosition = currentProgress * imageWidth;
+				const scrollX = Math.max(0, indicatorPosition - viewportWidth / 2);
+				scrollTo(scrollViewRef, scrollX, 0, false);
+			}
+		}
+	);
+
+	const handlePress = () => {
+		if (isPlaying) {
+			setIsPlaying(false);
+			progress.value = withTiming(0, { duration: 200 });
+			scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+		} else {
+			setIsPlaying(true);
+			onPress();
+			
+			if (duration) {
+				progress.value = 0;
+				progress.value = withTiming(1, {
+					duration,
+					easing: Easing.linear,
+				});
+				
+				setTimeout(() => {
+					setIsPlaying(false);
+					progress.value = withTiming(0, { duration: 200 });
+					scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+				}, duration);
+			}
+		}
+	};
+
+	const animatedIndicatorStyle = useAnimatedStyle(() => {
+		return {
+			left: `${progress.value * 100}%`,
+		};
+	});
 
 	return (
 		<Card style={styles.card}>
@@ -45,10 +94,18 @@ function Preset({ title, subtitle, tags = [], image, onPress }: PresetProps) {
 				</ThemedText>
 				<ThemedText>{subtitle}</ThemedText>
 
-				<View style={styles.border}>
+				<View 
+					style={styles.border}
+					onLayout={(event) => {
+						const { width } = event.nativeEvent.layout;
+						setViewportWidth(width);
+					}}
+				>
 					<ScrollView
+						ref={scrollViewRef}
 						horizontal
 						bounces={false}
+						scrollEnabled={false}
 						style={styles.imagesScroll}
 						contentContainerStyle={styles.imagesContent}
 					>
@@ -61,9 +118,13 @@ function Preset({ title, subtitle, tags = [], image, onPress }: PresetProps) {
 							resizeMode="contain"
 						/>
 					</ScrollView>
+					
+					{isPlaying && (
+						<Animated.View style={[styles.playIndicator, animatedIndicatorStyle]} />
+					)}
 				</View>
 
-				<Button label='Play' onClick={onPress} />
+				<Button label='Play' onClick={handlePress} />
 
 			</View>
 		</Card>
@@ -119,6 +180,19 @@ const styles = StyleSheet.create({
 		fontFamily: Fonts.sans,
 		fontSize: 12,
 		color: Colors.light.text,
+	},
+	playIndicator: {
+		position: 'absolute',
+		top: 0,
+		bottom: 0,
+		width: 3,
+		backgroundColor: '#001A72',
+		shadowColor: '#5BB9E0',
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 0.8,
+		shadowRadius: 4,
+		elevation: 5,
+		pointerEvents: 'none',
 	},
 });
 
