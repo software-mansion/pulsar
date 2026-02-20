@@ -124,7 +124,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 					)}
 				</View>
 
-				<Button label='Play' onClick={handlePress} />
+				<Button label={isPlaying ? 'Stop' : 'Play'} onClick={handlePress} />
 
 			</View>
 		</Card>
