@@ -8,7 +8,7 @@ type Pattern = {
   }
 }
 
-enum HapticSupport {
+export enum HapticSupport {
   NO_SUPPORT = 0,
   MINIMAL_SUPPORT = 1,
   LIMITED_SUPPORT = 2,
