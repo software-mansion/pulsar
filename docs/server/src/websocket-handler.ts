@@ -127,7 +127,7 @@ export class WebSocketHandler {
     }
 
     ws.on('close', () => {
-      console.error(`WebSocket closed for RECEIVER ${ws.id}`);
+      console.log(`WebSocket closed for RECEIVER ${ws.id}`);
       this.connectionManager.unregisterSocket(ws.id);
     });
 

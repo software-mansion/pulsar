@@ -153,7 +153,7 @@ export class ConnectionManager {
       }
     }
     this.idToSocket.delete(wsId);
-
+    console.log('Unregistered socket with id:', wsId, 'Notifying peer:', !!toNotify, connection, mode);
     if (toNotify && toNotify.readyState === WebSocket.OPEN) {
       const data = JSON.stringify({
         type: 'peer_disconnected',
@@ -171,6 +171,8 @@ export class ConnectionManager {
     const token = this.generateToken();
     this.strongConnections.set(token, connection);
     this.weakConnections.delete(code);
+    this.idToSocket.set(connection.sender.id, { ws: connection.sender, connectionType: 'strong', mode: 'sender', key: token });
+    this.idToSocket.set(connection.receiver.id, { ws: connection.receiver, connectionType: 'strong', mode: 'receiver', key: token });
     this.sendTokenNotification(token, connection);
   }
 
