@@ -56,11 +56,17 @@ export class ConnectionManager {
   }
 
   public broadcastChannel(message: string, token: string): string {
-    let data = JSON.stringify({
+    let messageData;
+    try {
+      messageData = JSON.parse(message);
+    } catch {
+      messageData = message;
+    }
+    
+    const data = JSON.stringify({
       type: 'broadcast',
-      message: "<data>",
+      message: messageData,
     });
-    data = data.replace('<data>', message).replace("\n", '');
 
     const connection = this.strongConnections.get(token);
     if (connection) {
