@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Tabs, Tab } from '@/components/Tabs';
 import { TagDescription } from '@/components/TagDescription';
 import { TagsInfo } from '@/constants/Tags';
@@ -12,7 +11,7 @@ const closeIcon = require('@/assets/images/x.svg');
 export default function TagsModal() {
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <ThemedText type="subtitle">Preset tags</ThemedText>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
@@ -38,7 +37,7 @@ export default function TagsModal() {
           ))}
         </Tabs>
       </View>
-    </ThemedView>
+    </View>
   );
 }
 
