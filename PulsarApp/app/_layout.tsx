@@ -10,6 +10,7 @@ import { Theme } from '@/constants/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { FilterProvider } from '@/contexts/FilterContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
+import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
 
 SplashScreen.setOptions({
   duration: 300,
@@ -31,19 +32,21 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <FilterProvider>
-        <OnboardingProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : {...DefaultTheme, ...Theme}}>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
-              <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags', headerShown: false }} />
-              <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
-            </Stack>
-            <StatusBar style="auto" />
-          </ThemeProvider>
-        </OnboardingProvider>
-      </FilterProvider>
+      <StoreReviewProvider>
+        <FilterProvider>
+          <OnboardingProvider>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : {...DefaultTheme, ...Theme}}>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
+                <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags', headerShown: false }} />
+                <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
+              </Stack>
+              <StatusBar style="auto" />
+            </ThemeProvider>
+          </OnboardingProvider>
+        </FilterProvider>
+      </StoreReviewProvider>
     </GestureHandlerRootView>
   );
 }

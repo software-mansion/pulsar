@@ -1,10 +1,21 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { usePathname } from 'expo-router';
 
 import { HapticTab } from '@/components/haptic-tab';
 import SvgIcon from '@/components/SvgIcon';
+import { useStoreReview } from '@/contexts/StoreReviewContext';
 
 export default function TabLayout() {
+  const pathname = usePathname();
+  const { trackTabVisit } = useStoreReview();
+
+  useEffect(() => {
+    // Track tab visits based on pathname
+    const tabName = pathname.split('/').pop() || 'index';
+    trackTabVisit(tabName);
+  }, [pathname]);
+
   return (
     <Tabs
       screenOptions={{

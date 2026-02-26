@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Image } from 'expo-image';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import Button from '@/components/Button';
@@ -17,7 +16,7 @@ export default function PlaygroundModal() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <ThemedText type="subtitle">How does it work?</ThemedText>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
@@ -76,7 +75,7 @@ export default function PlaygroundModal() {
           />
         </View>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
