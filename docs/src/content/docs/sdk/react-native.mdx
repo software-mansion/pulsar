@@ -1,39 +1,263 @@
 ---
 title: React Native SDK
-description: sdk
+description: API reference for the Pulsar React Native SDK
 ---
 
 import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
 
-### Installation
+The Pulsar React Native SDK (`react-native-pulsar`) exposes haptic feedback through three building blocks: **Presets**, **usePatternComposer**, and **useRealtimeComposer**. All preset functions and hook methods are worklet-compatible for use with Reanimated.
+
+## Requirements
+
+- React Native 0.71+
+- New Architecture (Turbo Modules) enabled
+
+## Installation
 
 <Tabs>
   <TabItem label="yarn" icon="seti:yarn">
-    <Code 
-      code="yarn add react-native-pulsar" 
+    <Code
+      code="yarn add react-native-pulsar"
       lang="bash"
       frame='terminal'
     />
   </TabItem>
   <TabItem label="npm" icon="npm">
-    <Code 
-      code="npm install react-native-pulsar" 
+    <Code
+      code="npm install react-native-pulsar"
       lang="bash"
       frame='terminal'
     />
   </TabItem>
   <TabItem label="pnpm" icon="pnpm">
-    <Code 
-      code="pnpm install react-native-pulsar" 
+    <Code
+      code="pnpm install react-native-pulsar"
       lang="bash"
       frame='terminal'
     />
   </TabItem>
   <TabItem label="Expo">
-    <Code 
-      code="expo install react-native-pulsar" 
+    <Code
+      code="expo install react-native-pulsar"
       lang="bash"
       frame='terminal'
     />
   </TabItem>
 </Tabs>
+
+---
+
+## Presets
+
+A collection of ready-to-use haptic patterns. All preset functions are worklet-compatible and can be called directly inside Reanimated worklets.
+
+```ts
+import { Presets } from 'react-native-pulsar';
+```
+
+### Built-in presets
+
+| Function | Description |
+|---|---|
+| `Presets.earthquake()` | Rumbling earthquake pattern |
+| `Presets.success()` | Positive confirmation feedback |
+| `Presets.fail()` | Negative failure feedback |
+| `Presets.tap()` | Simple single tap |
+
+### System presets
+
+Mirrors the platform's native haptic feedback styles.
+
+| Function | Description |
+|---|---|
+| `Presets.system.impactLight()` | Light impact |
+| `Presets.system.impactMedium()` | Medium impact |
+| `Presets.system.impactHeavy()` | Heavy impact |
+| `Presets.system.impactSoft()` | Soft impact |
+| `Presets.system.impactRigid()` | Rigid impact |
+| `Presets.system.notificationSuccess()` | Success notification |
+| `Presets.system.notificationWarning()` | Warning notification |
+| `Presets.system.notificationError()` | Error notification |
+| `Presets.system.selection()` | Selection change feedback |
+
+**Example**
+
+```ts
+import { Presets } from 'react-native-pulsar';
+import { Gesture } from 'react-native-gesture-handler';
+
+const tap = Gesture.Tap().onEnd(() => {
+  Presets.system.impactMedium();
+});
+```
+
+---
+
+## HapticsSupport
+
+Returns the haptic capability level of the current device.
+
+```ts
+function HapticsSupport(): HapticSupport
+```
+
+**HapticSupport enum**
+
+```ts
+enum HapticSupport {
+  NO_SUPPORT = 0,
+  MINIMAL_SUPPORT = 1,
+  LIMITED_SUPPORT = 2,
+  STANDARD_SUPPORT = 3,
+  ADVANCED_SUPPORT = 4,
+}
+```
+
+**Example**
+
+```ts
+import { HapticsSupport, HapticSupport } from 'react-native-pulsar';
+
+const support = HapticsSupport();
+
+if (support >= HapticSupport.STANDARD_SUPPORT) {
+  Presets.success();
+}
+```
+
+---
+
+## usePatternComposer
+
+A React hook for composing and playing a custom `Pattern`. The pattern is parsed on mount and whenever it changes. Resources are released automatically on unmount.
+
+```ts
+function usePatternComposer(pattern: Pattern): PatternComposer
+```
+
+**Returns**
+
+| Method | Description |
+|---|---|
+| `play()` | Plays the parsed pattern. Worklet-compatible. |
+| `parse(pattern: Pattern)` | Parses and replaces the current pattern. |
+
+**Example**
+
+```ts
+import { usePatternComposer } from 'react-native-pulsar';
+import { Gesture } from 'react-native-gesture-handler';
+
+const pattern = {
+  discretePattern: [
+    { time: 0, amplitude: 1, frequency: 0.5 },
+    { time: 100, amplitude: 0.5, frequency: 0.5 },
+  ],
+  continuesPattern: {
+    amplitude: [],
+    frequency: [],
+  },
+};
+
+function MyComponent() {
+  const composer = usePatternComposer(pattern);
+
+  const tap = Gesture.Tap().onEnd(() => {
+    composer.play();
+  });
+
+  return <GestureDetector gesture={tap}>...</GestureDetector>;
+}
+```
+
+---
+
+## useRealtimeComposer
+
+A React hook for real-time haptic control. Provides live amplitude and frequency modulation, useful for gesture-driven or continuously evolving haptic experiences. Haptics stop automatically on unmount.
+
+```ts
+function useRealtimeComposer(): RealtimeComposer
+```
+
+**Returns**
+
+| Method | Description |
+|---|---|
+| `set(amplitude: number, frequency: number)` | Updates the ongoing haptic with new amplitude and frequency values. Worklet-compatible. |
+| `playDiscrete(amplitude: number, frequency: number)` | Plays a single discrete haptic event. Worklet-compatible. |
+| `stop()` | Stops the active haptic. Worklet-compatible. |
+| `isActive()` | Returns `true` if a haptic is currently playing. Worklet-compatible. |
+
+**Example**
+
+```ts
+import { useRealtimeComposer } from 'react-native-pulsar';
+import { Gesture } from 'react-native-gesture-handler';
+
+function MyComponent() {
+  const realtime = useRealtimeComposer();
+
+  const pan = Gesture.Pan()
+    .onUpdate((e) => {
+      const amplitude = Math.min(Math.abs(e.velocityY) / 1000, 1);
+      realtime.set(amplitude, 0.5);
+    })
+    .onEnd(() => {
+      realtime.stop();
+    });
+
+  return <GestureDetector gesture={pan}>...</GestureDetector>;
+}
+```
+
+---
+
+## Types
+
+### Pattern
+
+Describes a complete haptic pattern with discrete pulses and continuous envelope curves.
+
+```ts
+type Pattern = {
+  discretePattern: Array<{
+    time: number;       // Milliseconds from pattern start
+    amplitude: number;  // Intensity (0–1)
+    frequency: number;  // Sharpness (0–1)
+  }>;
+  continuesPattern: {
+    amplitude: Array<{
+      time: number;  // Milliseconds from pattern start
+      value: number; // Amplitude value (0–1)
+    }>;
+    frequency: Array<{
+      time: number;  // Milliseconds from pattern start
+      value: number; // Frequency value (0–1)
+    }>;
+  };
+};
+```
+
+Use `discretePattern` for distinct taps and impacts. Use `continuesPattern` envelopes to shape a sustained haptic over time.
+
+### PatternComposer
+
+```ts
+type PatternComposer = {
+  play: () => void;
+  parse: (pattern: Pattern) => void;
+};
+```
+
+### HapticSupport
+
+```ts
+enum HapticSupport {
+  NO_SUPPORT = 0,
+  MINIMAL_SUPPORT = 1,
+  LIMITED_SUPPORT = 2,
+  STANDARD_SUPPORT = 3,
+  ADVANCED_SUPPORT = 4,
+}
+```
