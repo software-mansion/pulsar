@@ -104,7 +104,7 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
 // RealtimeComposer -----------------------------------------------------------------
 
 - (void)RealtimeComposer_update:(double)amplitude frequency:(double)frequency {
-  [realtimeComposer_ updateWithAmplitude:amplitude frequency:frequency];
+  [realtimeComposer_ setWithAmplitude:amplitude frequency:frequency];
 }
 
 - (void)RealtimeComposer_playDiscrete:(double)amplitude frequency:(double)frequency {

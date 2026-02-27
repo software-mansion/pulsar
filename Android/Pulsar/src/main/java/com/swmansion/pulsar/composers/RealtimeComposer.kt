@@ -15,8 +15,8 @@ class RealtimeComposer(
         RealtimePrimitiveComposer(engine, strategy)
     }
 
-    override fun update(amplitude: Float, frequency: Float) {
-        delegate.update(amplitude, frequency)
+    override fun set(amplitude: Float, frequency: Float) {
+        delegate.set(amplitude, frequency)
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {

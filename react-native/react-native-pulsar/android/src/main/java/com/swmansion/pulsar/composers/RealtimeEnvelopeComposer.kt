@@ -34,11 +34,11 @@ class RealtimeEnvelopeComposer(
         }
 
         isPlaying = true
-        update(amplitude, frequency)
+        set(amplitude, frequency)
         scheduleSequentialHaptics()
     }
 
-    override fun update(amplitude: Float, frequency: Float) {
+    override fun set(amplitude: Float, frequency: Float) {
         if (isDiscreteScheduled) {
             return
         }
@@ -50,7 +50,7 @@ class RealtimeEnvelopeComposer(
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {
-        update(amplitude, frequency)
+        set(amplitude, frequency)
         isDiscreteScheduled = true
     }
 

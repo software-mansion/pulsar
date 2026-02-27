@@ -24,7 +24,7 @@ enum class RealtimeComposerStrategy {
 }
 
 interface RealtimeComposable {
-    fun update(amplitude: Float, frequency: Float)
+    fun set(amplitude: Float, frequency: Float)
     fun playDiscrete(amplitude: Float, frequency: Float)
     fun stop()
     fun isActive(): Boolean

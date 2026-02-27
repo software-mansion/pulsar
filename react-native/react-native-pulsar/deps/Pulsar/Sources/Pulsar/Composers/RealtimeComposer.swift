@@ -14,20 +14,20 @@ public class RealtimeComposer: NSObject {
     stop()
   }
 
-  public func start(amplitude: Float = 0.5, frequency: Float = 0.5) {
+  private func start(amplitude: Float = 0.0, frequency: Float = 0.0) {
     guard !isPlaying else { return }
     stop()
     do {
       continuousPlayer = engine?.getRealtimePlayer()
       isPlaying = true
-      update(amplitude: amplitude, frequency: frequency)
+      set(amplitude: amplitude, frequency: frequency)
       try continuousPlayer?.start(atTime: 0)
     } catch {
       print("Failed to start continuous haptic: \(error)")
     }
   }
   
-  @objc public func update(amplitude: Float, frequency: Float) {
+  @objc public func set(amplitude: Float, frequency: Float) {
     if (!isPlaying) {
       start(amplitude: amplitude, frequency: frequency)
     }

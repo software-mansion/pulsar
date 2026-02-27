@@ -24,7 +24,7 @@ export interface Spec extends TurboModule {
   Pulsar_preloadPresets(presetNames: Array<String>): void;
   Pulsar_hapticSupport(): HapticSupport;
 
-  RealtimeComposer_update(amplitude: number, frequency: number): void;
+  RealtimeComposer_set(amplitude: number, frequency: number): void;
   RealtimeComposer_stop(): void;
   RealtimeComposer_isActive(): boolean;
   RealtimeComposer_playDiscrete(amplitude: number, frequency: number): void;

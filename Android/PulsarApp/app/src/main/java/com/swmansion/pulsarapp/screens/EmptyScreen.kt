@@ -97,7 +97,7 @@ fun EmptyScreen() {
                                 // Map y position to amplitude (inverted: top = 1, bottom = 0)
                                 amplitude = (1f - (offset.y / size.height)).coerceIn(0f, 1f)
                                 
-                                realtimeComposer.update(amplitude, frequency)
+                                realtimeComposer.set(amplitude, frequency)
                             },
                             onDrag = { change, _ ->
                                 change.consume()
@@ -106,7 +106,7 @@ fun EmptyScreen() {
                                 // Update amplitude based on y position (inverted)
                                 amplitude = (1f - (change.position.y / size.height)).coerceIn(0f, 1f)
                                 
-                                realtimeComposer.update(amplitude, frequency)
+                                realtimeComposer.set(amplitude, frequency)
                             },
                             onDragEnd = {
                                 isActive = false
