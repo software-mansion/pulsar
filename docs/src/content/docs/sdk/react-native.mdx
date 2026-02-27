@@ -93,54 +93,23 @@ const tap = Gesture.Tap().onEnd(() => {
 
 ---
 
-## HapticsSupport
-
-Returns the haptic capability level of the current device.
-
-```ts
-function HapticsSupport(): HapticSupport
-```
-
-**HapticSupport enum**
-
-```ts
-enum HapticSupport {
-  NO_SUPPORT = 0,
-  MINIMAL_SUPPORT = 1,
-  LIMITED_SUPPORT = 2,
-  STANDARD_SUPPORT = 3,
-  ADVANCED_SUPPORT = 4,
-}
-```
-
-**Example**
-
-```ts
-import { HapticsSupport, HapticSupport } from 'react-native-pulsar';
-
-const support = HapticsSupport();
-
-if (support >= HapticSupport.STANDARD_SUPPORT) {
-  Presets.success();
-}
-```
-
----
-
 ## usePatternComposer
 
 A React hook for composing and playing a custom `Pattern`. The pattern is parsed on mount and whenever it changes. Resources are released automatically on unmount.
 
 ```ts
-function usePatternComposer(pattern: Pattern): PatternComposer
+const { play, parse } =  usePatternComposer(pattern);
 ```
 
 **Returns**
 
-| Method | Description |
-|---|---|
-| `play()` | Plays the parsed pattern. Worklet-compatible. |
-| `parse(pattern: Pattern)` | Parses and replaces the current pattern. |
+#### `play()`
+
+Plays the parsed pattern. Worklet-compatible.
+
+#### `parse(pattern: Pattern)`
+
+Parses and replaces the current pattern.
 
 **Example**
 
@@ -177,17 +146,26 @@ function MyComponent() {
 A React hook for real-time haptic control. Provides live amplitude and frequency modulation, useful for gesture-driven or continuously evolving haptic experiences. Haptics stop automatically on unmount.
 
 ```ts
-function useRealtimeComposer(): RealtimeComposer
+const { set, playDiscrete, stop, isActive } = useRealtimeComposer();
 ```
 
 **Returns**
 
-| Method | Description |
-|---|---|
-| `set(amplitude: number, frequency: number)` | Updates the ongoing haptic with new amplitude and frequency values. Worklet-compatible. |
-| `playDiscrete(amplitude: number, frequency: number)` | Plays a single discrete haptic event. Worklet-compatible. |
-| `stop()` | Stops the active haptic. Worklet-compatible. |
-| `isActive()` | Returns `true` if a haptic is currently playing. Worklet-compatible. |
+#### `set(amplitude: number, frequency: number)`
+
+Updates the ongoing haptic with new amplitude and frequency values. Worklet-compatible.
+
+#### `playDiscrete(amplitude: number, frequency: number)`
+
+Plays a single discrete haptic event. Worklet-compatible.
+
+#### `stop()`
+
+Stops the active haptic. Worklet-compatible.
+
+#### `isActive()`
+
+Returns `true` if a haptic is currently playing. Worklet-compatible.
 
 **Example**
 
@@ -208,6 +186,40 @@ function MyComponent() {
     });
 
   return <GestureDetector gesture={pan}>...</GestureDetector>;
+}
+```
+
+---
+
+## HapticsSupport
+
+Returns the haptic capability level of the current device.
+
+```ts
+function HapticsSupport(): HapticSupport
+```
+
+**HapticSupport enum**
+
+```ts
+enum HapticSupport {
+  NO_SUPPORT = 0,
+  MINIMAL_SUPPORT = 1,
+  LIMITED_SUPPORT = 2,
+  STANDARD_SUPPORT = 3,
+  ADVANCED_SUPPORT = 4,
+}
+```
+
+**Example**
+
+```ts
+import { HapticsSupport, HapticSupport } from 'react-native-pulsar';
+
+const support = HapticsSupport();
+
+if (support >= HapticSupport.STANDARD_SUPPORT) {
+  Presets.success();
 }
 ```
 
@@ -240,15 +252,6 @@ type Pattern = {
 ```
 
 Use `discretePattern` for distinct taps and impacts. Use `continuesPattern` envelopes to shape a sustained haptic over time.
-
-### PatternComposer
-
-```ts
-type PatternComposer = {
-  play: () => void;
-  parse: (pattern: Pattern) => void;
-};
-```
 
 ### HapticSupport
 
