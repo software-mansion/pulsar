@@ -35,6 +35,7 @@
   --__sl-font: 'DM Sans', sans-serif;
   --sl-text-base: var(--font-size-md);
   --sl-text-sm: var(--font-size-md);
+  --sl-text-h4: 1.125rem;
 }
 html {
   -webkit-font-smoothing: antialiased;
