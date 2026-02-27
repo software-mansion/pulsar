@@ -15,13 +15,15 @@
 
   &.white {
     background-color: white;
-    &:hover {}
+    &:hover {
+    }
   }
 
   &.blue {
     background-color: var(--color-blue-20);
 
-    &:hover {}
+    &:hover {
+    }
   }
 
   .xIcon {

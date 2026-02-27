@@ -2,7 +2,7 @@
   background-color: var(--color-blue-50);
   width: fit-content;
   border-radius: 4px;
-  
+
   @media (max-width: 480px) {
     border-radius: 2px;
   }
@@ -25,7 +25,7 @@
     border-width: 2px;
     border-radius: 2px;
   }
-  
+
   @media (max-width: 480px) {
     padding: 10px 16px;
   }
@@ -34,7 +34,7 @@
     margin-left: 5px;
     transform: translateX(0px);
     transition: transform 0.2s;
-    
+
     @media (max-width: 480px) {
       width: 16px;
       height: 16px;

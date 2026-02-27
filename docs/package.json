@@ -7,7 +7,9 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
@@ -22,6 +24,7 @@
     "sharp": "^0.34.2"
   },
   "devDependencies": {
+    "prettier": "^3.8.1",
     "sass-embedded": "^1.97.3",
     "typed-css-modules": "^0.9.1"
   }

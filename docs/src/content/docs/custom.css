@@ -2,36 +2,36 @@
 
 :root[data-theme='light'] {
   /* Pulsar custom colors */
-  --color-primary: #001A72;
-  --color-blue-10: #E1F3FA;
-  --color-blue-20: #B5E1F1;
-  --color-blue-30: #87CCE8;
-  --color-blue-50: #38ACDD;
-  --color-blue-60: #2B85AB;
+  --color-primary: #001a72;
+  --color-blue-10: #e1f3fa;
+  --color-blue-20: #b5e1f1;
+  --color-blue-30: #87cce8;
+  --color-blue-50: #38acdd;
+  --color-blue-60: #2b85ab;
 
   /* Layout width adjustments */
   /* --sl-content-width: 920px;
   --sl-sidebar-width: 200px; */
 
   /* Starlight custom colors */
-	--sl-color-accent-low: #6f6f6f;
-	--sl-color-accent: #364bff;
-	--sl-color-accent-high: #182775;
-	--sl-color-white: var(--color-primary);
-	--sl-color-gray-1: var(--color-primary);
-	--sl-color-gray-2: var(--color-blue-60);
-	--sl-color-gray-3: var(--color-primary);
-	--sl-color-gray-4: var(--color-blue-30);
-	--sl-color-gray-5: var(--color-blue-20);
-	--sl-color-gray-6: var(--color-blue-10);
-	--sl-color-gray-7: white;
-	--sl-color-black: #ffffff;
+  --sl-color-accent-low: #6f6f6f;
+  --sl-color-accent: #364bff;
+  --sl-color-accent-high: #182775;
+  --sl-color-white: var(--color-primary);
+  --sl-color-gray-1: var(--color-primary);
+  --sl-color-gray-2: var(--color-blue-60);
+  --sl-color-gray-3: var(--color-primary);
+  --sl-color-gray-4: var(--color-blue-30);
+  --sl-color-gray-5: var(--color-blue-20);
+  --sl-color-gray-6: var(--color-blue-10);
+  --sl-color-gray-7: white;
+  --sl-color-black: #ffffff;
   --sl-color-text: var(--color-primary);
   --sl-color-text-accent: var(--color-blue-20);
   --sl-color-bg: var(--color-blue-10);
   --sl-color-bg-nav: var(--color-blue-10);
   --sl-color-hairline-shade: var(--color-blue-50);
-  --__sl-font: "DM Sans", sans-serif;
+  --__sl-font: 'DM Sans', sans-serif;
   --sl-text-base: var(--font-size-md);
   --sl-text-sm: var(--font-size-md);
 }
@@ -50,7 +50,7 @@ html {
     border-radius: 0;
     /* letter-spacing: 0px; */
   }
-  :where(a)[aria-current=page] {
+  :where(a)[aria-current='page'] {
     border-left: solid 2px var(--color-blue-50);
   }
 }

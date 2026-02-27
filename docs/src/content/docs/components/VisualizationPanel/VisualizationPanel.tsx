@@ -92,19 +92,17 @@ export function VisualizationPanel({
       <div className={styles.visualization}>
         <img src={visualization.image.src} alt="visualization" className={styles.image} />
         {isPlaying && (
-          <div 
-            className={styles.indicator} 
-            style={{ animationDuration: `${duration}ms` }}
-          />
+          <div className={styles.indicator} style={{ animationDuration: `${duration}ms` }} />
         )}
       </div>
 
       <div className={styles.controls}>
-        <div
-          className={styles.controlButton}
-          onClick={handlePlayClick}
-        >
-          {isPlaying ? <img src={pauseIcon.src} alt="Pause" /> : <img src={playIcon.src} alt="Play" />}
+        <div className={styles.controlButton} onClick={handlePlayClick}>
+          {isPlaying ? (
+            <img src={pauseIcon.src} alt="Pause" />
+          ) : (
+            <img src={playIcon.src} alt="Play" />
+          )}
         </div>
 
         <div
@@ -116,7 +114,6 @@ export function VisualizationPanel({
           <img src={phoneIcon.src} alt="Play vibration on device" />
         </div>
       </div>
-
     </div>
   );
 }

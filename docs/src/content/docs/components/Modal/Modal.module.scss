@@ -55,12 +55,12 @@
 
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
-  transition: scrollbar-color .3s;
+  transition: scrollbar-color 0.3s;
   &:hover {
-    scrollbar-color: var(--color-blue-30, #b0b0b0) transparent; 
+    scrollbar-color: var(--color-blue-30, #b0b0b0) transparent;
   }
   &::-webkit-scrollbar {
-    height: 6px; 
+    height: 6px;
     background-color: transparent;
   }
   &::-webkit-scrollbar-track {
@@ -71,6 +71,6 @@
     border-radius: 3px;
   }
   &:hover::-webkit-scrollbar-thumb {
-    background-color: var(--color-blue-30, #b0b0b0); 
+    background-color: var(--color-blue-30, #b0b0b0);
   }
 }

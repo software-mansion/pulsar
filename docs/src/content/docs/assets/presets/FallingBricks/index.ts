@@ -3,5 +3,5 @@ import data from './pattern.json';
 import type { PresetConfig } from '../../../playground/components/Preset/types';
 export default {
   image,
-  data
+  data,
 } as PresetConfig;

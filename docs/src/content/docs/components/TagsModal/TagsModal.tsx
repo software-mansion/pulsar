@@ -9,22 +9,24 @@ interface Props {
 }
 
 export function TagsModal({ onClose }: Props) {
-  return <Modal title="Connection guide" onClose={onClose}>
-    <Tabs defaultTab={0}>
-      {TagsInfo.map((group, index) => (
-        <Tab key={index} name={group.groupName}>
-          <div className={style.elementsGap}>
-            {group.tags.map((tag, tagIndex) => (
-              <TagDescription
-                key={tagIndex}
-                name={tag.name}
-                description={tag.description}
-                usage={tag.usage}
-              />
-            ))}
-          </div>
-        </Tab>
-      ))}
-    </Tabs>
-  </Modal>
+  return (
+    <Modal title="Connection guide" onClose={onClose}>
+      <Tabs defaultTab={0}>
+        {TagsInfo.map((group, index) => (
+          <Tab key={index} name={group.groupName}>
+            <div className={style.elementsGap}>
+              {group.tags.map((tag, tagIndex) => (
+                <TagDescription
+                  key={tagIndex}
+                  name={tag.name}
+                  description={tag.description}
+                  usage={tag.usage}
+                />
+              ))}
+            </div>
+          </Tab>
+        ))}
+      </Tabs>
+    </Modal>
+  );
 }

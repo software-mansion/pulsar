@@ -20,7 +20,7 @@ export function Tabs({ children, className = '', defaultTab = 0 }: TabsProps) {
   const [activeTab, setActiveTab] = useState<number>(defaultTab);
 
   const tabs = Children.toArray(children).filter(
-    (child) => isValidElement(child) && child.type === Tab
+    (child) => isValidElement(child) && child.type === Tab,
   );
 
   return (

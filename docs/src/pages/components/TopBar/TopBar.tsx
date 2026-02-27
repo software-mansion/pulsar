@@ -17,7 +17,7 @@ export function TopBar() {
     setIsMenuOpen(false);
   };
 
-  return(
+  return (
     <>
       <div className={styles.container}>
         <div className={styles.logoHolder}>
@@ -25,16 +25,12 @@ export function TopBar() {
           <span>Pulsar</span>
         </div>
         <div className={styles.menuItems}>
-          <a href='presets'>Presets</a>
-          <a href='#'>Live Preview</a>
-          <a href='#'>Tutorials</a>
+          <a href="presets">Presets</a>
+          <a href="#">Live Preview</a>
+          <a href="#">Tutorials</a>
         </div>
         <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
-        <button 
-          className={styles.hamburger} 
-          onClick={toggleMenu}
-          aria-label="Toggle menu"
-        >
+        <button className={styles.hamburger} onClick={toggleMenu} aria-label="Toggle menu">
           <img src={menuIcon.src} alt="Menu" />
         </button>
       </div>
@@ -48,17 +44,23 @@ export function TopBar() {
                 <img src={logo.src} alt="Logo" />
                 <span>Pulsar</span>
               </div>
-              <img 
-                src={closeIcon.src} 
-                className={styles.closeButton} 
+              <img
+                src={closeIcon.src}
+                className={styles.closeButton}
                 onClick={closeMenu}
                 aria-label="Close menu"
               />
             </div>
             <nav className={styles.mobileMenuItems}>
-              <a href='presets' onClick={closeMenu}>Presets</a>
-              <a href='#' onClick={closeMenu}>Live Preview</a>
-              <a href='#' onClick={closeMenu}>Tutorials</a>
+              <a href="presets" onClick={closeMenu}>
+                Presets
+              </a>
+              <a href="#" onClick={closeMenu}>
+                Live Preview
+              </a>
+              <a href="#" onClick={closeMenu}>
+                Tutorials
+              </a>
             </nav>
             <div className={styles.mobileMenuFooter}>
               <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
@@ -67,5 +69,5 @@ export function TopBar() {
         </div>
       )}
     </>
-  )
+  );
 }

@@ -40,9 +40,7 @@ describe('HTTP Endpoints', () => {
 
   describe('POST /api/message', () => {
     it('should accept a message and return success', async () => {
-      const response = await request(app)
-        .post('/api/message')
-        .send({ message: 'Hello, World!' });
+      const response = await request(app).post('/api/message').send({ message: 'Hello, World!' });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('success', true);
@@ -51,9 +49,7 @@ describe('HTTP Endpoints', () => {
     });
 
     it('should return 400 when message is missing', async () => {
-      const response = await request(app)
-        .post('/api/message')
-        .send({});
+      const response = await request(app).post('/api/message').send({});
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('success', false);
@@ -74,9 +70,7 @@ describe('HTTP Endpoints', () => {
     });
 
     it('should return 400 when message is missing', async () => {
-      const response = await request(app)
-        .post('/api/broadcast')
-        .send({});
+      const response = await request(app).post('/api/broadcast').send({});
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('success', false);

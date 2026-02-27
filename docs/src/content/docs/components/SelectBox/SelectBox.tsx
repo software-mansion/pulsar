@@ -15,10 +15,20 @@ interface SelectBoxProps {
   className?: string;
 }
 
-export function SelectBox({ title, options: initialOptions, onOptionChange: onOptionChange, className = '' }: SelectBoxProps) {
+export function SelectBox({
+  title,
+  options: initialOptions,
+  onOptionChange: onOptionChange,
+  className = '',
+}: SelectBoxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState(initialOptions);
-  const [dropdownPosition, setDropdownPosition] = useState<{ top?: string; bottom?: string; left?: string; right?: string }>({ top: '100%' });
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top?: string;
+    bottom?: string;
+    left?: string;
+    right?: string;
+  }>({ top: '100%' });
   const selectBoxRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -66,13 +76,15 @@ export function SelectBox({ title, options: initialOptions, onOptionChange: onOp
       const headerRect = header?.getBoundingClientRect();
       const dropdownRect = dropdown?.getBoundingClientRect();
 
-      const isClickInHeader = headerRect &&
+      const isClickInHeader =
+        headerRect &&
         event.clientX >= headerRect.left &&
         event.clientX <= headerRect.right &&
         event.clientY >= headerRect.top &&
         event.clientY <= headerRect.bottom;
 
-      const isClickInDropdown = dropdownRect && 
+      const isClickInDropdown =
+        dropdownRect &&
         event.clientX >= dropdownRect.left &&
         event.clientX <= dropdownRect.right &&
         event.clientY >= dropdownRect.top &&
@@ -94,35 +106,31 @@ export function SelectBox({ title, options: initialOptions, onOptionChange: onOp
   }, [isOpen]);
 
   const handleSelectAll = () => {
-    const updated = options.map(opt => ({ ...opt, checked: true }));
+    const updated = options.map((opt) => ({ ...opt, checked: true }));
     setOptions(updated);
     onOptionChange(updated);
   };
 
   const handleDeselectAll = () => {
-    const updated = options.map(opt => ({ ...opt, checked: false }));
+    const updated = options.map((opt) => ({ ...opt, checked: false }));
     setOptions(updated);
     onOptionChange(updated);
   };
 
   return (
     <div className={`${styles.selectBox} ${className}`} ref={selectBoxRef}>
-      <div
-        className={styles.header}
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-      >
+      <div className={styles.header} onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen}>
         <span className={styles.headerText}>{title}</span>
-        <img 
-          src={arrowIcon.src} 
+        <img
+          src={arrowIcon.src}
           alt="toggle"
           className={`${styles.arrow} ${isOpen ? styles.open : ''}`}
         />
       </div>
 
       {isOpen && (
-        <div 
-          className={styles.dropdown} 
+        <div
+          className={styles.dropdown}
           onClick={(e) => e.stopPropagation()}
           ref={dropdownRef}
           style={{
@@ -132,22 +140,21 @@ export function SelectBox({ title, options: initialOptions, onOptionChange: onOp
             marginBottom: dropdownPosition.bottom === '100%' ? '8px' : '0',
           }}
         >
-
           <div className={styles.title}>{title}</div>
 
           <div className={styles.optionsContainer}>
-            {options.map(option => (
+            {options.map((option) => (
               <Checkbox
                 key={option.label}
                 id={option.label}
                 label={option.label}
                 checked={option.checked}
                 onChange={(label, checked) => {
-                  const updated = options.map(opt =>
-                    opt.label === label ? { ...opt, checked } : opt
+                  const updated = options.map((opt) =>
+                    opt.label === label ? { ...opt, checked } : opt,
                   );
                   setOptions(updated);
-                  onOptionChange([{label, checked}]);
+                  onOptionChange([{ label, checked }]);
                 }}
               />
             ))}
@@ -161,7 +168,6 @@ export function SelectBox({ title, options: initialOptions, onOptionChange: onOp
               Deselect all
             </div>
           </div>
-
         </div>
       )}
     </div>

@@ -64,28 +64,28 @@ import { Presets } from 'react-native-pulsar';
 
 ### Built-in presets
 
-| Function | Description |
-|---|---|
-| `Presets.earthquake()` | Rumbling earthquake pattern |
-| `Presets.success()` | Positive confirmation feedback |
-| `Presets.fail()` | Negative failure feedback |
-| `Presets.tap()` | Simple single tap |
+| Function               | Description                    |
+| ---------------------- | ------------------------------ |
+| `Presets.earthquake()` | Rumbling earthquake pattern    |
+| `Presets.success()`    | Positive confirmation feedback |
+| `Presets.fail()`       | Negative failure feedback      |
+| `Presets.tap()`        | Simple single tap              |
 
 ### System presets
 
 Mirrors the platform's native haptic feedback styles.
 
-| Function | Description |
-|---|---|
-| `Presets.system.impactLight()` | Light impact |
-| `Presets.system.impactMedium()` | Medium impact |
-| `Presets.system.impactHeavy()` | Heavy impact |
-| `Presets.system.impactSoft()` | Soft impact |
-| `Presets.system.impactRigid()` | Rigid impact |
-| `Presets.system.notificationSuccess()` | Success notification |
-| `Presets.system.notificationWarning()` | Warning notification |
-| `Presets.system.notificationError()` | Error notification |
-| `Presets.system.selection()` | Selection change feedback |
+| Function                               | Description               |
+| -------------------------------------- | ------------------------- |
+| `Presets.system.impactLight()`         | Light impact              |
+| `Presets.system.impactMedium()`        | Medium impact             |
+| `Presets.system.impactHeavy()`         | Heavy impact              |
+| `Presets.system.impactSoft()`          | Soft impact               |
+| `Presets.system.impactRigid()`         | Rigid impact              |
+| `Presets.system.notificationSuccess()` | Success notification      |
+| `Presets.system.notificationWarning()` | Warning notification      |
+| `Presets.system.notificationError()`   | Error notification        |
+| `Presets.system.selection()`           | Selection change feedback |
 
 **Example**
 
@@ -105,7 +105,7 @@ const tap = Gesture.Tap().onEnd(() => {
 A React hook for composing and playing a custom `Pattern`. The pattern is parsed on mount and whenever it changes. Resources are released automatically on unmount.
 
 ```ts
-const { play, parse } =  usePatternComposer(pattern);
+const { play, parse } = usePatternComposer(pattern);
 ```
 
 **Returns**
@@ -203,7 +203,7 @@ function MyComponent() {
 Returns the haptic capability level of the current device.
 
 ```ts
-function HapticsSupport(): HapticSupport
+function HapticsSupport(): HapticSupport;
 ```
 
 **HapticSupport enum**
@@ -241,17 +241,17 @@ Describes a complete haptic pattern with discrete pulses and continuous envelope
 ```ts
 type Pattern = {
   discretePattern: Array<{
-    time: number;       // Milliseconds from pattern start
-    amplitude: number;  // Intensity (0–1)
-    frequency: number;  // Sharpness (0–1)
+    time: number; // Milliseconds from pattern start
+    amplitude: number; // Intensity (0–1)
+    frequency: number; // Sharpness (0–1)
   }>;
   continuesPattern: {
     amplitude: Array<{
-      time: number;  // Milliseconds from pattern start
+      time: number; // Milliseconds from pattern start
       value: number; // Amplitude value (0–1)
     }>;
     frequency: Array<{
-      time: number;  // Milliseconds from pattern start
+      time: number; // Milliseconds from pattern start
       value: number; // Frequency value (0–1)
     }>;
   };

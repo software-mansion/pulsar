@@ -13,7 +13,8 @@
       transition: all 0.2s ease;
       border-bottom: 2px solid var(--color-blue-10);
 
-      &:hover {}
+      &:hover {
+      }
 
       &.active {
         border-bottom: 2px solid var(--color-blue-50);
@@ -30,7 +31,7 @@
     margin-top: 10px;
 
     .code {
-      font-family: "DM Mono", monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 16px;
       color: var(--color-blue-80);
       line-height: 140%;

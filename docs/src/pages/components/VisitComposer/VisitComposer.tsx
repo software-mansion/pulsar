@@ -3,7 +3,6 @@ import styles from './VisitComposer.module.scss';
 import star from '../../../assets/landing-page/star.svg';
 import screenshot from '../../../assets/landing-page/screenshot.png';
 
-
 interface VisitComposerProps {
   className?: string;
 }
@@ -18,15 +17,12 @@ export function VisitComposer({ className }: VisitComposerProps) {
         </div>
 
         <div className={styles.leftBar}>
-          <div className={styles.header}>
-            Not sure which one to choose?
-          </div>
+          <div className={styles.header}>Not sure which one to choose?</div>
           <div className={styles.text}>
-            Choosing the right one isn't obvious. We know this, so we prepared a composer that will make your choice much easier.
+            Choosing the right one isn't obvious. We know this, so we prepared a composer that will
+            make your choice much easier.
           </div>
-          <a className={styles.link}>
-            Visit our composer
-          </a>
+          <a className={styles.link}>Visit our composer</a>
         </div>
         <div className={styles.rightBar}>
           <img src={screenshot.src} />

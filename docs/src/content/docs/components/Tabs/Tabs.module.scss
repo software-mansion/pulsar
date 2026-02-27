@@ -1,6 +1,6 @@
 .tabs {
   margin-top: 5px;
-  
+
   .tabsHeader {
     display: flex;
     max-width: 100%;
@@ -9,9 +9,9 @@
 
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
-    transition: scrollbar-color .3s;
+    transition: scrollbar-color 0.3s;
     &:hover {
-      scrollbar-color: var(--color-blue-30, #b0b0b0) transparent; 
+      scrollbar-color: var(--color-blue-30, #b0b0b0) transparent;
     }
     &::-webkit-scrollbar {
       height: 6px; /* Horizontal scrollbar height */
@@ -23,7 +23,7 @@
     &::-webkit-scrollbar-thumb {
       background-color: transparent;
       border-radius: 3px;
-      transition: background-color .3s;
+      transition: background-color 0.3s;
     }
     &:hover::-webkit-scrollbar-thumb {
       background-color: var(--color-blue-30, #b0b0b0); /* Visible on hover */

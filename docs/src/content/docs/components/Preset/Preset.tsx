@@ -15,32 +15,37 @@ function getReactNativePresetImport(shortName: string) {
   return `import { Pulsar } from '@haptics/library';\n\nPulsar.${shortName}.play();`;
 }
 
-export function Preset({ name, shortName, description, tags, duration = 0, visualization }: PresetProps) {
-  return <div className={style.preset}>
+export function Preset({
+  name,
+  shortName,
+  description,
+  tags,
+  duration = 0,
+  visualization,
+}: PresetProps) {
+  return (
+    <div className={style.preset}>
+      {tags && tags.length > 0 && (
+        <div className={style.tagsBar}>
+          {tags.map((tag, idx) => (
+            <Tag key={idx} label={tag.label} variant={tag.variant} />
+          ))}
+        </div>
+      )}
 
-    {tags && tags.length > 0 && (
-      <div className={style.tagsBar}>
-        {tags.map((tag, idx) => (
-          <Tag key={idx} label={tag.label} variant={tag.variant} />
-        ))}
+      <div className={style.header}>
+        <div className={style.name}>{name}</div>
+        <div className={style.description}>{description}</div>
       </div>
-    )}
 
-    <div className={style.header}>
-      <div className={style.name}>{name}</div>
-      <div className={style.description}>{description}</div>
+      <VisualizationPanel visualization={visualization} duration={duration} />
+
+      <Accordion title="Usage" className={style.marginTop}>
+        <CodeTabs
+          swift={getSwiftPresetImport(shortName || '')}
+          reactNative={getReactNativePresetImport(shortName || '')}
+        />
+      </Accordion>
     </div>
-    
-    <VisualizationPanel
-      visualization={visualization}
-      duration={duration}
-    />
-    
-    <Accordion title='Usage' className={style.marginTop}>
-      <CodeTabs 
-        swift={getSwiftPresetImport(shortName || '')}
-        reactNative={getReactNativePresetImport(shortName || '')}
-      />
-    </Accordion>
-  </div>
+  );
 }

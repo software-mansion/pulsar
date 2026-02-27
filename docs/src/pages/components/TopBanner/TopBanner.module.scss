@@ -39,26 +39,26 @@
     pointer-events: none;
     max-width: 480px;
     padding: 80px 50px 80px 0px;
-    
+
     @media (max-width: 1000px) {
       padding: 0;
       max-width: 600px;
       margin-bottom: 40px;
     }
-    
+
     @media (max-width: 768px) {
       max-width: 100%;
       margin-bottom: 30px;
     }
-    
+
     @media (max-width: 480px) {
       margin-bottom: 20px;
     }
-    
+
     .authors {
       display: flex;
       align-items: center;
-      
+
       img {
         margin-left: 10px;
         height: 40px;
@@ -66,15 +66,15 @@
     }
     .header {
       margin-top: 30px;
-      
+
       @media (max-width: 768px) {
         margin-top: 20px;
       }
-      
+
       @media (max-width: 480px) {
         margin-top: 16px;
       }
-      
+
       .title {
         font-size: var(--font-size-3xl);
         line-height: var(--font-line-height-3xl);
@@ -84,11 +84,11 @@
         margin-top: 20px;
         font-size: var(--font-size-lg);
         line-height: var(--font-line-height-lg);
-        
+
         @media (max-width: 768px) {
           margin-top: 16px;
         }
-        
+
         @media (max-width: 480px) {
           margin-top: 12px;
         }
@@ -100,19 +100,19 @@
       display: flex;
       flex-direction: column;
       gap: 15px;
-      
+
       @media (max-width: 1000px) {
         align-items: center;
         margin-top: 24px;
       }
     }
-  } 
+  }
   .rightBar {
     display: flex;
     flex-direction: column;
     align-items: center;
     max-width: 380px;
-    
+
     @media (max-width: 1000px) {
       max-width: 100%;
     }
@@ -121,13 +121,13 @@
       pointer-events: none;
       transform: translateX(5%) translateY(-15%);
       position: absolute;
-      
+
       @media (max-width: 1000px) {
         transform: translateX(0%) translateY(-50%);
         width: 1300px;
       }
     }
-    
+
     .phoneBackground {
       z-index: 1;
       background-color: var(--color-blue-50);
@@ -138,15 +138,15 @@
       @media (max-width: 1100px) {
         transform: translateX(10px) translateY(130px);
       }
-      
+
       @media (max-width: 1000px) {
         transform: translateX(0) translateY(0);
       }
-      
+
       @media (max-width: 768px) {
         border-radius: 16px;
       }
-      
+
       @media (max-width: 480px) {
         border-radius: 12px;
       }
@@ -189,7 +189,7 @@
         box-sizing: border-box;
         position: relative;
         overflow: hidden;
-        
+
         .notch {
           background-color: var(--color-blue-50);
           width: 120px;
@@ -197,7 +197,7 @@
           border-radius: 22px;
           position: absolute;
           transform: translateX(115px) translateY(-22px);
-          
+
           @media (max-width: 768px) {
             width: 90px;
             height: 32px;
@@ -207,14 +207,14 @@
         }
         .buttonHolder {
           padding: 50px 30px;
-          
+
           .row {
             display: flex;
             .buttonBackground {
               background-color: var(--color-blue-50);
               border-radius: 4px;
               margin: 20px;
-              
+
               .button {
                 background-color: white;
                 border: solid 2px var(--color-blue-50);
@@ -224,7 +224,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                
+
                 .emoji {
                   width: 80px;
                   height: 80px;
@@ -240,28 +240,34 @@
 
 .red {
   // #ff6259
-  background-color: #FFA3A1;
-  svg { background-color: transparent; }
+  background-color: #ffa3a1;
+  svg {
+    background-color: transparent;
+  }
   circle {
-    fill: #FF6259;
-    stroke: #FF6259;
+    fill: #ff6259;
+    stroke: #ff6259;
   }
 }
 .yellow {
   // #ffe04b
-  background-color: #FFE780;
-  svg { background-color: transparent; }
+  background-color: #ffe780;
+  svg {
+    background-color: transparent;
+  }
   circle {
-    fill: #FFD61E;
+    fill: #ffd61e;
     stroke: #ccb33c;
   }
 }
 .green {
   // #82cab2
-  background-color: #B1DFD0;
-  svg { background-color: transparent; }
+  background-color: #b1dfd0;
+  svg {
+    background-color: transparent;
+  }
   circle {
-    fill: #82CAB2;
+    fill: #82cab2;
     stroke: #5b8d7d;
   }
 }
@@ -282,24 +288,43 @@
   animation-iteration-count: infinite;
 }
 
-.wave circle:nth-child(1) { animation-name: wave-1; }
-.wave circle:nth-child(2) { animation-name: wave-2; animation-delay: 0.5s; }
-.wave circle:nth-child(3) { animation-name: wave-3; animation-delay: 1s; }
-.wave circle:nth-child(4) { animation-name: wave-4; animation-delay: 1.5s; }
-.wave circle:nth-child(5) { animation-name: wave-5; animation-delay: 2s; }
+.wave circle:nth-child(1) {
+  animation-name: wave-1;
+}
+.wave circle:nth-child(2) {
+  animation-name: wave-2;
+  animation-delay: 0.5s;
+}
+.wave circle:nth-child(3) {
+  animation-name: wave-3;
+  animation-delay: 1s;
+}
+.wave circle:nth-child(4) {
+  animation-name: wave-4;
+  animation-delay: 1.5s;
+}
+.wave circle:nth-child(5) {
+  animation-name: wave-5;
+  animation-delay: 2s;
+}
 
 @mixin waveGenerator($prefix, $initialSize) {
   @keyframes wave-#{$prefix} {
-    0%, 100% { r: $initialSize; }
-    50% { r: $initialSize * 1.16; }
+    0%,
+    100% {
+      r: $initialSize;
+    }
+    50% {
+      r: $initialSize * 1.16;
+    }
   }
 }
 
-@include waveGenerator("1", 500);
-@include waveGenerator("2", 400);
-@include waveGenerator("3", 300);
-@include waveGenerator("4", 200);
-@include waveGenerator("5", 100);
+@include waveGenerator('1', 500);
+@include waveGenerator('2', 400);
+@include waveGenerator('3', 300);
+@include waveGenerator('4', 200);
+@include waveGenerator('5', 100);
 
 // --------------------------------------------------
 // heartbeat animation
@@ -312,28 +337,63 @@
   animation-iteration-count: infinite;
 }
 
-.heartbeat circle:nth-child(1) { animation-name: heartbeat-1; animation-delay: 0.32s; }
-.heartbeat circle:nth-child(2) { animation-name: heartbeat-2; animation-delay: 0.24s; }
-.heartbeat circle:nth-child(3) { animation-name: heartbeat-3; animation-delay: 0.16s; }
-.heartbeat circle:nth-child(4) { animation-name: heartbeat-4; animation-delay: 0.08s; }
-.heartbeat circle:nth-child(5) { animation-name: heartbeat-5; animation-delay: 0s; }
+.heartbeat circle:nth-child(1) {
+  animation-name: heartbeat-1;
+  animation-delay: 0.32s;
+}
+.heartbeat circle:nth-child(2) {
+  animation-name: heartbeat-2;
+  animation-delay: 0.24s;
+}
+.heartbeat circle:nth-child(3) {
+  animation-name: heartbeat-3;
+  animation-delay: 0.16s;
+}
+.heartbeat circle:nth-child(4) {
+  animation-name: heartbeat-4;
+  animation-delay: 0.08s;
+}
+.heartbeat circle:nth-child(5) {
+  animation-name: heartbeat-5;
+  animation-delay: 0s;
+}
 
 @mixin heartbeatGenerator($prefix, $initialSize) {
   @keyframes heartbeat-#{$prefix} {
-    0%   { r: $initialSize * 1;    opacity: 0.1; }
-    14%  { r: $initialSize * 1.08; opacity: 0.25;   stroke-width: 2; }
-    28%  { r: $initialSize * 0.97; opacity: 0.15; stroke-width: 1; }
-    42%  { r: $initialSize * 1.04; opacity: 0.25; }
-    70%  { r: $initialSize * 1;    opacity: 0.12; }
-    100% { r: $initialSize * 1;    opacity: 0.12; }
+    0% {
+      r: $initialSize * 1;
+      opacity: 0.1;
+    }
+    14% {
+      r: $initialSize * 1.08;
+      opacity: 0.25;
+      stroke-width: 2;
+    }
+    28% {
+      r: $initialSize * 0.97;
+      opacity: 0.15;
+      stroke-width: 1;
+    }
+    42% {
+      r: $initialSize * 1.04;
+      opacity: 0.25;
+    }
+    70% {
+      r: $initialSize * 1;
+      opacity: 0.12;
+    }
+    100% {
+      r: $initialSize * 1;
+      opacity: 0.12;
+    }
   }
 }
 
-@include heartbeatGenerator("1", 500);
-@include heartbeatGenerator("2", 400);
-@include heartbeatGenerator("3", 300);
-@include heartbeatGenerator("4", 200);
-@include heartbeatGenerator("5", 100);
+@include heartbeatGenerator('1', 500);
+@include heartbeatGenerator('2', 400);
+@include heartbeatGenerator('3', 300);
+@include heartbeatGenerator('4', 200);
+@include heartbeatGenerator('5', 100);
 
 // --------------------------------------------------
 // sonar animation
@@ -346,25 +406,52 @@
   animation-duration: 2.8s;
 }
 
-.sonar circle:nth-child(1) { animation-name: sonar-1; animation-delay: 1.12s; }
-.sonar circle:nth-child(2) { animation-name: sonar-2; animation-delay: 0.84s; }
-.sonar circle:nth-child(3) { animation-name: sonar-3; animation-delay: 0.56s; }
-.sonar circle:nth-child(4) { animation-name: sonar-4; animation-delay: 0.28s; }
-.sonar circle:nth-child(5) { animation-name: sonar-5; animation-delay: 0s; }
+.sonar circle:nth-child(1) {
+  animation-name: sonar-1;
+  animation-delay: 1.12s;
+}
+.sonar circle:nth-child(2) {
+  animation-name: sonar-2;
+  animation-delay: 0.84s;
+}
+.sonar circle:nth-child(3) {
+  animation-name: sonar-3;
+  animation-delay: 0.56s;
+}
+.sonar circle:nth-child(4) {
+  animation-name: sonar-4;
+  animation-delay: 0.28s;
+}
+.sonar circle:nth-child(5) {
+  animation-name: sonar-5;
+  animation-delay: 0s;
+}
 
 @mixin sonarGenerator($prefix, $initialSize) {
   @keyframes sonar-#{$prefix} {
-    0%   { opacity: 0;    r: $initialSize * 0.2; stroke-width: 3; }
-    12%  { opacity: 0.45; r: $initialSize * 1;   stroke-width: 1.2; }
-    100% { opacity: 0;    r: $initialSize * 1.2; stroke-width: 0.3; }
+    0% {
+      opacity: 0;
+      r: $initialSize * 0.2;
+      stroke-width: 3;
+    }
+    12% {
+      opacity: 0.45;
+      r: $initialSize * 1;
+      stroke-width: 1.2;
+    }
+    100% {
+      opacity: 0;
+      r: $initialSize * 1.2;
+      stroke-width: 0.3;
+    }
   }
 }
 
-@include sonarGenerator("1", 500);
-@include sonarGenerator("2", 400);
-@include sonarGenerator("3", 300);
-@include sonarGenerator("4", 200);
-@include sonarGenerator("5", 100);
+@include sonarGenerator('1', 500);
+@include sonarGenerator('2', 400);
+@include sonarGenerator('3', 300);
+@include sonarGenerator('4', 200);
+@include sonarGenerator('5', 100);
 
 // --------------------------------------------------
 // quake animation
@@ -377,29 +464,63 @@
   animation-iteration-count: infinite;
 }
 
-.quake circle:nth-child(odd)  { animation-direction: alternate; }
-.quake circle:nth-child(even) { animation-direction: alternate-reverse; }
-.quake circle:nth-child(1) { animation-name: quake-1; animation-duration: 0.07s; }
-.quake circle:nth-child(2) { animation-name: quake-2; animation-duration: 0.09s; }
-.quake circle:nth-child(3) { animation-name: quake-3; animation-duration: 0.06s; }
-.quake circle:nth-child(4) { animation-name: quake-4; animation-duration: 0.11s; }
-.quake circle:nth-child(5) { animation-name: quake-5; animation-duration: 0.08s; }
+.quake circle:nth-child(odd) {
+  animation-direction: alternate;
+}
+.quake circle:nth-child(even) {
+  animation-direction: alternate-reverse;
+}
+.quake circle:nth-child(1) {
+  animation-name: quake-1;
+  animation-duration: 0.07s;
+}
+.quake circle:nth-child(2) {
+  animation-name: quake-2;
+  animation-duration: 0.09s;
+}
+.quake circle:nth-child(3) {
+  animation-name: quake-3;
+  animation-duration: 0.06s;
+}
+.quake circle:nth-child(4) {
+  animation-name: quake-4;
+  animation-duration: 0.11s;
+}
+.quake circle:nth-child(5) {
+  animation-name: quake-5;
+  animation-duration: 0.08s;
+}
 
 @mixin quakeGenerator($prefix, $initialSize) {
   @keyframes quake-#{$prefix} {
-    0%   { transform: translate(-1.5px, 1px); r: $initialSize * 0.99; }
-    25%  { transform: translate(1px, -1.5px); r: $initialSize * 1.01; }
-    50%  { transform: translate(-0.5px, -1px); r: $initialSize * 0.98; }
-    75%  { transform: translate(1.5px, 0.5px); r: $initialSize * 1.02; }
-    100% { transform: translate(-1px, 1.5px); r: $initialSize * 1.0; }
+    0% {
+      transform: translate(-1.5px, 1px);
+      r: $initialSize * 0.99;
+    }
+    25% {
+      transform: translate(1px, -1.5px);
+      r: $initialSize * 1.01;
+    }
+    50% {
+      transform: translate(-0.5px, -1px);
+      r: $initialSize * 0.98;
+    }
+    75% {
+      transform: translate(1.5px, 0.5px);
+      r: $initialSize * 1.02;
+    }
+    100% {
+      transform: translate(-1px, 1.5px);
+      r: $initialSize * 1;
+    }
   }
 }
 
-@include quakeGenerator("1", 500);
-@include quakeGenerator("2", 400);
-@include quakeGenerator("3", 300);
-@include quakeGenerator("4", 200);
-@include quakeGenerator("5", 100);
+@include quakeGenerator('1', 500);
+@include quakeGenerator('2', 400);
+@include quakeGenerator('3', 300);
+@include quakeGenerator('4', 200);
+@include quakeGenerator('5', 100);
 
 // --------------------------------------------------
 // stars animation
@@ -446,15 +567,15 @@
 }
 
 @keyframes appear {
-  0% { 
-    opacity: 0; 
+  0% {
+    opacity: 0;
     transform: scale(0);
   }
-  80% { 
+  80% {
     opacity: 1;
     transform: scale(1);
   }
-  100% { 
+  100% {
     opacity: 0;
     transform: scale(0.5);
   }
@@ -475,69 +596,97 @@
     position: absolute;
     top: -70px;
     left: -70px;
-    animation: appearAngel 1s ease-in-out forwards, floatAngel1 3.5s ease-in-out 1s infinite;
+    animation:
+      appearAngel 1s ease-in-out forwards,
+      floatAngel1 3.5s ease-in-out 1s infinite;
   }
   img:nth-child(2) {
     position: absolute;
     top: 20px;
     left: -20px;
-    animation: appearAngel 1s ease-in-out forwards, floatAngel2 2.8s ease-in-out 1s infinite;
+    animation:
+      appearAngel 1s ease-in-out forwards,
+      floatAngel2 2.8s ease-in-out 1s infinite;
   }
   img:nth-child(3) {
     position: absolute;
     bottom: 280px;
     right: -60px;
-    animation: appearAngel 1s ease-in-out forwards, floatAngel3 3.3s ease-in-out 1s infinite;
+    animation:
+      appearAngel 1s ease-in-out forwards,
+      floatAngel3 3.3s ease-in-out 1s infinite;
   }
   img:nth-child(4) {
     position: absolute;
     bottom: 200px;
     right: 0px;
-    animation: appearAngel 1s ease-in-out forwards, floatAngel4 2.5s ease-in-out 1s infinite;
+    animation:
+      appearAngel 1s ease-in-out forwards,
+      floatAngel4 2.5s ease-in-out 1s infinite;
   }
 }
 
 @keyframes appearAngel {
-  0% { 
-    opacity: 0; 
+  0% {
+    opacity: 0;
     transform: scale(0);
   }
-  100% { 
+  100% {
     opacity: 1;
     transform: scale(1);
   }
 }
 
-@keyframes floatAngel1 { 
-  0%, 100% { transform: translateY(0); } 
-  50% { transform: translateY(-20px); } 
+@keyframes floatAngel1 {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }
-@keyframes floatAngel2 { 
-  0%, 100% { transform: translateY(0); } 
-  50% { transform: translateY(-14px); } 
+@keyframes floatAngel2 {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
 }
-@keyframes floatAngel3 { 
-  0%, 100% { transform: translateY(0); } 
-  50% { transform: translateY(10px); } 
+@keyframes floatAngel3 {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
 }
-@keyframes floatAngel4 { 
-  0%, 100% { transform: translateY(0); } 
-  50% { transform: translateY(-2px); } 
+@keyframes floatAngel4 {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
 }
 
 // --------------------------------------------------
 // confetti fall animations
 // --------------------------------------------------
 @mixin generate-quadratic-path(
-  $index, 
-  $start-t: 0.4, 
-  $end-t: 1.0, 
-  $direction: "right", 
-  $max-height: 300px, 
-  $max-width: 400px, 
+  $index,
+  $start-t: 0.4,
+  $end-t: 1,
+  $direction: 'right',
+  $max-height: 300px,
+  $max-width: 400px,
   $steps: 20
 ) {
-  $dir-multiplier: if($direction == "right", 1, -1);
+  $dir-multiplier: if($direction == 'right', 1, -1);
   $initial-x: $start-t * $max-width * $dir-multiplier;
   $initial-y: 4 * $max-height * $start-t * ($start-t - 1);
 
@@ -546,10 +695,10 @@
       $progress: $i / $steps;
       $t: $start-t + ($progress * ($end-t - $start-t));
       $percent: $progress * 100%;
-      
+
       $x: ($t * $max-width * $dir-multiplier) - $initial-x;
       $y: (4 * $max-height * $t * ($t - 1)) - $initial-y;
-      
+
       #{$percent} {
         transform: translate($x, $y);
       }
@@ -559,59 +708,59 @@
 
 @include generate-quadratic-path(
   $index: 1,
-  $start-t: 0.28, 
-  $direction: "right", 
-  $max-height: 600px, 
+  $start-t: 0.28,
+  $direction: 'right',
+  $max-height: 600px,
   $max-width: 500px
 );
 @include generate-quadratic-path(
   $index: 2,
-  $start-t: 0.35, 
-  $direction: "right", 
-  $max-height: 550px, 
+  $start-t: 0.35,
+  $direction: 'right',
+  $max-height: 550px,
   $max-width: 500px
 );
 @include generate-quadratic-path(
   $index: 3,
-  $start-t: 0.25, 
-  $direction: "right", 
-  $max-height: 650px, 
+  $start-t: 0.25,
+  $direction: 'right',
+  $max-height: 650px,
   $max-width: 500px
 );
 @include generate-quadratic-path(
   $index: 4,
-  $start-t: 0.24, 
-  $direction: "right", 
-  $max-height: 650px, 
+  $start-t: 0.24,
+  $direction: 'right',
+  $max-height: 650px,
   $max-width: 500px
 );
 
 @include generate-quadratic-path(
   $index: 5,
-  $start-t: 0.28, 
-  $direction: "left", 
-  $max-height: 650px, 
+  $start-t: 0.28,
+  $direction: 'left',
+  $max-height: 650px,
   $max-width: 500px
 );
 @include generate-quadratic-path(
   $index: 6,
-  $start-t: 0.22, 
-  $direction: "left", 
-  $max-height: 680px, 
+  $start-t: 0.22,
+  $direction: 'left',
+  $max-height: 680px,
   $max-width: 500px
 );
 @include generate-quadratic-path(
   $index: 7,
-  $start-t: 0.28, 
-  $direction: "left", 
-  $max-height: 650px, 
+  $start-t: 0.28,
+  $direction: 'left',
+  $max-height: 650px,
   $max-width: 500px
 );
 @include generate-quadratic-path(
   $index: 8,
-  $start-t: 0.29, 
-  $direction: "left", 
-  $max-height: 650px, 
+  $start-t: 0.29,
+  $direction: 'left',
+  $max-height: 650px,
   $max-width: 550px
 );
 
@@ -698,7 +847,12 @@
 // --------------------------------------------------
 // float icon animations
 // --------------------------------------------------
-@keyframes floatIcon { 
-  0%, 100% { transform: translateY(0) rotate(230deg); } 
-  50% { transform: translateY(-14px) rotate(230deg); } 
+@keyframes floatIcon {
+  0%,
+  100% {
+    transform: translateY(0) rotate(230deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(230deg);
+  }
 }

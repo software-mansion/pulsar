@@ -8,31 +8,32 @@ import { useState } from 'react';
 export function Preset({ name, description, tags, duration = 0, visualization }: PresetProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  return <div className={style.preset}>
+  return (
+    <div className={style.preset}>
+      {tags && tags.length > 0 && (
+        <div className={style.tagsBar}>
+          {tags.map((tag, idx) => (
+            <Tag key={idx} label={tag.label} variant={tag.variant} />
+          ))}
+        </div>
+      )}
 
-    {tags && tags.length > 0 && (
-      <div className={style.tagsBar}>
-        {tags.map((tag, idx) => (
-          <Tag key={idx} label={tag.label} variant={tag.variant} />
-        ))}
+      <div className={style.header}>
+        <div className={style.name}>{name}</div>
+        <div className={style.description}>{description}</div>
       </div>
-    )}
 
-    <div className={style.header}>
-      <div className={style.name}>{name}</div>
-      <div className={style.description}>{description}</div>
+      <VisualizationPanel
+        visualization={visualization}
+        duration={duration}
+        playOnDevice={() => setIsModalOpen(true)}
+      />
+
+      {isModalOpen && (
+        <Modal title="Play on device" onClose={() => setIsModalOpen(false)}>
+          // TODO
+        </Modal>
+      )}
     </div>
-    
-    <VisualizationPanel
-      visualization={visualization}
-      duration={duration}
-      playOnDevice={() => setIsModalOpen(true)}
-    />
-
-    {isModalOpen && (
-      <Modal title='Play on device' onClose={() => setIsModalOpen(false)}>
-        // TODO
-      </Modal>
-    )}
-  </div>
+  );
 }

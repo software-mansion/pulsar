@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 interface Props {
   title: string;
-  children: React.ReactNode
+  children: React.ReactNode;
   onClose: () => void;
 }
 
@@ -18,9 +18,7 @@ export function Modal({ title, children, onClose }: Props) {
             <img src={xIcon.src} alt="Close" />
           </div>
         </div>
-        <div className={style.content}>
-          {children}
-        </div>
+        <div className={style.content}>{children}</div>
       </div>
     </div>
   );

@@ -56,7 +56,7 @@
           font-size: var(--font-size-2xl);
           font-weight: var(--font-weight-bold);
         }
-        
+
         .alternative {
           font-size: var(--font-size-xl);
           color: var(--color-blue-900);
@@ -84,7 +84,8 @@
         justify-content: center;
         align-items: center;
         gap: 10px;
-        .desc {}
+        .desc {
+        }
         .indicator {
           width: 18px;
           height: 18px;
@@ -103,7 +104,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

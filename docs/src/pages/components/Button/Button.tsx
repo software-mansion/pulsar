@@ -9,14 +9,14 @@ interface ButtonProps {
   className?: string;
 }
 
-export function Button(
-  { label, url = '#', variant = 'unfilled', className = '' } 
-  : ButtonProps
-) {
+export function Button({ label, url = '#', variant = 'unfilled', className = '' }: ButtonProps) {
   return (
     <div className={`${styles.background} ${className}`}>
-      <a 
-        className={[styles.innerHolder, variant === 'filled' ? styles.filled : styles.unfilled].join(' ')} 
+      <a
+        className={[
+          styles.innerHolder,
+          variant === 'filled' ? styles.filled : styles.unfilled,
+        ].join(' ')}
         href={url}
       >
         {label}

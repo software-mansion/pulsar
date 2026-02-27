@@ -14,23 +14,15 @@ export function Accordion({ title, children, defaultOpen = false, className }: A
 
   return (
     <div className={`${styles.accordion} ${className || ''}`}>
-      <div 
-        className={styles.header} 
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-      >
-        <img 
-          src={arrowIcon.src} 
-          alt="toggle" 
+      <div className={styles.header} onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen}>
+        <img
+          src={arrowIcon.src}
+          alt="toggle"
           className={`${styles.arrow} ${isOpen ? styles.open : ''}`}
         />
         <span className={styles.title}>{title}</span>
       </div>
-      {isOpen && (
-        <div className={styles.content}>
-          {children}
-        </div>
-      )}
+      {isOpen && <div className={styles.content}>{children}</div>}
     </div>
   );
 }
