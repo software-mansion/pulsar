@@ -5,7 +5,7 @@ description: API reference for the Pulsar React Native SDK
 
 import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
 
-The Pulsar React Native SDK (`react-native-pulsar`) exposes haptic feedback through three building blocks: **Presets**, **usePatternComposer**, and **useRealtimeComposer**. All preset functions and hook methods are worklet-compatible for use with Reanimated.
+The Pulsar React Native SDK (`react-native-pulsar`) exposes haptic feedback through three building blocks: `Presets`, `usePatternComposer`, and `useRealtimeComposer`. All preset functions and hook methods are worklet-compatible for use with Reanimated.
 
 ## Requirements
 
@@ -108,7 +108,15 @@ A React hook for composing and playing a custom `Pattern`. The pattern is parsed
 const { play, parse } = usePatternComposer(pattern);
 ```
 
-**Returns**
+### Parameters
+
+#### `pattern` (optional)
+
+Type: `Pattern`
+
+A haptic pattern to parse on mount. When provided, the pattern is parsed automatically and re-parsed whenever the value changes. Resources are released on unmount.
+
+### Returns
 
 #### `play()`
 
@@ -118,7 +126,11 @@ Plays the parsed pattern. Worklet-compatible.
 
 Parses and replaces the current pattern.
 
-**Example**
+#### `isParsed()`
+
+Returns `true` if a pattern has been parsed and is ready to play.
+
+### Example
 
 ```ts
 import { usePatternComposer } from 'react-native-pulsar';
@@ -156,7 +168,11 @@ A React hook for real-time haptic control. Provides live amplitude and frequency
 const { set, playDiscrete, stop, isActive } = useRealtimeComposer();
 ```
 
-**Returns**
+### Parameters
+
+`useRealtimeComposer` doesn't take any parameters.
+
+### Returns
 
 #### `set(amplitude: number, frequency: number)`
 
@@ -174,7 +190,7 @@ Stops the active haptic. Worklet-compatible.
 
 Returns `true` if a haptic is currently playing. Worklet-compatible.
 
-**Example**
+### Example
 
 ```ts
 import { useRealtimeComposer } from 'react-native-pulsar';
@@ -218,7 +234,7 @@ enum HapticSupport {
 }
 ```
 
-**Example**
+### Example
 
 ```ts
 import { HapticsSupport, HapticSupport } from 'react-native-pulsar';
