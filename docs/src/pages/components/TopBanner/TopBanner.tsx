@@ -66,7 +66,7 @@ export function TopBanner() {
           <Button
             label="Read the docs"
             variant="filled"
-            url={'/docs'}
+            url={'/getting-started'}
             className={styles.fullWidth}
           />
         </div>
