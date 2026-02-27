@@ -14,7 +14,7 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     if (code === '-1') {
       return res.status(500).json({
         success: false,
-        error: 'Unable to generate unique channel code'
+        error: 'Unable to generate unique channel code',
       });
     }
     res.json({
@@ -28,7 +28,7 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     if (!message) {
       return res.status(400).json({
         success: false,
-        error: 'Message is required'
+        error: 'Message is required',
       });
     }
     let returnMessage = connectionManager.broadcastChannel(message, token);

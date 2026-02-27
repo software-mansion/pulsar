@@ -1,4 +1,4 @@
-import { ExtendedWebSocket } from "./types";
+import { ExtendedWebSocket } from './types';
 
 type Connection = {
   sender?: ExtendedWebSocket;
@@ -7,8 +7,8 @@ type Connection = {
 
 type SocketData = {
   ws: ExtendedWebSocket;
-  connectionType: 'weak' | 'strong',
-  mode: 'sender' | 'receiver',
+  connectionType: 'weak' | 'strong';
+  mode: 'sender' | 'receiver';
   key: string;
 };
 
@@ -29,12 +29,12 @@ export class ConnectionManager {
         iterations++;
         globalMaxIterations--;
         if (globalMaxIterations <= 0) {
-          return '-1'
+          return '-1';
         }
         code = prefix + Math.floor(1000 + Math.random() * 9000).toString();
       }
       prefix += Math.floor(Math.random() * 10).toString();
-      code = prefix + code
+      code = prefix + code;
     }
 
     this.registerWeakConnection(code);
@@ -62,7 +62,7 @@ export class ConnectionManager {
     } catch {
       messageData = message;
     }
-    
+
     const data = JSON.stringify({
       type: 'broadcast',
       message: messageData,
@@ -104,7 +104,12 @@ export class ConnectionManager {
       this.strongConnections.set(token, { sender: null as any, receiver: null as any });
     }
     const connection = this.strongConnections.get(token);
-    console.log('Trying to reuse connection for code:', token, !!connection.sender, !!connection.receiver);
+    console.log(
+      'Trying to reuse connection for code:',
+      token,
+      !!connection.sender,
+      !!connection.receiver,
+    );
     if (connection) {
       connection.sender = ws;
       this.idToSocket.set(ws.id, { ws, connectionType: 'strong', mode: 'sender', key: token });
@@ -161,7 +166,14 @@ export class ConnectionManager {
       }
     }
     this.idToSocket.delete(wsId);
-    console.log('Unregistered socket with id:', wsId, 'Notifying peer:', !!toNotify, connection, mode);
+    console.log(
+      'Unregistered socket with id:',
+      wsId,
+      'Notifying peer:',
+      !!toNotify,
+      connection,
+      mode,
+    );
     if (toNotify && toNotify.readyState === WebSocket.OPEN) {
       const data = JSON.stringify({
         type: 'peer_disconnected',
@@ -172,15 +184,30 @@ export class ConnectionManager {
 
   private tryPromoteConnection(code: string): void {
     const connection = this.weakConnections.get(code);
-    console.log('Trying to promote connection for code:', code, !!connection.sender, !!connection.receiver);
+    console.log(
+      'Trying to promote connection for code:',
+      code,
+      !!connection.sender,
+      !!connection.receiver,
+    );
     if (!connection || !connection.sender || !connection.receiver) {
       return;
     }
     const token = this.generateToken();
     this.strongConnections.set(token, connection);
     this.weakConnections.delete(code);
-    this.idToSocket.set(connection.sender.id, { ws: connection.sender, connectionType: 'strong', mode: 'sender', key: token });
-    this.idToSocket.set(connection.receiver.id, { ws: connection.receiver, connectionType: 'strong', mode: 'receiver', key: token });
+    this.idToSocket.set(connection.sender.id, {
+      ws: connection.sender,
+      connectionType: 'strong',
+      mode: 'sender',
+      key: token,
+    });
+    this.idToSocket.set(connection.receiver.id, {
+      ws: connection.receiver,
+      connectionType: 'strong',
+      mode: 'receiver',
+      key: token,
+    });
     this.sendTokenNotification(token, connection);
   }
 
@@ -196,11 +223,14 @@ export class ConnectionManager {
 
   private registerWeakConnection(code: string): void {
     this.weakConnections.set(code, { sender: null as any, receiver: null as any });
-    setTimeout(() => {
-      if (this.weakConnections.has(code)) {
-        this.weakConnections.delete(code);
-      }
-    }, 15 * 60 * 1000); // 15 minutes
+    setTimeout(
+      () => {
+        if (this.weakConnections.has(code)) {
+          this.weakConnections.delete(code);
+        }
+      },
+      15 * 60 * 1000,
+    ); // 15 minutes
   }
 
   private sendTokenNotification(token: string, connection: Connection): void {
@@ -228,6 +258,10 @@ export class ConnectionManager {
     if (connection.receiver && connection.receiver.readyState === WebSocket.OPEN) {
       connection.receiver.send(data);
     }
-    console.log('Sent connection_restored notification', !!connection.sender, !!connection.receiver);
+    console.log(
+      'Sent connection_restored notification',
+      !!connection.sender,
+      !!connection.receiver,
+    );
   }
 }

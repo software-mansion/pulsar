@@ -11,7 +11,7 @@ describe('WebSocket', () => {
   beforeAll((done) => {
     const setup = createApp();
     server = setup.server;
-    
+
     server.listen(0, () => {
       const address = server.address();
       if (address && typeof address === 'object') {
@@ -129,7 +129,7 @@ describe('WebSocket', () => {
     it('should broadcast message to other clients', (done) => {
       const ws1 = new WebSocket(wsUrl);
       const ws2 = new WebSocket(wsUrl);
-      
+
       let ws1Connected = false;
       let ws2Connected = false;
       let timeout: NodeJS.Timeout;
@@ -154,7 +154,7 @@ describe('WebSocket', () => {
 
       ws2.on('message', (data: WebSocket.RawData) => {
         const message = JSON.parse(data.toString());
-        
+
         if (message.type === 'connection') {
           ws2Connected = true;
           if (ws1Connected && ws2Connected) {

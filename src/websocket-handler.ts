@@ -16,8 +16,8 @@ export class WebSocketHandler {
   private readonly heartbeatIntervalMs = 30_000;
 
   constructor(
-    wsServer: WebSocket.Server, 
-    private connectionManager: ConnectionManager
+    wsServer: WebSocket.Server,
+    private connectionManager: ConnectionManager,
   ) {
     this.setupHeartbeat(wsServer);
     this.setupWebSocket(wsServer);
