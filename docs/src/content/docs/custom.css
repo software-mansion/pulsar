@@ -32,8 +32,8 @@
   --sl-color-bg-nav: var(--color-blue-10);
   --sl-color-hairline-shade: var(--color-blue-50);
   --__sl-font: "DM Sans", sans-serif;
-  --sl-text-base: var(--font-size-lg);
-  --sl-text-sm: var(--font-size-lg);
+  --sl-text-base: var(--font-size-md);
+  --sl-text-sm: var(--font-size-md);
 }
 html {
   -webkit-font-smoothing: antialiased;
