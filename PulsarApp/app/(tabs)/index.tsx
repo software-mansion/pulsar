@@ -231,7 +231,7 @@ export default function HomeScreen() {
     patternNotificationTimeoutRef.current = setTimeout(() => {
       setShowPatternNotification(false);
       patternNotificationTimeoutRef.current = null;
-    }, 500);
+    }, 1000);
   };
 
   const connectionStatus = () => {
