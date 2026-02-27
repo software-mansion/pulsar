@@ -43,16 +43,16 @@ export function StoreReviewProvider({ children }: { children: ReactNode }) {
   };
 
   const trackTabVisit = (tabName: string) => {
-    setVisitedTabs((prev) => {
-      const newSet = new Set(prev);
-      newSet.add(tabName);
+    // setVisitedTabs((prev) => {
+    //   const newSet = new Set(prev);
+    //   newSet.add(tabName);
       
-      if (newSet.size >= MIN_TABS_VISITED && !reviewShown) {
-        // checkAndShowReview();
-      }
+    //   if (newSet.size >= MIN_TABS_VISITED && !reviewShown) {
+    //     // checkAndShowReview();
+    //   }
       
-      return newSet;
-    });
+    //   return newSet;
+    // });
   };
 
   return (
