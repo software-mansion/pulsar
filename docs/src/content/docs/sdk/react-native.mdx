@@ -142,8 +142,15 @@ const pattern = {
     { time: 100, amplitude: 0.5, frequency: 0.5 },
   ],
   continuousPattern: {
-    amplitude: [],
-    frequency: [],
+    amplitude: [
+      { time: 0, value: 0 },
+      { time: 200, value: 1 },
+      { time: 400, value: 0 },
+    ],
+    frequency: [
+      { time: 0, value: 0.3 },
+      { time: 400, value: 0.8 },
+    ],
   },
 };
 
