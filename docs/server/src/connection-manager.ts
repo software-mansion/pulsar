@@ -94,6 +94,8 @@ export class ConnectionManager {
       connection.receiver = ws;
       this.idToSocket.set(ws.id, { ws, connectionType: 'weak', mode: 'receiver', key: code });
       this.tryPromoteConnection(code);
+    } else {
+      ws.close(1008, 'Invalid code: no sender connection found for the provided code');
     }
   }
 
