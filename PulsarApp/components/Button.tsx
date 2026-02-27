@@ -62,7 +62,7 @@ function Button({
     styles.container,
     isLoading ? styles.loadingContainer : null,
     style,
-    enabled && (pressed ? showIcon === 'record' ? styles.pressAnimationRecord : styles.pressAnimation : null),
+    enabled && (pressed ? showIcon === 'record' || showIcon === 'square' ? styles.pressAnimationRecord : styles.pressAnimation : null),
     showIcon === 'record' || showIcon === 'square' ? { width: width - 200, borderColor: '#FF6259', boxShadow: '-3px 3px 0px #FF6259' } : null,
   ];
 

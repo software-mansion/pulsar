@@ -1,12 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
-import { BaseButton } from 'react-native-gesture-handler';
-import { ImperativePatternComposer } from 'react-native-pulsar';
 import { StateSwipe } from './StateSwipe';
 import { StateTap } from './StateTap';
-
-const impulse1 = new ImperativePatternComposer();
-impulse1.parse({discretePattern: [{ time: 0, amplitude: 0.8, frequency: 0.8 }], continuesPattern: { amplitude: [], frequency: [] }});
 
 interface Props {
   children?: React.ReactNode;

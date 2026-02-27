@@ -5,7 +5,7 @@ import type { Pattern, PatternComposer } from './types';
 // workaround for RN prototype caching issue 
 Pulsar.PatternComposer_play;
 
-export default function usePatternComposer(pattern: Pattern): PatternComposer {
+export default function usePatternComposer(pattern?: Pattern): PatternComposer {
   const patternIdRef = useRef<number>(-1);
 
   const play = useCallback(() => {
@@ -20,13 +20,21 @@ export default function usePatternComposer(pattern: Pattern): PatternComposer {
     patternIdRef.current = patternId;
   }, [pattern]);
 
+  const isParsed = () => {
+    return patternIdRef.current !== -1;
+  }
+
   useEffect(() => {
-    parse(pattern);
+    if (pattern) {
+      parse(pattern);
+    }
     return () => {
-      Pulsar.PatternComposer_release(patternIdRef.current);
+      if  (patternIdRef.current !== -1) {
+        Pulsar.PatternComposer_release(patternIdRef.current);
+      }
     };
   }, [pattern]);
 
-  return { play, parse };
+  return { play, parse, isParsed };
 }
 

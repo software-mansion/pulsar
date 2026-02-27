@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
-import { ImperativePatternComposer, Pattern } from 'react-native-pulsar';
+import { Pattern, usePatternComposer } from 'react-native-pulsar';
 import { runOnUISync, scheduleOnUI } from 'react-native-worklets';
 
 declare global {
@@ -103,7 +103,8 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const recordedPattern = useSharedValue<any[]>([]);
-  const patternComposer = useRef(new ImperativePatternComposer());
+  const patternComposer = usePatternComposer();
+  const isNewRecording = useRef(false);
 
   useEffect(() => {
     onRecordingChange?.(isRecording);
@@ -114,6 +115,7 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
   }, [isPlaying, onPlayingChange]);
 
   const startRecording = () => {
+    isNewRecording.current = true;
     setIsRecording(true);
     recordedPattern.value = [];
     scheduleOnUI(() => {
@@ -138,10 +140,12 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
 
     setIsPlaying(true);
     const recordedEvents = recordedPattern.value as RecordedEvent[];
-    const pattern = convertToPattern(recordedPattern.value);
-
-    patternComposer.current.parse(pattern);
-    patternComposer.current.play();
+    if (isNewRecording.current) {
+      const pattern = convertToPattern(recordedPattern.value);
+      patternComposer.parse(pattern);
+      isNewRecording.current = false;
+    }
+    patternComposer.play();
 
     // Estimate duration and reset playing state
     const lastEvent = recordedEvents[recordedEvents.length - 1];

@@ -15,13 +15,12 @@ import ConnectionIndicator from '@/components/ConnectionIndicator';
 import { Margins } from '@/constants/theme';
 import { SOCKET_SERVER_URL } from '@/constants/Connection';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Presets, ImperativePatternComposer, Pattern } from 'react-native-pulsar';
+import { Pattern, usePatternComposer } from 'react-native-pulsar';
 import { BaseButton } from 'react-native-gesture-handler';
 import Button from '@/components/Button';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 const logo = require('@/assets/images/logo.png');
-const patternComposer = new ImperativePatternComposer();
 
 type ConnectionState = 
   | 'INITIAL'              // Checking if token exists
@@ -35,6 +34,7 @@ type ErrorType = 'INVALID_DATA' | 'CONNECTION_FAILED' | null;
 
 export default function HomeScreen() {
   const posthog = usePostHog();
+  const patternComposer = usePatternComposer();
   const [connectionState, setConnectionState] = useState<ConnectionState>('INITIAL');
   const [errorType, setErrorType] = useState<ErrorType>(null);
   const [hasToken, setHasToken] = useState(false);
