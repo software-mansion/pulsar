@@ -210,13 +210,13 @@ export class AudioPatternUtility {
         type,
       };
 
-      for (const amplitudePoint of chartData.continuesPattern.amplitude) {
+      for (const amplitudePoint of chartData.continuousPattern.amplitude) {
         line.data.amplitude.push({
           time: amplitudePoint.time * 1000,
           value: amplitudePoint.value * amplitudeModifier,
         });
       }
-      for (const frequencyPoint of chartData.continuesPattern.frequency) {
+      for (const frequencyPoint of chartData.continuousPattern.frequency) {
         line.data.frequency.push({
           time: frequencyPoint.time * 1000,
           value: normalizeFrequency(frequencyPoint.value) * frequencyModifier,
@@ -228,9 +228,9 @@ export class AudioPatternUtility {
 
     const lines = [];
     lines.push(createComponentWave(0.6, 0.8, 'sine'));
-    // lines.push(createContinuesWave(0.05, 1, 'square'));
+    // lines.push(createContinuousWave(0.05, 1, 'square'));
     lines.push(createComponentWave(0.2, 0.4, 'triangle'));
-    // lines.push(createContinuesWave(0.1, 0.5, 'sawtooth'));
+    // lines.push(createContinuousWave(0.1, 0.5, 'sawtooth'));
     lines.push(createComponentWave(0.5, 1, 'sine'));
 
     return lines;
@@ -239,7 +239,7 @@ export class AudioPatternUtility {
   private async renderPattern(data: AudioPatternConfig) {
     const { discreteData, continuousData } = data;
 
-    const [continuesDuration, _, totalDuration] = this.calculateTotalDuration(data);
+    const [continuousDuration, _, totalDuration] = this.calculateTotalDuration(data);
 
     this.offlineContext = new OfflineAudioContext(1, totalDuration, this.sampleRate);
 
@@ -253,18 +253,15 @@ export class AudioPatternUtility {
     filterNode.Q.setValueAtTime(5, this.offlineContext.currentTime);
     filterNode.connect(masterGainNode);
 
-    const isAnyContinuesEvent = continuousData.some((cont) => cont.data.amplitude.length > 0);
+    const isAnyContinuousEvent = continuousData.some(cont => cont.data.amplitude.length > 0);
 
-    discreteData.forEach((data) => {
-      this.createAudioNodesForDiscreteConfig(
-        data,
-        isAnyContinuesEvent ? filterNode : masterGainNode,
-      );
+    discreteData.forEach(data => {
+      this.createAudioNodesForDiscreteConfig(data, isAnyContinuousEvent ? filterNode : masterGainNode);
     });
 
-    continuousData.forEach((data) => {
-      this.createAudioNodesForContinuesConfig(data, continuesDuration, filterNode);
-    });
+    continuousData.forEach(data => {
+      this.createAudioNodesForContinuousConfig(data, continuousDuration, filterNode)
+    })
 
     this.renderedBuffer = await this.offlineContext.startRendering();
 
@@ -273,8 +270,7 @@ export class AudioPatternUtility {
 
   private calculateTotalDuration(data: AudioPatternConfig) {
     const amplitude = data.continuousData[0].data.amplitude;
-    const continuesDuration =
-      (amplitude.length > 0 ? amplitude[amplitude.length - 1].time : 0) / 1000 + 0.01;
+    const continuousDuration = ((amplitude.length > 0 ? amplitude[amplitude.length - 1].time : 0) / 1000) + 0.01;
 
     let discreteDuration = 0;
     data.discreteData.forEach((event) => {
@@ -289,11 +285,9 @@ export class AudioPatternUtility {
     });
     discreteDuration = discreteDuration + 0.1;
 
-    const totalDuration = Math.floor(
-      Math.max(continuesDuration, discreteDuration) * this.sampleRate,
-    );
+    const totalDuration = Math.floor(Math.max(continuousDuration, discreteDuration) * this.sampleRate);
 
-    return [continuesDuration, discreteDuration, totalDuration];
+    return [continuousDuration, discreteDuration, totalDuration];
   }
 
   private createAudioNodesForDiscreteConfig(
@@ -385,32 +379,28 @@ export class AudioPatternUtility {
     gain.linearRampToValueAtTime(0, currentTime);
   }
 
-  private createAudioNodesForContinuesConfig(
-    continuesData: ContinuousAudioConfig,
-    continuesDuration: number,
-    filterNode: AudioNode,
-  ) {
-    if (continuesData.data.amplitude.length == 0 || continuesData.data.frequency.length == 0) {
+  private createAudioNodesForContinuousConfig(continuousData: ContinuousAudioConfig, continuousDuration: number, filterNode: AudioNode) {
+    if (continuousData.data.amplitude.length == 0 || continuousData.data.frequency.length == 0) {
       return;
     }
 
-    function valueForTime(continuesData: { time: number; value: number }[], time: number) {
+    function valueForTime(continuousData: {time: number, value: number}[], time: number) {
       time *= 1000; // convert to ms
-      if (time < continuesData[0].time) {
-        return continuesData[0].value;
+      if (time < continuousData[0].time) {
+        return continuousData[0].value;
       }
-      if (time > continuesData[continuesData.length - 1].time) {
-        return continuesData[continuesData.length - 1].value;
+      if (time > continuousData[continuousData.length - 1].time) {
+        return continuousData[continuousData.length - 1].value;
       }
-      for (let i = 1; i < continuesData.length; i += 1) {
-        if (time == continuesData[i].time) {
-          return continuesData[i].value;
+      for (let i = 1; i < continuousData.length; i += 1) {
+        if (time == continuousData[i].time) {
+          return continuousData[i].value;
         }
-        if (time < continuesData[i].time) {
-          const t0 = continuesData[i - 1].time;
-          const t1 = continuesData[i].time;
-          const v0 = continuesData[i - 1].value;
-          const v1 = continuesData[i].value;
+        if (time < continuousData[i].time) {
+          const t0 = continuousData[i - 1].time;
+          const t1 = continuousData[i].time;
+          const v0 = continuousData[i - 1].value;
+          const v1 = continuousData[i].value;
           const ratio = (time - t0) / (t1 - t0);
           return v0 + (v1 - v0) * ratio;
         }
@@ -419,26 +409,20 @@ export class AudioPatternUtility {
     }
 
     const oscillatorNode = this.offlineContext.createOscillator();
-    oscillatorNode.type = continuesData.type as OscillatorType;
+    oscillatorNode.type = continuousData.type as OscillatorType;
 
     const gainNode = this.offlineContext.createGain();
 
-    for (let i = 0; i <= continuesDuration; i += 0.01) {
+    for (let i = 0; i <= continuousDuration; i += 0.01) {
       const timestamp = i;
-      gainNode.gain.setValueAtTime(
-        valueForTime(continuesData.data.amplitude, timestamp),
-        timestamp,
-      );
-      oscillatorNode.frequency.setValueAtTime(
-        valueForTime(continuesData.data.frequency, timestamp),
-        timestamp,
-      );
+      gainNode.gain.setValueAtTime(valueForTime(continuousData.data.amplitude, timestamp), timestamp);
+      oscillatorNode.frequency.setValueAtTime(valueForTime(continuousData.data.frequency, timestamp), timestamp);
     }
 
     oscillatorNode.connect(gainNode);
     gainNode.connect(filterNode);
 
     oscillatorNode.start(0);
-    oscillatorNode.stop(continuesDuration);
+    oscillatorNode.stop(continuousDuration);
   }
 }

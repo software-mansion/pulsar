@@ -168,7 +168,7 @@ class MainActivity : ComponentActivity() {
 //                composer = pulsar?.PatternComposer()
 //              }
 //              composer?.parsePattern(PatternData(
-//                ContinuesPattern(
+//                ContinuousPattern(
 //                  listOf(
 //                    PatternPoint(0f, 0f),
 //                    PatternPoint(100f, 1f),

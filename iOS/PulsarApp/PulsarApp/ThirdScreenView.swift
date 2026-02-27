@@ -34,7 +34,7 @@ struct ThirdScreenView: View {
                     DiscretePoint(time: 0.6, amplitude: 0.9, frequency: 0.3),
                     DiscretePoint(time: 0.9, amplitude: 0.7, frequency: 0.8),
                 ]
-                let data = PatternData(continuesPattern: ContinuesPattern(amplitude: amplitude, frequency: frequency), discretePattern: discretePattern)
+                let data = PatternData(continuousPattern: ContinuousPattern(amplitude: amplitude, frequency: frequency), discretePattern: discretePattern)
 
                 tmp = pulsar.PatternComposer()
                 tmp?.parsePattern(hapticsData: data)

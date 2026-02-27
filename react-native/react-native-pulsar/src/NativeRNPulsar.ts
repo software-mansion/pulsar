@@ -2,7 +2,7 @@ import { TurboModuleRegistry, type TurboModule } from 'react-native';
 
 type Pattern = {
   discretePattern: { time: number, amplitude: number, frequency: number }[],
-  continuesPattern: {
+  continuousPattern: {
     amplitude: { time: number, value: number }[],
     frequency: { time: number, value: number }[],
   }

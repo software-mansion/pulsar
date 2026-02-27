@@ -141,7 +141,7 @@ const pattern = {
     { time: 0, amplitude: 1, frequency: 0.5 },
     { time: 100, amplitude: 0.5, frequency: 0.5 },
   ],
-  continuesPattern: {
+  continuousPattern: {
     amplitude: [],
     frequency: [],
   },
@@ -261,7 +261,7 @@ type Pattern = {
     amplitude: number; // Intensity (0–1)
     frequency: number; // Sharpness (0–1)
   }>;
-  continuesPattern: {
+  continuousPattern: {
     amplitude: Array<{
       time: number; // Milliseconds from pattern start
       value: number; // Amplitude value (0–1)
@@ -274,7 +274,7 @@ type Pattern = {
 };
 ```
 
-Use `discretePattern` for distinct taps and impacts. Use `continuesPattern` envelopes to shape a sustained haptic over time.
+Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
 
 ### HapticSupport
 

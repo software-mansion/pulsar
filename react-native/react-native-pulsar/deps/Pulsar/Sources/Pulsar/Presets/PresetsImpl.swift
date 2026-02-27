@@ -7,7 +7,7 @@ import Foundation
   @objc public init(_ haptics: Pulsar) {
     super.init(
       haptics, 
-      rawContinuesPattern: [
+      rawContinuousPattern: [
         [[0.0, 0.0], [0.3, 0.8], [0.3, 0.0], [0.4, 0.0], [0.6, 0.8], [0.6, 0.0]],
         [[0.0, 0.8], [0.6, 0.8]],
       ], 
@@ -28,7 +28,7 @@ import Foundation
   @objc public init(_ haptics: Pulsar) {
     super.init(
       haptics, 
-      rawContinuesPattern: [[], []], 
+      rawContinuousPattern: [[], []], 
       rawDiscretePattern: [
         [0, 0.5, 0.5],
         [0.127, 0.5, 0.5],
@@ -48,7 +48,7 @@ import Foundation
   @objc public init(_ haptics: Pulsar) {
     super.init(
       haptics, 
-      rawContinuesPattern: [[], []], 
+      rawContinuousPattern: [[], []], 
       rawDiscretePattern: [
         [0, 0.5, 0.5],
         [0.127, 0.5, 0.5],
@@ -68,7 +68,7 @@ import Foundation
   @objc public init(_ haptics: Pulsar) {
     super.init(
       haptics, 
-      rawContinuesPattern: [[], []], 
+      rawContinuousPattern: [[], []], 
       rawDiscretePattern: [
         [0, 0.5, 0.5],
       ]

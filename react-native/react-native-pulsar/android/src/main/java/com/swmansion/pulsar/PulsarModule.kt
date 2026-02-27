@@ -8,7 +8,7 @@ import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.ConfigPoint
-import com.swmansion.pulsar.types.ContinuesPattern
+import com.swmansion.pulsar.types.ContinuousPattern
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.types.ValuePoint
 
@@ -67,12 +67,12 @@ class PulsarModule(reactContext: ReactApplicationContext) :
   // PatternComposer -----------------------------------------------------------------
 
   private fun patternDataFromJSPattern(data: ReadableMap): PatternData {
-    val continuesPatternMap = data.getMap("continuesPattern")
+    val continuousPatternMap = data.getMap("continuousPattern")
     val discretePatternArray = data.getArray("discretePattern")
 
     // Parse amplitude points
     val amplitudePoints = mutableListOf<ValuePoint>()
-    continuesPatternMap?.getArray("amplitude")?.let { amplitudeArray ->
+    continuousPatternMap?.getArray("amplitude")?.let { amplitudeArray ->
       for (i in 0 until amplitudeArray.size()) {
         amplitudeArray.getMap(i)?.let { point ->
           amplitudePoints.add(
@@ -87,7 +87,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
     // Parse frequency points
     val frequencyPoints = mutableListOf<ValuePoint>()
-    continuesPatternMap?.getArray("frequency")?.let { frequencyArray ->
+    continuousPatternMap?.getArray("frequency")?.let { frequencyArray ->
       for (i in 0 until frequencyArray.size()) {
         frequencyArray.getMap(i)?.let { point ->
           frequencyPoints.add(
@@ -100,7 +100,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
       }
     }
 
-    val continuesPattern = ContinuesPattern(
+    val continuousPattern = ContinuousPattern(
       amplitude = amplitudePoints,
       frequency = frequencyPoints
     )
@@ -122,7 +122,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     }
 
     return PatternData(
-      continuesPattern = continuesPattern,
+      continuousPattern = continuousPattern,
       discretePattern = discretePoints
     )
   }

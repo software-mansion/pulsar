@@ -6,13 +6,13 @@ import AVFAudio
 @objc public class Player : NSObject {
   private var patternComposer: PatternComposer!
   
-  public init(_ haptics: Pulsar, rawContinuesPattern: [[[Double]]] = [], rawDiscretePattern: [[Double]] = []) {
+  public init(_ haptics: Pulsar, rawContinuousPattern: [[[Double]]] = [], rawDiscretePattern: [[Double]] = []) {
     super.init()
     patternComposer = haptics.getPatternComposer()
     
-    let continuesPoints = convertContinuesPattern(rawContinuesPattern)
+    let continuousPoints = convertContinuousPattern(rawContinuousPattern)
     let discretePoints = convertDiscretePattern(rawDiscretePattern)
-    let patternData = PatternData(continuesPattern: continuesPoints, discretePattern: discretePoints)
+    let patternData = PatternData(continuousPattern: continuousPoints, discretePattern: discretePoints)
     
     patternComposer.parsePattern(hapticsData: patternData)
   }
@@ -25,7 +25,7 @@ import AVFAudio
     patternComposer.stop()
   }
   
-  private func convertContinuesPattern(_ linePattern: [[[Double]]]) -> ContinuesPattern {
+  private func convertContinuousPattern(_ linePattern: [[[Double]]]) -> ContinuousPattern {
     var amplitudePoints: [ValuePoint] = []
     var frequencyPoints: [ValuePoint] = []
     
@@ -45,7 +45,7 @@ import AVFAudio
       }
     }
     
-    return ContinuesPattern(amplitude: amplitudePoints, frequency: frequencyPoints)
+    return ContinuousPattern(amplitude: amplitudePoints, frequency: frequencyPoints)
   }
   
   private func convertDiscretePattern(_ barPattern: [[Double]]) -> [ConfigPoint] {

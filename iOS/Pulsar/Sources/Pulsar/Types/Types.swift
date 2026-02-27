@@ -20,7 +20,7 @@ import Foundation
   }
 }
 
-@objc public class ContinuesPattern: NSObject, Codable {
+@objc public class ContinuousPattern: NSObject, Codable {
   let amplitude: [ValuePoint]
   let frequency: [ValuePoint]
   @objc public init(amplitude: [ValuePoint], frequency: [ValuePoint]) {
@@ -30,14 +30,14 @@ import Foundation
 }
 
 @objc public class PatternData: NSObject, Codable {
-  let continuesPattern: ContinuesPattern
+  let continuousPattern: ContinuousPattern
   let discretePattern: [ConfigPoint]
-  @objc public init(continuesPattern: ContinuesPattern, discretePattern: [ConfigPoint]) {
-    self.continuesPattern = continuesPattern
+  @objc public init(continuousPattern: ContinuousPattern, discretePattern: [ConfigPoint]) {
+    self.continuousPattern = continuousPattern
     self.discretePattern = discretePattern
   }
   public init(line: [[[Double]]], bar: [[Double]]) {
-    self.continuesPattern = ContinuesPattern(
+    self.continuousPattern = ContinuousPattern(
       amplitude: line[0].map { ValuePoint(time: Double($0[0]), value: Float($0[1])) },
       frequency: line[1].map { ValuePoint(time: Double($0[0]), value: Float($0[1])) }
     )

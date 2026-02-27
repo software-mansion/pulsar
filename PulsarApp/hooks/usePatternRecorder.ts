@@ -78,7 +78,7 @@ function convertToPattern(events: RecordedEvent[]): Pattern {
 
   return {
     discretePattern,
-    continuesPattern: {
+    continuousPattern: {
       amplitude: continuousAmplitude,
       frequency: continuousFrequency,
     },

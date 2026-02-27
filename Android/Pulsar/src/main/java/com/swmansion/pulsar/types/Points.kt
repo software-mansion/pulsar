@@ -32,19 +32,19 @@ data class ConfigPoint(
   val frequency: Float,
 )
 
-data class ContinuesPattern(
+data class ContinuousPattern(
   val amplitude: List<ValuePoint>,
   val frequency: List<ValuePoint>,
 )
 
 data class PatternData(
-  val continuesPattern: ContinuesPattern,
+  val continuousPattern: ContinuousPattern,
   val discretePattern: List<ConfigPoint>,
 ) {
-  constructor(rawContinuesPattern: List<List<List<Float>>> = listOf(listOf(), listOf()), rawDiscretePattern: List<List<Float>> = listOf()) : this(
-    continuesPattern = ContinuesPattern(
-      amplitude = rawContinuesPattern[0].map { ValuePoint(time = it[0], value = it[1]) },
-      frequency = rawContinuesPattern[1].map { ValuePoint(time = it[0], value = it[1]) }
+  constructor(rawContinuousPattern: List<List<List<Float>>> = listOf(listOf(), listOf()), rawDiscretePattern: List<List<Float>> = listOf()) : this(
+    continuousPattern = ContinuousPattern(
+      amplitude = rawContinuousPattern[0].map { ValuePoint(time = it[0], value = it[1]) },
+      frequency = rawContinuousPattern[1].map { ValuePoint(time = it[0], value = it[1]) }
     ),
     discretePattern = rawDiscretePattern.map { ConfigPoint(time = it[0], amplitude = it[1], frequency = it[2]) }
   )

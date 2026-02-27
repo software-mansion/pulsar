@@ -46,10 +46,10 @@ public class PatternComposer: NSObject {
       discreteLine.addEvent(timestamp: discretePoint.time, intensity: discretePoint.amplitude, sharpness: discretePoint.frequency)
     }
     
-    for intensityPoint in hapticsData.continuesPattern.amplitude {
+    for intensityPoint in hapticsData.continuousPattern.amplitude {
       intensityCurveLine.addPoint(time: intensityPoint.time, value: intensityPoint.value)
     }
-    for sharpnessPoint in hapticsData.continuesPattern.frequency {
+    for sharpnessPoint in hapticsData.continuousPattern.frequency {
       sharpnessCurveLine.addPoint(time: sharpnessPoint.time, value: sharpnessPoint.value)
     }
     

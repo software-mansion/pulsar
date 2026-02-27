@@ -4,21 +4,21 @@ import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ValuePoint
 
 class PeakLineBuilder() {
-    fun convertToContinuesPatternOfAmplitude(
+    fun convertToContinuousPatternOfAmplitude(
         pattern: List<ConfigPoint>,
         baseline: ValueLineBuilder
     ): ValueLineBuilder {
-        return convertToContinuesPattern(pattern, baseline, true)
+        return convertToContinuousPattern(pattern, baseline, true)
     }
 
-    fun convertToContinuesPatternOfFrequency(
+    fun convertToContinuousPatternOfFrequency(
         pattern: List<ConfigPoint>,
         baseline: ValueLineBuilder
     ): ValueLineBuilder {
-        return convertToContinuesPattern(pattern, baseline, false)
+        return convertToContinuousPattern(pattern, baseline, false)
     }
 
-    private fun convertToContinuesPattern(
+    private fun convertToContinuousPattern(
         pattern: List<ConfigPoint>,
         baseline: ValueLineBuilder,
         useAmplitude: Boolean

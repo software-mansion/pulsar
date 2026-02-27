@@ -8,7 +8,7 @@ import com.swmansion.pulsar.types.PresetWithName
 class EarthquakePreset(haptics: Pulsar) :
     Preset,
     Player(haptics, PatternData(
-        rawContinuesPattern = listOf(
+        rawContinuousPattern = listOf(
             listOf(listOf(0.1f, 0.3f), listOf(1.5f, 0.3f)),
             listOf(listOf(0.1f, 0.3f), listOf(1.5f, 0.3f)),
         ),
@@ -24,7 +24,7 @@ class EarthquakePreset(haptics: Pulsar) :
 class SuccessPreset(haptics: Pulsar) :
     Preset,
     Player(haptics, PatternData(
-        rawContinuesPattern = listOf(
+        rawContinuousPattern = listOf(
             listOf(listOf(0.1f, 1.0f), listOf(0.5f, 0.5f), listOf(1.6f, 0.0f)),
             listOf(listOf(0.1f, 0.5f), listOf(0.5f, 0.5f), listOf(1.6f, 0.0f))
         ),
@@ -38,7 +38,7 @@ class SuccessPreset(haptics: Pulsar) :
 class FailPreset(private val haptics: Pulsar) :
     Preset,
     Player(haptics, PatternData(
-        rawContinuesPattern = listOf(
+        rawContinuousPattern = listOf(
             listOf(listOf(0.0f, 1.0f), listOf(0.5f, 1.0f)),
             listOf(listOf(0.0f, 0.3f), listOf(0.5f, 0.3f))
         ),
@@ -56,7 +56,7 @@ class FailPreset(private val haptics: Pulsar) :
 class TapPreset(private val haptics: Pulsar) :
     Preset,
     Player(haptics, PatternData(
-        rawContinuesPattern = listOf(
+        rawContinuousPattern = listOf(
             listOf(listOf(0.0f, 1.0f)),
             listOf(listOf(0.0f, 0.5f))
         ),

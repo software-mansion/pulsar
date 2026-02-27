@@ -157,8 +157,8 @@ public class AudioSimulator: NSObject {
 	}
 	
 	private func generateContinuousAudioConfig(from data: PatternData) -> [ContinuousAudioConfig] {
-		let amplitudePoints: [ValuePoint] = data.continuesPattern.amplitude.count > 0 ? data.continuesPattern.amplitude : []
-		let frequencyPoints: [ValuePoint] = data.continuesPattern.frequency.count > 1 ? data.continuesPattern.frequency : []
+		let amplitudePoints: [ValuePoint] = data.continuousPattern.amplitude.count > 0 ? data.continuousPattern.amplitude : []
+		let frequencyPoints: [ValuePoint] = data.continuousPattern.frequency.count > 1 ? data.continuousPattern.frequency : []
 		
 		func normalizeFrequency(_ x: Float) -> Double {
 			return 80.0 + (230.0 - 80.0) * Double(x)

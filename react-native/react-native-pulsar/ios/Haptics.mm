@@ -57,7 +57,7 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
   NSMutableArray<ValuePoint *> *amplitudePoints = [NSMutableArray array];
   NSMutableArray<ValuePoint *> *frequencyPoints = [NSMutableArray array];
 
-  auto continuous = data.continuesPattern();
+  auto continuous = data.continuousPattern();
   for (const auto &point : continuous.amplitude()) {
     ValuePoint *pp = [[ValuePoint alloc] initWithTime:point.time() value:(float)point.value()];
     [amplitudePoints addObject:pp];
@@ -67,7 +67,7 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
     [frequencyPoints addObject:pp];
   }
 
-  ContinuesPattern *continuesPattern = [[ContinuesPattern alloc] initWithAmplitude:amplitudePoints
+  ContinuousPattern *continuousPattern = [[ContinuousPattern alloc] initWithAmplitude:amplitudePoints
                                                                          frequency:frequencyPoints];
 
   NSMutableArray<ConfigPoint *> *discretePoints = [NSMutableArray array];
@@ -78,7 +78,7 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
     [discretePoints addObject:dp];
   }
 
-  return [[PatternData alloc] initWithContinuesPattern:continuesPattern discretePattern:discretePoints];
+  return [[PatternData alloc] initWithContinuousPattern:continuousPattern discretePattern:discretePoints];
 }
 
 - (nonnull NSNumber *)PatternComposer_parsePattern:(JS::NativeRNPulsar::Pattern &)data {

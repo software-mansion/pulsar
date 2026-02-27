@@ -3,15 +3,15 @@ export interface Tag {
   variant: 'white' | 'blue';
 }
 
-export type DiscretePoint = { time: number; amplitude: number; frequency: number };
-export type ContinuesPattern = {
-  amplitude: { time: number; value: number }[];
-  frequency: { time: number; value: number }[];
-};
+export type DiscretePoint = { time: number, amplitude: number, frequency: number };
+export type ContinuousPattern = {
+  amplitude: { time: number, value: number }[],
+  frequency: { time: number, value: number }[],
+}
 export type PatternData = {
-  discretePattern: DiscretePoint[];
-  continuesPattern: ContinuesPattern;
-};
+  discretePattern: DiscretePoint[],
+  continuousPattern: ContinuousPattern,
+}
 
 export type PresetConfig = {
   image: ImageMetadata;

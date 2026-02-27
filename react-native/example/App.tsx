@@ -6,7 +6,7 @@ import usePatternComposer from '../react-native-pulsar/src/usePatternComposer';
 
 export default function App() {
   const realtimeComposer = useRealtimeComposer();
-  const patternComposer = usePatternComposer({discretePattern: [], continuesPattern: {amplitude: [], frequency: []}})
+  const patternComposer = usePatternComposer({discretePattern: [], continuousPattern: {amplitude: [], frequency: []}})
 
   return (
     <View style={styles.container}>

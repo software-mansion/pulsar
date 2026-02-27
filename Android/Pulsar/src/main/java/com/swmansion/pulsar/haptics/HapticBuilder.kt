@@ -18,12 +18,12 @@ class HapticBuilder(engine: HapticEngineWrapper) {
   }
 
   private fun convertToControlPoints(preset: PatternData): List<ControlPoint> {
-    val amplitudeLine = ValueLineBuilder(preset.continuesPattern.amplitude)
-    val frequencyLine = ValueLineBuilder(preset.continuesPattern.frequency)
+    val amplitudeLine = ValueLineBuilder(preset.continuousPattern.amplitude)
+    val frequencyLine = ValueLineBuilder(preset.continuousPattern.frequency)
 
     val peakLineBuilder = PeakLineBuilder()
-    val discreteAmplitudeLine = peakLineBuilder.convertToContinuesPatternOfAmplitude(preset.discretePattern, amplitudeLine)
-    val discreteFrequencyLine = peakLineBuilder.convertToContinuesPatternOfFrequency(preset.discretePattern, frequencyLine)
+    val discreteAmplitudeLine = peakLineBuilder.convertToContinuousPatternOfAmplitude(preset.discretePattern, amplitudeLine)
+    val discreteFrequencyLine = peakLineBuilder.convertToContinuousPatternOfFrequency(preset.discretePattern, frequencyLine)
 
     amplitudeLine.mergeLine(discreteAmplitudeLine)
     frequencyLine.mergeLine(discreteFrequencyLine)

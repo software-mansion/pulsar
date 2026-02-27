@@ -224,10 +224,10 @@ class AudioSimulator(
     }
 
     private fun generateContinuousAudioConfig(data: PatternData): List<ContinuousAudioConfig> {
-        val amplitudePoints = data.continuesPattern.amplitude.ifEmpty {
+        val amplitudePoints = data.continuousPattern.amplitude.ifEmpty {
             emptyList()
         }
-        val frequencyPoints = data.continuesPattern.frequency.ifEmpty {
+        val frequencyPoints = data.continuousPattern.frequency.ifEmpty {
             emptyList()
         }
 
