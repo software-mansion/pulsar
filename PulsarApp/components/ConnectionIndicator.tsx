@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
 const statusToText = {
   connected: 'Connected',
   disconnected: 'Not connected',
-  waiting: 'Connecting',
+  waiting: 'Waiting',
 }
 
 const statusToColor = {

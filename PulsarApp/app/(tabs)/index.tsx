@@ -10,7 +10,6 @@ import BasicLayout from '@/components/BasicLayout';
 import Input from '@/components/Input';
 import { Collapsible } from '@/components/ui/collapsible';
 import Point from '@/components/Point';
-import { ExternalLink } from '@/components/external-link';
 import ConnectionIndicator from '@/components/ConnectionIndicator';
 import { Margins } from '@/constants/theme';
 import { SOCKET_SERVER_URL } from '@/constants/Connection';
@@ -18,16 +17,31 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Presets, ImperativePatternComposer, Pattern } from 'react-native-pulsar';
 import { BaseButton } from 'react-native-gesture-handler';
 import Button from '@/components/Button';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 const logo = require('@/assets/images/logo.png');
 const patternComposer = new ImperativePatternComposer();
 
+type ConnectionState = 
+  | 'INITIAL'              // Checking if token exists
+  | 'DISCONNECTED'         // No connection
+  | 'CONNECTING'           // Connecting to server
+  | 'CONNECTED_TO_SERVER'  // Connected to server, waiting for browser
+  | 'FULLY_CONNECTED'      // Connected to both server and browser
+  | 'ERROR';               // Connection error
+
+type ErrorType = 'INVALID_DATA' | 'CONNECTION_FAILED' | null;
+
 export default function HomeScreen() {
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'waiting'>('disconnected');
-  const [isPaired, setIsPaired] = useState(false);
+  const [connectionState, setConnectionState] = useState<ConnectionState>('INITIAL');
+  const [errorType, setErrorType] = useState<ErrorType>(null);
+  const [hasToken, setHasToken] = useState(false);
+  const [showPatternNotification, setShowPatternNotification] = useState(false);
+
   const [connectingCode, setConnectingCode] = useState('');
+  const tokenRef = useRef('');
   const socketRef = useRef<WebSocket | null>(null);
-  const closureConnectionStatus = useRef(connectionStatus);
+  const patternNotificationTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const subscription = Linking.addEventListener('url', ({ url }) => {
@@ -40,12 +54,20 @@ export default function HomeScreen() {
       }
     });
 
-    handleOnConnect();
+    checkIfTokenExists()
+      .then((hasToken) => {
+        if (hasToken) {
+          handleOnConnect(true, '');
+        }
+      });
 
     return () => {
       subscription.remove();
       socketRef.current?.close();
       socketRef.current = null;
+      if (patternNotificationTimeoutRef.current) {
+        clearTimeout(patternNotificationTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -55,95 +77,98 @@ export default function HomeScreen() {
     if (parsedUrl.queryParams?.code) {
       const code = parsedUrl.queryParams.code.toString();
       setConnectingCode(code);
-      handleOnConnect();
+      handleOnConnect(false, code);
     }
   };
 
-  const handleOnConnect = () => {
-    setConnectionStatus('waiting');
-    closureConnectionStatus.current = 'waiting';
-    setTimeout(() => {
-      if (closureConnectionStatus.current === 'waiting') {
-        console.log(closureConnectionStatus.current);
-        setConnectionStatus('disconnected');
-        Alert.alert('Connection Timeout', 'Unable to connect within the expected time. Please check your code and try again.');
+  const checkIfTokenExists = async () => {
+    return AsyncStorage.getItem('connectionToken').then((token) => {
+      setConnectionState('DISCONNECTED');
+      if (token && token.length > 0) {
+        tokenRef.current = token;
+        setHasToken(true);
+        return true;
       }
-    }, 10000);
+      return false;
+    });
+  }
 
-    AsyncStorage.getItem('connectionToken')
-      .then((token) => {
-        const code = connectingCode.trim();
-        const canReuseToken = token && token.length > 0;
-        if (canReuseToken) {
-          setIsPaired(true);
-        }
-        if (!canReuseToken && code.length === 0) {
-          closureConnectionStatus.current = 'disconnected';
-          setConnectionStatus('disconnected');
-          return;
-        }
+  const handleOnConnect = (hasToken: boolean, code: string) => {
+    setErrorType(null);
+    const connectionCode = code?.trim() || connectingCode.trim();
+    if (!hasToken && connectionCode.length === 0) {
+      return;
+    }
 
-        const action = canReuseToken ? 'reuse_connection' : 'new_connection';
-        const query = canReuseToken
-          ? `type=receiver&action=${action}&token=${encodeURIComponent(token)}`
-          : `type=receiver&action=${action}&code=${encodeURIComponent(code)}`;
+    const action = hasToken ? 'reuse_connection' : 'new_connection';
+    const query = hasToken
+      ? `type=receiver&action=${action}&token=${encodeURIComponent(tokenRef.current)}`
+      : `type=receiver&action=${action}&code=${encodeURIComponent(connectionCode)}`;
 
-        const socketUrl = `${SOCKET_SERVER_URL}?${query}`;
+    const socketUrl = `${SOCKET_SERVER_URL}?${query}`;
 
-        if (socketRef.current) {
-          socketRef.current.close();
-          socketRef.current = null;
-        }
+    if (socketRef.current) {
+      socketRef.current.close();
+      socketRef.current = null;
+    }
 
-        const socket = new WebSocket(socketUrl);
-        socketRef.current = socket;
+    const socket = new WebSocket(socketUrl);
+    socketRef.current = socket;
 
-        socket.onmessage = (event) => {
-          const payload = typeof event.data === 'string' ? event.data : '';
-          try {
-            const json = JSON.parse(payload) as { type?: string; token?: string, message?: Pattern };
-            if (json.type === 'connection_established' && json.token) {
-              AsyncStorage.setItem('connectionToken', json.token).then(() => {
-                setConnectionStatus('connected');
-                closureConnectionStatus.current = 'connected';
-                setIsPaired(true);
-              });
-            } else if (json.type === 'connection_restored') {
-              closureConnectionStatus.current = 'connected';
-              setConnectionStatus('connected');
-              setIsPaired(true);
-            } else if (json.type === 'peer_disconnected') {
-              closureConnectionStatus.current = 'disconnected';
-              setConnectionStatus('disconnected');
-            } else if (json.type === 'broadcast') {
-              if (json.message) {
-                playPattern(json.message);
-              }
-            }
-          } catch {
-            Alert.alert('Connection Error', 'Received invalid response from server. Please try again.');
+    setConnectionState('CONNECTING');
+
+    socket.onmessage = (event) => {
+      const payload = typeof event.data === 'string' ? event.data : '';
+      try {
+        const json = JSON.parse(payload) as { type?: string; token?: string, message?: Pattern };
+        if (json.type === 'connection_established' && json.token) {
+          AsyncStorage.setItem('connectionToken', json.token).then(() => {
+            tokenRef.current = json.token ?? '';
+            setHasToken(true);
+          });
+          setConnectionState('FULLY_CONNECTED');
+        } else if (json.type === 'connection_restored') {
+          setConnectionState('FULLY_CONNECTED');
+        } else if (json.type === 'peer_disconnected') {
+          setConnectionState('CONNECTED_TO_SERVER');
+        } else if (json.type === 'broadcast') {
+          if (json.message) {
+            playPattern(json.message);
+            showPatternReceivedNotification();
           }
-        };
+        }
+      } catch {
+        Alert.alert('Connection Error', 'Received invalid response from server. Please try again.');
+      }
+    };
 
-        socket.onerror = () => {
-          Alert.alert('Connection Error', 'An error occurred while connecting. Please check your code and try again.');
-          setConnectionStatus('disconnected');
-          closureConnectionStatus.current = 'disconnected';
-        };
+    socket.onopen = () => {
+      setConnectionState('CONNECTED_TO_SERVER');
+    }
 
-        socket.onclose = () => {
-          setConnectionStatus('disconnected');
-          closureConnectionStatus.current = 'disconnected';
-        };
-      });
+    socket.onerror = () => {
+      setConnectionState('ERROR');
+      setErrorType('CONNECTION_FAILED');
+      Alert.alert('Connection Error', 'An error occurred while connecting. Please check your code and try again.');
+    };
+
+    socket.onclose = (e) => {
+      if (e.code !== 1000) {
+        setConnectionState('ERROR');
+        setErrorType('INVALID_DATA');
+      } else {
+        setConnectionState('DISCONNECTED');
+      }
+    };
   }
 
   const handleDisconnect = () => {
     socketRef.current?.close();
     socketRef.current = null;
-    setConnectionStatus('disconnected');
     setConnectingCode('');
-    setIsPaired(false);
+    setHasToken(false);
+    setConnectionState('DISCONNECTED');
+    setErrorType(null);
     AsyncStorage.removeItem('connectionToken');
   };
 
@@ -154,82 +179,180 @@ export default function HomeScreen() {
     patternComposer.play();
   };
 
+  const showPatternReceivedNotification = () => {
+    if (patternNotificationTimeoutRef.current) {
+      clearTimeout(patternNotificationTimeoutRef.current);
+    }
+    
+    setShowPatternNotification(true);
+    
+    patternNotificationTimeoutRef.current = setTimeout(() => {
+      setShowPatternNotification(false);
+      patternNotificationTimeoutRef.current = null;
+    }, 500);
+  };
+
+  const connectionStatus = () => {
+    switch (connectionState) {
+      case 'INITIAL':
+      case 'CONNECTING':
+      case 'CONNECTED_TO_SERVER':
+        return 'waiting';
+      case 'FULLY_CONNECTED':
+        return 'connected';
+      case 'DISCONNECTED':
+      case 'ERROR':
+      default:
+        return 'disconnected';
+    }
+  }
+
   return <SafeAreaView>
-    <BaseButton onPress={Keyboard.dismiss} accessible={false} rippleColor={'transparent'}>
+    <BaseButton onPress={Keyboard.dismiss} rippleColor={'transparent'}>
       <BasicLayout>
 
-      <View style={styles.titleContainer}>
-        <ThemedText type="title">
-          Welcome to Pulsar!
-        </ThemedText>
-        <Image source={logo} style={styles.logo} />
-      </View>
-
-      <View>
-        <ConnectionIndicator status={connectionStatus} style={styles.indicator} />
-
-        <Card>
-          <ThemedText type="subtitle">Connect device</ThemedText>
-          <ThemedText style={Margins.marginTop2X}>
-            Connect your haptic device first. Pair it with the app now so you can test the presets.
+        <View style={styles.titleContainer}>
+          <ThemedText type="title">
+            Welcome to Pulsar!
           </ThemedText>
+          <Image source={logo} style={styles.logo} />
+        </View>
 
-          {isPaired && <>
+        <View>
+          <ConnectionIndicator status={connectionStatus()} style={styles.indicator} />
 
-            <View style={[Margins.marginTop4X, styles.infoBox]}>
-              {connectionStatus === 'connected' ? (
-                <ThemedText style={styles.infoBoxText}>You are connected with the browser!</ThemedText>
-              ) : (
-                <ThemedText style={styles.infoBoxTextFail}>Waiting for a browser connection...</ThemedText>
-              )}
-            </View>
+          <Card>
+            <ThemedText type="subtitle">Connect device</ThemedText>
+            <AdditionalInfo connectionState={connectionState} />
 
-            <BaseButton
-              style={Margins.marginTop2X}
-              onPress={handleDisconnect}
-            >
-              <ThemedText style={styles.disconnect}>
-                Disconnect
-              </ThemedText>
-            </BaseButton>
-          </>}
+            {connectionState !== 'INITIAL' && 
+              <InfoBox 
+                connectionState={connectionState}
+                errorType={errorType}
+              />}
 
-          {!isPaired && connectionStatus !== 'connected' && <>
-            <Input 
-              placeholder='Connecting code' 
-              style={Margins.marginTop4X}
-              value={connectingCode}
-              onChangeText={setConnectingCode}
-            />
-            <Button
-              label='Connect'
-              style={Margins.marginTop3X}
-              state={connectionStatus === 'waiting' ? 'loading' : 'default'}
-              onClick={handleOnConnect}
-            />
-            <Collapsible title="How to connect a device? 🤔" style={Margins.marginTop4X}>
-              <Point index={1}>
-                <ThemedText>Download the PulsarApp for App Store or Play Store.</ThemedText>
-              </Point>
-              <Point index={2}>
-                <ThemedText>Open Playground and find Device Connection section.</ThemedText>
-              </Point>
-              <Point index={3}>
-                <ThemedText>
-                  Type Paring code into PulsarApp and click Connect button. 
-                  <ExternalLink href="https://docs.expo.dev/router/introduction">
-                    <ThemedText type="link"> Test link.</ThemedText>
-                  </ExternalLink>
-                </ThemedText>
-              </Point>
-            </Collapsible>
-          </>}
+            {(hasToken && (connectionState === 'CONNECTED_TO_SERVER' || connectionState === 'FULLY_CONNECTED' || connectionState === 'CONNECTING')) &&
+              <BaseButton
+                style={Margins.marginTop2X}
+                onPress={handleDisconnect}>
+                <ThemedText style={styles.disconnect}>Disconnect</ThemedText>
+              </BaseButton>}
 
-        </Card>
-      </View>
+            {(!hasToken || connectionState === 'DISCONNECTED' || connectionState === 'ERROR') && 
+              <ConnectionForm 
+                connectingCode={connectingCode} 
+                setConnectingCode={setConnectingCode}
+                handleOnConnect={handleOnConnect} 
+                connectionState={connectionState}
+                hasToken={hasToken}
+              />}
+
+          </Card>
+        </View>
+
+        {showPatternNotification && <PatternIsPlaying />}
+
       </BasicLayout>
     </BaseButton>
   </SafeAreaView>
+}
+
+function AdditionalInfo({ connectionState }: { connectionState: ConnectionState }) {
+  const getMessage = () => {
+    switch (connectionState) {
+      case 'INITIAL':
+        return 'Checking device connection...';
+      case 'FULLY_CONNECTED':
+        return 'Everything is ready, you can start testing the presets.';
+      default:
+        return 'Connect your haptic device first. Pair it with the app now so you can test the presets.';
+    }
+  };
+
+  return (
+    <ThemedText style={Margins.marginTop2X}>
+      {getMessage()}
+    </ThemedText>
+  );
+}
+
+function ConnectionForm({
+  connectingCode, 
+  setConnectingCode,
+  handleOnConnect,
+  connectionState,
+  hasToken,
+}: {
+  connectingCode: string;
+  setConnectingCode: (code: string) => void;
+  handleOnConnect: (hasToken: boolean, code: string) => void;
+  connectionState: ConnectionState;
+  hasToken: boolean;
+}) {
+  return (<Animated.View layout={LinearTransition}>
+    <Input 
+      placeholder='Connecting code' 
+      style={Margins.marginTop4X}
+      value={connectingCode}
+      onChangeText={setConnectingCode}
+    />
+    <Button
+      label='Connect'
+      style={Margins.marginTop3X}
+      state={connectionState === 'CONNECTING' ? 'loading' : 'default'}
+      onClick={() => handleOnConnect(hasToken, connectingCode)}
+    />
+    <Collapsible title="How to connect a device? 🤔" style={Margins.marginTop4X}>
+      <Point index={1}>
+        <ThemedText>
+          Open Pulsar documentation on Presets page and find Device Connection section.
+        </ThemedText>
+      </Point>
+      <Point index={2}>
+        <ThemedText>Type Paring code into PulsarApp and click Connect button or scan a QR code.</ThemedText>
+      </Point>
+    </Collapsible>
+  </Animated.View>);
+}
+
+function InfoBox({ connectionState, errorType }: { connectionState: ConnectionState; errorType: ErrorType }) {
+  const getInfoBoxContent = () => {
+    switch (connectionState) {
+      case 'CONNECTING':
+        return { text: 'Connecting to server...', style: styles.infoBoxTextDefault };
+      case 'CONNECTED_TO_SERVER':
+        return { text: 'Waiting for browser connection...', style: styles.infoBoxTextWaiting };
+      case 'FULLY_CONNECTED':
+        return { text: 'You are connected with the browser!', style: styles.infoBoxText };
+      case 'ERROR':
+        const errorMessage = errorType === 'INVALID_DATA' 
+          ? 'Invalid data. Please try again.' 
+          : 'Unable to connect with the server!';
+        return { text: errorMessage, style: styles.infoBoxTextFail };
+      default:
+        return null;
+    }
+  };
+
+  const content = getInfoBoxContent();
+  
+  if (!content) {
+    return null;
+  }
+
+  return (
+    <Animated.View style={[Margins.marginTop4X, styles.infoBox]} entering={FadeIn} exiting={FadeOut}>
+      <ThemedText style={content.style}>{content.text}</ThemedText>
+    </Animated.View>
+  );
+}
+
+function PatternIsPlaying() {
+  return (
+    <Card style={Margins.marginTop4X} enableAnimation={true}>
+      <ThemedText type="defaultSemiBold">New pattern received!</ThemedText>
+    </Card>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -256,6 +379,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E1F3FA',
     borderRadius: 4,
   },
+  infoBoxTextDefault: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#001A72',
+  },
   infoBoxText: {
     textAlign: 'center',
     fontSize: 16,
@@ -267,6 +396,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FF6259',
+  },
+  infoBoxTextWaiting: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffac59',
   },
   disconnect: {
     textAlign: 'center',

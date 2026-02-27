@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, { LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 interface Props {
   children?: React.ReactNode;
@@ -19,7 +19,12 @@ function Card({ children, style, enableAnimation = true }: Props & { style?: Rea
   }, [enableAnimation]);
 
   return (
-    <Animated.View style={[styles.container, style]} layout={applyAnimation ? LinearTransition : undefined}>
+    <Animated.View
+      style={[styles.container, style]}
+      layout={applyAnimation ? LinearTransition : undefined}
+      entering={applyAnimation ? FadeIn : undefined}
+      exiting={applyAnimation ? FadeOut : undefined}
+    >
       {children}
     </Animated.View>
   );
