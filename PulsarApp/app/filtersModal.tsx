@@ -7,6 +7,7 @@ import { Colors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { TagsInfo } from '@/constants/Tags';
 import { useFilters } from '@/contexts/FilterContext';
+import { usePostHog } from 'posthog-react-native';
 
 const closeIcon = require('@/assets/images/x.svg');
 const checkIcon = require('@/assets/images/check.svg');
@@ -20,8 +21,9 @@ type FiltersCollection = {
 };
 
 export default function FiltersModal() {
+  const posthog = usePostHog();
   const { selectedTags, setSelectedTags } = useFilters();
-  
+
   const createInitialStates = (): FiltersCollection => {
     const states: FiltersCollection = {};
     
@@ -50,7 +52,7 @@ export default function FiltersModal() {
 
   const clearAll = () => {
     const clearedStates: FiltersCollection = {};
-    
+
     TagsInfo.forEach(group => {
       const state: FilterState = {};
       group.tags.forEach(tag => {
@@ -58,8 +60,12 @@ export default function FiltersModal() {
       });
       clearedStates[group.groupName] = state;
     });
-    
+
     setFilters(clearedStates);
+    posthog.capture('preset_filters_cleared', {
+      previously_selected_tags: selectedTags,
+      previously_selected_count: selectedTags.length,
+    });
   };
 
   const handleShowResults = () => {
@@ -71,7 +77,11 @@ export default function FiltersModal() {
         }
       });
     });
-    
+
+    posthog.capture('preset_filters_applied', {
+      selected_tags: selected,
+      selected_count: selected.length,
+    });
     setSelectedTags(selected);
     router.back();
   };

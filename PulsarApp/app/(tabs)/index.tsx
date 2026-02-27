@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import * as Linking from 'expo-linking';
+import { usePostHog } from 'posthog-react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,6 +34,7 @@ type ConnectionState =
 type ErrorType = 'INVALID_DATA' | 'CONNECTION_FAILED' | null;
 
 export default function HomeScreen() {
+  const posthog = usePostHog();
   const [connectionState, setConnectionState] = useState<ConnectionState>('INITIAL');
   const [errorType, setErrorType] = useState<ErrorType>(null);
   const [hasToken, setHasToken] = useState(false);
@@ -41,7 +43,7 @@ export default function HomeScreen() {
   const [connectingCode, setConnectingCode] = useState('');
   const tokenRef = useRef('');
   const socketRef = useRef<WebSocket | null>(null);
-  const patternNotificationTimeoutRef = useRef<number | null>(null);
+  const patternNotificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const subscription = Linking.addEventListener('url', ({ url }) => {
@@ -73,10 +75,13 @@ export default function HomeScreen() {
 
   const handleDeepLink = (url: string) => {
     const parsedUrl = Linking.parse(url);
-    
+
     if (parsedUrl.queryParams?.code) {
       const code = parsedUrl.queryParams.code.toString();
       setConnectingCode(code);
+      posthog.capture('deep_link_connection_initiated', {
+        has_code: true,
+      });
       handleOnConnect(false, code);
     }
   };
@@ -117,6 +122,11 @@ export default function HomeScreen() {
 
     setConnectionState('CONNECTING');
 
+    posthog.capture('device_connection_initiated', {
+      connection_action: action,
+      has_existing_token: hasToken,
+    });
+
     socket.onmessage = (event) => {
       const payload = typeof event.data === 'string' ? event.data : '';
       try {
@@ -127,8 +137,14 @@ export default function HomeScreen() {
             setHasToken(true);
           });
           setConnectionState('FULLY_CONNECTED');
+          posthog.capture('device_connected', {
+            connection_type: 'new',
+          });
         } else if (json.type === 'connection_restored') {
           setConnectionState('FULLY_CONNECTED');
+          posthog.capture('device_connected', {
+            connection_type: 'restored',
+          });
         } else if (json.type === 'peer_disconnected') {
           setConnectionState('CONNECTED_TO_SERVER');
         } else if (json.type === 'broadcast') {
@@ -137,18 +153,36 @@ export default function HomeScreen() {
             showPatternReceivedNotification();
           }
         }
-      } catch {
+      } catch (err) {
+        const error = err as Error;
+        posthog.capture('$exception', {
+          $exception_list: [
+            {
+              type: error.name ?? 'ParseError',
+              value: error.message ?? 'Failed to parse server response',
+              stacktrace: {
+                type: 'raw',
+                frames: error.stack ?? '',
+              },
+            },
+          ],
+          $exception_source: 'websocket_message',
+        });
         Alert.alert('Connection Error', 'Received invalid response from server. Please try again.');
       }
     };
 
     socket.onopen = () => {
       setConnectionState('CONNECTED_TO_SERVER');
-    }
+    };
 
     socket.onerror = () => {
       setConnectionState('ERROR');
       setErrorType('CONNECTION_FAILED');
+      posthog.capture('device_connection_failed', {
+        error_type: 'CONNECTION_FAILED',
+        connection_action: action,
+      });
       Alert.alert('Connection Error', 'An error occurred while connecting. Please check your code and try again.');
     };
 
@@ -156,6 +190,11 @@ export default function HomeScreen() {
       if (e.code !== 1000) {
         setConnectionState('ERROR');
         setErrorType('INVALID_DATA');
+        posthog.capture('device_connection_failed', {
+          error_type: 'INVALID_DATA',
+          close_code: e.code,
+          connection_action: action,
+        });
       } else {
         setConnectionState('DISCONNECTED');
       }
@@ -163,6 +202,9 @@ export default function HomeScreen() {
   }
 
   const handleDisconnect = () => {
+    posthog.capture('device_disconnected', {
+      previous_state: connectionState,
+    });
     socketRef.current?.close();
     socketRef.current = null;
     setConnectingCode('');

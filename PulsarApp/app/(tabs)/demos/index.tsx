@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 
 import BasicLayout from '@/components/BasicLayout';
 import Card from '@/components/Card';
@@ -43,6 +44,8 @@ const demos = [
 ];
 
 export default function DemosScreen() {
+  const posthog = usePostHog();
+
   return (
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -56,14 +59,23 @@ export default function DemosScreen() {
 
           <View style={styles.list}>
             {demos.map((demo) => (
-              <Link key={demo.slug} href={`/demos/${demo.slug}`}>
+              <Link
+                key={demo.slug}
+                href={`/demos/${demo.slug}`}
+                onPress={() => {
+                  posthog.capture('demo_opened', {
+                    demo_slug: demo.slug,
+                    demo_title: demo.title,
+                  });
+                }}
+              >
                 <Link.Trigger>
                   <Card style={styles.card}>
                     <ThemedText type="subtitle" style={styles.cardTitle}>
                       {demo.title}
                     </ThemedText>
                     <ThemedText style={styles.cardDescription}>{demo.description}</ThemedText>
-                    <ThemedText style={styles.cardLink}>Open demo </ThemedText>
+                    <ThemedText style={styles.cardLink}>Open demo </ThemedText>
                   </Card>
                 </Link.Trigger>
               </Link>

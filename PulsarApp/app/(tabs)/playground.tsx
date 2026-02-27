@@ -6,6 +6,7 @@ import Button from '@/components/Button';
 import { Link } from 'expo-router';
 import GesturePlayground, { type GesturePlaygroundHandle } from '../../components/GesturePlayground';
 import { useRef, useState } from 'react';
+import { usePostHog } from 'posthog-react-native';
 
 const infoIcon = require('@/assets/images/info.svg');
 
@@ -19,6 +20,7 @@ const defaultEdges = {
 
 
 export default function PlaygroundScreen() {
+  const posthog = usePostHog();
   const playgroundRef = useRef<GesturePlaygroundHandle | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -34,8 +36,23 @@ export default function PlaygroundScreen() {
       await Share.share({
         message: patternJson,
       });
+      posthog.capture('playground_pattern_shared');
     } catch (error) {
       console.error('Error sharing:', error);
+      const err = error as Error;
+      posthog.capture('$exception', {
+        $exception_list: [
+          {
+            type: err.name ?? 'ShareError',
+            value: err.message ?? 'Failed to share pattern',
+            stacktrace: {
+              type: 'raw',
+              frames: err.stack ?? '',
+            },
+          },
+        ],
+        $exception_source: 'playground_share',
+      });
     }
   };
 
@@ -68,6 +85,7 @@ export default function PlaygroundScreen() {
             onClick={() => {
               if (isRecorded) {
                 playgroundRef.current?.playRecordedPattern();
+                posthog.capture('playground_pattern_played');
               }
             }}
             showIcon={isPlaying ? 'stop' : 'play'}
@@ -78,8 +96,10 @@ export default function PlaygroundScreen() {
             onClick={() => {
               if (isRecording) {
                 playgroundRef.current?.stopRecording();
+                posthog.capture('playground_recording_stopped');
               } else {
                 playgroundRef.current?.startRecording();
+                posthog.capture('playground_recording_started');
               }
             }}
             showIcon={isRecording ? 'square' : 'record'}
@@ -87,7 +107,7 @@ export default function PlaygroundScreen() {
           />
           <Button enabled={isRecorded} onClick={handleShare} showIcon="download" largeIcon={true} />
         </View>
-        
+
       </View>
     </SafeAreaView>
   );

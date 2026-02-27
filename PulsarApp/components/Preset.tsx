@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useAnimatedReaction, useAnimatedRef, scrollTo } from 'react-native-reanimated';
+import { usePostHog } from 'posthog-react-native';
 
 import Card from './Card';
 import { ThemedText } from './themed-text';
@@ -23,6 +24,7 @@ export interface PresetProps {
 }
 
 function Preset({ title, subtitle, tags = [], image, onPress, duration }: PresetProps) {
+	const posthog = usePostHog();
 	const imageMeta = Image.resolveAssetSource(image);
 	const imageAspectRatio =
 		imageMeta?.width && imageMeta?.height ? imageMeta.width / imageMeta.height : undefined;
@@ -49,17 +51,26 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 			setIsPlaying(false);
 			progress.value = withTiming(0, { duration: 200 });
 			scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+			posthog.capture('preset_stopped', {
+				preset_name: title,
+				tags: tags.map((t) => t.label),
+			});
 		} else {
 			setIsPlaying(true);
 			onPress();
-			
+			posthog.capture('preset_played', {
+				preset_name: title,
+				tags: tags.map((t) => t.label),
+				duration_ms: duration,
+			});
+
 			if (duration) {
 				progress.value = 0;
 				progress.value = withTiming(1, {
 					duration,
 					easing: Easing.linear,
 				});
-				
+
 				setTimeout(() => {
 					setIsPlaying(false);
 					progress.value = withTiming(0, { duration: 200 });

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { posthog } from '@/src/config/posthog';
 
 interface OnboardingContextType {
   onboardingState: number;
@@ -36,6 +37,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       if (onboardingState === 3 && !isLoading) {
         try {
           await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
+          posthog.capture('onboarding_completed');
         } catch (error) {
           console.error('Error saving onboarding status:', error);
         }

@@ -1,11 +1,12 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { isRunningInExpoGo } from 'expo';
-import { Stack, useNavigationContainerRef } from 'expo-router';
+import { Stack, useNavigationContainerRef, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Sentry from '@sentry/react-native';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
+import { PostHogProvider } from 'posthog-react-native';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Theme } from '@/constants/theme';
@@ -13,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { FilterProvider } from '@/contexts/FilterContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
+import { posthog } from '@/src/config/posthog';
 
 SplashScreen.setOptions({
   duration: 300,
@@ -37,9 +39,12 @@ export const unstable_settings = {
 function RootLayout() {
   const colorScheme = useColorScheme();
   const navigationRef = useNavigationContainerRef();
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+  const previousPathname = useRef<string | undefined>(undefined);
 
   // SplashScreen.preventAutoHideAsync();
-  
+
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
@@ -50,23 +55,43 @@ function RootLayout() {
     }
   }, [navigationRef]);
 
+  useEffect(() => {
+    if (previousPathname.current !== pathname) {
+      posthog.screen(pathname, {
+        previous_screen: previousPathname.current ?? null,
+        ...params,
+      });
+      previousPathname.current = pathname;
+    }
+  }, [pathname, params]);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StoreReviewProvider>
-        <FilterProvider>
-          <OnboardingProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : {...DefaultTheme, ...Theme}}>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
-                <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags', headerShown: false }} />
-                <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
-              </Stack>
-              <StatusBar style="auto" />
-            </ThemeProvider>
-          </OnboardingProvider>
-        </FilterProvider>
-      </StoreReviewProvider>
+      <PostHogProvider
+        client={posthog}
+        autocapture={{
+          captureScreens: false, // Manual tracking with Expo Router
+          captureTouches: true,
+          propsToCapture: ['testID'],
+          maxElementsCaptured: 20,
+        }}
+      >
+        <StoreReviewProvider>
+          <FilterProvider>
+            <OnboardingProvider>
+              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : {...DefaultTheme, ...Theme}}>
+                <Stack>
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
+                  <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags', headerShown: false }} />
+                  <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
+                </Stack>
+                <StatusBar style="auto" />
+              </ThemeProvider>
+            </OnboardingProvider>
+          </FilterProvider>
+        </StoreReviewProvider>
+      </PostHogProvider>
     </GestureHandlerRootView>
   );
 }
