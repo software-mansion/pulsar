@@ -83,7 +83,9 @@ html {
   box-shadow: -3px 3px 0 var(--color-blue-50) !important;
   padding: 20px !important;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s !important;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s !important;
 }
 
 .sl-link-card a {
@@ -98,6 +100,49 @@ html {
 }
 
 .sl-link-card:active {
+  transform: translate(-3px, 3px) !important;
+  box-shadow: none !important;
+}
+
+/* MailerLite waitlist form — Pulsar design system */
+.ml-form-embedWrapper {
+  background-color: #fbfeff !important;
+  border: 2px solid var(--color-blue-50) !important;
+  border-radius: 4px !important;
+  box-shadow: -4px 4px 0 var(--color-blue-50) !important;
+}
+
+.ml-field-group input.form-control {
+  border: 2px solid var(--color-blue-20) !important;
+  border-radius: 2px !important;
+  background-color: #fbfeff !important;
+  color: var(--color-primary) !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.ml-field-group input.form-control::placeholder {
+  color: var(--color-primary) !important;
+}
+
+.ml-form-embedSubmit button.primary {
+  background-color: #fbfeff !important;
+  border: 2px solid var(--color-blue-50) !important;
+  border-radius: 4px !important;
+  box-shadow: -4px 4px 0 var(--color-blue-50) !important;
+  color: var(--color-primary) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 500 !important;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease !important;
+}
+
+.ml-form-embedSubmit button.primary:hover {
+  transform: translate(1px, -1px) !important;
+  box-shadow: -5px 5px 0 var(--color-blue-50) !important;
+}
+
+.ml-form-embedSubmit button.primary:active {
   transform: translate(-3px, 3px) !important;
   box-shadow: none !important;
 }
