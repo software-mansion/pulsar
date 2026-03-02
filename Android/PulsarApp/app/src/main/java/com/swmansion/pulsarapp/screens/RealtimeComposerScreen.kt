@@ -32,7 +32,7 @@ import com.swmansion.pulsar.haptics.HapticEngineWrapper
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun EmptyScreen() {
+fun RealtimeComposerScreen() {
     val context = LocalContext.current
     val engine = remember { HapticEngineWrapper(context) }
     val realtimeComposer = remember { RealtimeComposer(engine) }
@@ -58,7 +58,7 @@ fun EmptyScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Real-time Haptics Controller",
+                "Realtime Haptics Composer",
                 fontSize = 20.sp,
                 color = Color.Black
             )
