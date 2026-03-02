@@ -17,7 +17,7 @@ class HapticBuilder(engine: HapticEngineWrapper) {
     return vibrationEffectsGenerator.convertToVibrationEffect(controlPoints)
   }
 
-  private fun convertToControlPoints(preset: PatternData): List<ControlPoint> {
+  private fun convertToControlPoints(preset: PatternData): ControlLineBuilder {
     val amplitudeLine = ValueLineBuilder(preset.continuousPattern.amplitude)
     val frequencyLine = ValueLineBuilder(preset.continuousPattern.frequency)
 
@@ -29,9 +29,8 @@ class HapticBuilder(engine: HapticEngineWrapper) {
     frequencyLine.mergeLine(discreteFrequencyLine)
 
     val configLine = ConfigLineBuilder(amplitudeLine, frequencyLine)
-    val controlLine = ControlLineBuilder(configLine)
 
-    return controlLine.points
+    return ControlLineBuilder(configLine)
   }
 
   fun simulateCompatibilityMode(mode: CompatibilityMode) {

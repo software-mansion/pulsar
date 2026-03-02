@@ -3,10 +3,10 @@ package com.swmansion.pulsar.haptics
 import com.swmansion.pulsar.types.ControlPoint
 import com.swmansion.pulsar.types.ConfigPoint
 
-class ControlLineBuilder(configLine: ConfigLineBuilder) {
-    val points = ArrayList<ControlPoint>()
+class ControlLineBuilder(val configLine: ConfigLineBuilder) {
 
-    init {
+    fun getStepsPoints(): ArrayList<ControlPoint> {
+        val points = ArrayList<ControlPoint>()
         val stepsPerSecond = 200
 
         val stepDurationMs = 1000f / stepsPerSecond
@@ -22,6 +22,20 @@ class ControlLineBuilder(configLine: ConfigLineBuilder) {
             points.add(ControlPoint(configPoint.amplitude, configPoint.frequency, duration))
             currentTime = nextTime
         }
+        return points
+    }
+
+    fun getLinearPoints(): ArrayList<ControlPoint> {
+        val points = ArrayList<ControlPoint>()
+        for (i in 0..<configLine.points.size) {
+            val point = configLine.points[i]
+            var duration = maxOf(1f, point.time)
+            if (i > 0) {
+                duration = point.time - configLine.points[i - 1].time
+            }
+            points.add(ControlPoint(point.amplitude, point.frequency, duration))
+        }
+        return points
     }
 
     private fun interpolateConfigPoint(time: Float, configLine: ConfigLineBuilder): ConfigPoint {

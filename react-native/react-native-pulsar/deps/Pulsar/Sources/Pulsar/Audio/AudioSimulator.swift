@@ -200,7 +200,7 @@ public class AudioSimulator: NSObject {
       var continuousDuration: Double = 0
       for wave in continuousData {
         if !wave.data.amplitude.isEmpty {
-          continuousDuration = max(continuousDuration, wave.data.amplitude.last!.time)
+          continuousDuration = max(continuousDuration, wave.data.amplitude.last!.time / 1000.0)
         }
       }
       continuousDuration += 0.01
@@ -236,15 +236,16 @@ public class AudioSimulator: NSObject {
         
 		func valueForTime(_ points: [ValuePoint], _ t: Double) -> Float {
 			if points.isEmpty { return 0 }
-			if t <= points[0].time { return points[0].value }
-			if t >= points.last!.time { return points.last!.value }
+			let tInMs = t * 1000.0  // Convert seconds to milliseconds
+			if tInMs <= points[0].time { return points[0].value }
+			if tInMs >= points.last!.time { return points.last!.value }
 			for i in 1..<points.count {
 				let p1 = points[i - 1]
 				let p2 = points[i]
-				if t <= p2.time {
+				if tInMs <= p2.time {
 					let t0 = p1.time, t1 = p2.time
 					let v0 = p1.value, v1 = p2.value
-					let ratio = Float((t - t0) / (t1 - t0))
+					let ratio = Float((tInMs - t0) / (t1 - t0))
 					return v0 + (v1 - v0) * ratio
 				}
 			}

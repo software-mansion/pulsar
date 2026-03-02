@@ -17,6 +17,7 @@ import com.swmansion.pulsar.types.WaveformType
 import kotlin.math.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -39,10 +40,6 @@ class AudioSimulator(
     private val audioScope = CoroutineScope(Dispatchers.IO)
     private val audioMutex = Mutex()
 
-    init {
-        configureAudioContext()
-    }
-
     fun parsePattern(data: PatternData): ByteArray? {
         if (!playSound) return null
 
@@ -59,7 +56,7 @@ class AudioSimulator(
     }
 
     fun play(buffer: ByteArray?) {
-        if (buffer == null || !playSound) return
+        if (buffer == null || !playSound || buffer.isEmpty()) return
 
         audioScope.launch {
             audioMutex.withLock {
@@ -73,8 +70,29 @@ class AudioSimulator(
                             stop()
                             flush()
                         }
-                        write(buffer, 0, buffer.size)
+                        
                         play()
+                        
+                        var totalBytesWritten = 0
+                        var lastWriteTime = System.currentTimeMillis()
+                        
+                        while (totalBytesWritten < buffer.size) {
+                            val bytesToWrite = buffer.size - totalBytesWritten
+                            val bytesWritten = write(buffer, totalBytesWritten, bytesToWrite)
+                            
+                            if (bytesWritten < 0) {
+                                break
+                            } else if (bytesWritten == 0) {
+                                val currentTime = System.currentTimeMillis()
+                                if (currentTime - lastWriteTime > 5000) {
+                                    break
+                                }
+                                delay(10)
+                            } else {
+                                totalBytesWritten += bytesWritten
+                                lastWriteTime = System.currentTimeMillis()
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -84,7 +102,7 @@ class AudioSimulator(
     }
 
     private fun configureAudioContext() {
-        if (isInitialized) return
+        if (isInitialized && audioTrack != null) return
 
         val minBufferSize = AudioTrack.getMinBufferSize(
             sampleRate.toInt(),
@@ -92,23 +110,23 @@ class AudioSimulator(
             AudioFormat.ENCODING_PCM_16BIT
         )
 
-        audioTrack =
-            AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build()
-                )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(sampleRate.toInt())
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build()
-                )
-                .setBufferSizeInBytes(minBufferSize * 2)
-                .build()
+        audioTrack = AudioTrack.Builder()
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            .setAudioFormat(
+                AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                    .setSampleRate(sampleRate.toInt())
+                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                    .build()
+            )
+            .setBufferSizeInBytes(minBufferSize * 4)
+            .setTransferMode(AudioTrack.MODE_STREAM)
+            .build()
 
         isInitialized = true
     }
@@ -164,7 +182,7 @@ class AudioSimulator(
                         ),
                         waveform = WaveformType.SINE
                     ),
-                    timestamp = discretePoint.time.toDouble() / 1000.0,
+                    timestamp = discretePoint.time.toDouble(),
                     volume = volume
                 )
             )
@@ -189,7 +207,7 @@ class AudioSimulator(
                         ),
                         waveform = WaveformType.SINE
                     ),
-                    timestamp = discretePoint.time.toDouble() / 1000.0,
+                    timestamp = discretePoint.time.toDouble(),
                     volume = volume
                 )
             )
@@ -214,7 +232,7 @@ class AudioSimulator(
                         ),
                         waveform = WaveformType.SINE
                     ),
-                    timestamp = discretePoint.time.toDouble() / 1000.0,
+                    timestamp = discretePoint.time.toDouble(),
                     volume = volume
                 )
             )
@@ -315,7 +333,7 @@ class AudioSimulator(
 
             // Discrete waves (transients)
             config.discreteData.forEachIndexed { oscIdx, oscConfig ->
-                val eventStartTime = oscConfig.timestamp
+                val eventStartTime = oscConfig.timestamp / 1000.0
                 val relativeTime = t - eventStartTime
 
                 if (relativeTime >= 0) {
@@ -326,7 +344,7 @@ class AudioSimulator(
                         // Apply ADSR envelope
                         val envValue = when {
                             relativeTime < envelope.attack -> {
-                                if (envelope.attack > 0) relativeTime / envelope.attack else 1.0
+                                relativeTime / envelope.attack
                             }
                             relativeTime < envelope.attack + envelope.decay -> 1.0
                             relativeTime < envelope.attack + envelope.decay + envelope.sustainDuration -> envelope.sustainLevel
@@ -340,7 +358,7 @@ class AudioSimulator(
                         val freqConfig = oscConfig.oscillator.frequency
                         var freq = freqConfig.initial
                         if (freqConfig.decayTime > 0) {
-                            val sweepDuration = minOf(freqConfig.decayTime, totalDuration.toDouble())
+                            val sweepDuration = minOf(freqConfig.decayTime, totalDuration)
                             if (relativeTime < sweepDuration) {
                                 val ratio = relativeTime / freqConfig.decayTime
                                 freq = freqConfig.initial * (freqConfig.final / freqConfig.initial).pow(ratio)
@@ -375,7 +393,7 @@ class AudioSimulator(
 
         var discreteDuration = 0.0
         for (cfg in config.discreteData) {
-            val eventStartTime = cfg.timestamp
+            val eventStartTime = cfg.timestamp / 1000.0
             val envelope = cfg.oscillator.envelope
             val oscillatorDuration = envelope.attack + envelope.decay + envelope.sustainDuration + envelope.release
             val eventEndTime = eventStartTime + oscillatorDuration

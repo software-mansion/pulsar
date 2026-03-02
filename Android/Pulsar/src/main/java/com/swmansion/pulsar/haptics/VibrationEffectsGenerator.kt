@@ -14,22 +14,45 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
     private var forcedCompatibilityMode = CompatibilityMode.ADVANCED_SUPPORT
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun convertToVibrationEffect(controlPoints: List<ControlPoint>) : VibrationEffect {
+    fun convertToVibrationEffect(controlLine: ControlLineBuilder) : VibrationEffect {
+        return if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
+            && engine.isEnvelopeSupported()
+            && forcedCompatibilityMode >= CompatibilityMode.STANDARD_SUPPORT
+        ) {
+            val points = controlLine.getLinearPoints()
+            if (engine.isFrequencyProfileSupported() && forcedCompatibilityMode == CompatibilityMode.ADVANCED_SUPPORT) {
+                convertToAdvanceEnvelope(points)
+            } else {
+                convertToBasicEnvelope(points)
+            }
+        } else {
+            val points = controlLine.getStepsPoints()
+            if (engine.isAmplitudeSupported() && forcedCompatibilityMode >= CompatibilityMode.LIMITED_SUPPORT) {
+                convertToAmplitudeWaveform(points)
+            } else {
+                convertToTimingWaveform(points)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun convertToVibrationEffect(points: List<ControlPoint>) : VibrationEffect {
         return if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
             && engine.isEnvelopeSupported()
             && forcedCompatibilityMode >= CompatibilityMode.STANDARD_SUPPORT
         ) {
             if (engine.isFrequencyProfileSupported() && forcedCompatibilityMode == CompatibilityMode.ADVANCED_SUPPORT) {
-                convertToAdvanceEnvelope(controlPoints)
+                convertToAdvanceEnvelope(points)
             } else {
-                convertToBasicEnvelope(controlPoints)
+                convertToBasicEnvelope(points)
             }
         } else {
             if (engine.isAmplitudeSupported() && forcedCompatibilityMode >= CompatibilityMode.LIMITED_SUPPORT) {
-                convertToAmplitudeWaveform(controlPoints)
+                convertToAmplitudeWaveform(points)
             } else {
-                convertToTimingWaveform(controlPoints)
+                convertToTimingWaveform(points)
             }
         }
     }

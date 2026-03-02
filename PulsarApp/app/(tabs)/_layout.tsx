@@ -50,6 +50,13 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => <SvgIcon iconName="sparkles" state={focused ? 'active' : 'default'} />,
         }}
       />
+      <Tabs.Screen
+        name="testing"
+        options={{
+          title: 'Testing',
+          tabBarIcon: ({ focused }) => <SvgIcon iconName="sparkles" state={focused ? 'active' : 'default'} />,
+        }}
+      />
     </Tabs>
   );
 }
