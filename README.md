@@ -1,4 +1,6 @@
-# Pulsar
+<p align="center">
+  <img src="docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
+</p>
 
 A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
 
