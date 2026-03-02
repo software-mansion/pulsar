@@ -6,7 +6,7 @@ import { SectionHeader } from './components/SectionHeader/SectionHeader';
 import { Button } from './components/Button/Button';
 import { VisitComposer } from './components/VisitComposer/VisitComposer';
 import './index.css';
-import commonStyle from './common.module.scss'
+import commonStyle from './common.module.scss';
 import { VisitPlayground } from './components/VisitPlayground/VisitPlayground';
 import { SdkSection } from './components/SdkSection/SdkSection';
 import { Tutorials } from './components/Tutorials/Tutorials';
@@ -16,45 +16,46 @@ import { PresetsList } from './components/PresetsList/PresetsList';
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="description" content="Pulsar is a rich and ready-to-use haptics presets library that you can hear and feel with Live Preview." />
-		<title>Pulsar - Rich and ready-to use haptics presets library</title>
-		<link rel="icon" type="image/svg+xml" href="/src/assets/logo.svg" />
-		<meta property="og:image" content="/src/assets/og.png" />
-	</head>
-	<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pulsar is a rich and ready-to-use haptics presets library that you can hear and feel with Live Preview."
+    />
+    <title>Pulsar - Rich and ready-to use haptics presets library</title>
+    <link rel="icon" type="image/svg+xml" href="/src/assets/logo.svg" />
+    <meta property="og:image" content="/src/assets/og.png" />
+  </head>
+  <body>
+    <div class={commonStyle.bottomBorder}>
+      <BasicLayout>
+        <TopBar client:load />
+      </BasicLayout>
+    </div>
 
-		<div class={commonStyle.bottomBorder}>
-			<BasicLayout>
-				<TopBar client:load />
-			</BasicLayout>
-		</div>
+    <TopBanner client:load />
 
-		<TopBanner client:load />
+    <BasicLayout className={[commonStyle.centerColumn, commonStyle.spaceTopLarge].join(' ')}>
+      <SectionHeader
+        title="Get to know Pulsar presets"
+        subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
+      />
+      <PresetsList client:load />
+      <Button label="See all presets" url={'/presets-playground'} />
+      <VisitComposer className={commonStyle.spaceTopMedium} />
+    </BasicLayout>
 
-		<BasicLayout className={[commonStyle.centerColumn, commonStyle.spaceTopLarge].join(' ')}>
-			<SectionHeader 
-				title='Get to know Pulsar presets'
-				subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
-			/>
-			<PresetsList client:load />
-			<Button label='See all presets' url={'/presets'} />
-			<VisitComposer className={commonStyle.spaceTopMedium} />
-		</BasicLayout>
+    <VisitPlayground className={commonStyle.spaceTopLarge} />
 
-		<VisitPlayground className={commonStyle.spaceTopLarge} />
-	
-		<BasicLayout className={commonStyle.spaceTopLarge}>
-			<SdkSection />
-		</BasicLayout>
+    <BasicLayout className={commonStyle.spaceTopLarge}>
+      <SdkSection />
+    </BasicLayout>
 
-		<BasicLayout className={commonStyle.spaceTopLarge}>
-			<Tutorials />
-		</BasicLayout>
+    <BasicLayout className={commonStyle.spaceTopLarge}>
+      <Tutorials />
+    </BasicLayout>
 
-		<SwmSection className={commonStyle.spaceTopLarge} />
-
-	</body>
+    <SwmSection className={commonStyle.spaceTopLarge} />
+  </body>
 </html>

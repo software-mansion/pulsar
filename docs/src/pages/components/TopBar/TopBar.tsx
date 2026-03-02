@@ -25,7 +25,7 @@ export function TopBar() {
           <span>Pulsar</span>
         </div>
         <div className={styles.menuItems}>
-          <a href="presets">Presets</a>
+          <a href="/presets-playground">Presets</a>
           <a href="#">Live Preview</a>
           <a href="#">Tutorials</a>
         </div>
@@ -52,7 +52,7 @@ export function TopBar() {
               />
             </div>
             <nav className={styles.mobileMenuItems}>
-              <a href="presets" onClick={closeMenu}>
+              <a href="/presets-playground" onClick={closeMenu}>
                 Presets
               </a>
               <a href="#" onClick={closeMenu}>
