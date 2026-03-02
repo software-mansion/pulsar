@@ -66,10 +66,10 @@ import { Presets } from 'react-native-pulsar';
 
 | Function               | Description                    |
 | ---------------------- | ------------------------------ |
-| `Presets.earthquake()` | Rumbling earthquake pattern    |
-| `Presets.success()`    | Positive confirmation feedback |
-| `Presets.fail()`       | Negative failure feedback      |
-| `Presets.tap()`        | Simple single tap              |
+| `Presets.Earthquake()` | Rumbling earthquake pattern    |
+| `Presets.Success()`    | Positive confirmation feedback |
+| `Presets.Fail()`       | Negative failure feedback      |
+| `Presets.Tap()`        | Simple single tap              |
 
 ### System presets
 
@@ -77,15 +77,15 @@ Mirrors the platform's native haptic feedback styles.
 
 | Function                               | Description               |
 | -------------------------------------- | ------------------------- |
-| `Presets.system.impactLight()`         | Light impact              |
-| `Presets.system.impactMedium()`        | Medium impact             |
-| `Presets.system.impactHeavy()`         | Heavy impact              |
-| `Presets.system.impactSoft()`          | Soft impact               |
-| `Presets.system.impactRigid()`         | Rigid impact              |
-| `Presets.system.notificationSuccess()` | Success notification      |
-| `Presets.system.notificationWarning()` | Warning notification      |
-| `Presets.system.notificationError()`   | Error notification        |
-| `Presets.system.selection()`           | Selection change feedback |
+| `Presets.System.ImpactLight()`         | Light impact              |
+| `Presets.System.ImpactMedium()`        | Medium impact             |
+| `Presets.System.ImpactHeavy()`         | Heavy impact              |
+| `Presets.System.ImpactSoft()`          | Soft impact               |
+| `Presets.System.ImpactRigid()`         | Rigid impact              |
+| `Presets.System.NotificationSuccess()` | Success notification      |
+| `Presets.System.NotificationWarning()` | Warning notification      |
+| `Presets.System.NotificationError()`   | Error notification        |
+| `Presets.System.Selection()`           | Selection change feedback |
 
 **Example**
 
@@ -94,7 +94,7 @@ import { Presets } from 'react-native-pulsar';
 import { Gesture } from 'react-native-gesture-handler';
 
 const tap = Gesture.Tap().onEnd(() => {
-  Presets.system.impactMedium();
+  Presets.System.ImpactMedium();
 });
 ```
 
@@ -105,7 +105,7 @@ const tap = Gesture.Tap().onEnd(() => {
 A React hook for composing and playing a custom `Pattern`. The pattern is parsed on mount and whenever it changes. Resources are released automatically on unmount.
 
 ```ts
-const { play, parse } = usePatternComposer(pattern);
+const { play, parse, isParsed } = usePatternComposer(pattern);
 ```
 
 ### Parameters
@@ -221,15 +221,50 @@ function MyComponent() {
 
 ---
 
-## HapticsSupport
+## Settings
 
-Returns the haptic capability level of the current device.
+Global configuration for the Pulsar SDK. All methods are available on the `Settings` object.
 
 ```ts
-function HapticsSupport(): HapticSupport;
+import { Settings } from 'react-native-pulsar';
 ```
 
-**HapticSupport enum**
+| Method                                           | Description                                 |
+| ------------------------------------------------ | ------------------------------------------- |
+| `Settings.enableHaptics(state: boolean)`         | Enable or disable all haptic feedback       |
+| `Settings.enableSound(state: boolean)`           | Enable or disable audio simulation          |
+| `Settings.enableCache(state: boolean)`           | Enable or disable preset caching            |
+| `Settings.clearCache()`                          | Clear the preset cache                      |
+| `Settings.preloadPresets(presetNames: string[])` | Preload presets by name for faster playback |
+| `Settings.stopHaptics()`                         | Stop all currently playing haptics          |
+| `Settings.shutDownEngine()`                      | Shut down the haptic engine                 |
+| `Settings.getHapticsSupportLevel()`              | Returns the device's `HapticSupport` level  |
+| `Settings.forceHapticsSupportLevel(level)`       | Override the detected support level         |
+
+### Example
+
+```ts
+import { Settings } from 'react-native-pulsar';
+
+// Preload frequently used presets
+Settings.preloadPresets(['Earthquake', 'Success']);
+
+// Disable haptics temporarily
+Settings.enableHaptics(false);
+
+// Check device support
+const support = Settings.getHapticsSupportLevel();
+```
+
+---
+
+## HapticSupport
+
+The haptic capability level of the current device, returned by `Settings.getHapticsSupportLevel()`.
+
+```ts
+import { HapticSupport } from 'react-native-pulsar';
+```
 
 ```ts
 enum HapticSupport {
@@ -244,12 +279,12 @@ enum HapticSupport {
 ### Example
 
 ```ts
-import { HapticsSupport, HapticSupport } from 'react-native-pulsar';
+import { Settings, HapticSupport, Presets } from 'react-native-pulsar';
 
-const support = HapticsSupport();
+const support = Settings.getHapticsSupportLevel();
 
 if (support >= HapticSupport.STANDARD_SUPPORT) {
-  Presets.success();
+  Presets.Success();
 }
 ```
 
@@ -265,17 +300,17 @@ Describes a complete haptic pattern with discrete pulses and continuous envelope
 type Pattern = {
   discretePattern: Array<{
     time: number; // Milliseconds from pattern start
-    amplitude: number; // Intensity (0–1)
-    frequency: number; // Sharpness (0–1)
+    amplitude: number; // Intensity (0-1)
+    frequency: number; // Sharpness (0-1)
   }>;
   continuousPattern: {
     amplitude: Array<{
       time: number; // Milliseconds from pattern start
-      value: number; // Amplitude value (0–1)
+      value: number; // Amplitude value (0-1)
     }>;
     frequency: Array<{
       time: number; // Milliseconds from pattern start
-      value: number; // Frequency value (0–1)
+      value: number; // Frequency value (0-1)
     }>;
   };
 };

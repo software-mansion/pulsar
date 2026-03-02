@@ -1,8 +1,386 @@
 ---
 title: Android SDK
-description: sdk
+description: API reference for the Pulsar Android SDK
 ---
 
-### Installation
+import { Code } from '@astrojs/starlight/components';
 
-// TODO
+The Pulsar Android SDK provides haptic feedback through three building blocks: `Presets`, `PatternComposer`, and `RealtimeComposer`. All are accessed through the main `Pulsar` class.
+
+## Requirements
+
+- Android API 24+ (Android 7.0)
+- Kotlin 1.9+
+
+## Installation
+
+Add Pulsar as a Gradle dependency:
+
+```kotlin
+dependencies {
+  implementation("com.swmansion:pulsar:0.1.0")
+}
+```
+
+## Setup
+
+Create a `Pulsar` instance with an Android `Context`:
+
+```kotlin
+import com.swmansion.pulsar.Pulsar
+
+val pulsar = Pulsar(context)
+```
+
+---
+
+## Presets
+
+A collection of ready-to-use haptic patterns accessed through `pulsar.getPresets()`.
+
+```kotlin
+val presets = pulsar.getPresets()
+```
+
+### Built-in presets
+
+| Method         | Description                    |
+| -------------- | ------------------------------ |
+| `earthquake()` | Rumbling earthquake pattern    |
+| `success()`    | Positive confirmation feedback |
+| `fail()`       | Negative failure feedback      |
+| `tap()`        | Simple single tap              |
+
+### System presets
+
+System presets are accessed via `getByName()`. These mirror standard haptic feedback styles shared across platforms.
+
+| Name                          | Description               |
+| ----------------------------- | ------------------------- |
+| `"SystemImpactLight"`         | Light impact              |
+| `"SystemImpactMedium"`        | Medium impact             |
+| `"SystemImpactHeavy"`         | Heavy impact              |
+| `"SystemImpactSoft"`          | Soft impact               |
+| `"SystemImpactRigid"`         | Rigid impact              |
+| `"SystemNotificationSuccess"` | Success notification      |
+| `"SystemNotificationWarning"` | Warning notification      |
+| `"SystemNotificationError"`   | Error notification        |
+| `"SystemSelection"`           | Selection change feedback |
+
+### Android-specific system presets
+
+Android exposes additional system effects beyond the cross-platform set. All are accessed via `getByName()`.
+
+**Primitive effects**
+
+| Name                        | Description         |
+| --------------------------- | ------------------- |
+| `"SystemEffectClickPreset"` | Click effect        |
+| `"SystemDoubleClickPreset"` | Double click effect |
+| `"SystemTickPreset"`        | Tick effect         |
+| `"SystemHeavyClickPreset"`  | Heavy click effect  |
+
+**View-based effects**
+
+| Name                                | Description           |
+| ----------------------------------- | --------------------- |
+| `"SystemLongPressPreset"`           | Long press            |
+| `"SystemVirtualKeyPreset"`          | Virtual key press     |
+| `"SystemKeyboardTapPreset"`         | Keyboard tap          |
+| `"SystemClockTickPreset"`           | Clock tick            |
+| `"SystemCalendarDatePreset"`        | Calendar date select  |
+| `"SystemContextClickPreset"`        | Context click         |
+| `"SystemKeyboardPressPreset"`       | Keyboard press        |
+| `"SystemKeyboardReleasePreset"`     | Keyboard release      |
+| `"SystemVirtualKeyReleasePreset"`   | Virtual key release   |
+| `"SystemTextHandleMovePreset"`      | Text handle move      |
+| `"SystemDragCrossingPreset"`        | Drag crossing         |
+| `"SystemGestureStartPreset"`        | Gesture start         |
+| `"SystemGestureEndPreset"`          | Gesture end           |
+| `"SystemEdgeSqueezePreset"`         | Edge squeeze          |
+| `"SystemEdgeReleasePreset"`         | Edge release          |
+| `"SystemConfirmPreset"`             | Confirmation          |
+| `"SystemReleasePreset"`             | Release               |
+| `"SystemScrollTickPreset"`          | Scroll tick           |
+| `"SystemScrollItemFocusPreset"`     | Scroll item focus     |
+| `"SystemScrollLimitPreset"`         | Scroll limit reached  |
+| `"SystemToggleOnPreset"`            | Toggle on             |
+| `"SystemToggleOffPreset"`           | Toggle off            |
+| `"SystemDragStartPreset"`           | Drag start            |
+| `"SystemSegmentTickPreset"`         | Segment tick          |
+| `"SystemSegmentFrequentTickPreset"` | Segment frequent tick |
+
+### Playing by name
+
+You can play any preset by its string name using `getByName()`. This returns a `Preset?` that you call `play()` on.
+
+**Example**
+
+```kotlin
+val presets = pulsar.getPresets()
+
+// Direct call
+presets.success()
+
+// By name
+presets.getByName("SystemImpactMedium")?.play()
+```
+
+---
+
+## PatternComposer
+
+Composes and plays custom haptic patterns. Get a new instance from `pulsar.getPatternComposer()`. Each call returns a fresh composer, so you can manage multiple patterns independently.
+
+```kotlin
+val composer = pulsar.getPatternComposer()
+```
+
+### Methods
+
+#### `parsePattern(hapticsData)`
+
+Parses a `PatternData` object and prepares it for playback.
+
+```kotlin
+fun parsePattern(hapticsData: PatternData)
+```
+
+#### `play()`
+
+Plays the previously parsed pattern.
+
+```kotlin
+fun play()
+```
+
+#### `stop()`
+
+Stops all playback.
+
+```kotlin
+fun stop()
+```
+
+### Example
+
+```kotlin
+val composer = pulsar.getPatternComposer()
+
+val pattern = PatternData(
+  continuousPattern = ContinuousPattern(
+    amplitude = listOf(
+      ValuePoint(time = 0, value = 0f),
+      ValuePoint(time = 200, value = 1f),
+      ValuePoint(time = 400, value = 0f),
+    ),
+    frequency = listOf(
+      ValuePoint(time = 0, value = 0.3f),
+      ValuePoint(time = 400, value = 0.8f),
+    )
+  ),
+  discretePattern = listOf(
+    ConfigPoint(time = 0, amplitude = 1f, frequency = 0.5f),
+    ConfigPoint(time = 100, amplitude = 0.5f, frequency = 0.5f),
+  )
+)
+
+composer.parsePattern(pattern)
+composer.play()
+```
+
+---
+
+## RealtimeComposer
+
+Provides real-time haptic control with live amplitude and frequency modulation. Useful for gesture-driven or continuously evolving haptic experiences. Get the shared instance from `pulsar.getRealtimeComposer()`.
+
+```kotlin
+val realtime = pulsar.getRealtimeComposer()
+```
+
+An optional `strategy` parameter controls how continuous haptics are simulated:
+
+```kotlin
+val realtime = pulsar.getRealtimeComposer(strategy = RealtimeComposerStrategy.ENVELOPE)
+```
+
+| Strategy            | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| `ENVELOPE`          | Envelope API approximation (API 36+, default)   |
+| `PRIMITIVE_TICK`    | Composition API with varying tick intervals     |
+| `PRIMITIVE_COMPLEX` | Multiple primitives selected based on frequency |
+
+### Methods
+
+#### `set(amplitude, frequency)`
+
+Updates the ongoing haptic with new amplitude and frequency values. Automatically starts playback if it is not already active. Values should be in the 0-1 range.
+
+```kotlin
+fun set(amplitude: Float, frequency: Float)
+```
+
+#### `playDiscrete(amplitude, frequency)`
+
+Plays a single discrete haptic event.
+
+```kotlin
+fun playDiscrete(amplitude: Float, frequency: Float)
+```
+
+#### `stop()`
+
+Stops the active continuous haptic.
+
+```kotlin
+fun stop()
+```
+
+#### `isActive()`
+
+Returns `true` if a continuous haptic is currently playing.
+
+```kotlin
+fun isActive(): Boolean
+```
+
+### Example
+
+```kotlin
+val realtime = pulsar.getRealtimeComposer()
+
+// Start a continuous haptic
+realtime.set(amplitude = 0.5f, frequency = 0.8f)
+
+// Update parameters over time
+realtime.set(amplitude = 1.0f, frequency = 0.3f)
+
+// Play a one-off discrete event
+realtime.playDiscrete(amplitude = 0.7f, frequency = 0.5f)
+
+// Stop
+realtime.stop()
+```
+
+---
+
+## Settings
+
+Configuration methods available directly on the `Pulsar` instance.
+
+| Method                                              | Description                                 |
+| --------------------------------------------------- | ------------------------------------------- |
+| `enableHaptics(state: Boolean)`                     | Enable or disable all haptic feedback       |
+| `enableSound(state: Boolean)`                       | Enable or disable audio simulation          |
+| `enableCache(state: Boolean)`                       | Enable or disable preset caching            |
+| `clearCache()`                                      | Clear the preset cache                      |
+| `preloadPresets(presetNames: List<String>)`         | Preload presets by name for faster playback |
+| `stopHaptics()`                                     | Stop all currently playing haptics          |
+| `hapticSupport()`                                   | Returns the device's `CompatibilityMode`    |
+| `forceHapticsSupportLevel(mode: CompatibilityMode)` | Override the detected support level         |
+
+### Example
+
+```kotlin
+val pulsar = Pulsar(context)
+
+// Preload frequently used presets
+pulsar.preloadPresets(listOf("Earthquake", "Success"))
+
+// Disable haptics temporarily
+pulsar.enableHaptics(false)
+
+// Check device support
+val support = pulsar.hapticSupport()
+if (support >= CompatibilityMode.STANDARD_SUPPORT) {
+  pulsar.getPresets().success()
+}
+```
+
+---
+
+## Types
+
+### PatternData
+
+Describes a complete haptic pattern with discrete pulses and continuous envelope curves.
+
+```kotlin
+data class PatternData(
+  val continuousPattern: ContinuousPattern,
+  val discretePattern: List<ConfigPoint>
+)
+```
+
+### ContinuousPattern
+
+Represents continuous haptic curves for amplitude and frequency.
+
+```kotlin
+data class ContinuousPattern(
+  val amplitude: List<ValuePoint>,
+  val frequency: List<ValuePoint>
+)
+```
+
+### ValuePoint
+
+A single point in a continuous curve.
+
+```kotlin
+data class ValuePoint(
+  val time: Long,    // Milliseconds from pattern start
+  val value: Float   // Normalized value (0-1)
+)
+```
+
+### ConfigPoint
+
+A single discrete haptic event.
+
+```kotlin
+data class ConfigPoint(
+  val time: Long,        // Milliseconds from pattern start
+  val amplitude: Float,  // Intensity (0-1)
+  val frequency: Float   // Sharpness (0-1)
+)
+```
+
+Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+
+### CompatibilityMode
+
+The haptic capability level of the current device, returned by `pulsar.hapticSupport()`. The SDK gracefully degrades based on what the device supports.
+
+```kotlin
+enum class CompatibilityMode {
+  NO_SUPPORT,        // No haptic support
+  MINIMAL_SUPPORT,   // Timing-only vibration (API 26+)
+  LIMITED_SUPPORT,   // Amplitude control (API 26+)
+  STANDARD_SUPPORT,  // Envelope API (API 36+)
+  ADVANCED_SUPPORT,  // Envelope + frequency profile (API 36+)
+}
+```
+
+### RealtimeComposerStrategy
+
+Controls how continuous haptics are rendered on the device.
+
+```kotlin
+enum class RealtimeComposerStrategy {
+  ENVELOPE,          // Envelope API approximation (API 36+)
+  PRIMITIVE_TICK,    // Composition API with varying intervals
+  PRIMITIVE_COMPLEX, // Multiple primitives based on frequency
+}
+```
+
+### Preset
+
+The interface that all preset implementations conform to.
+
+```kotlin
+interface Preset {
+  fun play()
+}
+```

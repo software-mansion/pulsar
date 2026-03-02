@@ -1,8 +1,339 @@
 ---
 title: iOS SDK
-description: sdk
+description: API reference for the Pulsar iOS SDK
 ---
 
-### Installation
+import { Code } from '@astrojs/starlight/components';
 
-// TODO
+The Pulsar iOS SDK provides haptic feedback through three building blocks: `Presets`, `PatternComposer`, and `RealtimeComposer`. All are accessed through the main `Pulsar` class.
+
+## Requirements
+
+- iOS 13.0+
+- Swift 5.9+
+
+## Installation
+
+Add Pulsar as a Swift Package dependency in Xcode:
+
+1. Go to **File > Add Package Dependencies...**
+2. Enter the repository URL
+3. Select the Pulsar library product
+
+Or add it to your `Package.swift`:
+
+```swift
+dependencies: [
+  .package(url: "https://github.com/software-mansion/pulsar", from: "0.1.0")
+]
+```
+
+## Setup
+
+Create a `Pulsar` instance to access all SDK features:
+
+```swift
+import Pulsar
+
+let pulsar = Pulsar()
+```
+
+---
+
+## Presets
+
+A collection of ready-to-use haptic patterns accessed through `pulsar.getPresets()`.
+
+```swift
+let presets = pulsar.getPresets()
+```
+
+### Built-in presets
+
+| Method         | Description                    |
+| -------------- | ------------------------------ |
+| `earthquake()` | Rumbling earthquake pattern    |
+| `success()`    | Positive confirmation feedback |
+| `fail()`       | Negative failure feedback      |
+| `tap()`        | Simple single tap              |
+
+### System presets
+
+Mirrors the platform's native haptic feedback styles.
+
+| Method                        | Description               |
+| ----------------------------- | ------------------------- |
+| `systemImpactLight()`         | Light impact              |
+| `systemImpactMedium()`        | Medium impact             |
+| `systemImpactHeavy()`         | Heavy impact              |
+| `systemImpactSoft()`          | Soft impact               |
+| `systemImpactRigid()`         | Rigid impact              |
+| `systemNotificationSuccess()` | Success notification      |
+| `systemNotificationWarning()` | Warning notification      |
+| `systemNotificationError()`   | Error notification        |
+| `systemSelection()`           | Selection change feedback |
+
+### Playing by name
+
+You can also play a preset by its string name using `getByName(_:)`. This returns a `Preset?` that you call `play()` on.
+
+Available names: `"Earthquake"`, `"Success"`, `"Fail"`, `"Tap"`, `"SystemImpactLight"`, `"SystemImpactMedium"`, `"SystemImpactHeavy"`, `"SystemImpactSoft"`, `"SystemImpactRigid"`, `"SystemNotificationSuccess"`, `"SystemNotificationWarning"`, `"SystemNotificationError"`, `"SystemSelection"`.
+
+**Example**
+
+```swift
+let presets = pulsar.getPresets()
+
+// Direct call
+presets.success()
+
+// By name
+presets.getByName("Success")?.play()
+```
+
+---
+
+## PatternComposer
+
+Composes and plays custom haptic patterns. Get a new instance from `pulsar.getPatternComposer()`. Each call returns a fresh composer, so you can manage multiple patterns independently.
+
+```swift
+let composer = pulsar.getPatternComposer()
+```
+
+### Methods
+
+#### `parsePattern(hapticsData:)`
+
+Parses a `PatternData` object and prepares it for playback.
+
+```swift
+func parsePattern(hapticsData: PatternData)
+```
+
+#### `playPattern(hapticsData:)`
+
+Parses and immediately plays a pattern. Equivalent to calling `parsePattern` followed by `play`.
+
+```swift
+func playPattern(hapticsData: PatternData)
+```
+
+#### `play()`
+
+Plays the previously parsed pattern.
+
+```swift
+func play()
+```
+
+#### `stop()`
+
+Stops all playback.
+
+```swift
+func stop()
+```
+
+#### `parseJSON(_:)`
+
+Parses a JSON string into a `PatternData` object. Returns `nil` if the JSON is invalid.
+
+```swift
+func parseJSON(_ jsonData: String) -> PatternData?
+```
+
+### Example
+
+```swift
+let composer = pulsar.getPatternComposer()
+
+let pattern = PatternData(
+  continuousPattern: ContinuousPattern(
+    amplitude: [
+      ValuePoint(time: 0, value: 0),
+      ValuePoint(time: 200, value: 1),
+      ValuePoint(time: 400, value: 0),
+    ],
+    frequency: [
+      ValuePoint(time: 0, value: 0.3),
+      ValuePoint(time: 400, value: 0.8),
+    ]
+  ),
+  discretePattern: [
+    DiscretePoint(time: 0, amplitude: 1, frequency: 0.5),
+    DiscretePoint(time: 100, amplitude: 0.5, frequency: 0.5),
+  ]
+)
+
+composer.playPattern(hapticsData: pattern)
+```
+
+---
+
+## RealtimeComposer
+
+Provides real-time haptic control with live amplitude and frequency modulation. Useful for gesture-driven or continuously evolving haptic experiences. Get the shared instance from `pulsar.getRealtimeComposer()`.
+
+```swift
+let realtime = pulsar.getRealtimeComposer()
+```
+
+### Methods
+
+#### `set(amplitude:frequency:)`
+
+Updates the ongoing haptic with new amplitude and frequency values. Automatically starts playback if it is not already active. Values are clamped to the 0-1 range.
+
+```swift
+func set(amplitude: Float, frequency: Float)
+```
+
+#### `playDiscrete(amplitude:frequency:)`
+
+Plays a single discrete haptic event.
+
+```swift
+func playDiscrete(amplitude: Float = 1.0, frequency: Float = 0.5)
+```
+
+#### `stop()`
+
+Stops the active continuous haptic.
+
+```swift
+func stop()
+```
+
+### Properties
+
+#### `isActive`
+
+Returns `true` if a continuous haptic is currently playing.
+
+```swift
+var isActive: Bool { get }
+```
+
+### Example
+
+```swift
+let realtime = pulsar.getRealtimeComposer()
+
+// Start a continuous haptic
+realtime.set(amplitude: 0.5, frequency: 0.8)
+
+// Update parameters over time
+realtime.set(amplitude: 1.0, frequency: 0.3)
+
+// Play a one-off discrete event
+realtime.playDiscrete(amplitude: 0.7, frequency: 0.5)
+
+// Stop
+realtime.stop()
+```
+
+---
+
+## Settings
+
+Configuration methods available directly on the `Pulsar` instance.
+
+| Method                                  | Description                                 |
+| --------------------------------------- | ------------------------------------------- |
+| `enableHaptics(state: Bool)`            | Enable or disable all haptic feedback       |
+| `enableSound(state: Bool)`              | Enable or disable audio simulation          |
+| `enableCache(state: Bool)`              | Enable or disable preset caching            |
+| `clearCache()`                          | Clear the preset cache                      |
+| `preloadPresets(presetNames: [String])` | Preload presets by name for faster playback |
+| `stopHaptics()`                         | Stop all currently playing haptics          |
+| `shutDownEngine()`                      | Shut down the haptic engine                 |
+| `isHapticsSupported() -> Bool`          | Check if the device supports haptics        |
+
+### Example
+
+```swift
+let pulsar = Pulsar()
+
+// Preload frequently used presets
+pulsar.preloadPresets(presetNames: ["Earthquake", "Success"])
+
+// Disable haptics temporarily
+pulsar.enableHaptics(state: false)
+
+// Check device support
+if pulsar.isHapticsSupported() {
+  pulsar.getPresets().success()
+}
+```
+
+---
+
+## Types
+
+### PatternData
+
+Describes a complete haptic pattern with discrete pulses and continuous envelope curves.
+
+```swift
+class PatternData: NSObject, Codable {
+  let continuousPattern: ContinuousPattern
+  let discretePattern: [DiscretePoint]
+
+  init(continuousPattern: ContinuousPattern, discretePattern: [DiscretePoint])
+}
+```
+
+### ContinuousPattern
+
+Represents continuous haptic curves for amplitude and frequency.
+
+```swift
+class ContinuousPattern: NSObject, Codable {
+  let amplitude: [ValuePoint]
+  let frequency: [ValuePoint]
+
+  init(amplitude: [ValuePoint], frequency: [ValuePoint])
+}
+```
+
+### ValuePoint
+
+A single point in a continuous curve.
+
+```swift
+class ValuePoint: NSObject, Codable {
+  let time: Double    // Milliseconds from pattern start
+  let value: Float    // Normalized value (0-1)
+
+  init(time: Double, value: Float)
+}
+```
+
+### DiscretePoint
+
+A single discrete haptic event.
+
+```swift
+class DiscretePoint: NSObject, Codable {
+  let time: Double      // Milliseconds from pattern start
+  let amplitude: Float  // Intensity (0-1)
+  let frequency: Float  // Sharpness (0-1)
+
+  init(time: Double, amplitude: Float, frequency: Float)
+}
+```
+
+Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+
+### Preset
+
+The protocol that all preset implementations conform to.
+
+```swift
+protocol Preset {
+  func play()
+  static func getInstance(haptics: Pulsar) -> Preset
+  static var name: String { get }
+}
+```
