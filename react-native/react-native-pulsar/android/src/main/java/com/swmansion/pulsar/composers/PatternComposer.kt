@@ -31,6 +31,7 @@ class PatternComposer(
     }
 
     fun stop() {
+        audioSimulator.stop()
         engine.stop()
     }
 

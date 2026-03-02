@@ -6,6 +6,7 @@ public class HapticEngineWrapper {
 
   private var engine: CHHapticEngine?
   private var initialized: Bool = false
+  private var isHapticsEnabled: Bool = true
   
   public init() {
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
@@ -33,9 +34,37 @@ public class HapticEngineWrapper {
     engine?.stop()
   }
   
+  public func enableHaptics(_ state: Bool) {
+    if (isHapticsEnabled != state) {
+      isHapticsEnabled = state
+      
+      if (!isHapticsEnabled) {
+        stopHaptics()
+      } else {
+        if !initialized {
+          startEngine()
+        }
+      }
+    }
+  }
+  
+  public func stopHaptics() {
+    if !initialized { return }
+    engine?.stop()
+    initialized = false
+  }
+  
+  public func shutDownEngine() {
+    stopHaptics()
+    engine = nil
+  }
+  
   private func startEngine() {
     if initialized { return }
     do {
+      if (engine == nil) {
+        engine = try CHHapticEngine()
+      }
       try engine?.start()
       initialized = true
     } catch {

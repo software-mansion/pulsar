@@ -18,11 +18,20 @@ import UIKit
     return presets!
   }
   
+  @objc public func getPatternComposer() -> PatternComposer {
+    return PatternComposer(engine: engine, audioSimulator: audioSimulator)
+  }
+  
+  @objc public func getRealtimeComposer() -> RealtimeComposer {
+    return realtimeComposer
+  }
+  
   @objc public func preloadPresets(presetNames: Array<String>) {
-    let presets = self.getPresets()
-    for (presetName) in presetNames {
-      presets.preloadPresetByName(presetName)
-    }
+    getPresets().preloadPresetByNames(presetNames)
+  }
+  
+  @objc public func enableHaptics(state: Bool) {
+    engine.enableHaptics(state)
   }
   
   @objc public func enableSound(state: Bool) {
@@ -30,19 +39,19 @@ import UIKit
   }
   
   @objc public func enableCache(state: Bool) {
-    self.getPresets().enableCache(state: state)
+    getPresets().enableCache(state: state)
   }
   
   @objc public func clearCache() {
-    self.getPresets().resetCache()
+    getPresets().resetCache()
   }
   
-  @objc public func getPatternComposer() -> PatternComposer {
-    return PatternComposer(engine: engine, audioSimulator: audioSimulator)
+  @objc public func stopHaptics() {
+    engine.stopHaptics()
   }
   
-  @objc public func getRealtimeComposer() -> RealtimeComposer {
-    return realtimeComposer
+  @objc public func shutDownEngine() {
+    engine.shutDownEngine()
   }
   
   @objc public func isHapticsSupported() -> Bool {

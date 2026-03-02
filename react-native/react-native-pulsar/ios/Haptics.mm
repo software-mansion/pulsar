@@ -37,6 +37,10 @@ RCT_EXPORT_MODULE()
   [pulsar_ preloadPresetsWithPresetNames:presetNames];
 }
 
+- (void)Pulsar_enableHaptics:(BOOL)state {
+  [pulsar_ enableHapticsWithState:state];
+}
+
 - (void)Pulsar_enableSound:(BOOL)state {
   [pulsar_ enableSoundWithState:state];
 }
@@ -45,10 +49,24 @@ RCT_EXPORT_MODULE()
   [pulsar_ enableCacheWithState:state];
 }
 
-- (void)Pulsar_clearCache:(BOOL)state {
-  if (state) {
-    [pulsar_ clearCache];
-  }
+- (void)Pulsar_clearCache {
+  [pulsar_ clearCache];
+}
+
+- (void)Pulsar_stopHaptics {
+  [pulsar_ stopHaptics];
+}
+
+- (void)Pulsar_shutDownEngine {
+  [pulsar_ shutDownEngine];
+}
+
+- (nonnull NSNumber *)Pulsar_hapticSupport {
+  return [pulsar_ isHapticsSupported] ? @(4) : @(0);
+}
+
+- (void)Pulsar_forceHapticsSupportLevel:(double)level {
+  // do nothing on iOS
 }
 
 // PatternComposer -----------------------------------------------------------------
@@ -119,10 +137,6 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
 
 - (nonnull NSNumber *)RealtimeComposer_isActive {
   return [realtimeComposer_ isActive] ? @1 : @0;
-}
-
-- (nonnull NSNumber *)Pulsar_hapticSupport { 
-  return [pulsar_ isHapticsSupported] ? @(4) : @(0);
 }
 
 @end

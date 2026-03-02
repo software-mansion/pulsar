@@ -73,18 +73,18 @@ export default function TestingScreen() {
           onPress={() => {
             hapticComposer.parse({
               discretePattern: [
-                { time: 100, amplitude: 1, frequency: 1 },
-                { time: 200, amplitude: 1, frequency: 1 },
-                { time: 300, amplitude: 1, frequency: 1 },
-                { time: 400, amplitude: 1, frequency: 1 },
-                { time: 500, amplitude: 1, frequency: 1 },
-                { time: 1500, amplitude: 1, frequency: 1 },
+                // { time: 100, amplitude: 1, frequency: 1 },
+                // { time: 200, amplitude: 1, frequency: 1 },
+                // { time: 300, amplitude: 1, frequency: 1 },
+                // { time: 400, amplitude: 1, frequency: 1 },
+                // { time: 500, amplitude: 1, frequency: 1 },
+                // { time: 1500, amplitude: 1, frequency: 1 },
               ],
               continuousPattern: {
-                  amplitude: [],
-                  frequency: [],
-                  // amplitude: [{ time: 0, value: 0 }, { time: 1000, value: 0.5 }, { time: 2000, value: 0 }],
-                  // frequency: [{ time: 0, value: 0 }, { time: 1000, value: 0.5 }, { time: 2000, value: 0 }],
+                  // amplitude: [],
+                  // frequency: [],
+                  amplitude: [{ time: 0, value: 0 }, { time: 1000, value: 0.5 }, { time: 2000, value: 0 }],
+                  frequency: [{ time: 0, value: 0 }, { time: 1000, value: 0.5 }, { time: 2000, value: 0 }],
               },
             });
             hapticComposer.play();

@@ -75,6 +75,12 @@ class PresetsWrapper(
         cache.clear()
     }
 
+    fun preloadPresetByNames(names: List<String>) {
+        for (name in names) {
+            preloadPresetByName(name)
+        }
+    }
+
     fun preloadPresetByName(name: String) {
         this.useCache = true
         getCacheablePreset(name)

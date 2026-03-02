@@ -1,10 +1,6 @@
 package com.swmansion.pulsar
 
-import android.app.Activity
 import android.content.Context
-import android.os.Build
-import android.view.HapticFeedbackConstants
-import androidx.annotation.RequiresApi
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
@@ -26,25 +22,6 @@ class Pulsar(private var context: Context) {
         return presets!!
     }
 
-    fun preloadPresets(presetNames: List<String>) {
-        val presets = this.getPresets()
-        for (presetName in presetNames) {
-            presets.preloadPresetByName(presetName)
-        }
-    }
-
-    fun enableSound(state: Boolean) {
-        audioSimulator.enableSound(state)
-    }
-
-    fun enableCache(state: Boolean) {
-        this.getPresets().enableCache(state)
-    }
-
-    fun clearCache() {
-        this.getPresets().resetCache()
-    }
-
     fun getPatternComposer(): PatternComposer {
         return PatternComposer(engine, audioSimulator)
     }
@@ -60,8 +37,32 @@ class Pulsar(private var context: Context) {
         return engine.getRealCompatibilityMode()
     }
 
-    fun simulateCompatibilityMode(mode: CompatibilityMode) {
+    fun forceHapticsSupportLevel(mode: CompatibilityMode) {
         engine.simulateCompatibilityMode(mode)
         audioSimulator.setCompatibilityMode(mode)
+    }
+
+    fun preloadPresets(presetNames: List<String>) {
+        this.getPresets().preloadPresetByNames(presetNames)
+    }
+
+    fun enableHaptics(state: Boolean) {
+        engine.enableHaptics(state)
+    }
+
+    fun enableSound(state: Boolean) {
+        audioSimulator.enableSound(state)
+    }
+
+    fun enableCache(state: Boolean) {
+        this.getPresets().enableCache(state)
+    }
+
+    fun clearCache() {
+        this.getPresets().resetCache()
+    }
+
+    fun stopHaptics() {
+        engine.stop()
     }
 }

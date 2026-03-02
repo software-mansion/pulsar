@@ -1,11 +1,11 @@
 import Presets from './Presets';
-import HapticsSupport from './HapticSupport';
+import Settings from './Settings';
 import useRealtimeComposer from './useRealtimeComposer';
 import usePatternComposer from './usePatternComposer';
 
 export { 
   Presets,
-  HapticsSupport,
+  Settings,
   useRealtimeComposer,
   usePatternComposer,
 };

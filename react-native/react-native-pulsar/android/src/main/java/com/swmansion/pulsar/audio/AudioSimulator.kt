@@ -3,6 +3,7 @@ package com.swmansion.pulsar.audio
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import com.swmansion.pulsar.BuildConfig
 import com.swmansion.pulsar.types.AudioDataConfig
 import com.swmansion.pulsar.types.AudioPatternConfig
 import com.swmansion.pulsar.types.CompatibilityMode
@@ -36,7 +37,7 @@ class AudioSimulator(
     private val sampleRate: Double = 44100.0
     private var audioTrack: AudioTrack? = null
     private var isInitialized = false
-    private var playSound: Boolean = true
+    private var playSound: Boolean = BuildConfig.DEBUG
     private val audioScope = CoroutineScope(Dispatchers.IO)
     private val audioMutex = Mutex()
 
@@ -70,7 +71,7 @@ class AudioSimulator(
                             stop()
                             flush()
                         }
-                        
+
                         play()
                         
                         var totalBytesWritten = 0
@@ -92,6 +93,26 @@ class AudioSimulator(
                                 totalBytesWritten += bytesWritten
                                 lastWriteTime = System.currentTimeMillis()
                             }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    fun stop() {
+        if (!playSound) {
+            return
+        }
+        audioScope.launch {
+            audioMutex.withLock {
+                try {
+                    audioTrack?.apply {
+                        if (playState == AudioTrack.PLAYSTATE_PLAYING) {
+                            stop()
+                            flush()
                         }
                     }
                 } catch (e: Exception) {

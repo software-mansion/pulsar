@@ -18,11 +18,15 @@ export enum HapticSupport {
 
 export interface Spec extends TurboModule {
   Pulsar_play(name: string): void;
+  Pulsar_enableHaptics(state: boolean): void;
   Pulsar_enableSound(state: boolean): void;
   Pulsar_enableCache(state: boolean): void;
-  Pulsar_clearCache(state: boolean): void;
+  Pulsar_clearCache(): void;
   Pulsar_preloadPresets(presetNames: Array<String>): void;
+  Pulsar_stopHaptics(): void;
+  Pulsar_shutDownEngine(): void;
   Pulsar_hapticSupport(): HapticSupport;
+  Pulsar_forceHapticsSupportLevel(level: HapticSupport): void;
 
   RealtimeComposer_set(amplitude: number, frequency: number): void;
   RealtimeComposer_stop(): void;

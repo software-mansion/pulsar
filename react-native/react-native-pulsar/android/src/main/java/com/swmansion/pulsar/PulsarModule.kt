@@ -50,6 +50,22 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  override fun Pulsar_forceHapticsSupportLevel(level: Double) {
+    val mode = when (level.toInt()) {
+      0 -> CompatibilityMode.NO_SUPPORT
+      1 -> CompatibilityMode.LIMITED_SUPPORT
+      2 -> CompatibilityMode.MINIMAL_SUPPORT
+      3 -> CompatibilityMode.STANDARD_SUPPORT
+      4 -> CompatibilityMode.ADVANCED_SUPPORT
+      else -> CompatibilityMode.NO_SUPPORT
+    }
+    pulsar.forceHapticsSupportLevel(mode)
+  }
+
+  override fun Pulsar_enableHaptics(state: Boolean) {
+    pulsar.enableHaptics(state)
+  }
+
   override fun Pulsar_enableSound(state: Boolean) {
     pulsar.enableSound(state)
   }
@@ -58,10 +74,16 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     pulsar.enableCache(state)
   }
 
-  override fun Pulsar_clearCache(state: Boolean) {
-    if (state) {
-      pulsar.clearCache()
-    }
+  override fun Pulsar_clearCache() {
+    pulsar.clearCache()
+  }
+
+  override fun Pulsar_stopHaptics() {
+    pulsar.stopHaptics()
+  }
+
+  override fun Pulsar_shutDownEngine() {
+    // do nothing on Android
   }
 
   // PatternComposer -----------------------------------------------------------------

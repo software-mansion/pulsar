@@ -10,19 +10,23 @@ public class AudioSimulator: NSObject {
 	private var filterNode: AVAudioUnitEQ = AVAudioUnitEQ(numberOfBands: 1)
 	private var isInitialized = false
 	private var isEngineConfigured = false
+ #if DEBUG
   private var playSound: Bool = true
+#else
+  private var playSound: Bool = false
+#endif
     
 	public override init() {
 		super.init()
-  #if DEBUG
-		configureAudioContext()
-  #endif
+    if (playSound) {
+      configureAudioContext()
+    }
 	}
 
 	public func parsePattern(from data: PatternData) -> AVAudioPCMBuffer? {
-    #if NDEBUG
+    if (!playSound) {
       return nil
-    #endif
+    }
 		
 		let currentConfig = AudioPatternConfig(
       discreteData: generateDiscreteAudioConfig(from: data),
@@ -51,16 +55,12 @@ public class AudioSimulator: NSObject {
 		audioContext.attach(playerNode)
         
 		let band = filterNode.bands.first!
-    do {
-			band.filterType = .lowPass
-      band.frequency = 700
-      band.bandwidth = 1.0
-      band.gain = 1
-      band.bypass = false
-      audioContext.attach(filterNode)
-		} catch {
-			print("Failed to configure filterNode: \(error)")
-		}
+    band.filterType = .lowPass
+    band.frequency = 700
+    band.bandwidth = 1.0
+    band.gain = 1
+    band.bypass = false
+    audioContext.attach(filterNode)
         
 		let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
 		audioContext.connect(playerNode, to: filterNode, format: format)
@@ -326,9 +326,6 @@ public class AudioSimulator: NSObject {
 	}
   
 	public func play(buffer: AVAudioPCMBuffer?) {
-    #if NDEBUG
-      return
-    #endif
     guard buffer != nil && playSound else { return }
 		configureAudioContext()
         
@@ -343,9 +340,6 @@ public class AudioSimulator: NSObject {
 	}
     
 	public func stop() {
-    #if NDEBUG
-      return
-    #endif 
 		playerNode.stop()
 	}
     

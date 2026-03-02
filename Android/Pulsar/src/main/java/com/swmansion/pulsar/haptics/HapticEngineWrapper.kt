@@ -13,7 +13,8 @@ class HapticEngineWrapper(context: Context) {
 
     private val vibrationService = context.getSystemService(Vibrator::class.java)
     private var vibrator: Vibrator? = null
-    private var initialized: Boolean = false
+    private var initialized = false
+    private var isHapticsEnabled = true
 
     private val hapticBuilder = HapticBuilder(this)
 
@@ -35,10 +36,22 @@ class HapticEngineWrapper(context: Context) {
     }
 
     fun vibrate(vibrationEffect: VibrationEffect) {
+        if (!isHapticsEnabled) {
+            return
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrationService.vibrate(vibrationEffect)
         } else {
             Log.w("Pulsar", "Incompatible Android version. Minimal supported version is Android API 26")
+        }
+    }
+
+    fun enableHaptics(state: Boolean) {
+        if (isHapticsEnabled != state) {
+            isHapticsEnabled = state
+            if (!isHapticsEnabled) {
+                stop()
+            }
         }
     }
 

@@ -45,6 +45,12 @@ import AVFAudio
     cache.removeAll()
   }
   
+  public func preloadPresetByNames(_ names: Array<String>) {
+    for (name) in names {
+      preloadPresetByName(name)
+    }
+  }
+  
   public func preloadPresetByName(_ name: String) {
     self.useCache = true
     _ = getCacheablePreset(mapper[name]!)
