@@ -3,19 +3,19 @@ import SwiftUI
 struct MainTabView: View {
     var body: some View {
         TabView {
-            ContentView()
+            PresetsListView()
                 .tabItem {
-                    Label("Playground", systemImage: "gamecontroller.fill")
+                    Label("Presets", systemImage: "list.bullet")
                 }
             
-            NewScreenView()
+            RealtimeComposerView()
                 .tabItem {
-                    Label("New Screen", systemImage: "star.fill")
+                    Label("Composer", systemImage: "waveform.circle.fill")
                 }
             
-            ThirdScreenView()
+            APITestingView()
                 .tabItem {
-                    Label("Third", systemImage: "circle.fill")
+                    Label("API Tests", systemImage: "hammer.fill")
                 }
         }
     }

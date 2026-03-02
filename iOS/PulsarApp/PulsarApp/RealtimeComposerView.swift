@@ -75,7 +75,7 @@ struct MultiTouchPad: UIViewRepresentable {
     }
 }
 
-struct NewScreenView: View {
+struct RealtimeComposerView: View {
     @State private var pulsar = Pulsar()
     @State private var composer: RealtimeComposer?
     @State private var pointerLocation: CGPoint = .zero
@@ -85,8 +85,9 @@ struct NewScreenView: View {
     
     var body: some View {
         VStack {
-            Text("Gesture Haptics")
+            Text("Realtime Haptics Composer")
                 .font(.largeTitle)
+                .fontWeight(.bold)
                 .padding()
             
             Text(isDragging ? "Dragging..." : "Tap or Drag (Multi-touch Ready)")
@@ -189,5 +190,5 @@ struct NewScreenView: View {
 }
 
 #Preview {
-    NewScreenView()
+    RealtimeComposerView()
 }

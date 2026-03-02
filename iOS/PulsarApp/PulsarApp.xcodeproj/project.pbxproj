@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F4771B312E8FC6F00044EAC3 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = F4771B302E8FC6F00044EAC3 /* Starscream */; };
 		F4771B342E8FC6FB0044EAC3 /* Pulsar in Frameworks */ = {isa = PBXBuildFile; productRef = F4771B332E8FC6FB0044EAC3 /* Pulsar */; };
 /* End PBXBuildFile section */
 
@@ -57,7 +56,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4771B312E8FC6F00044EAC3 /* Starscream in Frameworks */,
 				F4771B342E8FC6FB0044EAC3 /* Pulsar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -119,7 +117,6 @@
 			);
 			name = PulsarApp;
 			packageProductDependencies = (
-				F4771B302E8FC6F00044EAC3 /* Starscream */,
 				F4771B332E8FC6FB0044EAC3 /* Pulsar */,
 			);
 			productName = PulsarApp;
@@ -205,7 +202,6 @@
 			mainGroup = F4771AFC2E8FC6C50044EAC3;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				F4771B2F2E8FC6F00044EAC3 /* XCRemoteSwiftPackageReference "Starscream" */,
 				F4771B322E8FC6FB0044EAC3 /* XCLocalSwiftPackageReference "../Pulsar" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -579,23 +575,7 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		F4771B2F2E8FC6F00044EAC3 /* XCRemoteSwiftPackageReference "Starscream" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/daltoniam/Starscream";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.8;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		F4771B302E8FC6F00044EAC3 /* Starscream */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F4771B2F2E8FC6F00044EAC3 /* XCRemoteSwiftPackageReference "Starscream" */;
-			productName = Starscream;
-		};
 		F4771B332E8FC6FB0044EAC3 /* Pulsar */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Pulsar;
