@@ -11,6 +11,9 @@ import { Point } from '../Point/Point';
 declare global {
   interface Window {
     connectionChannel: number;
+    posthog?: {
+      capture: (event: string, properties?: Record<string, unknown>) => void;
+    };
   }
 }
 
@@ -20,8 +23,7 @@ export default function Connection() {
   const [status, setStatus] = useState<boolean>(false);
   const ws = useRef<WebSocket | null>(null);
 
-  const deepLinkUrl =
-    channel !== 'Loading...' ? `pulsarapp://connect?code=${channel}` : '';
+  const deepLinkUrl = channel !== 'Loading...' ? `pulsarapp://connect?code=${channel}` : '';
 
   function createChannel() {
     setChannel('Loading...');
@@ -64,16 +66,19 @@ export default function Connection() {
             localStorage.setItem('hapticsToken', data.token);
             setStatus(true);
             setPaired(true);
+            window.posthog?.capture('device_connected', { connection_type: 'new' });
           }
           break;
         case 'connection_restored':
           {
             setStatus(true);
+            window.posthog?.capture('device_connected', { connection_type: 'restored' });
           }
           break;
         case 'peer_disconnected':
           {
             setStatus(false);
+            window.posthog?.capture('device_disconnected');
           }
           break;
       }
@@ -99,6 +104,7 @@ export default function Connection() {
     setStatus(false);
     createChannel();
     setPaired(false);
+    window.posthog?.capture('reset_connection');
   }
 
   return (

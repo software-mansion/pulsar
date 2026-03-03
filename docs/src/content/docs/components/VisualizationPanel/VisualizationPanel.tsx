@@ -7,11 +7,21 @@ import { AudioPatternUtility } from '../Preset/audio-player';
 import type { PresetConfig } from '../Preset/types';
 import { API_SERVER_URL } from '../config';
 
+declare global {
+  interface Window {
+    posthog?: {
+      capture: (event: string, properties?: Record<string, unknown>) => void;
+      captureException?: (error: Error) => void;
+    };
+  }
+}
+
 interface VisualizationPanelProps {
   visualization: PresetConfig;
   duration?: number;
   className?: string;
   playOnDevice?: () => void;
+  presetName?: string;
 }
 
 export function VisualizationPanel({
@@ -19,6 +29,7 @@ export function VisualizationPanel({
   duration = 300,
   className = '',
   playOnDevice,
+  presetName,
 }: VisualizationPanelProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioPlayerRef = useRef<AudioPatternUtility | null>(null);
@@ -31,6 +42,7 @@ export function VisualizationPanel({
   const handlePlayOnDevice = async () => {
     if (playOnDevice) {
       playOnDevice();
+      window.posthog?.capture('preset_played_on_device', { preset_name: presetName });
       return;
     }
 
@@ -53,8 +65,10 @@ export function VisualizationPanel({
 
       const data = await response.json();
       console.log('Broadcast response:', data);
+      window.posthog?.capture('preset_played_on_device', { preset_name: presetName });
     } catch (error) {
       console.error('Error broadcasting to device:', error);
+      window.posthog?.captureException?.(error as Error);
     }
   };
 
@@ -66,6 +80,7 @@ export function VisualizationPanel({
       setIsPlaying(false);
     } else {
       setIsPlaying(true);
+      window.posthog?.capture('preset_played', { preset_name: presetName });
       try {
         if (!isParsed.current) {
           await audioPlayer.parsePattern(visualization.data);
@@ -74,6 +89,7 @@ export function VisualizationPanel({
         audioPlayer.play();
       } catch (error) {
         console.error('Error playing audio:', error);
+        window.posthog?.captureException?.(error as Error);
       }
     }
   };

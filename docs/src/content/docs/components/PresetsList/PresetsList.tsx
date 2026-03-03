@@ -8,9 +8,27 @@ import { TagsInfo } from './Tags';
 import { PresetsConfig } from './PresetsConfig';
 import { NoResult } from '../NoResult/NoResult';
 
+declare global {
+  interface Window {
+    posthog?: {
+      capture: (event: string, properties?: Record<string, unknown>) => void;
+    };
+  }
+}
+
 export function PresetsList() {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  function handleSetSelectedTags(tags: string[]) {
+    setSelectedTags(tags);
+    if (tags.length > 0) {
+      window.posthog?.capture('preset_filter_applied', {
+        selected_tags: tags,
+        tag_count: tags.length,
+      });
+    }
+  }
   const selectedTagsByGroup = useMemo(() => {
     const grouped: Record<string, string[]> = {};
 
@@ -61,7 +79,7 @@ export function PresetsList() {
         </div>
       </div>
 
-      <Filters selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
+      <Filters selectedTags={selectedTags} setSelectedTags={handleSetSelectedTags} />
 
       {filteredPresets.length > 0 && (
         <div className={style.resultCount}>{filteredPresets.length} results</div>

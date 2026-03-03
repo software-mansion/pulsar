@@ -27,6 +27,7 @@ export function Preset({ name, description, tags, duration = 0, visualization }:
         visualization={visualization}
         duration={duration}
         playOnDevice={() => setIsModalOpen(true)}
+        presetName={name}
       />
 
       {isModalOpen && (

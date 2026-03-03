@@ -7,9 +7,16 @@ interface ButtonProps {
   url?: string;
   variant?: 'filled' | 'unfilled';
   className?: string;
+  onClick?: () => void;
 }
 
-export function Button({ label, url = '#', variant = 'unfilled', className = '' }: ButtonProps) {
+export function Button({
+  label,
+  url = '#',
+  variant = 'unfilled',
+  className = '',
+  onClick,
+}: ButtonProps) {
   return (
     <div className={`${styles.background} ${className}`}>
       <a
@@ -18,6 +25,7 @@ export function Button({ label, url = '#', variant = 'unfilled', className = '' 
           variant === 'filled' ? styles.filled : styles.unfilled,
         ].join(' ')}
         href={url}
+        onClick={onClick}
       >
         {label}
         <img src={arrowIcon.src} alt="arrow" />

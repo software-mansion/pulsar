@@ -12,6 +12,7 @@ import { SdkSection } from './components/SdkSection/SdkSection';
 // import { Tutorials } from './components/Tutorials/Tutorials';
 import { SwmSection } from './components/SwmSection/SwmSection';
 import { PresetsList } from './components/PresetsList/PresetsList';
+import PostHog from '../components/posthog.astro';
 ---
 
 <!doctype html>
@@ -26,6 +27,7 @@ import { PresetsList } from './components/PresetsList/PresetsList';
     <title>Pulsar - Rich and ready-to-use haptics presets library</title>
     <link rel="icon" type="image/svg+xml" href="/src/assets/logo.svg" />
     <meta property="og:image" content="/src/assets/og.png" />
+    <PostHog />
   </head>
   <body>
     <div class={commonStyle.bottomBorder}>
@@ -59,3 +61,14 @@ import { PresetsList } from './components/PresetsList/PresetsList';
     <SwmSection className={commonStyle.spaceTopLarge} />
   </body>
 </html>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function () {
+    var seeAllBtn = document.querySelector('a[href="/presets-playground"]');
+    if (seeAllBtn) {
+      seeAllBtn.addEventListener('click', function () {
+        window.posthog?.capture('see_all_presets_clicked');
+      });
+    }
+  });
+</script>

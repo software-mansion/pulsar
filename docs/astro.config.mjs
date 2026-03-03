@@ -70,6 +70,7 @@ export default defineConfig({
       favicon: './src/assets/logo.svg',
       components: {
         ThemeSelect: './src/components/ThemeSelect.astro',
+        Head: './src/components/Head.astro',
       },
     }),
     react(),

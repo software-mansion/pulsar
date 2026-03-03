@@ -20,6 +20,14 @@ const platforms = [
   },
 ];
 
+declare global {
+  interface Window {
+    posthog?: {
+      capture: (event: string, properties?: Record<string, unknown>) => void;
+    };
+  }
+}
+
 export function SdkSection({ className }: { className?: string }) {
   return (
     <div className={`${styles.section} ${className || ''}`}>
@@ -29,7 +37,11 @@ export function SdkSection({ className }: { className?: string }) {
           subtitle="SDK available for all popular mobile solution - iOS Swift UI, Android Kotlin SDK, React Native."
           align="left"
         />
-        <Button label="See all of them" url="/sdk" />
+        <Button
+          label="See all of them"
+          url="/sdk"
+          onClick={() => window.posthog?.capture('sdk_section_viewed')}
+        />
       </div>
       <div className={styles.right}>
         <div className={styles.row}>

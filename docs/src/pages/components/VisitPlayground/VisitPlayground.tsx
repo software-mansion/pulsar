@@ -4,6 +4,14 @@ import styles from './VisitPlayground.module.scss';
 import commonStyles from './../../common.module.scss';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 
+declare global {
+  interface Window {
+    posthog?: {
+      capture: (event: string, properties?: Record<string, unknown>) => void;
+    };
+  }
+}
+
 export function VisitPlayground({ className }: { className?: string }) {
   return (
     <div className={`${styles.section} ${className || ''}`}>
@@ -18,7 +26,11 @@ export function VisitPlayground({ className }: { className?: string }) {
           title="Live Preview Playground"
           subtitle="Haptics are about feeling and emotions. With Pulsar, you can hear and feel with Live Preview."
         />
-        <Button label="Connect your phone" className={commonStyles.spaceTopSmall} />
+        <Button
+          label="Connect your phone"
+          className={commonStyles.spaceTopSmall}
+          onClick={() => window.posthog?.capture('connect_phone_cta_clicked')}
+        />
       </div>
     </div>
   );
