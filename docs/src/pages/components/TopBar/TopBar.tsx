@@ -29,7 +29,9 @@ export function TopBar() {
           {/* <a href="#">Live Preview</a> */}
           {/* <a href="#">Tutorials</a> */}
         </div>
-        <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
+        <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
+          <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
+        </a>
         <button className={styles.hamburger} onClick={toggleMenu} aria-label="Toggle menu">
           <img src={menuIcon.src} alt="Menu" />
         </button>
@@ -63,7 +65,9 @@ export function TopBar() {
               </a>
             </nav>
             <div className={styles.mobileMenuFooter}>
-              <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
+              <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
+                <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
+              </a>
             </div>
           </div>
         </div>
