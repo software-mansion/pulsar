@@ -34,30 +34,30 @@ export function SwmSection({ className }: { className?: string }) {
             <div className={styles.text}>
               Do you have a software project that we can help you with?
             </div>
-            <Button label="Learn more about us" />
+            <Button label="Learn more about us" url="https://swmansion.com/contact" />
           </div>
         </Card>
 
         <div className={styles.iconBar}>
-          <a href="#">
+          <a href="https://twitter.com/swmansion" target="_blank">
             <img src={social_x.src} />
           </a>
-          <a href="#">
+          <a href="https://www.facebook.com/SoftwareMansion/" target="_blank">
             <img src={social_fb.src} />
           </a>
-          <a href="#">
+          <a href="https://github.com/software-mansion" target="_blank">
             <img src={social_git.src} />
           </a>
-          <a href="#">
+          <a href="https://www.instagram.com/swmansion/" target="_blank">
             <img src={social_ig.src} />
           </a>
-          <a href="#">
+          <a href="https://www.youtube.com/c/SoftwareMansion" target="_blank">
             <img src={social_yt.src} />
           </a>
-          <a href="#">
+          <a href="https://www.linkedin.com/company/software-mansion/" target="_blank">
             <img src={social_in.src} />
           </a>
-          <a href="#">
+          <a href="https://dribbble.com/softwaremansion" target="_blank">
             <img src={social_drb.src} />
           </a>
         </div>

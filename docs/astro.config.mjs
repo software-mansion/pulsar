@@ -52,14 +52,14 @@ export default defineConfig({
             { label: 'React Native', slug: 'sdk/react-native' },
           ],
         },
-        {
-          label: 'Blog',
-          items: [
-            { label: 'Table of content', slug: 'blog/table-of-content' },
-            { label: 'Do I need haptics?', slug: 'blog/why-haptics' },
-            { label: 'How does haptics works', slug: 'blog/how-does-haptics-works' },
-          ],
-        },
+        // {
+        //   label: 'Blog',
+        //   items: [
+        //     { label: 'Table of content', slug: 'blog/table-of-content' },
+        //     { label: 'Do I need haptics?', slug: 'blog/why-haptics' },
+        //     { label: 'How does haptics works', slug: 'blog/how-does-haptics-works' },
+        //   ],
+        // },
       ],
       logo: {
         light: './src/assets/logo_label.svg',

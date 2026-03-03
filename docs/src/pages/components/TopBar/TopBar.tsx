@@ -25,9 +25,9 @@ export function TopBar() {
           <span>Pulsar</span>
         </div>
         <div className={styles.menuItems}>
-          <a href="/presets-playground">Presets</a>
-          <a href="#">Live Preview</a>
-          <a href="#">Tutorials</a>
+          {/* <a href="/presets-playground">Presets</a> */}
+          {/* <a href="#">Live Preview</a> */}
+          {/* <a href="#">Tutorials</a> */}
         </div>
         <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
         <button className={styles.hamburger} onClick={toggleMenu} aria-label="Toggle menu">
