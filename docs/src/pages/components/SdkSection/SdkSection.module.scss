@@ -31,38 +31,63 @@
 
   .right {
     flex: 1;
-
-    @media (max-width: 1024px) {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+    display: flex;
+    justify-content: center;
 
     .row {
       display: flex;
       justify-content: center;
+      gap: 32px;
 
-      .logo {
-        width: 40px;
-        height: 40px;
-        border-radius: 100%;
-        background-color: var(--color-primary);
-        margin: 20px;
-        flex-shrink: 0;
-
-        @media (max-width: 768px) {
-          width: 32px;
-          height: 32px;
-          margin: 12px;
-        }
-
-        @media (max-width: 480px) {
-          width: 28px;
-          height: 28px;
-          margin: 8px;
-        }
+      @media (max-width: 768px) {
+        gap: 24px;
       }
+
+      @media (max-width: 480px) {
+        gap: 16px;
+      }
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: translateY(-6px);
+      }
+
+      &:active {
+        transform: translateY(-2px) scale(0.96);
+      }
+
+      @media (max-width: 480px) {
+        gap: 8px;
+      }
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+
+      @media (max-width: 768px) {
+        width: 64px;
+        height: 64px;
+      }
+
+      @media (max-width: 480px) {
+        width: 48px;
+        height: 48px;
+      }
+    }
+
+    .label {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-primary);
     }
   }
 }
