@@ -14,8 +14,8 @@ public class CurveLineModifier {
     points.append(
       CHHapticParameterCurve.ControlPoint(relativeTime: timeInSeconds, value: value)
     )
-    if time > maxTime {
-      maxTime = time
+    if timeInSeconds > maxTime {
+      maxTime = timeInSeconds
     }
   }
   
