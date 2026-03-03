@@ -8,7 +8,7 @@ export function SdkSection({ className }: { className?: string }) {
     <div className={`${styles.section} ${className || ''}`}>
       <div className={styles.left}>
         <SectionHeader
-          title="Mulitplatform SDKs"
+          title="Multiplatform SDKs"
           subtitle="SDK available for all popular mobile solution - iOS Swift UI, Android Kotlin SDK, React Native."
           align="left"
         />
