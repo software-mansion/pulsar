@@ -117,10 +117,9 @@ body:
         - Linux
 
   - type: textarea
+    id: additional-information
     attributes:
-      value: |
-        ## Additional information
-
-        Providing as much information as possible greatly helps us with reproducing the issues.
+      label: Additional information
+      description: Providing as much information as possible greatly helps us with reproducing the issues.
 
 
