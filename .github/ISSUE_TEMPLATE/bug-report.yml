@@ -81,8 +81,8 @@ body:
   - type: input
     id: react-native-version
     attributes:
-      label: React Native version
-      description: (React Native SDK only) What version of React Native are you using? 
+      label: React Native version (RN SDK only)
+      description: What version of React Native are you using? 
       placeholder: 0.81.5
 
   - type: dropdown
