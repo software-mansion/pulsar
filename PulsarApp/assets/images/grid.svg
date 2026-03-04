@@ -1,36 +1,403 @@
-<svg width="343" height="523" viewBox="0 0 343 523" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_2336_10306)">
-<g clip-path="url(#clip1_2336_10306)">
-<rect width="343" height="523" rx="4" fill="#FBFEFF"/>
-<g clip-path="url(#clip2_2336_10306)">
-<line x1="588.943" y1="355.635" x2="-178.933" y2="355.635" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="58.202" y1="5.95653e-08" x2="58.202" y2="526" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="588.943" y1="237.5" x2="-178.933" y2="237.5" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="588.943" y1="119.365" x2="-178.933" y2="119.365" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="295.202" y1="5.95653e-08" x2="295.202" y2="526" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="588.943" y1="473.769" x2="-178.933" y2="473.769" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="588.943" y1="60.298" x2="-178.933" y2="60.2979" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="235.769" y1="5.37899e-08" x2="235.769" y2="462.694" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="529.875" y1="414.702" x2="-178.933" y2="414.702" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="117.202" y1="5.95653e-08" x2="117.202" y2="526" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="588.943" y1="296.567" x2="-178.933" y2="296.567" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="-0.499655" y1="5.37899e-08" x2="-0.499675" y2="475" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="588.943" y1="178.433" x2="-178.933" y2="178.433" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="236.202" y1="5.95653e-08" x2="236.202" y2="526" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="588.943" y1="414.702" x2="-178.933" y2="414.702" stroke="#E1F3FA" stroke-width="2.46114"/>
-<line x1="176.202" y1="5.95653e-08" x2="176.202" y2="526" stroke="#E1F3FA" stroke-width="2.46114"/>
-</g>
-</g>
-</g>
-<defs>
-<clipPath id="clip0_2336_10306">
-<rect width="343" height="523" rx="4" fill="white"/>
-</clipPath>
-<clipPath id="clip1_2336_10306">
-<rect width="343" height="523" rx="4" fill="white"/>
-</clipPath>
-<clipPath id="clip2_2336_10306">
-<rect width="768" height="523" fill="white" transform="translate(-179)"/>
-</clipPath>
-</defs>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="343"
+   height="523"
+   viewBox="0 0 343 523"
+   fill="none"
+   version="1.1"
+   id="svg20"
+   sodipodi:docname="grid.svg"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview20"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.1248811"
+     inkscape:cx="-24.002536"
+     inkscape:cy="262.69442"
+     inkscape:window-width="2144"
+     inkscape:window-height="1072"
+     inkscape:window-x="267"
+     inkscape:window-y="126"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g18" />
+  <g
+     clip-path="url(#clip0_2336_10306)"
+     id="g18">
+    <rect
+       width="343"
+       height="523"
+       rx="4"
+       fill="#fbfeff"
+       id="rect1"
+       x="0"
+       y="0" />
+    <line
+       x1="-0.49965501"
+       y1="5.3789901e-08"
+       x2="-0.49967501"
+       y2="475"
+       stroke="#e1f3fa"
+       stroke-width="2.46114"
+       id="line12"
+       clip-path="url(#clipPath43)" />
+    <g
+       id="g56"
+       transform="translate(0,-5.5334568)">
+      <line
+         x1="588.94299"
+         y1="355.63501"
+         x2="-178.933"
+         y2="355.63501"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line1"
+         clip-path="url(#clipPath54)"
+         transform="translate(0,-5.7220459e-4)" />
+      <line
+         x1="588.94299"
+         y1="237.5"
+         x2="-178.933"
+         y2="237.5"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line3"
+         clip-path="url(#clipPath52)"
+         transform="translate(0,-1.373291e-4)" />
+      <line
+         x1="588.94299"
+         y1="119.365"
+         x2="-178.933"
+         y2="119.365"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line4"
+         clip-path="url(#clipPath51)"
+         transform="translate(0,2.8991699e-4)" />
+      <line
+         x1="588.94299"
+         y1="473.76901"
+         x2="-178.933"
+         y2="473.76901"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line6"
+         clip-path="url(#clipPath49)" />
+      <line
+         x1="588.94299"
+         y1="60.298"
+         x2="-178.933"
+         y2="60.297901"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line7"
+         clip-path="url(#clipPath48)" />
+      <line
+         x1="588.94299"
+         y1="296.56699"
+         x2="-178.933"
+         y2="296.56699"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line11"
+         clip-path="url(#clipPath44)"
+         transform="translate(0,1.6403198e-4)" />
+      <line
+         x1="588.94299"
+         y1="178.433"
+         x2="-178.933"
+         y2="178.433"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line13"
+         clip-path="url(#clipPath42)"
+         transform="translate(0,-4.234314e-4)" />
+      <line
+         x1="588.94299"
+         y1="414.702"
+         x2="-178.933"
+         y2="414.702"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line15"
+         clip-path="url(#clipPath40)"
+         transform="translate(0,-2.7084351e-4)" />
+    </g>
+    <g
+       id="g55"
+       transform="translate(-23.201998)">
+      <line
+         x1="58.202"
+         y1="5.9565298e-08"
+         x2="58.202"
+         y2="526"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line2"
+         clip-path="url(#clipPath53)"
+         transform="translate(18)" />
+      <line
+         x1="295.202"
+         y1="5.9565298e-08"
+         x2="295.202"
+         y2="526"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line5"
+         clip-path="url(#clipPath50)"
+         transform="translate(18)" />
+      <line
+         x1="117.202"
+         y1="5.9565298e-08"
+         x2="117.202"
+         y2="526"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line10"
+         clip-path="url(#clipPath45)"
+         transform="translate(18.249995)" />
+      <line
+         x1="236.202"
+         y1="5.9565298e-08"
+         x2="236.202"
+         y2="526"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line14"
+         clip-path="url(#clipPath41)"
+         transform="translate(17.750001)" />
+      <line
+         x1="176.202"
+         y1="5.9565298e-08"
+         x2="176.202"
+         y2="526"
+         stroke="#e1f3fa"
+         stroke-width="2.46114"
+         id="line16"
+         clip-path="url(#clipPath39)"
+         transform="translate(18.500002)" />
+    </g>
+  </g>
+  <defs
+     id="defs20">
+    <clipPath
+       id="clip0_2336_10306">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="white"
+         id="rect18" />
+    </clipPath>
+    <clipPath
+       id="clip2_2336_10306">
+      <rect
+         width="768"
+         height="523"
+         fill="white"
+         transform="translate(-179)"
+         id="rect20" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath39">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect40"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath40">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect41"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath41">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect42"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath42">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect43"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath43">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect44"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath44">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect45"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath45">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect46"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath46">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect47"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath47">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect48"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath48">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect49"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath49">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect50"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath50">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect51"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath51">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect52"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath52">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect53"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath53">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect54"
+         x="0"
+         y="0" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath54">
+      <rect
+         width="343"
+         height="523"
+         rx="4"
+         fill="#ffffff"
+         id="rect55"
+         x="0"
+         y="0" />
+    </clipPath>
+  </defs>
 </svg>
