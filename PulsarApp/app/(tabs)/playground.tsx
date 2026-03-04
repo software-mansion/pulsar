@@ -1,12 +1,17 @@
-import { StyleSheet, View, Share } from 'react-native';
+import { StyleSheet, View, Share, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Image } from 'expo-image';
 import Button from '@/components/Button';
 import { Link } from 'expo-router';
 import GesturePlayground, { type GesturePlaygroundHandle } from '../../components/GesturePlayground';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { usePostHog } from 'posthog-react-native';
+import Animated, { useAnimatedProps, useSharedValue } from 'react-native-reanimated';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { MAX_RECORDING_DURATION_MS } from '@/hooks/usePatternRecorder';
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const infoIcon = require('@/assets/images/info.svg');
 
@@ -25,6 +30,52 @@ export default function PlaygroundScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecorded, setIsRecorded] = useState(false);
+
+  const textColor = useThemeColor({}, 'text');
+  const timerText = useSharedValue('');
+  const recordingStartRef = useRef<number>(0);
+  const recordingDurationRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!isRecording) {
+      if (recordingStartRef.current > 0) {
+        const duration = Math.min(Date.now() - recordingStartRef.current, MAX_RECORDING_DURATION_MS);
+        recordingDurationRef.current = duration;
+        timerText.value = `${(duration / 1000).toFixed(1)}s`;
+        setIsRecorded(true);
+      }
+      return;
+    }
+    setIsRecorded(false);
+    recordingStartRef.current = Date.now();
+    timerText.value = '0.0s';
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - recordingStartRef.current) / 1000;
+      timerText.value = `${elapsed.toFixed(1)}s`;
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isRecording]);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      if (recordingDurationRef.current > 0) {
+        timerText.value = `${(recordingDurationRef.current / 1000).toFixed(1)}s`;
+      }
+      return;
+    }
+    const playStart = Date.now();
+    const totalSec = recordingDurationRef.current / 1000;
+    const interval = setInterval(() => {
+      const elapsedSec = (Date.now() - playStart) / 1000;
+      timerText.value = `${elapsedSec.toFixed(1)}s / ${totalSec.toFixed(1)}s`;
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const animatedTimerProps = useAnimatedProps(() => ({
+    text: timerText.value,
+    defaultValue: timerText.value,
+  } as any));
 
   const handleShare = async () => {
     try {
@@ -72,19 +123,34 @@ export default function PlaygroundScreen() {
           </Link>
         </View>
 
-        <GesturePlayground
-          ref={playgroundRef}
-          onRecordingChange={setIsRecording}
-          onPlayingChange={setIsPlaying}
-          onRecordedChange={setIsRecorded}
-        />
+        <View style={styles.playgroundWrapper}>
+          <GesturePlayground
+            ref={playgroundRef}
+            onRecordingChange={setIsRecording}
+            onPlayingChange={setIsPlaying}
+          />
+          {(isRecording || isRecorded) && (
+            <View style={styles.timerRow}>
+              <ThemedText style={styles.timerLabel}>
+                {isPlaying ? 'Playing' : isRecording ? 'Recording' : 'Duration'}
+              </ThemedText>
+              <AnimatedTextInput
+                style={[styles.timerValue, { color: textColor }]}
+                animatedProps={animatedTimerProps}
+                editable={false}
+              />
+            </View>
+          )}
+        </View>
 
         <View style={styles.controlsContainer}>
           <Button
             enabled={isRecorded}
             onClick={() => {
-              if (isRecorded) {
-                playgroundRef.current?.playRecordedPattern();
+              if (isPlaying) {
+                playgroundRef.current?.stopPlaying();
+              } else {
+                playgroundRef.current?.playRecordedPattern(recordingDurationRef.current);
                 posthog.capture('playground_pattern_played');
               }
             }}
@@ -148,6 +214,26 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     position: 'absolute',
+  },
+  playgroundWrapper: {
+    flex: 1,
+  },
+  timerRow: {
+    position: 'absolute',
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  timerLabel: {
+    fontSize: 14,
+    opacity: 0.6,
+  },
+  timerValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    minWidth: 80,
   },
   controlsContainer: {
     flexDirection: 'row',

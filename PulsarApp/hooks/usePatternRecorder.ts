@@ -94,7 +94,8 @@ type UsePatternRecorderProps = {
 type UsePatternRecorderReturn = {
   startRecording: () => void;
   stopRecording: () => void;
-  playRecordedPattern: () => void;
+  stopPlaying: () => void;
+  playRecordedPattern: (durationMs: number) => void;
   recordEvent: (type: 'tap' | 'pan', x: number, y: number) => void;
   getPatternAsJson: () => string | null;
 };
@@ -108,6 +109,7 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
   const patternComposer = usePatternComposer();
   const isNewRecording = useRef(false);
   const maxDurationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     onRecordingChange?.(isRecording);
@@ -142,14 +144,16 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
     onRecordedChange?.(recordedPattern.value.length > 0);
   };
 
-  const playRecordedPattern = () => {
-    if (recordedPattern.value.length === 0) {
-      console.log('No recorded events to play');
-      return;
+  const stopPlaying = () => {
+    if (playbackTimer.current) {
+      clearTimeout(playbackTimer.current);
+      playbackTimer.current = null;
     }
+    setIsPlaying(false);
+  };
 
+  const playRecordedPattern = (durationMs: number) => {
     setIsPlaying(true);
-    const recordedEvents = recordedPattern.value as RecordedEvent[];
     if (isNewRecording.current) {
       const pattern = convertToPattern(recordedPattern.value);
       patternComposer.parse(pattern);
@@ -157,20 +161,15 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
     }
     patternComposer.play();
 
-    // Estimate duration and reset playing state
-    const lastEvent = recordedEvents[recordedEvents.length - 1];
-    const duration = lastEvent?.time;
-    setTimeout(() => {
+    playbackTimer.current = setTimeout(() => {
+      playbackTimer.current = null;
       setIsPlaying(false);
-    }, duration + 100);
+    }, durationMs + 100);
   };
 
   const recordEvent = (type: 'tap' | 'pan', x: number, y: number) => {
     'worklet';
     const time = Date.now() - global.PatternRecorderStartTime;
-    if (time > MAX_RECORDING_DURATION_MS) {
-      return;
-    }
     const event: RecordedEvent = { type, time, x, y };
     if (!global.PatternRecorder) {
       global.PatternRecorder = [];
@@ -189,6 +188,7 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
   return {
     startRecording,
     stopRecording,
+    stopPlaying,
     playRecordedPattern,
     recordEvent,
     getPatternAsJson,

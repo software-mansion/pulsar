@@ -15,7 +15,8 @@ const gridImage = require('@/assets/images/grid.svg');
 export type GesturePlaygroundHandle = {
   startRecording: () => void;
   stopRecording: () => void;
-  playRecordedPattern: () => void;
+  stopPlaying: () => void;
+  playRecordedPattern: (durationMs: number) => void;
   getPatternAsJson: () => string | null;
 };
 
@@ -38,6 +39,7 @@ const GesturePlayground = forwardRef<GesturePlaygroundHandle, GesturePlaygroundP
   const {
     startRecording,
     stopRecording,
+    stopPlaying,
     playRecordedPattern,
     recordEvent,
     getPatternAsJson,
@@ -46,6 +48,7 @@ const GesturePlayground = forwardRef<GesturePlaygroundHandle, GesturePlaygroundP
   useImperativeHandle(ref, () => ({
     startRecording,
     stopRecording,
+    stopPlaying,
     playRecordedPattern,
     getPatternAsJson,
   }));
