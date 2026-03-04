@@ -34,7 +34,8 @@ class AudioSimulator(
         private const val NUM_SOURCES = 3
     }
 
-    private val sampleRate: Double = 44100.0
+    private val sampleRate: Int = 22050
+    private val sampleRateF: Float = sampleRate.toFloat()
     private var audioTrack: AudioTrack? = null
     private var isInitialized = false
     private var playSound: Boolean = BuildConfig.DEBUG
@@ -73,14 +74,14 @@ class AudioSimulator(
                         }
 
                         play()
-                        
+
                         var totalBytesWritten = 0
                         var lastWriteTime = System.currentTimeMillis()
-                        
+
                         while (totalBytesWritten < buffer.size) {
                             val bytesToWrite = buffer.size - totalBytesWritten
                             val bytesWritten = write(buffer, totalBytesWritten, bytesToWrite)
-                            
+
                             if (bytesWritten < 0) {
                                 break
                             } else if (bytesWritten == 0) {
@@ -126,7 +127,7 @@ class AudioSimulator(
         if (isInitialized && audioTrack != null) return
 
         val minBufferSize = AudioTrack.getMinBufferSize(
-            sampleRate.toInt(),
+            sampleRate,
             AudioFormat.CHANNEL_OUT_MONO,
             AudioFormat.ENCODING_PCM_16BIT
         )
@@ -141,7 +142,7 @@ class AudioSimulator(
             .setAudioFormat(
                 AudioFormat.Builder()
                     .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setSampleRate(sampleRate.toInt())
+                    .setSampleRate(sampleRate)
                     .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
                     .build()
             )
@@ -152,20 +153,18 @@ class AudioSimulator(
         isInitialized = true
     }
 
-    private fun generateWaveform(waveform: WaveformType, phase: Double): Double {
-        val normalizedPhase = (phase % (2 * PI)) / (2 * PI)
+    private fun generateWaveform(waveform: WaveformType, phase: Float): Float {
+        val normalizedPhase = (phase % (2f * PI.toFloat())) / (2f * PI.toFloat())
 
         return when (waveform) {
             WaveformType.SINE -> sin(phase)
-            WaveformType.SQUARE -> if (normalizedPhase < 0.5) 1.0 else -1.0
-            WaveformType.TRIANGLE -> {
-                when {
-                    normalizedPhase < 0.25 -> normalizedPhase * 4.0
-                    normalizedPhase < 0.75 -> 2.0 - (normalizedPhase * 4.0)
-                    else -> (normalizedPhase - 1.0) * 4.0
-                }
+            WaveformType.SQUARE -> if (normalizedPhase < 0.5f) 1.0f else -1.0f
+            WaveformType.TRIANGLE -> when {
+                normalizedPhase < 0.25f -> normalizedPhase * 4.0f
+                normalizedPhase < 0.75f -> 2.0f - (normalizedPhase * 4.0f)
+                else -> (normalizedPhase - 1.0f) * 4.0f
             }
-            WaveformType.SAWTOOTH -> (normalizedPhase * 2.0) - 1.0
+            WaveformType.SAWTOOTH -> (normalizedPhase * 2.0f) - 1.0f
         }
     }
 
@@ -263,12 +262,8 @@ class AudioSimulator(
     }
 
     private fun generateContinuousAudioConfig(data: PatternData): List<ContinuousAudioConfig> {
-        val amplitudePoints = data.continuousPattern.amplitude.ifEmpty {
-            emptyList()
-        }
-        val frequencyPoints = data.continuousPattern.frequency.ifEmpty {
-            emptyList()
-        }
+        val amplitudePoints = data.continuousPattern.amplitude.ifEmpty { emptyList() }
+        val frequencyPoints = data.continuousPattern.frequency.ifEmpty { emptyList() }
 
         fun normalizeFrequencyForContinuous(x: Float): Float {
             return (CONTINUOUS_FREQUENCY_MIN + (CONTINUOUS_FREQUENCY_MAX - CONTINUOUS_FREQUENCY_MIN) * x).toFloat()
@@ -292,29 +287,13 @@ class AudioSimulator(
         val configs = mutableListOf<ContinuousAudioConfig>()
 
         val (amp1, freq1) = applyModifiers(amplitudePoints, frequencyPoints, 0.6f, 0.8f)
-        configs.add(
-            ContinuousAudioConfig(
-                type = "sine",
-                data = AudioDataConfig(amplitude = amp1, frequency = freq1)
-            )
-        )
+        configs.add(ContinuousAudioConfig(type = "sine", data = AudioDataConfig(amplitude = amp1, frequency = freq1)))
 
         val (amp2, freq2) = applyModifiers(amplitudePoints, frequencyPoints, 0.2f, 0.4f)
-        configs.add(
-            ContinuousAudioConfig(
-                type = "triangle",
-                data = AudioDataConfig(amplitude = amp2, frequency = freq2)
-            )
-        )
+        configs.add(ContinuousAudioConfig(type = "triangle", data = AudioDataConfig(amplitude = amp2, frequency = freq2)))
 
-        // Sine wave with 0.5 amplitude mod and 1.0 frequency mod
         val (amp3, freq3) = applyModifiers(amplitudePoints, frequencyPoints, 0.5f, 1.0f)
-        configs.add(
-            ContinuousAudioConfig(
-                type = "sine",
-                data = AudioDataConfig(amplitude = amp3, frequency = freq3)
-            )
-        )
+        configs.add(ContinuousAudioConfig(type = "sine", data = AudioDataConfig(amplitude = amp3, frequency = freq3)))
 
         return configs
     }
@@ -322,84 +301,126 @@ class AudioSimulator(
     private fun renderPattern(config: AudioPatternConfig): ByteArray? {
         val totalDuration = calculateTotalDuration(config)
         val bufferSize = (totalDuration * sampleRate).toInt() + 1
-
         if (bufferSize <= 0) return null
 
-        val samples = DoubleArray(bufferSize)
-        val phasesContinuous = DoubleArray(config.continuousData.size)
-        val phasesDiscrete = DoubleArray(config.discreteData.size)
-        val twoPi = 2 * PI
+        val samples = FloatArray(bufferSize)
+        val phasesContinuous = FloatArray(config.continuousData.size)
+        val phasesDiscrete = FloatArray(config.discreteData.size)
+        val twoPi = 2f * PI.toFloat()
 
-        // Process each sample
+        val continuousWaveforms: Array<WaveformType> = config.continuousData.map { wave ->
+            WaveformType.entries.find { it.name.equals(wave.type, ignoreCase = true) } ?: WaveformType.SINE
+        }.toTypedArray()
+
+        data class DiscreteOscillatorCache(
+            val startSample: Int,
+            val endSample: Int,
+            val freqInitial: Float,
+            val freqFinal: Float,
+            val freqDecaySamples: Int,
+            val logFreqRatio: Float,
+            val envAttackSamples: Int,
+            val envDecayEndSamples: Int,
+            val envSustainEndSamples: Int,
+            val envTotalSamples: Int,
+            val sustainLevel: Float,
+            val volume: Float,
+            val waveform: WaveformType
+        )
+
+        val discreteCache: List<DiscreteOscillatorCache> = config.discreteData.map { osc ->
+            val env = osc.oscillator.envelope
+            val totalEnvDur = env.attack + env.decay + env.sustainDuration + env.release
+            val startSample = (osc.timestamp / 1000.0 * sampleRate).toInt()
+            val endSample = startSample + ceil(totalEnvDur * sampleRate).toInt()
+            val freqCfg = osc.oscillator.frequency
+            val sweepDur = if (freqCfg.decayTime > 0) minOf(freqCfg.decayTime, totalEnvDur) else 0.0
+            val logRatio = if (freqCfg.decayTime > 0 && freqCfg.initial > 0)
+                ln(freqCfg.final / freqCfg.initial).toFloat() else 0f
+            DiscreteOscillatorCache(
+                startSample = startSample,
+                endSample = endSample,
+                freqInitial = freqCfg.initial.toFloat(),
+                freqFinal = freqCfg.final.toFloat(),
+                freqDecaySamples = (sweepDur * sampleRate).toInt(),
+                logFreqRatio = logRatio,
+                envAttackSamples = (env.attack * sampleRate).toInt(),
+                envDecayEndSamples = ((env.attack + env.decay) * sampleRate).toInt(),
+                envSustainEndSamples = ((env.attack + env.decay + env.sustainDuration) * sampleRate).toInt(),
+                envTotalSamples = (totalEnvDur * sampleRate).toInt(),
+                sustainLevel = env.sustainLevel.toFloat(),
+                volume = osc.volume,
+                waveform = osc.oscillator.waveform
+            )
+        }
+
+        val continuousAmpCursors = IntArray(config.continuousData.size) { 1 }
+        val continuousFreqCursors = IntArray(config.continuousData.size) { 1 }
+
+        fun valueForTime(points: List<ValuePoint>, tMs: Float, cursors: IntArray, idx: Int): Float {
+            if (points.isEmpty()) return 0f
+            if (tMs <= points[0].time) return points[0].value
+            if (tMs >= points.last().time) return points.last().value
+            while (cursors[idx] < points.size && points[cursors[idx]].time < tMs) cursors[idx]++
+            val p1 = points[cursors[idx] - 1]
+            val p2 = points[cursors[idx]]
+            val denom = p2.time - p1.time
+            if (denom <= 0f) return p1.value
+            val ratio = (tMs - p1.time) / denom
+            return p1.value + (p2.value - p1.value) * ratio
+        }
+
         for (i in 0 until bufferSize) {
-            val t = i.toDouble() / sampleRate
-            var sampleValue = 0.0
+            val tMs = i.toFloat() / sampleRateF * 1000f
+            var sampleValue = 0f
 
             // Continuous waves
             config.continuousData.forEachIndexed { waveIdx, waveConfig ->
                 if (waveConfig.data.amplitude.isNotEmpty() && waveConfig.data.frequency.isNotEmpty()) {
-                    val amp = valueForTime(waveConfig.data.amplitude, t)
-                    var freq = valueForTime(waveConfig.data.frequency, t)
-                    
-                    // Clamp frequency to reasonable bounds to avoid aliasing and strange sounds
-                    freq = freq.coerceIn(20.0, sampleRate / 2.0)
+                    val amp = valueForTime(waveConfig.data.amplitude, tMs, continuousAmpCursors, waveIdx)
+                    val freq = valueForTime(waveConfig.data.frequency, tMs, continuousFreqCursors, waveIdx)
+                        .coerceIn(20f, sampleRateF / 2f)
 
-                    phasesContinuous[waveIdx] += twoPi * freq / sampleRate
+                    phasesContinuous[waveIdx] += twoPi * freq / sampleRateF
                     if (phasesContinuous[waveIdx] > twoPi) phasesContinuous[waveIdx] -= twoPi
 
-                    val waveformType = WaveformType.entries.find { it.name.equals(waveConfig.type, ignoreCase = true) } ?: WaveformType.SINE
-                    sampleValue += amp * generateWaveform(waveformType, phasesContinuous[waveIdx])
+                    sampleValue += amp * generateWaveform(continuousWaveforms[waveIdx], phasesContinuous[waveIdx])
                 }
             }
 
-            // Discrete waves (transients)
-            config.discreteData.forEachIndexed { oscIdx, oscConfig ->
-                val eventStartTime = oscConfig.timestamp / 1000.0
-                val relativeTime = t - eventStartTime
+            discreteCache.forEachIndexed { oscIdx, pre ->
+                if (i < pre.startSample || i >= pre.endSample) return@forEachIndexed
 
-                if (relativeTime >= 0) {
-                    val envelope = oscConfig.oscillator.envelope
-                    val totalDuration = envelope.attack + envelope.decay + envelope.sustainDuration + envelope.release
+                val relSample = i - pre.startSample
 
-                    if (relativeTime < totalDuration) {
-                        // Apply ADSR envelope
-                        val envValue = when {
-                            relativeTime < envelope.attack -> {
-                                relativeTime / envelope.attack
-                            }
-                            relativeTime < envelope.attack + envelope.decay -> 1.0
-                            relativeTime < envelope.attack + envelope.decay + envelope.sustainDuration -> envelope.sustainLevel
-                            else -> {
-                                val releaseTime = relativeTime - (envelope.attack + envelope.decay + envelope.sustainDuration)
-                                if (envelope.release > 0) 1.0 - (releaseTime / envelope.release) else 0.0
-                            }
-                        }
-
-                        // Frequency sweep
-                        val freqConfig = oscConfig.oscillator.frequency
-                        var freq = freqConfig.initial
-                        if (freqConfig.decayTime > 0) {
-                            val sweepDuration = minOf(freqConfig.decayTime, totalDuration)
-                            if (relativeTime < sweepDuration) {
-                                val ratio = relativeTime / freqConfig.decayTime
-                                freq = freqConfig.initial * (freqConfig.final / freqConfig.initial).pow(ratio)
-                            } else {
-                                freq = freqConfig.final
-                            }
-                        }
-
-                        phasesDiscrete[oscIdx] += twoPi * freq / sampleRate
-                        if (phasesDiscrete[oscIdx] > twoPi) phasesDiscrete[oscIdx] -= twoPi
-
-                        sampleValue += oscConfig.volume * envValue * generateWaveform(oscConfig.oscillator.waveform, phasesDiscrete[oscIdx])
+                val envValue: Float = when {
+                    relSample < pre.envAttackSamples ->
+                        if (pre.envAttackSamples > 0) relSample.toFloat() / pre.envAttackSamples else 1f
+                    relSample < pre.envDecayEndSamples -> 1f
+                    relSample < pre.envSustainEndSamples -> pre.sustainLevel
+                    else -> {
+                        val relRelease = relSample - pre.envSustainEndSamples
+                        val releaseSamples = pre.envTotalSamples - pre.envSustainEndSamples
+                        if (releaseSamples > 0) 1f - relRelease.toFloat() / releaseSamples else 0f
                     }
                 }
+
+                val freq = if (pre.freqDecaySamples > 0 && relSample < pre.freqDecaySamples) {
+                    val ratio = relSample.toFloat() / pre.freqDecaySamples
+                    pre.freqInitial * exp(pre.logFreqRatio * ratio)
+                } else {
+                    pre.freqFinal
+                }
+
+                phasesDiscrete[oscIdx] += twoPi * freq / sampleRateF
+                if (phasesDiscrete[oscIdx] > twoPi) phasesDiscrete[oscIdx] -= twoPi
+
+                sampleValue += pre.volume * envValue * generateWaveform(pre.waveform, phasesDiscrete[oscIdx])
             }
 
             samples[i] = sampleValue
         }
 
-        // Convert to 16-bit PCM
         return convertToByteArray(samples)
     }
 
@@ -425,35 +446,10 @@ class AudioSimulator(
         return maxOf(continuousDuration, discreteDuration)
     }
 
-    private fun valueForTime(points: List<ValuePoint>, t: Double): Double {
-        if (points.isEmpty()) return 0.0
-        val tMs = t * 1000.0
-        if (tMs <= points[0].time) return points[0].value.toDouble()
-        if (tMs >= points.last().time) return points.last().value.toDouble()
-
-        for (i in 1 until points.size) {
-            val p1 = points[i - 1]
-            val p2 = points[i]
-            if (tMs <= p2.time) {
-                val t0 = p1.time.toDouble()
-                val t1 = p2.time.toDouble()
-                val v0 = p1.value.toDouble()
-                val v1 = p2.value.toDouble()
-                
-                // Prevent division by zero
-                if (t1 <= t0) return v0
-                
-                val ratio = (tMs - t0) / (t1 - t0)
-                return v0 + (v1 - v0) * ratio
-            }
-        }
-        return points.last().value.toDouble()
-    }
-
-    private fun convertToByteArray(samples: DoubleArray): ByteArray {
+    private fun convertToByteArray(samples: FloatArray): ByteArray {
         val byteArray = ByteArray(samples.size * 2)
         for (i in samples.indices) {
-            val sample = (samples[i] * 32767).toInt().coerceIn(-32768, 32767)
+            val sample = (samples[i] * 32767f).toInt().coerceIn(-32768, 32767)
             byteArray[i * 2] = (sample and 0xFF).toByte()
             byteArray[i * 2 + 1] = ((sample shr 8) and 0xFF).toByte()
         }

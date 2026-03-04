@@ -2,7 +2,7 @@ import Foundation
 import AVFoundation
 
 public class AudioSimulator: NSObject {
-	private let sampleRate: Double = 44100
+	private let sampleRate: Double = 22050
 	private var audioContext: AVAudioEngine = AVAudioEngine()
 	private var offlineContext: AVAudioEngine?
 	private var currentSource: AVAudioPlayerNode?
@@ -15,7 +15,7 @@ public class AudioSimulator: NSObject {
 #else
   private var playSound: Bool = false
 #endif
-    
+
 	public override init() {
 		super.init()
     if (playSound) {
@@ -27,22 +27,22 @@ public class AudioSimulator: NSObject {
     if (!playSound) {
       return nil
     }
-		
+
 		let currentConfig = AudioPatternConfig(
       discreteData: generateDiscreteAudioConfig(from: data),
       continuousData: generateContinuousAudioConfig(from: data)
     )
-		
+
 		return renderPattern(config: currentConfig)
 	}
- 
+
   public func enableSound(_ value: Bool) {
     self.playSound = value
   }
-    
+
 	private func configureAudioContext() {
 		guard !isEngineConfigured else { return }
-		
+
     let session = AVAudioSession.sharedInstance()
 		do {
 			try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
@@ -50,10 +50,10 @@ public class AudioSimulator: NSObject {
 		} catch {
 			print("AudioSession error: \(error)")
 		}
-        
+
 		// Setup audio engine: Player -> Filter(lowpass) -> MainMixer
 		audioContext.attach(playerNode)
-        
+
 		let band = filterNode.bands.first!
     band.filterType = .lowPass
     band.frequency = 700
@@ -61,11 +61,11 @@ public class AudioSimulator: NSObject {
     band.gain = 1
     band.bypass = false
     audioContext.attach(filterNode)
-        
+
 		let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
 		audioContext.connect(playerNode, to: filterNode, format: format)
 		audioContext.connect(filterNode, to: audioContext.mainMixerNode, format: format)
-        
+
 		do {
 			try audioContext.start()
 			isEngineConfigured = true
@@ -73,10 +73,10 @@ public class AudioSimulator: NSObject {
 			print("Failed to start AVAudioEngine: \(error)")
 		}
 	}
-	
+
 	private func generateWaveform(_ waveform: WaveformType, phase: Double) -> Double {
 		let normalizedPhase = phase.truncatingRemainder(dividingBy: Double.pi * 2) / (Double.pi * 2)
-		
+
 		switch waveform {
 		case .sine:
 			return sin(phase)
@@ -94,27 +94,27 @@ public class AudioSimulator: NSObject {
 			return (normalizedPhase * 2.0) - 1.0
 		}
 	}
-    
+
 	private func generateDiscreteAudioConfig(from data: PatternData) -> [DiscreteAudioConfig] {
 		var discreteData: [DiscreteAudioConfig] = []
-		
+
 		let sources = 3
 		let maxFrequency = 440.0
 		let minFrequency = 60.0
-		
+
 		func normalizeFrequency(_ value: Float) -> Double {
 			return minFrequency + (maxFrequency - minFrequency) * Double(value)
 		}
-		
+
 		func alignVolume(_ x: Float, sources: Int) -> Float {
 			return Float(0.1 / Double(sources) + 0.9 / Double(sources) * Double(x))
 		}
-		
+
 		for discretePoint in data.discretePattern {
 			let baseFrequency = normalizeFrequency(discretePoint.frequency)
 			let targetFrequency = baseFrequency * 0.2
 			let volume = alignVolume(discretePoint.amplitude, sources: sources)
-			
+
 			// Base oscillator
 			discreteData.append(DiscreteAudioConfig(
 				oscillator: OscillatorConfig(
@@ -125,7 +125,7 @@ public class AudioSimulator: NSObject {
 				timestamp: Double(discretePoint.time),
 				volume: volume
 			))
-			
+
 			// Harmonic 1 (1.5x)
 			let harmonic1 = baseFrequency * 1.5
 			let targetHarmonic1 = harmonic1 * 0.4
@@ -138,7 +138,7 @@ public class AudioSimulator: NSObject {
 				timestamp: Double(discretePoint.time),
 				volume: volume
 			))
-			
+
 			// Harmonic 2 (0.3x)
 			let harmonic2 = baseFrequency * 0.3
 			let targetHarmonic2 = harmonic2 * 0.5
@@ -152,18 +152,18 @@ public class AudioSimulator: NSObject {
 				volume: volume
 			))
 		}
-		
+
 		return discreteData
 	}
-	
+
 	private func generateContinuousAudioConfig(from data: PatternData) -> [ContinuousAudioConfig] {
 		let amplitudePoints: [ValuePoint] = data.continuousPattern.amplitude.count > 0 ? data.continuousPattern.amplitude : []
 		let frequencyPoints: [ValuePoint] = data.continuousPattern.frequency.count > 1 ? data.continuousPattern.frequency : []
-		
+
 		func normalizeFrequency(_ x: Float) -> Double {
 			return 80.0 + (230.0 - 80.0) * Double(x)
 		}
-		
+
 		func applyModifiers(amplitude: [ValuePoint], frequency: [ValuePoint], ampMod: Double, freqMod: Double) -> (amplitude: [ValuePoint], frequency: [ValuePoint]) {
 			let modifiedAmplitude = amplitude.map { point in
 				ValuePoint(time: point.time, value: Float(Double(point.value) * ampMod))
@@ -173,7 +173,7 @@ public class AudioSimulator: NSObject {
 			}
 			return (modifiedAmplitude, modifiedFrequency)
 		}
-		
+
 		let continuousConfigs: [ContinuousAudioConfig] = [
       ContinuousAudioConfig(
         type: "sine",
@@ -188,14 +188,14 @@ public class AudioSimulator: NSObject {
         data: applyModifiers(amplitude: amplitudePoints, frequency: frequencyPoints, ampMod: 0.5, freqMod: 1.0),
       )
     ]
-		
+
 		return continuousConfigs
 	}
-	
+
 	private func renderPattern(config: AudioPatternConfig) -> AVAudioPCMBuffer? {
 		let discreteData = config.discreteData
 		let continuousData = config.continuousData
-    
+
     func calculateTotalDuration() -> Double {
       var continuousDuration: Double = 0
       for wave in continuousData {
@@ -204,7 +204,7 @@ public class AudioSimulator: NSObject {
         }
       }
       continuousDuration += 0.01
-      
+
       var discreteDuration: Double = 0
       for config in discreteData {
         let eventStartTime = config.timestamp / 1000.0
@@ -214,10 +214,10 @@ public class AudioSimulator: NSObject {
         discreteDuration = max(discreteDuration, eventEndTime)
       }
       discreteDuration += 0.1
-      
+
       return max(continuousDuration, discreteDuration)
     }
-		
+
     let totalDuration = calculateTotalDuration()
 		let frameCount = AVAudioFrameCount(Int(totalDuration * sampleRate) + 1)
 		let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
@@ -226,111 +226,135 @@ public class AudioSimulator: NSObject {
 		}
 		buffer.frameLength = frameCount
 		let out = buffer.floatChannelData![0]
-        
+
 		// Initialize buffer to silence
 		memset(out, 0, Int(frameCount) * MemoryLayout<Float>.size)
-        
-		var phasesContinuous: [Double] = Array(repeating: 0, count: continuousData.count)
-		var phasesDiscrete: [Double] = Array(repeating: 0, count: discreteData.count)
-		let twoPi = Double.pi * 2
-        
-		func valueForTime(_ points: [ValuePoint], _ t: Double) -> Float {
+
+		let sampleRateF = Float(sampleRate)
+		let twoPi = Float.pi * 2
+		var phasesContinuous: [Float] = Array(repeating: 0, count: continuousData.count)
+		var phasesDiscrete: [Float] = Array(repeating: 0, count: discreteData.count)
+
+		let continuousWaveforms: [WaveformType] = continuousData.map { WaveformType(rawValue: $0.type) ?? .sine }
+
+		struct DiscreteOscillatorCache {
+			let startSample: Int
+			let endSample: Int
+			let freqInitial: Float
+			let freqFinal: Float
+			let freqDecaySamples: Int
+			let logFreqRatio: Float
+			let envAttackSamples: Int
+			let envDecayEndSamples: Int
+			let envSustainEndSamples: Int
+			let envTotalSamples: Int
+			let sustainLevel: Float
+			let volume: Float
+			let waveform: WaveformType
+		}
+		let discretePrecomp: [DiscreteOscillatorCache] = discreteData.map { osc in
+			let env = osc.oscillator.envelope
+			let totalEnvDur = env.attack + env.decay + env.sustainDuration + env.release
+			let startSample = Int(osc.timestamp / 1000.0 * sampleRate)
+			let endSample = startSample + Int(ceil(totalEnvDur * sampleRate))
+			let freqCfg = osc.oscillator.frequency
+			let sweepDur = freqCfg.decayTime > 0 ? min(freqCfg.decayTime, totalEnvDur) : 0
+			let logRatio: Float = (freqCfg.decayTime > 0 && freqCfg.initial > 0)
+				? log(Float(freqCfg.final / freqCfg.initial))
+				: 0
+			return DiscreteOscillatorCache(
+				startSample: startSample,
+				endSample: endSample,
+				freqInitial: Float(freqCfg.initial),
+				freqFinal: Float(freqCfg.final),
+				freqDecaySamples: Int(sweepDur * sampleRate),
+				logFreqRatio: logRatio,
+				envAttackSamples: Int(env.attack * sampleRate),
+				envDecayEndSamples: Int((env.attack + env.decay) * sampleRate),
+				envSustainEndSamples: Int((env.attack + env.decay + env.sustainDuration) * sampleRate),
+				envTotalSamples: Int(totalEnvDur * sampleRate),
+				sustainLevel: Float(env.sustainLevel),
+				volume: osc.volume,
+				waveform: osc.oscillator.waveform
+			)
+		}
+
+		var continuousAmpCursors: [Int] = Array(repeating: 1, count: continuousData.count)
+		var continuousFreqCursors: [Int] = Array(repeating: 1, count: continuousData.count)
+
+		@inline(__always)
+		func valueForTime(_ points: [ValuePoint], _ tMs: Float, cursor: inout Int) -> Float {
 			if points.isEmpty { return 0 }
-			let tInMs = t * 1000.0  // Convert seconds to milliseconds
-			if tInMs <= points[0].time { return points[0].value }
-			if tInMs >= points.last!.time { return points.last!.value }
-			for i in 1..<points.count {
-				let p1 = points[i - 1]
-				let p2 = points[i]
-				if tInMs <= p2.time {
-					let t0 = p1.time, t1 = p2.time
-					let v0 = p1.value, v1 = p2.value
-					let ratio = Float((tInMs - t0) / (t1 - t0))
-					return v0 + (v1 - v0) * ratio
-				}
-			}
-			return points.last!.value
+			if tMs <= Float(points[0].time) { return points[0].value }
+			if tMs >= Float(points.last!.time) { return points.last!.value }
+			while cursor < points.count && Float(points[cursor].time) < tMs { cursor += 1 }
+			let p1 = points[cursor - 1], p2 = points[cursor]
+			let ratio = (tMs - Float(p1.time)) / (Float(p2.time) - Float(p1.time))
+			return p1.value + (p2.value - p1.value) * ratio
 		}
-        
-		func normalizeFrequency(_ y: Float) -> Double {
-			return Double(y)
-		}
-		
+
 		for i in 0..<Int(frameCount) {
-			let t = Double(i) / sampleRate
-			var sampleValue: Double = 0
-            
-			// Continuous waves
-			for (waveIdx, waveConfig) in continuousData.enumerated() {
+			let tMs = Float(i) / sampleRateF * 1000.0
+			var sampleValue: Float = 0
+
+			for waveIdx in 0..<continuousData.count {
+				let waveConfig = continuousData[waveIdx]
 				if !waveConfig.data.amplitude.isEmpty && !waveConfig.data.frequency.isEmpty {
-					let amp = Double(valueForTime(waveConfig.data.amplitude, t))
-					let freq = normalizeFrequency(valueForTime(waveConfig.data.frequency, t))
-                    
-					phasesContinuous[waveIdx] += twoPi * freq / sampleRate
+					let amp = valueForTime(waveConfig.data.amplitude, tMs, cursor: &continuousAmpCursors[waveIdx])
+					let freq = valueForTime(waveConfig.data.frequency, tMs, cursor: &continuousFreqCursors[waveIdx])
+
+					phasesContinuous[waveIdx] += twoPi * freq / sampleRateF
 					if phasesContinuous[waveIdx] > twoPi { phasesContinuous[waveIdx] -= twoPi }
-					
-					let waveformType = WaveformType(rawValue: waveConfig.type) ?? .sine
-					sampleValue += amp * generateWaveform(waveformType, phase: phasesContinuous[waveIdx])
+
+					sampleValue += amp * Float(generateWaveform(continuousWaveforms[waveIdx], phase: Double(phasesContinuous[waveIdx])))
 				}
 			}
-            
-			// Discrete waves (transients)
-			for (oscIdx, oscConfig) in discreteData.enumerated() {
-				let eventStartTime = oscConfig.timestamp / 1000.0
-				let relativeTime = t - eventStartTime
-				
-				guard relativeTime >= 0 else { continue }
-				
-				let envelope = oscConfig.oscillator.envelope
-				let totalDuration = envelope.attack + envelope.decay + envelope.sustainDuration + envelope.release
-				
-				guard relativeTime < totalDuration else { continue }
-				guard oscIdx < phasesDiscrete.count else { continue }
-                
-				// Apply envelope (ADSR)
-				var envValue: Float = 0
-				if relativeTime < envelope.attack {
-					envValue = envelope.attack > 0 ? Float(relativeTime / envelope.attack) : 1.0
-				} else if relativeTime < envelope.attack + envelope.decay {
+
+			for oscIdx in 0..<discretePrecomp.count {
+				let pre = discretePrecomp[oscIdx]
+				guard i >= pre.startSample && i < pre.endSample else { continue }
+
+				let relSample = i - pre.startSample
+
+				let envValue: Float
+				if relSample < pre.envAttackSamples {
+					envValue = pre.envAttackSamples > 0 ? Float(relSample) / Float(pre.envAttackSamples) : 1.0
+				} else if relSample < pre.envDecayEndSamples {
 					envValue = 1.0
-				} else if relativeTime < envelope.attack + envelope.decay + envelope.sustainDuration {
-					envValue = Float(envelope.sustainLevel)
+				} else if relSample < pre.envSustainEndSamples {
+					envValue = pre.sustainLevel
 				} else {
-					let releaseTime = relativeTime - (envelope.attack + envelope.decay + envelope.sustainDuration)
-					envValue = envelope.release > 0 ? Float(1.0 - (releaseTime / envelope.release)) : 0
+					let relRelease = relSample - pre.envSustainEndSamples
+					let releaseSamples = pre.envTotalSamples - pre.envSustainEndSamples
+					envValue = releaseSamples > 0 ? 1.0 - Float(relRelease) / Float(releaseSamples) : 0
 				}
-                
-				// Frequency sweep
-				let freqConfig = oscConfig.oscillator.frequency
-				var freq = freqConfig.initial
-				if freqConfig.decayTime > 0 {
-					let sweepDuration = min(freqConfig.decayTime, totalDuration)
-					if relativeTime < sweepDuration {
-						let ratio = relativeTime / freqConfig.decayTime
-						freq = freqConfig.initial * pow(freqConfig.final / freqConfig.initial, ratio)
-					} else {
-						freq = freqConfig.final
-					}
+
+				let freq: Float
+				if pre.freqDecaySamples > 0 && relSample < pre.freqDecaySamples {
+					let ratio = Float(relSample) / Float(pre.freqDecaySamples)
+					freq = pre.freqInitial * exp(pre.logFreqRatio * ratio)
+				} else {
+					freq = pre.freqFinal
 				}
-                
-				phasesDiscrete[oscIdx] += twoPi * freq / sampleRate
+
+				phasesDiscrete[oscIdx] += twoPi * freq / sampleRateF
 				if phasesDiscrete[oscIdx] > twoPi { phasesDiscrete[oscIdx] -= twoPi }
-                
-				sampleValue += Double(oscConfig.volume * envValue) * generateWaveform(oscConfig.oscillator.waveform, phase: phasesDiscrete[oscIdx])
+
+				sampleValue += pre.volume * envValue * Float(generateWaveform(pre.waveform, phase: Double(phasesDiscrete[oscIdx])))
 			}
-            
-			out[i] = Float(sampleValue)
+
+			out[i] = sampleValue
 		}
-        
+
 		return buffer
 	}
-  
+
 	public func play(buffer: AVAudioPCMBuffer?) {
     guard buffer != nil && playSound else { return }
 		configureAudioContext()
-        
+
 		if playerNode.isPlaying { playerNode.stop() }
-    
+
 		playerNode.scheduleBuffer(buffer!, at: nil, options: []) { [weak self] in
 			DispatchQueue.main.async {
 				self?.stop()
@@ -338,11 +362,11 @@ public class AudioSimulator: NSObject {
 		}
 		playerNode.play()
 	}
-    
+
 	public func stop() {
 		playerNode.stop()
 	}
-    
+
 	public var isPlaying: Bool {
 		return playerNode.isPlaying
 	}
