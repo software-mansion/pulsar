@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@pulsar/haptics - Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+          'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 28px;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+
+      .section {
+        margin-bottom: 30px;
+      }
+
+      .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #667eea;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      .button-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      button {
+        padding: 12px 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+        text-align: center;
+      }
+
+      button:active {
+        transform: scale(0.95);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+      }
+
+      .btn-success {
+        background: #48bb78;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #38a169;
+      }
+
+      .btn-warning {
+        background: #ed8936;
+        color: white;
+      }
+
+      .btn-warning:hover {
+        background: #dd6b20;
+      }
+
+      .btn-danger {
+        background: #f56565;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #e53e3e;
+      }
+
+      .btn-secondary {
+        background: #e2e8f0;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #cbd5e0;
+      }
+
+      .full-width {
+        grid-column: 1 / -1;
+      }
+
+      .status {
+        background: #f7fafc;
+        border-left: 4px solid #667eea;
+        padding: 12px;
+        border-radius: 4px;
+        margin-top: 20px;
+        font-size: 13px;
+        color: #333;
+      }
+
+      .status-label {
+        font-weight: 600;
+        color: #667eea;
+      }
+
+      .status-value {
+        color: #666;
+      }
+
+      .pattern-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .info {
+        background: #edf2f7;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 12px;
+        color: #553c9a;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+
+      .unsupported {
+        background: #fed7d7;
+        border-left: 4px solid #f56565;
+        padding: 12px;
+        border-radius: 4px;
+        color: #c53030;
+        font-size: 13px;
+      }
+
+      code {
+        background: #f7fafc;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔔 Haptics Demo</h1>
+      <p class="subtitle">Test the @pulsar/haptics library</p>
+
+      <div id="unsupported" class="unsupported" style="display: none">
+        ⚠️ This device does not support the Vibration API
+      </div>
+
+      <div class="info">
+        <strong>📱 Tip:</strong> Haptics work on mobile devices. If you're on
+        desktop, visualize the patterns in the status below.
+      </div>
+
+      <div class="section">
+        <div class="section-title">Quick Tap</div>
+        <div class="button-group full-width">
+          <button class="btn-primary full-width" onclick="playSimpleTap()">
+            Tap (50ms)
+          </button>
+          <button class="btn-primary full-width" onclick="playMediumHaptic()">
+            Medium (100ms)
+          </button>
+          <button class="btn-primary full-width" onclick="playHeavyHaptic()">
+            Heavy (200ms)
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Preset Patterns</div>
+        <div class="pattern-grid">
+          <button class="btn-primary" onclick="playPatternByName('tap')">
+            Tap
+          </button>
+          <button class="btn-primary" onclick="playPatternByName('pulse')">
+            Pulse
+          </button>
+          <button class="btn-success" onclick="playPatternByName('success')">
+            ✓ Success
+          </button>
+          <button class="btn-warning" onclick="playPatternByName('warning')">
+            ⚠ Warning
+          </button>
+          <button class="btn-danger" onclick="playPatternByName('error')">
+            ✕ Error
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Control</div>
+        <div class="button-group">
+          <button class="btn-secondary full-width" onclick="stopHaptic()">
+            Stop
+          </button>
+        </div>
+      </div>
+
+      <div class="status">
+        <div>
+          <span class="status-label">Status:</span>
+          <span class="status-value" id="haptic-status">idle</span>
+        </div>
+        <div style="margin-top: 8px">
+          <span class="status-label">Last Action:</span>
+          <span class="status-value" id="haptic-action">-</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="dist/haptics.umd.js"></script>
+    <script>
+      // Check vibration support
+      if (!window.Haptics) {
+        document.getElementById('unsupported').style.display = 'block'
+      }
+
+      // Helper functions
+      function updateStatus(action) {
+        const status = window.Haptics.haptics.getStatus()
+        document.getElementById('haptic-status').textContent = status
+        if (action) {
+          document.getElementById('haptic-action').textContent = action
+        }
+      }
+
+      function playSimpleTap() {
+        window.Haptics.playHaptic({ duration: 50, intensity: 'light' })
+        updateStatus('Simple Tap')
+      }
+
+      function playMediumHaptic() {
+        window.Haptics.playHaptic({ duration: 100, intensity: 'medium' })
+        updateStatus('Medium Haptic')
+      }
+
+      function playHeavyHaptic() {
+        window.Haptics.playHaptic({ duration: 200, intensity: 'heavy' })
+        updateStatus('Heavy Haptic')
+      }
+
+      function playPatternByName(name) {
+        try {
+          window.Haptics.playPattern(name)
+          updateStatus(`Pattern: ${name}`)
+        } catch (error) {
+          console.error('Error playing pattern:', error)
+        }
+      }
+
+      function stopHaptic() {
+        window.Haptics.stopHaptic()
+        updateStatus('Stopped')
+      }
+
+      // Initial status update
+      updateStatus('Ready')
+    </script>
+  </body>
+</html>
