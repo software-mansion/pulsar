@@ -17,14 +17,15 @@ const defaultEdges = {
 
 const demos = [
   {
+    slug: 'slider-demo',
+    title: 'Slider demo',
+    description: 'Subtle ticks to confirm step-by-step navigation or onboarding progress.',
+  },
+  
+  {
     slug: 'typing-feedback',
     title: 'Typing feedback',
     description: 'Micro taps on key presses to confirm input without sound.',
-  },
-  {
-    slug: 'navigation-tick',
-    title: 'Navigation tick',
-    description: 'Subtle ticks to confirm step-by-step navigation or onboarding progress.',
   },
   {
     slug: 'payment-success',
@@ -61,7 +62,7 @@ export default function DemosScreen() {
             {demos.map((demo) => (
               <Link
                 key={demo.slug}
-                href={`/demos/${demo.slug}`}
+                href={`/demos/${demo.slug}` as any}
                 onPress={() => {
                   posthog.capture('demo_opened', {
                     demo_slug: demo.slug,
