@@ -21,10 +21,10 @@ const demos = [
     title: 'Slider demo',
     description: 'Subtle ticks to confirm step-by-step navigation or onboarding progress.',
   },
-  
+
   {
-    slug: 'typing-feedback',
-    title: 'Typing feedback',
+    slug: 'buttons-demo',
+    title: 'Buttons demo',
     description: 'Micro taps on key presses to confirm input without sound.',
   },
   {

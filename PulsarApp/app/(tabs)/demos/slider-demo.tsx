@@ -1,7 +1,7 @@
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback } from 'react';
-import { usePatternComposer, Pattern } from 'react-native-pulsar';
+import { useHapticsComposer, Pattern } from 'react-native-pulsar';
 
 import BasicLayout from '@/components/BasicLayout';
 import { ThemedText } from '@/components/themed-text';
@@ -56,9 +56,9 @@ export default function SliderDemo() {
   const [value2, setValue2] = useState(50);
   const [value3, setValue3] = useState(50);
 
-  const quickTickComposer = usePatternComposer(quickTickPattern);
-  const softTickComposer = usePatternComposer(softTickPattern);
-  const deepTickComposer = usePatternComposer(deepTickPattern);
+  const quickTickComposer = useHapticsComposer(quickTickPattern);
+  const softTickComposer = useHapticsComposer(softTickPattern);
+  const deepTickComposer = useHapticsComposer(deepTickPattern);
 
   const handleSlider1Change = useCallback((newValue: number) => {
     const oldTick = Math.floor(value1 / 10);
