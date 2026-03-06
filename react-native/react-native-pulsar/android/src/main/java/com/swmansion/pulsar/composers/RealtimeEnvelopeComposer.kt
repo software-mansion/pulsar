@@ -22,7 +22,6 @@ class RealtimeEnvelopeComposer(
     }
 
     private var isPlaying = false
-    private var isDiscreteScheduled = false
     private var currentAmplitude = 0.0f
     private var currentFrequency = 0.0f
     private var schedulerJob: Job? = null
@@ -39,9 +38,6 @@ class RealtimeEnvelopeComposer(
     }
 
     override fun set(amplitude: Float, frequency: Float) {
-        if (isDiscreteScheduled) {
-            return
-        }
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
         if (!isPlaying) {
@@ -50,8 +46,13 @@ class RealtimeEnvelopeComposer(
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {
-        set(amplitude, frequency)
-        isDiscreteScheduled = true
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
+        }
+        val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
+            ControlPoint(amplitude, frequency, SEGMENT_DURATION_MS)
+        ))
+        engine.vibrate(effect)
     }
 
     override fun stop() {
@@ -74,9 +75,6 @@ class RealtimeEnvelopeComposer(
                 val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
                     ControlPoint(currentAmplitude, currentFrequency, SEGMENT_DURATION_MS)
                 ))
-                if (isDiscreteScheduled) {
-                    isDiscreteScheduled = false
-                }
                 engine.vibrate(effect)
                 delay(SEGMENT_DURATION_MS)
             }
