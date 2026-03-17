@@ -1,0 +1,4 @@
+---
+include:
+  - '/ci/configs.yml'
+  - '/ci/builds.yml'

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/piaskowyk/projects/pulsar/playground -name *preset* -type f)",
+      "Bash(grep -E \"\\\\.\\(json|ts|js\\)$\")",
+      "Bash(curl -s \"http://localhost:3456/api/dirs?dir=\")",
+      "Bash(pkill -f \"node server.js\")",
+      "Bash(npx tsc:*)",
+      "Bash(node generate-images.js)"
+    ]
+  }
+}
