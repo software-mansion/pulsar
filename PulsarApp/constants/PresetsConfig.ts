@@ -1,18 +1,5 @@
 import { Presets } from "react-native-pulsar";
-export interface Tag {
-  label: string;
-  variant: "white" | "blue";
-}
-
-export interface PresetProps {
-  name: string;
-  shortName: string;
-  description: string;
-  tags: Tag[];
-  duration?: number;
-  image: any,
-  play: () => void;
-}
+import { PresetProps } from "./types";
 
 const placeholder = require('@/assets/images/chart_placeholder.png');
 
