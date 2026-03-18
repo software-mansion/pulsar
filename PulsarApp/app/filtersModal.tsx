@@ -21,6 +21,13 @@ type FiltersCollection = {
   [groupName: string]: FilterState;
 };
 
+const defaultEdges = {
+  top: 'additive',
+  left: 'additive',
+  bottom: 'off',
+  right: 'additive',
+};
+
 export default function FiltersModal() {
   const posthog = usePostHog();
   const { selectedTags, setSelectedTags } = useFilters();
@@ -88,7 +95,7 @@ export default function FiltersModal() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.closeButton}>
