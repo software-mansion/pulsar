@@ -1,0 +1,87 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0.15
+      },
+      {
+        "time": 700,
+        "value": 0.75
+      },
+      {
+        "time": 710,
+        "value": 0.2
+      },
+      {
+        "time": 720,
+        "value": 0.25
+      },
+      {
+        "time": 1400,
+        "value": 0.95
+      },
+      {
+        "time": 1600,
+        "value": 0.5
+      },
+      {
+        "time": 1800,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.08
+      },
+      {
+        "time": 700,
+        "value": 0.45
+      },
+      {
+        "time": 720,
+        "value": 0.12
+      },
+      {
+        "time": 1400,
+        "value": 0.55
+      },
+      {
+        "time": 1800,
+        "value": 0.3
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.2,
+      "frequency": 0.1
+    },
+    {
+      "time": 700,
+      "amplitude": 0.8,
+      "frequency": 0.4
+    },
+    {
+      "time": 720,
+      "amplitude": 0.3,
+      "frequency": 0.15
+    },
+    {
+      "time": 1400,
+      "amplitude": 1,
+      "frequency": 0.5
+    }
+  ],
+  "name": "EngineRev",
+  "description": "Two revving surges separated by a gear-shift dip, building from idle to full throttle, ideal for racing games or mechanical acceleration feedback.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bumps",
+    "Long"
+  ],
+  "duration": 1800
+}

@@ -1,0 +1,47 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 0.594,
+      "frequency": 0.594
+    },
+    {
+      "time": 73,
+      "amplitude": 0.588,
+      "frequency": 0.588
+    },
+    {
+      "time": 151,
+      "amplitude": 0.588,
+      "frequency": 0.588
+    },
+    {
+      "time": 299,
+      "amplitude": 1,
+      "frequency": 0.3
+    },
+    {
+      "time": 380,
+      "amplitude": 1,
+      "frequency": 0.303
+    },
+    {
+      "time": 455,
+      "amplitude": 1,
+      "frequency": 0.3
+    }
+  ],
+  "name": "DoubleBurst",
+  "description": "Six taps in two groups escalating from medium to bold amplitude with decreasing frequency, for a strong double-burst pattern.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 455
+}

@@ -1,0 +1,48 @@
+{
+  "name": "BtnMenu",
+  "description": "A single soft, warm tap that gently acknowledges opening a menu or drawer without disrupting the user's flow.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.42
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 15,
+        "value": 0.45
+      },
+      {
+        "time": 80,
+        "value": 0.35
+      },
+      {
+        "time": 160,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.42
+      },
+      {
+        "time": 160,
+        "value": 0.4
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bump",
+    "Short"
+  ],
+  "duration": 160
+}

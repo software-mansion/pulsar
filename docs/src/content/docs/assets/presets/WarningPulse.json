@@ -1,0 +1,57 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.8
+      },
+      {
+        "time": 80,
+        "value": 0
+      },
+      {
+        "time": 150,
+        "value": 0.45
+      },
+      {
+        "time": 230,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.65
+      },
+      {
+        "time": 230,
+        "value": 0.6
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.8,
+      "frequency": 0.65
+    },
+    {
+      "time": 150,
+      "amplitude": 0.45,
+      "frequency": 0.6
+    }
+  ],
+  "name": "WarningPulse",
+  "description": "A strong sharp strike followed by a softer echo like an accelerated heartbeat, ideal for warning alerts or pre-danger tension feedback.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 230
+}

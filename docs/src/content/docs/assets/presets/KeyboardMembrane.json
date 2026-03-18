@@ -1,0 +1,52 @@
+{
+  "name": "KeyboardMembrane",
+  "description": "A soft, muffled press with no distinct click point \u2014 best for simulating the quiet, cushioned feel of a membrane keyboard.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.35,
+      "frequency": 0.38
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 12,
+        "value": 0.33
+      },
+      {
+        "time": 50,
+        "value": 0.18
+      },
+      {
+        "time": 100,
+        "value": 0.06
+      },
+      {
+        "time": 140,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.38
+      },
+      {
+        "time": 140,
+        "value": 0.35
+      }
+    ]
+  },
+  "tags": [
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 140
+}

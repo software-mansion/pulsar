@@ -1,0 +1,61 @@
+{
+  "name": "BtnDestructive",
+  "description": "Two sharp, high-frequency warning strikes that haptically signal an irreversible action such as delete or remove.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.85,
+      "frequency": 0.8
+    },
+    {
+      "time": 100,
+      "amplitude": 0.7,
+      "frequency": 0.78
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.85
+      },
+      {
+        "time": 65,
+        "value": 0
+      },
+      {
+        "time": 100,
+        "value": 0.7
+      },
+      {
+        "time": 165,
+        "value": 0.2
+      },
+      {
+        "time": 250,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.8
+      },
+      {
+        "time": 250,
+        "value": 0.76
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 250
+}

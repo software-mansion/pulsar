@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 0.809,
+      "frequency": 0.897
+    },
+    {
+      "time": 199,
+      "amplitude": 1,
+      "frequency": 0.413
+    }
+  ],
+  "name": "DoublePulse",
+  "description": "Two bold taps with descending frequency from sharp to mid, forming a varied double impulse.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 199
+}

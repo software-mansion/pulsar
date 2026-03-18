@@ -1,0 +1,70 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.95
+      },
+      {
+        "time": 65,
+        "value": 0
+      },
+      {
+        "time": 100,
+        "value": 0.95
+      },
+      {
+        "time": 165,
+        "value": 0
+      },
+      {
+        "time": 200,
+        "value": 0.95
+      },
+      {
+        "time": 265,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.72
+      },
+      {
+        "time": 265,
+        "value": 0.72
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.95,
+      "frequency": 0.7
+    },
+    {
+      "time": 100,
+      "amplitude": 0.95,
+      "frequency": 0.7
+    },
+    {
+      "time": 200,
+      "amplitude": 0.95,
+      "frequency": 0.7
+    }
+  ],
+  "name": "NotificationUrgent",
+  "description": "Three rapid identical high-intensity sharp taps that are impossible to ignore, ideal for critical alerts or urgent notifications requiring immediate attention.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 265
+}

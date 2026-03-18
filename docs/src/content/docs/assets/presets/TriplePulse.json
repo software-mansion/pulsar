@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 10,
+      "amplitude": 1,
+      "frequency": 0.903
+    },
+    {
+      "time": 201,
+      "amplitude": 1,
+      "frequency": 0.513
+    },
+    {
+      "time": 399,
+      "amplitude": 0.997,
+      "frequency": 0.906
+    }
+  ],
+  "name": "TriplePulse",
+  "description": "Three bold taps with mixed high-mid-high frequency, creating a strong extended triple pattern with varied sharpness.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 399
+}

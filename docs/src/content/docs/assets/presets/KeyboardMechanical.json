@@ -1,0 +1,65 @@
+{
+  "name": "KeyboardMechanical",
+  "description": "A two-phase mechanical click with a distinct actuation point followed by a sharp snap \u2014 great for simulating the feel of a mechanical keyboard key press.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.68
+    },
+    {
+      "time": 22,
+      "amplitude": 0.72,
+      "frequency": 0.74
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 4,
+        "value": 0.52
+      },
+      {
+        "time": 18,
+        "value": 0.2
+      },
+      {
+        "time": 22,
+        "value": 0.7
+      },
+      {
+        "time": 38,
+        "value": 0.15
+      },
+      {
+        "time": 55,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.68
+      },
+      {
+        "time": 22,
+        "value": 0.76
+      },
+      {
+        "time": 55,
+        "value": 0.7
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 55
+}

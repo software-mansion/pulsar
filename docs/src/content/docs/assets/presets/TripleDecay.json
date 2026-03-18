@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 10,
+      "amplitude": 1,
+      "frequency": 0.903
+    },
+    {
+      "time": 201,
+      "amplitude": 1,
+      "frequency": 0.513
+    },
+    {
+      "time": 399,
+      "amplitude": 0.997,
+      "frequency": 0.147
+    }
+  ],
+  "name": "TripleDecay",
+  "description": "Three bold taps with descending frequency from sharp to soft, forming a varied extended triple pattern.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 399
+}

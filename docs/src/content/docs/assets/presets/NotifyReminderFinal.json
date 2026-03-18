@@ -1,0 +1,69 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.9
+      },
+      {
+        "time": 200,
+        "value": 0.5
+      },
+      {
+        "time": 300,
+        "value": 0.1
+      },
+      {
+        "time": 350,
+        "value": 0.5
+      },
+      {
+        "time": 430,
+        "value": 0.1
+      },
+      {
+        "time": 550,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.58
+      },
+      {
+        "time": 300,
+        "value": 0.52
+      },
+      {
+        "time": 550,
+        "value": 0.48
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.58
+    },
+    {
+      "time": 350,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    }
+  ],
+  "name": "NotifyReminderFinal",
+  "description": "A strong initial impact that sustains then decays before a softer follow-up pulse, ideal for urgent last-call reminder or deadline-critical alerts.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 550
+}

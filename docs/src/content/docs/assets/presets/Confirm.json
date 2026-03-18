@@ -1,0 +1,57 @@
+{
+  "name": "Confirm",
+  "description": "Two equal, clean taps spaced 150ms apart that feel calm and decisive, suitable for dialog confirmations or acknowledgement interactions.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.5
+    },
+    {
+      "time": 150,
+      "amplitude": 0.55,
+      "frequency": 0.5
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.55
+      },
+      {
+        "time": 55,
+        "value": 0
+      },
+      {
+        "time": 150,
+        "value": 0.55
+      },
+      {
+        "time": 205,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 205,
+        "value": 0.5
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 205
+}

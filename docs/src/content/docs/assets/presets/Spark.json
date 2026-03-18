@@ -1,0 +1,78 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 4,
+        "value": 0.22
+      },
+      {
+        "time": 28,
+        "value": 0
+      },
+      {
+        "time": 69,
+        "value": 0.52
+      },
+      {
+        "time": 95,
+        "value": 0
+      },
+      {
+        "time": 142,
+        "value": 1
+      },
+      {
+        "time": 185,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 65,
+        "value": 0.75
+      },
+      {
+        "time": 138,
+        "value": 1
+      },
+      {
+        "time": 185,
+        "value": 1
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.22,
+      "frequency": 0.55
+    },
+    {
+      "time": 65,
+      "amplitude": 0.52,
+      "frequency": 0.78
+    },
+    {
+      "time": 138,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "Spark",
+  "description": "Three rapid escalating pulses that snap from low to maximum intensity, ideal for electric discharge or quick-fire ignition feedback.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bump",
+    "Short"
+  ],
+  "duration": 185
+}

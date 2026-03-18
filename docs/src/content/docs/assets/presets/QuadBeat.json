@@ -1,0 +1,37 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 10,
+      "amplitude": 1,
+      "frequency": 0.603
+    },
+    {
+      "time": 155,
+      "amplitude": 1,
+      "frequency": 0.163
+    },
+    {
+      "time": 601,
+      "amplitude": 0.997,
+      "frequency": 0.609
+    },
+    {
+      "time": 750,
+      "amplitude": 1,
+      "frequency": 0.153
+    }
+  ],
+  "name": "QuadBeat",
+  "description": "Four bold taps alternating between mid and low frequency across a long pattern, offering varied rhythmic feedback.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Long"
+  ],
+  "duration": 750
+}

@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 1,
+      "frequency": 0.203
+    },
+    {
+      "time": 77,
+      "amplitude": 0.697,
+      "frequency": 0.5
+    },
+    {
+      "time": 173,
+      "amplitude": 1,
+      "frequency": 0.703
+    }
+  ],
+  "name": "TripleEscalation",
+  "description": "Three bold taps escalating in frequency, delivering a dynamic triple impulse with increasing sharpness.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 173
+}

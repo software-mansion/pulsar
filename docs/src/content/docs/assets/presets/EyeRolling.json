@@ -1,0 +1,58 @@
+{
+  "emoji": "\ud83d\ude44",
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 20,
+        "value": 0.42
+      },
+      {
+        "time": 180,
+        "value": 0.22
+      },
+      {
+        "time": 450,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 180,
+        "value": 0.4
+      },
+      {
+        "time": 450,
+        "value": 0.35
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.45,
+      "frequency": 0.5
+    },
+    {
+      "time": 180,
+      "amplitude": 0.25,
+      "frequency": 0.4
+    }
+  ],
+  "name": "EyeRolling",
+  "description": "A slow, lazy ramp-down that languidly fades away, evoking a dismissive eye-roll and fitting for sarcastic or indifferent UI moments.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Ramp",
+    "Extended"
+  ],
+  "duration": 450
+}

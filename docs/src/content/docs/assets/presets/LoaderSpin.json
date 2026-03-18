@@ -1,0 +1,135 @@
+{
+  "name": "LoaderSpin",
+  "description": "Eight evenly spaced crisp ticks per cycle that feel like a mechanical spinner rotating, great for indicating a looping process with precise, regular feedback.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 250,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 500,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 750,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 1000,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 1250,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 1500,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 1750,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.38
+      },
+      {
+        "time": 60,
+        "value": 0
+      },
+      {
+        "time": 250,
+        "value": 0.38
+      },
+      {
+        "time": 308,
+        "value": 0
+      },
+      {
+        "time": 500,
+        "value": 0.38
+      },
+      {
+        "time": 558,
+        "value": 0
+      },
+      {
+        "time": 750,
+        "value": 0.38
+      },
+      {
+        "time": 808,
+        "value": 0
+      },
+      {
+        "time": 1000,
+        "value": 0.38
+      },
+      {
+        "time": 1058,
+        "value": 0
+      },
+      {
+        "time": 1250,
+        "value": 0.38
+      },
+      {
+        "time": 1308,
+        "value": 0
+      },
+      {
+        "time": 1500,
+        "value": 0.38
+      },
+      {
+        "time": 1558,
+        "value": 0
+      },
+      {
+        "time": 1750,
+        "value": 0.38
+      },
+      {
+        "time": 1808,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.55
+      },
+      {
+        "time": 1808,
+        "value": 0.55
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 1808
+}

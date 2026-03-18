@@ -1,0 +1,62 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.85
+      },
+      {
+        "time": 60,
+        "value": 0.35
+      },
+      {
+        "time": 120,
+        "value": 0.15
+      },
+      {
+        "time": 200,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.6
+      },
+      {
+        "time": 200,
+        "value": 0.35
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.6
+    },
+    {
+      "time": 80,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    },
+    {
+      "time": 150,
+      "amplitude": 0.25,
+      "frequency": 0.4
+    }
+  ],
+  "name": "GameHit",
+  "description": "A hard, snappy strike that decays rapidly through diminishing resonance, perfect for registering damage or collision impacts in games.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Ramp",
+    "Short"
+  ],
+  "duration": 200
+}

@@ -1,0 +1,22 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "MaxImpact",
+  "description": "A single maximum-strength, maximum-sharpness burst \u2014 delivers the most intense and crisp haptic hit possible, suited for critical alerts or emphatic confirmations.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 0
+}

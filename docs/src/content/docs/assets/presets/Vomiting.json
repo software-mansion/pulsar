@@ -1,0 +1,84 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 30,
+        "value": 0.22
+      },
+      {
+        "time": 80,
+        "value": 0.45
+      },
+      {
+        "time": 100,
+        "value": 0.78
+      },
+      {
+        "time": 140,
+        "value": 0.52
+      },
+      {
+        "time": 200,
+        "value": 0.2
+      },
+      {
+        "time": 380,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.3
+      },
+      {
+        "time": 100,
+        "value": 0.35
+      },
+      {
+        "time": 150,
+        "value": 0.28
+      },
+      {
+        "time": 380,
+        "value": 0.22
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.25,
+      "frequency": 0.3
+    },
+    {
+      "time": 100,
+      "amplitude": 0.5,
+      "frequency": 0.35
+    },
+    {
+      "time": 150,
+      "amplitude": 0.8,
+      "frequency": 0.3
+    },
+    {
+      "time": 200,
+      "amplitude": 0.55,
+      "frequency": 0.25
+    }
+  ],
+  "name": "Vomiting",
+  "description": "A quick ramp to a strong peak followed by a slow low-frequency decay, ideal for disgust reactions or sudden forceful expulsion moments.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bump",
+    "Extended"
+  ],
+  "duration": 380,
+  "emoji": "\ud83e\udd2e"
+}

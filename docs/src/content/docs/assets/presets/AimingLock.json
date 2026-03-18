@@ -1,0 +1,65 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.65
+      },
+      {
+        "time": 45,
+        "value": 0
+      },
+      {
+        "time": 80,
+        "value": 0.9
+      },
+      {
+        "time": 130,
+        "value": 0.3
+      },
+      {
+        "time": 220,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.72
+      },
+      {
+        "time": 80,
+        "value": 0.78
+      },
+      {
+        "time": 220,
+        "value": 0.75
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.65,
+      "frequency": 0.72
+    },
+    {
+      "time": 80,
+      "amplitude": 0.9,
+      "frequency": 0.78
+    }
+  ],
+  "name": "AimingLock",
+  "description": "Two rapid sharp snaps in quick succession with the second slightly stronger, ideal for targeting lock-on or radar acquisition feedback.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 220
+}

@@ -1,0 +1,61 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.45
+      },
+      {
+        "time": 80,
+        "value": 0
+      },
+      {
+        "time": 200,
+        "value": 0
+      },
+      {
+        "time": 208,
+        "value": 0.45
+      },
+      {
+        "time": 280,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 280,
+        "value": 0.5
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    },
+    {
+      "time": 200,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    }
+  ],
+  "name": "NeutralClear",
+  "description": "Two identical clean mid-intensity taps evenly spaced, ideal for neutral confirmation, pagination steps, or generic two-step UI feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 280
+}

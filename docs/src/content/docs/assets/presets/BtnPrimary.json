@@ -1,0 +1,48 @@
+{
+  "name": "BtnPrimary",
+  "description": "A confident, decisive strike with a short echo \u2014 delivers a clear and satisfying response for the main call-to-action button.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.75,
+      "frequency": 0.62
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.72
+      },
+      {
+        "time": 40,
+        "value": 0.2
+      },
+      {
+        "time": 80,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.62
+      },
+      {
+        "time": 80,
+        "value": 0.6
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 80
+}

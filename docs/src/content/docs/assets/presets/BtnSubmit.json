@@ -1,0 +1,65 @@
+{
+  "name": "BtnSubmit",
+  "description": "Two escalating strikes that feel like a confident forward push, communicating that a form or action has been decisively submitted.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.58
+    },
+    {
+      "time": 120,
+      "amplitude": 0.9,
+      "frequency": 0.72
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.55
+      },
+      {
+        "time": 70,
+        "value": 0.2
+      },
+      {
+        "time": 120,
+        "value": 0.88
+      },
+      {
+        "time": 200,
+        "value": 0.2
+      },
+      {
+        "time": 300,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.56
+      },
+      {
+        "time": 120,
+        "value": 0.72
+      },
+      {
+        "time": 300,
+        "value": 0.65
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 300
+}

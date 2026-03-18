@@ -1,0 +1,48 @@
+{
+  "name": "BtnChip",
+  "description": "A light, quick tap with minimal presence \u2014 ideal for small selection elements like chips, tags, and filters.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.42,
+      "frequency": 0.5
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 6,
+        "value": 0.4
+      },
+      {
+        "time": 45,
+        "value": 0.05
+      },
+      {
+        "time": 80,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 80,
+        "value": 0.5
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 80
+}

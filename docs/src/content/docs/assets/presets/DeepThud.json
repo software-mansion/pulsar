@@ -1,0 +1,22 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0.2
+    }
+  ],
+  "name": "DeepThud",
+  "description": "A full-strength impulse with very low sharpness that produces a deep, thuddy sensation \u2014 great for heavy impacts that feel weighty rather than sharp.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 0
+}

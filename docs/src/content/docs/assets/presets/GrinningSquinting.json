@@ -1,0 +1,88 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.45
+      },
+      {
+        "time": 60,
+        "value": 0.1
+      },
+      {
+        "time": 75,
+        "value": 0.58
+      },
+      {
+        "time": 130,
+        "value": 0.12
+      },
+      {
+        "time": 145,
+        "value": 0.7
+      },
+      {
+        "time": 195,
+        "value": 0.15
+      },
+      {
+        "time": 210,
+        "value": 0.8
+      },
+      {
+        "time": 330,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.82
+      },
+      {
+        "time": 210,
+        "value": 0.93
+      },
+      {
+        "time": 330,
+        "value": 0.9
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.82
+    },
+    {
+      "time": 75,
+      "amplitude": 0.62,
+      "frequency": 0.86
+    },
+    {
+      "time": 145,
+      "amplitude": 0.74,
+      "frequency": 0.9
+    },
+    {
+      "time": 210,
+      "amplitude": 0.8,
+      "frequency": 0.92
+    }
+  ],
+  "name": "GrinningSquinting",
+  "description": "Four rapid high-frequency pulses that gradually swell in intensity, evoking vibrant joy and laughter ideal for reaction or delight moments.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 330,
+  "emoji": "\ud83d\ude04"
+}

@@ -1,0 +1,48 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.65
+      },
+      {
+        "time": 80,
+        "value": 0.5
+      },
+      {
+        "time": 180,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.82
+      },
+      {
+        "time": 180,
+        "value": 0.75
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.65,
+      "frequency": 0.82
+    }
+  ],
+  "name": "ErrorSoft",
+  "description": "A single, crisp tap with a high-frequency character that fades swiftly, providing a non-intrusive rejection cue for minor validation errors.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Ramp",
+    "Short"
+  ],
+  "duration": 180
+}

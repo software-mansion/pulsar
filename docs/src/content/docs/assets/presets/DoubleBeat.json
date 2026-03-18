@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 10,
+      "amplitude": 1,
+      "frequency": 0.106
+    },
+    {
+      "time": 201,
+      "amplitude": 1,
+      "frequency": 0.109
+    }
+  ],
+  "name": "DoubleBeat",
+  "description": "Two bold, consistently low-frequency taps forming a firm soft double impulse pattern.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 201
+}

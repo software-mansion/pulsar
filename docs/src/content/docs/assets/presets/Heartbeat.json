@@ -1,0 +1,87 @@
+{
+  "name": "Heartbeat",
+  "description": "A rhythmic lub-dub double-beat pattern with a strong first strike and softer echo, perfect for conveying life, tension, or a living system state.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.2
+    },
+    {
+      "time": 120,
+      "amplitude": 0.6,
+      "frequency": 0.2
+    },
+    {
+      "time": 800,
+      "amplitude": 0.9,
+      "frequency": 0.2
+    },
+    {
+      "time": 920,
+      "amplitude": 0.6,
+      "frequency": 0.2
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.8
+      },
+      {
+        "time": 80,
+        "value": 0
+      },
+      {
+        "time": 120,
+        "value": 0.5
+      },
+      {
+        "time": 200,
+        "value": 0
+      },
+      {
+        "time": 800,
+        "value": 0
+      },
+      {
+        "time": 810,
+        "value": 0.8
+      },
+      {
+        "time": 880,
+        "value": 0
+      },
+      {
+        "time": 920,
+        "value": 0.5
+      },
+      {
+        "time": 1000,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.2
+      },
+      {
+        "time": 1000,
+        "value": 0.2
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Soft",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 1000
+}

@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.497,
+      "frequency": 0.497
+    },
+    {
+      "time": 89,
+      "amplitude": 0.497,
+      "frequency": 0.497
+    },
+    {
+      "time": 208,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "TripleKnock",
+  "description": "Two medium taps followed by a bold sharp impulse, escalating into a strong triple confirmation pattern.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 208
+}

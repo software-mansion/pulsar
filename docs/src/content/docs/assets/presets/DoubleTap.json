@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 1
+    },
+    {
+      "time": 80,
+      "amplitude": 1,
+      "frequency": 0.3
+    }
+  ],
+  "name": "DoubleTap",
+  "description": "Two bold taps with high-to-soft frequency transition, suitable for strong double-tap confirmation.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 80
+}

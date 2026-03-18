@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 1
+    },
+    {
+      "time": 75,
+      "amplitude": 1,
+      "frequency": 1
+    },
+    {
+      "time": 150,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "TripleTap",
+  "description": "Three bold, sharp high-frequency taps delivering a crisp triple-confirmation pattern.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 150
+}

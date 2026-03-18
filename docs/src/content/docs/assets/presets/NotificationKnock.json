@@ -1,0 +1,27 @@
+{
+  "name": "NotificationKnock",
+  "description": "A discrete two-tap notification using only impulse events, delivering a clean double-knock that announces an alert with minimal continuous vibration.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.5
+    },
+    {
+      "time": 120,
+      "amplitude": 0.4,
+      "frequency": 0.5
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 120
+}

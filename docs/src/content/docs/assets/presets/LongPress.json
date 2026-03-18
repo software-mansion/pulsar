@@ -1,0 +1,77 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 50,
+        "value": 0.15
+      },
+      {
+        "time": 200,
+        "value": 0.2
+      },
+      {
+        "time": 400,
+        "value": 0.3
+      },
+      {
+        "time": 570,
+        "value": 0.4
+      },
+      {
+        "time": 590,
+        "value": 0
+      },
+      {
+        "time": 600,
+        "value": 1
+      },
+      {
+        "time": 650,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.3
+      },
+      {
+        "time": 570,
+        "value": 0.5
+      },
+      {
+        "time": 600,
+        "value": 0.8
+      },
+      {
+        "time": 650,
+        "value": 0.8
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.2,
+      "frequency": 0.4
+    },
+    {
+      "time": 600,
+      "amplitude": 1,
+      "frequency": 0.7
+    }
+  ],
+  "name": "LongPress",
+  "description": "A gentle rising tension over the hold duration that culminates in a sharp high-intensity confirmation thud, ideal for long-press activation or charge-complete feedback.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bump",
+    "Long"
+  ],
+  "duration": 650
+}

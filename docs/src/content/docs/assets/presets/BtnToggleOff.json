@@ -1,0 +1,65 @@
+{
+  "name": "BtnToggleOff",
+  "description": "A firm initial tap followed by a lighter secondary bump that descends in both amplitude and frequency, clearly communicating deactivation or turning something off.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.75,
+      "frequency": 0.68
+    },
+    {
+      "time": 100,
+      "amplitude": 0.4,
+      "frequency": 0.45
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.72
+      },
+      {
+        "time": 60,
+        "value": 0.15
+      },
+      {
+        "time": 100,
+        "value": 0.38
+      },
+      {
+        "time": 170,
+        "value": 0.08
+      },
+      {
+        "time": 230,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.68
+      },
+      {
+        "time": 100,
+        "value": 0.45
+      },
+      {
+        "time": 230,
+        "value": 0.42
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 230
+}

@@ -1,0 +1,74 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 80,
+        "value": 0.1
+      },
+      {
+        "time": 200,
+        "value": 0.35
+      },
+      {
+        "time": 350,
+        "value": 0.75
+      },
+      {
+        "time": 450,
+        "value": 1
+      },
+      {
+        "time": 550,
+        "value": 0.7
+      },
+      {
+        "time": 700,
+        "value": 0.3
+      },
+      {
+        "time": 900,
+        "value": 0.08
+      },
+      {
+        "time": 1100,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.35
+      },
+      {
+        "time": 200,
+        "value": 0.42
+      },
+      {
+        "time": 450,
+        "value": 0.38
+      },
+      {
+        "time": 700,
+        "value": 0.3
+      },
+      {
+        "time": 1100,
+        "value": 0.22
+      }
+    ]
+  },
+  "discretePattern": [],
+  "name": "PassingCar",
+  "description": "A smooth Doppler-like swell that rises from silence to a peak then gradually fades, ideal for vehicle pass-by or motion-blur effects.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bump",
+    "Long"
+  ],
+  "duration": 1100
+}

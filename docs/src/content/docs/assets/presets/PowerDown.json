@@ -1,0 +1,64 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0.8
+      },
+      {
+        "time": 200,
+        "value": 0.7
+      },
+      {
+        "time": 450,
+        "value": 0.55
+      },
+      {
+        "time": 750,
+        "value": 0.4
+      },
+      {
+        "time": 1050,
+        "value": 0.25
+      },
+      {
+        "time": 1350,
+        "value": 0.12
+      },
+      {
+        "time": 1600,
+        "value": 0.03
+      },
+      {
+        "time": 1800,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.6
+      },
+      {
+        "time": 1800,
+        "value": 0.03
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.8,
+      "frequency": 0.6
+    }
+  ],
+  "name": "PowerDown",
+  "description": "A sustained vibration that steadily slows and diminishes like an engine spinning down to a halt, suitable for shutdown or deactivation events.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Ramp",
+    "Long"
+  ],
+  "duration": 1800
+}

@@ -1,0 +1,37 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 0.8,
+      "frequency": 0.8
+    },
+    {
+      "time": 400,
+      "amplitude": 0.4,
+      "frequency": 0.4
+    },
+    {
+      "time": 800,
+      "amplitude": 0.8,
+      "frequency": 0.8
+    },
+    {
+      "time": 1200,
+      "amplitude": 0.4,
+      "frequency": 0.4
+    }
+  ],
+  "name": "TickTock",
+  "description": "An alternating strong-weak double tick pattern that mimics a clock's tick-tock rhythm, suitable for timing feedback or metronome-style interactions.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 1200
+}

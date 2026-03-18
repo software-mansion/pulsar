@@ -1,0 +1,22 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0.45
+    }
+  ],
+  "name": "FirmImpact",
+  "description": "A full-strength impulse at moderate frequency that blends power with a slightly rounded edge \u2014 useful for bold but not overly sharp feedback.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 0
+}

@@ -1,0 +1,52 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 0.994,
+      "frequency": 0.994
+    },
+    {
+      "time": 51,
+      "amplitude": 0.994,
+      "frequency": 0.994
+    },
+    {
+      "time": 100,
+      "amplitude": 0.991,
+      "frequency": 0.991
+    },
+    {
+      "time": 156,
+      "amplitude": 1,
+      "frequency": 1
+    },
+    {
+      "time": 208,
+      "amplitude": 0.991,
+      "frequency": 0.991
+    },
+    {
+      "time": 260,
+      "amplitude": 1,
+      "frequency": 1
+    },
+    {
+      "time": 309,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "Barrage",
+  "description": "Seven bold, sharp high-frequency taps in rapid succession, delivering an intense extended impulse pattern.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 309
+}

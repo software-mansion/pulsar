@@ -1,0 +1,83 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0.7
+      },
+      {
+        "time": 300,
+        "value": 0.08
+      },
+      {
+        "time": 600,
+        "value": 0.5
+      },
+      {
+        "time": 900,
+        "value": 0.05
+      },
+      {
+        "time": 1200,
+        "value": 0.3
+      },
+      {
+        "time": 1500,
+        "value": 0.03
+      },
+      {
+        "time": 1800,
+        "value": 0.15
+      },
+      {
+        "time": 2100,
+        "value": 0.01
+      },
+      {
+        "time": 2400,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.42
+      },
+      {
+        "time": 2400,
+        "value": 0.38
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 300,
+      "amplitude": 0.12,
+      "frequency": 0.35
+    },
+    {
+      "time": 900,
+      "amplitude": 0.08,
+      "frequency": 0.35
+    },
+    {
+      "time": 1500,
+      "amplitude": 0.05,
+      "frequency": 0.35
+    },
+    {
+      "time": 2100,
+      "amplitude": 0.02,
+      "frequency": 0.35
+    }
+  ],
+  "name": "Pendulum",
+  "description": "Rhythmic swinging oscillations that gradually fade away, evoking the natural deceleration of a pendulum coming to rest.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Long"
+  ],
+  "duration": 2400
+}

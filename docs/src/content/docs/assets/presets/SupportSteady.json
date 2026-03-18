@@ -1,0 +1,90 @@
+{
+  "name": "SupportSteady",
+  "description": "Rhythmic, reassuring taps that slowly rise and hold like a gentle hand on the shoulder, well suited for calming or encouraging feedback.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.25
+    },
+    {
+      "time": 700,
+      "amplitude": 0.5,
+      "frequency": 0.25
+    },
+    {
+      "time": 1400,
+      "amplitude": 0.5,
+      "frequency": 0.25
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 20,
+        "value": 0.45
+      },
+      {
+        "time": 250,
+        "value": 0.35
+      },
+      {
+        "time": 500,
+        "value": 0
+      },
+      {
+        "time": 700,
+        "value": 0
+      },
+      {
+        "time": 720,
+        "value": 0.45
+      },
+      {
+        "time": 950,
+        "value": 0.35
+      },
+      {
+        "time": 1200,
+        "value": 0
+      },
+      {
+        "time": 1400,
+        "value": 0
+      },
+      {
+        "time": 1420,
+        "value": 0.45
+      },
+      {
+        "time": 1650,
+        "value": 0.35
+      },
+      {
+        "time": 1900,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.22
+      },
+      {
+        "time": 1900,
+        "value": 0.22
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 1900
+}

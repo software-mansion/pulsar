@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0.509
+    },
+    {
+      "time": 71,
+      "amplitude": 1,
+      "frequency": 0.069
+    }
+  ],
+  "name": "DoubleThud",
+  "description": "Two bold discrete taps with decreasing frequency, ideal for distinct double-confirmation feedback.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 71
+}

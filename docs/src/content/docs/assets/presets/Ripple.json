@@ -1,0 +1,91 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 1
+      },
+      {
+        "time": 70,
+        "value": 0
+      },
+      {
+        "time": 145,
+        "value": 0.5
+      },
+      {
+        "time": 200,
+        "value": 0
+      },
+      {
+        "time": 265,
+        "value": 0.2
+      },
+      {
+        "time": 310,
+        "value": 0
+      },
+      {
+        "time": 365,
+        "value": 0.07
+      },
+      {
+        "time": 420,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.7
+      },
+      {
+        "time": 140,
+        "value": 0.5
+      },
+      {
+        "time": 260,
+        "value": 0.33
+      },
+      {
+        "time": 420,
+        "value": 0.18
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0.65
+    },
+    {
+      "time": 140,
+      "amplitude": 0.52,
+      "frequency": 0.48
+    },
+    {
+      "time": 260,
+      "amplitude": 0.22,
+      "frequency": 0.32
+    },
+    {
+      "time": 360,
+      "amplitude": 0.08,
+      "frequency": 0.2
+    }
+  ],
+  "name": "Ripple",
+  "description": "A strong initial impact followed by progressively weaker and softer waves, mimicking the ripple effect of a stone dropped in water.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 420
+}

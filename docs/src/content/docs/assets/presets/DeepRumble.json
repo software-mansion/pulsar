@@ -1,0 +1,22 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0
+    }
+  ],
+  "name": "DeepRumble",
+  "description": "Maximum amplitude with zero sharpness, producing the deepest and most rumbling single burst possible \u2014 ideal for heavy physical impact simulations.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 0
+}

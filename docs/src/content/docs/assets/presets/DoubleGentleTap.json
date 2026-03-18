@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.303
+    },
+    {
+      "time": 80,
+      "amplitude": 0.6,
+      "frequency": 0.3
+    }
+  ],
+  "name": "DoubleGentleTap",
+  "description": "Two medium-strength, consistent low-frequency taps forming a gentle double impulse.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 80
+}

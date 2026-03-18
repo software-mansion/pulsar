@@ -1,0 +1,61 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.65
+      },
+      {
+        "time": 75,
+        "value": 0.05
+      },
+      {
+        "time": 200,
+        "value": 0.3
+      },
+      {
+        "time": 290,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.6
+      },
+      {
+        "time": 200,
+        "value": 0.48
+      },
+      {
+        "time": 290,
+        "value": 0.45
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.65,
+      "frequency": 0.6
+    },
+    {
+      "time": 200,
+      "amplitude": 0.3,
+      "frequency": 0.5
+    }
+  ],
+  "name": "NotifyWarnMild",
+  "description": "A firm initial tap followed by a softer echo, ideal for mild warnings or gentle attention-drawing notifications that do not require immediate action.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 290
+}

@@ -1,0 +1,73 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.5
+      },
+      {
+        "time": 70,
+        "value": 0.08
+      },
+      {
+        "time": 150,
+        "value": 0
+      },
+      {
+        "time": 180,
+        "value": 0.7
+      },
+      {
+        "time": 260,
+        "value": 0.12
+      },
+      {
+        "time": 380,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.48
+      },
+      {
+        "time": 150,
+        "value": 0.48
+      },
+      {
+        "time": 180,
+        "value": 0.65
+      },
+      {
+        "time": 380,
+        "value": 0.6
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    },
+    {
+      "time": 180,
+      "amplitude": 0.7,
+      "frequency": 0.65
+    }
+  ],
+  "name": "NewMessage",
+  "description": "Two ascending taps with the second slightly stronger and sharper, ideal for friendly message arrival or chat notification feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 380
+}

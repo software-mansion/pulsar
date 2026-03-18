@@ -1,0 +1,47 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 0.594,
+      "frequency": 0.594
+    },
+    {
+      "time": 73,
+      "amplitude": 0.588,
+      "frequency": 0.588
+    },
+    {
+      "time": 151,
+      "amplitude": 0.588,
+      "frequency": 0.588
+    },
+    {
+      "time": 299,
+      "amplitude": 0.4,
+      "frequency": 0.4
+    },
+    {
+      "time": 380,
+      "amplitude": 0.394,
+      "frequency": 0.394
+    },
+    {
+      "time": 451,
+      "amplitude": 0.394,
+      "frequency": 0.394
+    }
+  ],
+  "name": "DoubleTriplet",
+  "description": "Six medium taps in two groups with consistent mid-range amplitude and frequency, creating a double-triple rhythm.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 451
+}

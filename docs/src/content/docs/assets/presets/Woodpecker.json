@@ -1,0 +1,93 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.65
+      },
+      {
+        "time": 430,
+        "value": 0.65
+      },
+      {
+        "time": 460,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.82
+      },
+      {
+        "time": 460,
+        "value": 0.82
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 45,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 90,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 135,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 180,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 225,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 270,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 315,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 360,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 405,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    }
+  ],
+  "name": "Woodpecker",
+  "description": "Ten evenly-spaced, hard taps at constant amplitude and high frequency, like rapid machine-like pecking, suitable for mechanical or repetitive action feedback.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Solid",
+    "Extended"
+  ],
+  "duration": 460
+}

@@ -1,0 +1,44 @@
+{
+  "name": "BtnGhost",
+  "description": "A very delicate, barely-there touch \u2014 best suited for ghost or outline buttons that should feel subtle and unobtrusive.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.25,
+      "frequency": 0.48
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.22
+      },
+      {
+        "time": 60,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.48
+      },
+      {
+        "time": 60,
+        "value": 0.48
+      }
+    ]
+  },
+  "tags": [
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 60
+}

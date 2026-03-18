@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 0.706,
+      "frequency": 0.706
+    },
+    {
+      "time": 77,
+      "amplitude": 0.697,
+      "frequency": 0.5
+    },
+    {
+      "time": 181,
+      "amplitude": 0.703,
+      "frequency": 0.244
+    }
+  ],
+  "name": "TripleStrike",
+  "description": "Three bold taps with descending frequency from rigid to soft, suitable for a firm triple-tap confirmation.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 181
+}

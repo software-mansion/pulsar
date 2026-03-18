@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 10,
+      "amplitude": 1,
+      "frequency": 0.106
+    },
+    {
+      "time": 201,
+      "amplitude": 1,
+      "frequency": 0.609
+    }
+  ],
+  "name": "DoubleStrike",
+  "description": "Two bold taps with low-to-mid frequency range, creating a strong double impulse with varied sharpness.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 201
+}

@@ -1,0 +1,78 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.7
+      },
+      {
+        "time": 75,
+        "value": 0
+      },
+      {
+        "time": 200,
+        "value": 0.7
+      },
+      {
+        "time": 275,
+        "value": 0
+      },
+      {
+        "time": 400,
+        "value": 0.9
+      },
+      {
+        "time": 520,
+        "value": 0.3
+      },
+      {
+        "time": 680,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.55
+      },
+      {
+        "time": 400,
+        "value": 0.65
+      },
+      {
+        "time": 680,
+        "value": 0.6
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.7,
+      "frequency": 0.58
+    },
+    {
+      "time": 200,
+      "amplitude": 0.7,
+      "frequency": 0.58
+    },
+    {
+      "time": 400,
+      "amplitude": 0.9,
+      "frequency": 0.65
+    }
+  ],
+  "name": "NotifyTimerDone",
+  "description": "Three evenly paced taps in a 1-2-3 rhythm with the final one stronger and longer, ideal for timer completion or countdown-finished alerts.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bumps",
+    "Long"
+  ],
+  "duration": 680
+}

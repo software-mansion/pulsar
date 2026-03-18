@@ -1,0 +1,48 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.5
+      },
+      {
+        "time": 100,
+        "value": 0.35
+      },
+      {
+        "time": 200,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.6
+      },
+      {
+        "time": 200,
+        "value": 0.58
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.6
+    }
+  ],
+  "name": "WarningSoft",
+  "description": "A single, composed pulse that tapers off cleanly, delivering a subtle heads-up for non-critical warnings without interrupting the user.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Ramp",
+    "Short"
+  ],
+  "duration": 200
+}

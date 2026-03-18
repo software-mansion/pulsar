@@ -1,0 +1,46 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 1500,
+        "value": 0.4
+      },
+      {
+        "time": 3000,
+        "value": 0
+      },
+      {
+        "time": 4500,
+        "value": 0.4
+      },
+      {
+        "time": 6000,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.15
+      },
+      {
+        "time": 6000,
+        "value": 0.15
+      }
+    ]
+  },
+  "discretePattern": [],
+  "name": "LoaderBreathing",
+  "description": "A slow, deep inhale-exhale amplitude cycle that feels like calm breathing, ideal for indicating background processing without distracting the user.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 6000
+}

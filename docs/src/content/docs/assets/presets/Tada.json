@@ -1,0 +1,117 @@
+{
+  "name": "Tada",
+  "description": "A crescendo of six quickening taps that climax in a bold triumphant strike with a held resonance, ideal for celebrations, completions, or fanfare moments.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.3,
+      "frequency": 0.5
+    },
+    {
+      "time": 80,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 150,
+      "amplitude": 0.5,
+      "frequency": 0.6
+    },
+    {
+      "time": 210,
+      "amplitude": 0.6,
+      "frequency": 0.65
+    },
+    {
+      "time": 260,
+      "amplitude": 0.7,
+      "frequency": 0.7
+    },
+    {
+      "time": 310,
+      "amplitude": 1,
+      "frequency": 0.85
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.3
+      },
+      {
+        "time": 40,
+        "value": 0
+      },
+      {
+        "time": 80,
+        "value": 0.4
+      },
+      {
+        "time": 110,
+        "value": 0
+      },
+      {
+        "time": 150,
+        "value": 0.5
+      },
+      {
+        "time": 175,
+        "value": 0
+      },
+      {
+        "time": 210,
+        "value": 0.6
+      },
+      {
+        "time": 232,
+        "value": 0
+      },
+      {
+        "time": 260,
+        "value": 0.7
+      },
+      {
+        "time": 278,
+        "value": 0
+      },
+      {
+        "time": 310,
+        "value": 1
+      },
+      {
+        "time": 380,
+        "value": 0.6
+      },
+      {
+        "time": 460,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.4
+      },
+      {
+        "time": 310,
+        "value": 0.7
+      },
+      {
+        "time": 460,
+        "value": 0.9
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended"
+  ],
+  "duration": 460
+}

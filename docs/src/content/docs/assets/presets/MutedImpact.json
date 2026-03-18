@@ -1,0 +1,22 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.2
+    }
+  ],
+  "name": "MutedImpact",
+  "description": "A mid-strength impulse with low sharpness that feels muted and rounded \u2014 suitable for understated feedback that still has noticeable weight.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 0
+}

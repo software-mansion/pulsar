@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 1
+    },
+    {
+      "time": 75,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "DoubleBlast",
+  "description": "Two maximum-intensity, maximum-sharpness impulses fired in rapid succession \u2014 ideal for urgent double-confirmation or high-impact alert feedback.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 75
+}

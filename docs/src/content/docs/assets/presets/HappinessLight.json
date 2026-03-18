@@ -1,0 +1,70 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.35
+      },
+      {
+        "time": 80,
+        "value": 0
+      },
+      {
+        "time": 150,
+        "value": 0.45
+      },
+      {
+        "time": 230,
+        "value": 0
+      },
+      {
+        "time": 280,
+        "value": 0.55
+      },
+      {
+        "time": 360,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.6
+      },
+      {
+        "time": 360,
+        "value": 0.72
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.4,
+      "frequency": 0.65
+    },
+    {
+      "time": 150,
+      "amplitude": 0.5,
+      "frequency": 0.68
+    },
+    {
+      "time": 280,
+      "amplitude": 0.6,
+      "frequency": 0.72
+    }
+  ],
+  "name": "HappinessLight",
+  "description": "Three gentle bouncing taps with slightly rising intensity and sharpness, evoking light-hearted joy ideal for positive micro-interactions or upbeat feedback.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 360
+}

@@ -1,0 +1,69 @@
+{
+  "name": "CameraShutter",
+  "description": "Two distinct high-frequency clicks in quick succession that mimic a camera's mirror lift and shutter release, ideal for photo capture confirmation.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.75
+    },
+    {
+      "time": 60,
+      "amplitude": 0.8,
+      "frequency": 0.7
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.6
+      },
+      {
+        "time": 30,
+        "value": 0.05
+      },
+      {
+        "time": 60,
+        "value": 0.8
+      },
+      {
+        "time": 100,
+        "value": 0.1
+      },
+      {
+        "time": 150,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.78
+      },
+      {
+        "time": 30,
+        "value": 0.6
+      },
+      {
+        "time": 60,
+        "value": 0.72
+      },
+      {
+        "time": 150,
+        "value": 0.65
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 150
+}

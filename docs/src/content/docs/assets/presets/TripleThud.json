@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0.3
+    },
+    {
+      "time": 75,
+      "amplitude": 1,
+      "frequency": 0.3
+    },
+    {
+      "time": 150,
+      "amplitude": 1,
+      "frequency": 0.3
+    }
+  ],
+  "name": "TripleThud",
+  "description": "Three bold, low-frequency taps in a steady triple pattern suited for strong but soft rhythmic feedback.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 150
+}

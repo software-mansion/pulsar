@@ -1,0 +1,70 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.75
+      },
+      {
+        "time": 80,
+        "value": 0
+      },
+      {
+        "time": 180,
+        "value": 0.75
+      },
+      {
+        "time": 258,
+        "value": 0
+      },
+      {
+        "time": 360,
+        "value": 0.75
+      },
+      {
+        "time": 438,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.62
+      },
+      {
+        "time": 438,
+        "value": 0.62
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.75,
+      "frequency": 0.62
+    },
+    {
+      "time": 180,
+      "amplitude": 0.75,
+      "frequency": 0.62
+    },
+    {
+      "time": 360,
+      "amplitude": 0.75,
+      "frequency": 0.62
+    }
+  ],
+  "name": "NotifyWarnModerate",
+  "description": "Three evenly spaced firm taps of equal intensity, conveying a measured urgency ideal for moderate warnings that require a response but not panic.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 438
+}

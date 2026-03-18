@@ -1,0 +1,117 @@
+{
+  "name": "CombinationLock",
+  "description": "Five evenly spaced crisp metallic clicks followed by one strong final strike, simulating the turning of a combination lock dial with the last click confirming the correct code.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.62,
+      "frequency": 0.75
+    },
+    {
+      "time": 180,
+      "amplitude": 0.6,
+      "frequency": 0.75
+    },
+    {
+      "time": 360,
+      "amplitude": 0.63,
+      "frequency": 0.75
+    },
+    {
+      "time": 540,
+      "amplitude": 0.6,
+      "frequency": 0.75
+    },
+    {
+      "time": 720,
+      "amplitude": 0.62,
+      "frequency": 0.75
+    },
+    {
+      "time": 900,
+      "amplitude": 0.9,
+      "frequency": 0.72
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 4,
+        "value": 0.62
+      },
+      {
+        "time": 25,
+        "value": 0
+      },
+      {
+        "time": 180,
+        "value": 0.6
+      },
+      {
+        "time": 201,
+        "value": 0
+      },
+      {
+        "time": 360,
+        "value": 0.63
+      },
+      {
+        "time": 381,
+        "value": 0
+      },
+      {
+        "time": 540,
+        "value": 0.6
+      },
+      {
+        "time": 561,
+        "value": 0
+      },
+      {
+        "time": 720,
+        "value": 0.62
+      },
+      {
+        "time": 741,
+        "value": 0
+      },
+      {
+        "time": 900,
+        "value": 0.9
+      },
+      {
+        "time": 935,
+        "value": 0.2
+      },
+      {
+        "time": 980,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.75
+      },
+      {
+        "time": 900,
+        "value": 0.75
+      },
+      {
+        "time": 980,
+        "value": 0.7
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 980
+}

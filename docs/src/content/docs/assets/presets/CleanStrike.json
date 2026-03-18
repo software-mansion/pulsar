@@ -1,0 +1,22 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.75,
+      "frequency": 1
+    }
+  ],
+  "name": "CleanStrike",
+  "description": "A strong impulse at maximum sharpness that delivers a clean, precise, and firm tap \u2014 well-suited for crisp confirmations that need both authority and definition.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 0
+}

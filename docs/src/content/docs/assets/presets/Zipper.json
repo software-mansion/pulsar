@@ -1,0 +1,107 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 6,
+        "value": 0.234
+      },
+      {
+        "time": 432,
+        "value": 0.231
+      },
+      {
+        "time": 460,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.616
+      },
+      {
+        "time": 358,
+        "value": 0.594
+      },
+      {
+        "time": 460,
+        "value": 0.35
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 40,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 80,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 120,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 160,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 200,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 240,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 280,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 320,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 360,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 400,
+      "amplitude": 0.35,
+      "frequency": 0.8
+    },
+    {
+      "time": 430,
+      "amplitude": 0.6,
+      "frequency": 0.75
+    }
+  ],
+  "name": "Zipper",
+  "description": "A quiet, steady buzz punctuated by evenly-spaced ticks that ends with a final snap, mimicking the sensation of pulling a zipper closed.",
+  "tags": [
+    "Gentle",
+    "Flexible",
+    "Solid",
+    "Extended"
+  ],
+  "duration": 460
+}

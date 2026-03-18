@@ -1,0 +1,91 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.45
+      },
+      {
+        "time": 40,
+        "value": 0
+      },
+      {
+        "time": 60,
+        "value": 0.55
+      },
+      {
+        "time": 95,
+        "value": 0
+      },
+      {
+        "time": 115,
+        "value": 0.65
+      },
+      {
+        "time": 148,
+        "value": 0
+      },
+      {
+        "time": 165,
+        "value": 0.82
+      },
+      {
+        "time": 240,
+        "value": 0.1
+      },
+      {
+        "time": 300,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.55
+      },
+      {
+        "time": 165,
+        "value": 0.72
+      },
+      {
+        "time": 300,
+        "value": 0.7
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.55
+    },
+    {
+      "time": 60,
+      "amplitude": 0.6,
+      "frequency": 0.6
+    },
+    {
+      "time": 115,
+      "amplitude": 0.7,
+      "frequency": 0.65
+    },
+    {
+      "time": 165,
+      "amplitude": 0.85,
+      "frequency": 0.7
+    }
+  ],
+  "name": "GameCombo",
+  "description": "Four rapid escalating taps in quick succession with growing intensity, ideal for hit-combo multipliers or rapid-fire scoring feedback in games.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 300
+}

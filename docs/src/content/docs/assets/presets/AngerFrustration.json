@@ -1,0 +1,100 @@
+{
+  "name": "AngerFrustration",
+  "description": "An escalating burst of sharp, high-frequency impacts that builds to a maximum strike, conveying intense frustration or a forceful block event.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.85
+    },
+    {
+      "time": 70,
+      "amplitude": 0.75,
+      "frequency": 0.82
+    },
+    {
+      "time": 130,
+      "amplitude": 0.95,
+      "frequency": 0.87
+    },
+    {
+      "time": 190,
+      "amplitude": 0.8,
+      "frequency": 0.83
+    },
+    {
+      "time": 250,
+      "amplitude": 1,
+      "frequency": 0.88
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 4,
+        "value": 0.9
+      },
+      {
+        "time": 45,
+        "value": 0.6
+      },
+      {
+        "time": 70,
+        "value": 0.78
+      },
+      {
+        "time": 100,
+        "value": 0.55
+      },
+      {
+        "time": 130,
+        "value": 0.92
+      },
+      {
+        "time": 165,
+        "value": 0.65
+      },
+      {
+        "time": 190,
+        "value": 0.82
+      },
+      {
+        "time": 230,
+        "value": 0.7
+      },
+      {
+        "time": 250,
+        "value": 1
+      },
+      {
+        "time": 320,
+        "value": 0.4
+      },
+      {
+        "time": 450,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.85
+      },
+      {
+        "time": 450,
+        "value": 0.82
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Pattern",
+    "Extended"
+  ],
+  "duration": 450
+}

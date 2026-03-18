@@ -1,0 +1,37 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 1,
+      "amplitude": 0.8,
+      "frequency": 0.8
+    },
+    {
+      "time": 299,
+      "amplitude": 0.5,
+      "frequency": 0.247
+    },
+    {
+      "time": 399,
+      "amplitude": 0.494,
+      "frequency": 0.266
+    },
+    {
+      "time": 500,
+      "amplitude": 0.497,
+      "frequency": 0.263
+    }
+  ],
+  "name": "QuadRamp",
+  "description": "Four taps starting bold and sharp then settling into medium soft taps, ideal for an attention-grabbing then settling pattern.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 500
+}

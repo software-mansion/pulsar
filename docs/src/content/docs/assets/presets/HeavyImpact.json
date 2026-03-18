@@ -1,0 +1,65 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 1
+      },
+      {
+        "time": 60,
+        "value": 0.6
+      },
+      {
+        "time": 150,
+        "value": 0.3
+      },
+      {
+        "time": 300,
+        "value": 0.1
+      },
+      {
+        "time": 500,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.12
+      },
+      {
+        "time": 5,
+        "value": 0.1
+      },
+      {
+        "time": 500,
+        "value": 0.08
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0.15
+    },
+    {
+      "time": 80,
+      "amplitude": 0.5,
+      "frequency": 0.2
+    }
+  ],
+  "name": "HeavyImpact",
+  "description": "A maximum-amplitude, deep-frequency collision that rumbles down to silence, conveying the weight of a massive physical impact.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Ramp",
+    "Extended"
+  ],
+  "duration": 500
+}

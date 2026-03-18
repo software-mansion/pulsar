@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 0.397
+    },
+    {
+      "time": 73,
+      "amplitude": 1,
+      "frequency": 0.397
+    }
+  ],
+  "name": "DoublePunch",
+  "description": "Two full-strength impulses in quick succession with a flexible texture \u2014 useful for double-tap confirmations or paired action feedback.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 73
+}

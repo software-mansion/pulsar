@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.603,
+      "frequency": 0.2
+    },
+    {
+      "time": 82,
+      "amplitude": 0.606,
+      "frequency": 0.197
+    },
+    {
+      "time": 179,
+      "amplitude": 0.609,
+      "frequency": 0.594
+    }
+  ],
+  "name": "TripleGentleTap",
+  "description": "Three medium-strength taps with low-to-mid frequency range, forming a consistent soft triple pattern.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 179
+}

@@ -1,0 +1,100 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 50,
+        "value": 0.2
+      },
+      {
+        "time": 200,
+        "value": 0.65
+      },
+      {
+        "time": 380,
+        "value": 0.95
+      },
+      {
+        "time": 480,
+        "value": 0.5
+      },
+      {
+        "time": 650,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.43
+      },
+      {
+        "time": 380,
+        "value": 0.78
+      },
+      {
+        "time": 650,
+        "value": 0.65
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.25,
+      "frequency": 0.45
+    },
+    {
+      "time": 200,
+      "amplitude": 0.7,
+      "frequency": 0.65
+    },
+    {
+      "time": 380,
+      "amplitude": 0.95,
+      "frequency": 0.78
+    },
+    {
+      "time": 500,
+      "amplitude": 0.6,
+      "frequency": 0.62
+    },
+    {
+      "time": 584,
+      "amplitude": 0.628,
+      "frequency": 0.628
+    },
+    {
+      "time": 682,
+      "amplitude": 0.6,
+      "frequency": 0.6
+    },
+    {
+      "time": 754,
+      "amplitude": 0.456,
+      "frequency": 0.456
+    },
+    {
+      "time": 827,
+      "amplitude": 0.303,
+      "frequency": 0.303
+    },
+    {
+      "time": 917,
+      "amplitude": 0.2,
+      "frequency": 0.2
+    }
+  ],
+  "name": "SuccessFlourish",
+  "description": "A sweeping rise to a strong peak that gradually trails off with softening taps, ideal for achievement unlocked or triumphant completion feedback.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bump",
+    "Long"
+  ],
+  "duration": 917
+}

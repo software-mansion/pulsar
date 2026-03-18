@@ -1,0 +1,154 @@
+{
+  "name": "LevelUp",
+  "description": "An ascending arpeggio of seven taps with accelerating tempo and rising amplitude that peaks in a long triumphant hold, evoking a classic RPG level-up reward.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.3
+    },
+    {
+      "time": 200,
+      "amplitude": 0.65,
+      "frequency": 0.37
+    },
+    {
+      "time": 380,
+      "amplitude": 0.75,
+      "frequency": 0.42
+    },
+    {
+      "time": 540,
+      "amplitude": 0.85,
+      "frequency": 0.55
+    },
+    {
+      "time": 680,
+      "amplitude": 0.92,
+      "frequency": 0.65
+    },
+    {
+      "time": 800,
+      "amplitude": 0.97,
+      "frequency": 0.73
+    },
+    {
+      "time": 900,
+      "amplitude": 1,
+      "frequency": 0.87
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.55
+      },
+      {
+        "time": 155,
+        "value": 0
+      },
+      {
+        "time": 205,
+        "value": 0.65
+      },
+      {
+        "time": 335,
+        "value": 0
+      },
+      {
+        "time": 385,
+        "value": 0.75
+      },
+      {
+        "time": 495,
+        "value": 0
+      },
+      {
+        "time": 545,
+        "value": 0.85
+      },
+      {
+        "time": 635,
+        "value": 0
+      },
+      {
+        "time": 685,
+        "value": 0.92
+      },
+      {
+        "time": 755,
+        "value": 0
+      },
+      {
+        "time": 805,
+        "value": 0.97
+      },
+      {
+        "time": 860,
+        "value": 0
+      },
+      {
+        "time": 905,
+        "value": 1
+      },
+      {
+        "time": 1700,
+        "value": 0.65
+      },
+      {
+        "time": 2100,
+        "value": 0.25
+      },
+      {
+        "time": 2400,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.3
+      },
+      {
+        "time": 200,
+        "value": 0.37
+      },
+      {
+        "time": 380,
+        "value": 0.42
+      },
+      {
+        "time": 540,
+        "value": 0.55
+      },
+      {
+        "time": 680,
+        "value": 0.65
+      },
+      {
+        "time": 800,
+        "value": 0.73
+      },
+      {
+        "time": 900,
+        "value": 0.87
+      },
+      {
+        "time": 2400,
+        "value": 0.87
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 2400
+}

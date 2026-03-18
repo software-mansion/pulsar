@@ -1,0 +1,122 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.2
+      },
+      {
+        "time": 1482,
+        "value": 0.266
+      },
+      {
+        "time": 1564,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 990,
+        "value": 0.72
+      },
+      {
+        "time": 1250,
+        "value": 0.7
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.2,
+      "frequency": 0.5
+    },
+    {
+      "time": 150,
+      "amplitude": 0.25,
+      "frequency": 0.52
+    },
+    {
+      "time": 290,
+      "amplitude": 0.3,
+      "frequency": 0.54
+    },
+    {
+      "time": 420,
+      "amplitude": 0.4,
+      "frequency": 0.56
+    },
+    {
+      "time": 540,
+      "amplitude": 0.5,
+      "frequency": 0.58
+    },
+    {
+      "time": 650,
+      "amplitude": 0.484,
+      "frequency": 0.6
+    },
+    {
+      "time": 750,
+      "amplitude": 0.509,
+      "frequency": 0.62
+    },
+    {
+      "time": 868,
+      "amplitude": 0.503,
+      "frequency": 0.65
+    },
+    {
+      "time": 968,
+      "amplitude": 0.45,
+      "frequency": 0.716
+    },
+    {
+      "time": 1063,
+      "amplitude": 0.434,
+      "frequency": 0.725
+    },
+    {
+      "time": 1159,
+      "amplitude": 0.488,
+      "frequency": 0.759
+    },
+    {
+      "time": 1256,
+      "amplitude": 0.506,
+      "frequency": 1
+    },
+    {
+      "time": 1349,
+      "amplitude": 0.528,
+      "frequency": 1
+    },
+    {
+      "time": 1432,
+      "amplitude": 0.519,
+      "frequency": 1
+    },
+    {
+      "time": 1530,
+      "amplitude": 0.528,
+      "frequency": 1
+    }
+  ],
+  "name": "Applause",
+  "description": "A slowly building wave of discrete taps that gradually increases in intensity and sharpness, ideal for celebratory or crowd-approval moments.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Bump",
+    "Long"
+  ],
+  "duration": 1564
+}

@@ -1,0 +1,48 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.45
+      },
+      {
+        "time": 70,
+        "value": 0.15
+      },
+      {
+        "time": 180,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.42
+      },
+      {
+        "time": 180,
+        "value": 0.38
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.45,
+      "frequency": 0.45
+    }
+  ],
+  "name": "NotifyReminderSoft",
+  "description": "A gentle, warm tap that fades softly, providing a polite and non-disruptive nudge for reminders or low-priority notifications.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Ramp",
+    "Short"
+  ],
+  "duration": 180
+}

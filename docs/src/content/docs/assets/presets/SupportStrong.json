@@ -1,0 +1,90 @@
+{
+  "name": "SupportStrong",
+  "description": "Three confident, firm taps with trailing warmth that feel like an encouraging pat on the back, ideal for motivational confirmations or achievement feedback.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.65,
+      "frequency": 0.28
+    },
+    {
+      "time": 300,
+      "amplitude": 0.7,
+      "frequency": 0.28
+    },
+    {
+      "time": 600,
+      "amplitude": 0.65,
+      "frequency": 0.28
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 15,
+        "value": 0.6
+      },
+      {
+        "time": 150,
+        "value": 0.45
+      },
+      {
+        "time": 250,
+        "value": 0
+      },
+      {
+        "time": 300,
+        "value": 0
+      },
+      {
+        "time": 315,
+        "value": 0.65
+      },
+      {
+        "time": 450,
+        "value": 0.5
+      },
+      {
+        "time": 550,
+        "value": 0
+      },
+      {
+        "time": 600,
+        "value": 0
+      },
+      {
+        "time": 615,
+        "value": 0.6
+      },
+      {
+        "time": 750,
+        "value": 0.4
+      },
+      {
+        "time": 900,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.25
+      },
+      {
+        "time": 900,
+        "value": 0.25
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 900
+}

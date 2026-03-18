@@ -1,0 +1,65 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.45
+      },
+      {
+        "time": 72,
+        "value": 0
+      },
+      {
+        "time": 160,
+        "value": 0.65
+      },
+      {
+        "time": 240,
+        "value": 0.12
+      },
+      {
+        "time": 360,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 160,
+        "value": 0.65
+      },
+      {
+        "time": 360,
+        "value": 0.6
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.45,
+      "frequency": 0.52
+    },
+    {
+      "time": 160,
+      "amplitude": 0.65,
+      "frequency": 0.65
+    }
+  ],
+  "name": "NotifySocialMessage",
+  "description": "Two ascending taps with rising sharpness, giving a warm personal feel ideal for direct messages or social notifications from contacts.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 360
+}
