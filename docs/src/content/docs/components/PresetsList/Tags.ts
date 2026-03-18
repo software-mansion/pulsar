@@ -1,265 +1,106 @@
 export const TagsInfo = [
   {
-    groupName: 'Duration',
-    tags: [
-      {
-        name: 'Super short',
-        description: 'Very short haptics pattern with duration less than 100 ms.',
-        usage: 'Good as a reaction for tap events.',
-      },
-      {
-        name: 'Short',
-        description:
-          'Short haptic feedback lasting between 100-500ms. Provides clear tactile response without being overwhelming.',
-        usage:
-          'Perfect for button presses, toggle switches, or confirming user actions. Commonly used in UI interactions.',
-      },
-      {
-        name: 'Medium long',
-        description:
-          'Medium-length haptic patterns lasting 500ms to 2 seconds. Allows for more complex feedback sequences.',
-        usage:
-          'Ideal for notifications, progress indicators, or multi-step interactions. Good for drawing user attention.',
-      },
-      {
-        name: 'Long',
-        description:
-          'Extended haptic experiences lasting over 2 seconds. Can include complex patterns and variations.',
-        usage:
-          'Best for immersive experiences, gaming effects, or elaborate feedback sequences that tell a story.',
-      },
-    ],
-  },
-  {
-    groupName: 'Complexity',
-    tags: [
-      {
-        name: 'Simple',
-        description:
-          'Basic single-pulse haptic feedback. Usually consists of a single vibration event or simple on/off pattern.',
-        usage:
-          'Great for basic confirmations, simple button taps, or minimalist feedback where subtlety is key.',
-      },
-      {
-        name: 'Moderate',
-        description:
-          'Multi-step haptic patterns with variations in intensity or timing. Contains 2-4 distinct haptic events.',
-        usage:
-          'Perfect for notifications with different urgency levels, scroll boundaries, or multi-state feedback.',
-      },
-      {
-        name: 'Complex',
-        description:
-          'Sophisticated haptic sequences with multiple layers, varying intensities, and intricate timing patterns.',
-        usage:
-          'Ideal for immersive gaming experiences, elaborate notifications, or creating unique brand-specific feedback.',
-      },
-    ],
-  },
-  {
     groupName: 'Intensity',
     tags: [
       {
         name: 'Gentle',
-        description:
-          "Soft, subtle haptic feedback that's barely noticeable. Light vibration that doesn't interrupt user focus.",
-        usage:
-          'Perfect for background notifications, hover effects, or accessibility features where subtlety is important.',
+        description: 'Haptics with low amplitude — barely perceptible vibration that stays in the background.',
+        usage: 'Good for subtle confirmations, hover effects, or any interaction where the feedback should not interrupt the user. Common situations: cursor hover, background sync, silent notification, passive scroll boundary nudge, accessibility hints.',
       },
       {
-        name: 'Noticeable',
-        description:
-          'Moderate haptic strength that clearly communicates feedback without being disruptive or overwhelming.',
-        usage:
-          'Ideal for most UI interactions, form validation, menu navigation, and general app feedback.',
+        name: 'Substantial',
+        description: 'Haptics with medium amplitude — a clear, balanced vibration that is easy to notice without being disruptive.',
+        usage: 'Ideal for most standard UI interactions such as button presses, toggles, or form confirmations. Common situations: button tap, toggle switch, form validation, menu item selection, pull-to-refresh trigger.',
       },
       {
-        name: 'Intense',
-        description:
-          'Strong, attention-grabbing haptic feedback that demands immediate user attention and focus.',
-        usage:
-          'Best for critical alerts, error messages, emergency notifications, or high-impact gaming effects.',
+        name: 'Bold',
+        description: 'Haptics with high amplitude — a strong, attention-commanding vibration that is immediately felt.',
+        usage: 'Best for critical alerts, error states, or high-impact moments that require the user\'s immediate attention. Common situations: payment failure, security alert, authentication error, destructive action confirmation, game hit or collision.',
       },
     ],
   },
   {
-    groupName: 'Feedback type',
+    groupName: 'Sharpness',
     tags: [
       {
-        name: 'Success',
-        description:
-          'Positive confirmation haptic indicating successful completion of an action or positive outcome.',
-        usage:
-          'Use for successful form submissions, completed purchases, achievements unlocked, or tasks finished.',
+        name: 'Soft',
+        description: 'Haptics with low frequency — a smooth, rounded vibration with a gentle, cushioned feel.',
+        usage: 'Perfect for calm, ambient feedback, wellness interactions, or any context where a soft touch is preferred. Common situations: meditation cue, breathing exercise, sleep reminder, gentle onboarding hint, ambient soundscape interaction.',
       },
       {
-        name: 'Warning',
-        description:
-          'Cautionary haptic feedback alerting users to potential issues or important information requiring attention.',
-        usage:
-          'Perfect for form validation errors, low battery alerts, or when user action might have consequences.',
+        name: 'Flexible',
+        description: 'Haptics with medium frequency — a balanced vibration that sits between soft and rigid.',
+        usage: 'Suitable for general-purpose UI feedback, notifications, and interactions that need a neutral tactile character. Common situations: incoming message, push notification, content scroll snap, date picker tick, standard in-app alert.',
       },
       {
-        name: 'Fail',
-        description:
-          'Strong negative feedback indicating errors, failures, or critical issues that need immediate attention.',
-        usage:
-          'Use for error messages, failed operations, security alerts, or when something goes wrong.',
-      },
-      {
-        name: 'Notification',
-        description:
-          'General informational haptic feedback for delivering neutral messages or updates to the user.',
-        usage:
-          'Ideal for incoming messages, app updates, reminders, or general information delivery.',
-      },
-      {
-        name: 'Reward',
-        description:
-          'Positive haptic feedback for rewarding user behavior, achievements, or milestone completion.',
-        usage:
-          'Great for gamification elements, streak completions, level ups, or positive reinforcement.',
-      },
-      {
-        name: 'Enjoy',
-        description:
-          'Pleasant, delightful haptic feedback designed to enhance user experience and create positive emotions.',
-        usage:
-          'Perfect for app interactions that should feel fun, engaging animations, or brand experience moments.',
-      },
-      {
-        name: 'Interaction',
-        description:
-          'Responsive haptic feedback for direct user interactions like taps, swipes, or button presses.',
-        usage:
-          'Essential for UI element interactions, providing immediate feedback for user touch events.',
+        name: 'Rigid',
+        description: 'Haptics with high frequency — a crisp, precise vibration with a sharp, mechanical feel.',
+        usage: 'Great for snappy UI elements, keyboard-like taps, or any interaction that should feel precise and definitive. Common situations: virtual keyboard key press, numeric keypad tap, rotary dial click, picker wheel snap, PIN entry digit confirmation.',
       },
     ],
   },
   {
-    groupName: 'Emotions',
+    groupName: 'Shape',
     tags: [
       {
-        name: 'Happiness',
-        description:
-          'Joyful, uplifting haptic patterns that evoke positive feelings and cheerfulness.',
-        usage:
-          'Perfect for celebrations, achievements, positive milestones, or creating delightful user moments.',
+        name: 'Impulses',
+        description: 'Haptics with a discrete pattern — short, distinct pulses separated by silence.',
+        usage: 'Useful for click-like feedback, Morse-style cues, or sequences of distinct tactile events. Common situations: step counter tick, quantity increment, metronome cue, item added to cart, typing indicator in chat.',
       },
       {
-        name: 'Sadness',
-        description:
-          'Gentle, melancholic haptic feedback that conveys empathy or reflects somber moments.',
-        usage:
-          'Appropriate for memorial features, condolence messages, or empathetic app responses.',
+        name: 'Solid',
+        description: 'Haptics with a long continuous pattern at a constant amplitude — a steady, uniform vibration.',
+        usage: 'Good for indicating ongoing processes, loading states, or sustained alerts that need consistent presence. Common situations: file upload or download in progress, active voice recording, hold-to-confirm gesture, persistent alarm, live activity tracking.',
       },
       {
-        name: 'Neutral',
-        description:
-          "Balanced, non-emotional haptic feedback that doesn't convey specific feelings or moods.",
-        usage:
-          'Ideal for professional apps, utilitarian interfaces, or when emotional neutrality is preferred.',
+        name: 'Bump',
+        description: 'Haptics with a single amplitude peak, typically near the middle of the preset — a smooth rise and fall.',
+        usage: 'Ideal for single-event confirmations, gentle taps, or UI interactions with one clear tactile moment. Common situations: like or heart button tap, photo shutter release, item selection confirmation, swipe action completion, quick reply send.',
       },
       {
-        name: 'Support',
-        description:
-          'Comforting, reassuring haptic patterns that provide emotional support and encouragement.',
-        usage:
-          'Great for wellness apps, meditation guides, encouragement features, or supportive interactions.',
+        name: 'Bumps',
+        description: 'Haptics with multiple amplitude peaks — a series of rhythmic rises and falls.',
+        usage: 'Perfect for multi-step feedback, rhythmic notifications, or interactions that need a repeating pulse feel. Common situations: in-app achievement or badge unlock, multi-item batch selection, dice roll, streak milestone reached, coin or reward collection.',
       },
       {
-        name: 'Celebration',
-        description:
-          'Festive, party-like haptic feedback designed to enhance celebratory moments and special occasions.',
-        usage:
-          'Perfect for birthdays, anniversaries, victories, party apps, or any celebratory features.',
+        name: 'Saw',
+        description: 'Haptics with a sawtooth-shaped amplitude pattern — a sharp rise followed by an abrupt drop, or vice versa.',
+        usage: 'Effective for mechanical-feeling interactions, ratchet effects, or any feedback with a sharp, asymmetric edge. Common situations: ratchet scroll, slot machine reel spin, rotary dial simulation, drag-and-drop snap into position, file shredding animation.',
       },
       {
-        name: 'Excitement',
-        description:
-          'Energetic, thrilling haptic patterns that build anticipation and convey high energy.',
-        usage:
-          'Ideal for sports apps, gaming excitement, countdown timers, or high-energy promotional content.',
+        name: 'Pattern',
+        description: 'Haptics with a custom, often repeating amplitude pattern — a structured sequence that defines a unique rhythm.',
+        usage: 'Best for branded feedback signatures, complex notifications, or effects that carry a recognizable tactile identity. Common situations: branded notification signature, custom incoming call alert, game character footstep cycle, sound-to-haptic mapping, recurring rhythm in a music app.',
       },
       {
-        name: 'Surprise',
-        description:
-          'Sudden, unexpected haptic feedback that creates moments of pleasant shock or amazement.',
-        usage:
-          'Great for magic tricks in apps, plot twists, surprise reveals, or unexpected delightful moments.',
-      },
-      {
-        name: 'Fear',
-        description:
-          'Intense, startling haptic patterns designed to create tension or alert users to danger.',
-        usage:
-          'Suitable for horror games, security alerts, emergency notifications, or thriller app experiences.',
-      },
-      {
-        name: 'Satisfaction',
-        description:
-          'Fulfilling, content haptic feedback that conveys completion and user satisfaction.',
-        usage:
-          'Perfect for task completion, successful purchases, goal achievements, or satisfying interactions.',
-      },
-      {
-        name: 'Relief',
-        description:
-          'Calming, soothing haptic patterns that provide comfort and ease tension or stress.',
-        usage: 'Ideal for stress-relief apps, problem resolution, or calming interactions.',
-      },
-      {
-        name: 'Boredom',
-        description: 'Dull, monotonous haptic feedback reflecting lack of engagement or interest.',
-        usage:
-          'Useful for representing inactive states, waiting periods, or low-priority background processes.',
-      },
-      {
-        name: 'Anger',
-        description:
-          'Sharp, aggressive haptic patterns that convey frustration, irritation, or strong negative emotions.',
-        usage:
-          'Appropriate for representing system errors, user frustration, or intense negative feedback scenarios.',
+        name: 'Ramp',
+        description: 'Haptics with a ramp-shaped amplitude pattern — amplitude increases or decreases linearly over the duration.',
+        usage: 'Suited for fade-in or fade-out effects, swipe feedback, or any interaction that should feel like a gradual build or release. Common situations: volume or brightness slider, swipe-to-dismiss gesture, pinch zoom, countdown timer nearing zero, pull-down refresh building tension.',
       },
     ],
   },
   {
-    groupName: 'Special occasions',
+    groupName: 'Duration',
     tags: [
       {
-        name: 'Winning',
-        description:
-          'Triumphant haptic feedback celebrating victories, competitions won, or successful outcomes.',
-        usage:
-          'Perfect for game victories, contest wins, successful challenges, or achieving competitive goals.',
+        name: 'Impulse',
+        description: 'Extremely short haptic lasting less than 100 ms — an instantaneous tactile click.',
+        usage: 'Best for keyboard taps, quick confirmations, or any interaction that requires an instant, minimal response. Common situations: virtual keyboard key press, quick tap micro-interaction, toggle switch flip, checkbox tick, cursor click simulation.',
       },
       {
-        name: 'Beginning',
-        description:
-          'Fresh, initiating haptic patterns that mark the start of new experiences, journeys, or processes.',
-        usage:
-          'Ideal for onboarding flows, app launches, new user experiences, or starting new activities.',
+        name: 'Short',
+        description: 'Brief haptic lasting between 100 ms and 250 ms — long enough to be clearly felt without lingering.',
+        usage: 'Ideal for button presses, toggle switches, and standard UI element interactions. Common situations: primary action button press, navigation tab switch, swipe gesture acknowledgement, photo filter selection, card flip or reveal.',
       },
       {
-        name: 'Task Competed',
-        description:
-          'Satisfying completion haptic that signals the successful finish of tasks, projects, or goals.',
-        usage:
-          'Great for productivity apps, project management, task lists, or any completion-based features.',
+        name: 'Extended',
+        description: 'Medium-length haptic lasting between 250 ms and 600 ms — provides richer, more expressive feedback.',
+        usage: 'Good for notifications, multi-step confirmations, or interactions that benefit from a more deliberate tactile moment. Common situations: incoming push notification, payment or purchase success, pull-to-refresh completion, form submission success, app rating prompt.',
       },
       {
-        name: 'Announcement',
-        description:
-          'Attention-grabbing haptic patterns designed to broadcast important information or updates.',
-        usage:
-          'Perfect for news apps, important updates, system announcements, or broadcasting features.',
-      },
-      {
-        name: 'Physical effect',
-        description:
-          'Tactile haptic feedback that simulates physical sensations or real-world material interactions.',
-        usage:
-          'Excellent for AR/VR applications, material design feedback, or creating realistic touch sensations.',
+        name: 'Long',
+        description: 'Prolonged haptic lasting 600 ms or more — creates an immersive, sustained tactile experience.',
+        usage: 'Best for complex animations, gaming effects, elaborate alerts, or experiences where the haptic plays a central role. Common situations: in-app achievement or level completion, onboarding celebration, game victory screen, subscription or reward unlock, end-of-session summary celebration.',
       },
     ],
   },
