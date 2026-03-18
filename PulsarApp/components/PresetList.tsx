@@ -34,7 +34,7 @@ export default function PresetList() {
     }
     
     return PresetsConfig.filter(preset => {
-      const presetTagLabels = preset.tags.map(tag => tag.label);
+      const presetTagLabels = preset.tags;
       
       for (const groupName in selectedTagsByGroup) {
         const selectedTagsInGroup = selectedTagsByGroup[groupName];
@@ -63,9 +63,7 @@ export default function PresetList() {
             key={`${preset.shortName}-${index}`}
             title={preset.name}
             subtitle={preset.description}
-            tags={preset.tags.map((tag) => ({
-              label: tag.label,
-            }))}
+            tags={preset.tags}
             image={preset.image}
             onPress={preset.play}
             duration={preset.duration}

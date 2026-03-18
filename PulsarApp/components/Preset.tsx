@@ -10,14 +10,10 @@ import Button from './Button';
 
 const IMAGE_HEIGHT = 160;
 
-export type PresetTag = {
-	label: string;
-};
-
 export interface PresetProps {
 	title: string;
 	subtitle: string;
-	tags: PresetTag[];
+	tags: string[];
 	image: ImageSourcePropType;
 	onPress: () => void;
 	duration?: number;
@@ -53,14 +49,14 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 			scrollViewRef.current?.scrollTo({ x: 0, animated: true });
 			posthog.capture('preset_stopped', {
 				preset_name: title,
-				tags: tags.map((t) => t.label),
+				tags,
 			});
 		} else {
 			setIsPlaying(true);
 			onPress();
 			posthog.capture('preset_played', {
 				preset_name: title,
-				tags: tags.map((t) => t.label),
+				tags,
 				duration_ms: duration,
 			});
 
@@ -92,10 +88,10 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 				<View style={styles.tagsContainer}>
 					{tags.map((tag, index) => (
 						<View
-							key={`${tag.label}-${index}`}
+							key={`${tag}-${index}`}
 							style={styles.tag}
 						>
-							<Text style={styles.tagText}>{tag.label}</Text>
+							<Text style={styles.tagText}>{tag}</Text>
 						</View>
 					))}
 				</View>
