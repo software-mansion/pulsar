@@ -8,8 +8,9 @@ export default function DemosLayout() {
       <Stack.Screen name="buttons-demo" options={{ headerShown: true, title: 'Buttons Demo' }} />
       <Stack.Screen name="countdown-timer-demo" options={{ headerShown: true, title: 'Countdown Timer' }} />
       <Stack.Screen name="balloon-demo" options={{ headerShown: true, title: 'Balloon Demo' }} />
-
-      <Stack.Screen name="workout-interval" options={{ headerShown: true, title: 'Workout interval' }} />
+      <Stack.Screen name="dot-loader-demo" options={{ headerShown: true, title: 'Dot Loader' }} />
+      <Stack.Screen name="notification-haptics-demo" options={{ headerShown: true, title: 'Notification Haptics' }} />
+      <Stack.Screen name="sensor-haptics-demo" options={{ headerShown: true, title: 'Accelerometer Haptics' }} />
     </Stack>
   );
 }

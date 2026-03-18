@@ -38,9 +38,19 @@ const demos = [
     description: 'Todo todo todo todo todo todo todo todo todo todo todo.',
   },
   {
-    slug: 'workout-interval',
-    title: 'Workout interval',
-    description: 'Todo todo todo todo todo todo todo todo todo todo todo.',
+    slug: 'dot-loader-demo',
+    title: 'Rotating Dot Loader',
+    description: 'Watch three dots rotate with synchronized haptic feedback on each pass.',
+  },
+  {
+    slug: 'notification-haptics-demo',
+    title: 'Notification Haptics',
+    description: 'Experience different haptic patterns for various notification types.',
+  },
+  {
+    slug: 'sensor-haptics-demo',
+    title: 'Accelerometer Haptics',
+    description: 'Tilt your device and feel haptics when the dot collides or scratches the circle boundary.',
   },
 ];
 
