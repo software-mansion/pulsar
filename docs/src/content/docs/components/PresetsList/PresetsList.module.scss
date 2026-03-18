@@ -11,11 +11,15 @@
   }
   .info {
     font-size: var(--font-size-xs);
+    gap: 10px;
     display: flex;
-    align-items: center;
-    cursor: pointer;
-    img {
-      margin-left: 4px;
+    .inner {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      img {
+        margin-left: 4px;
+      }
     }
   }
 }

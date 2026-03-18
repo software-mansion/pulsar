@@ -7,6 +7,7 @@ import { TagsModal } from '../TagsModal/TagsModal';
 import { TagsInfo } from './Tags';
 import { PresetsConfig } from '../../assets/presets/PresetsConfig';
 import { NoResult } from '../NoResult/NoResult';
+import { ChartModal } from '../ChartModal/ChartModal';
 
 declare global {
   interface Window {
@@ -17,7 +18,7 @@ declare global {
 }
 
 export function PresetsList() {
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<'no' | 'tags' | 'chart'>('no');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   function handleSetSelectedTags(tags: string[]) {
@@ -73,9 +74,15 @@ export function PresetsList() {
     <div className={['not-content', style.presets].join(' ')}>
       <div className={style.header}>
         <div className={style.title}>Presets</div>
-        <div className={style.info} onClick={() => setShowModal(true)}>
-          <div>Learn more about tags</div>
-          <img src={infoIcon.src} />
+        <div className={style.info}>
+          <div className={style.inner} onClick={() => setShowModal('tags')}>
+            <div>Learn more about tags</div>
+            <img src={infoIcon.src} />
+          </div>
+          <div className={style.inner} onClick={() => setShowModal('chart')}>
+            <div>Learn more about chart visualization</div>
+            <img src={infoIcon.src} />
+          </div>
         </div>
       </div>
 
@@ -91,7 +98,8 @@ export function PresetsList() {
         <Preset key={index} {...preset} />
       ))}
 
-      {showModal && <TagsModal onClose={() => setShowModal(false)} />}
+      {showModal === 'tags' && <TagsModal onClose={() => setShowModal('no')} />}
+      {showModal === 'chart' && <ChartModal onClose={() => setShowModal('no')} />}
     </div>
   );
 }
