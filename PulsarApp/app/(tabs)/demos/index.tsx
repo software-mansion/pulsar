@@ -34,15 +34,15 @@ const demos = [
   },
   {
     slug: 'dot-loader-demo',
-    title: 'Rotating Dot Loader',
+    title: 'Dot Loader',
   },
   {
     slug: 'notification-haptics-demo',
-    title: 'Notification Haptics',
+    title: 'Notification',
   },
   {
     slug: 'sensor-haptics-demo',
-    title: 'Accelerometer Haptics',
+    title: 'Accelerometer',
   },
 ];
 

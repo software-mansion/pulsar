@@ -1,14 +1,6 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Pattern, usePatternComposer } from 'react-native-pulsar';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  useAnimatedReaction,
-  Easing,
-  SharedValue,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useEffect } from 'react';
 
 import BasicLayout from '@/components/BasicLayout';
@@ -16,11 +8,20 @@ import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
 
 const DOT_SIZE = 12;
-const WAVE_HEIGHT = 30; // How high/low the dots move
-const ANIMATION_DURATION = 1200; // ms for one complete wave cycle
-const DOT_SPACING = 20; // Space between dots
+const WAVE_HEIGHT = 30;
+const CYCLE_DURATION = 3000; // ms for one full cycle (wave + long rest pause)
+const DOT_INTERVAL = 220;    // ms between each dot starting its wave
+const DOT_SPACING = 20;
+const BOTTOM_HIT_RATIO = 0.14; // 14% into cycle = bottom (420ms — snappy drop)
 
-// Haptic patterns for each dot
+// CSS keyframes: snappy drop to bottom (0-14%), bounce back (14-28%), long rest (28-100%)
+const waveKeyframes = {
+  '0%':   { transform: [{ translateY: 0 }] },
+  '14%':  { transform: [{ translateY: -WAVE_HEIGHT }] },
+  '28%':  { transform: [{ translateY: 0 }] },
+  '100%': { transform: [{ translateY: 0 }] },
+};
+
 const dotPattern1: Pattern = {
   discretePattern: [
     { time: 0, amplitude: 0.8, frequency: 0.9 },
@@ -45,63 +46,46 @@ const dotPattern3: Pattern = {
   continuousPattern: { amplitude: [], frequency: [] },
 };
 
-const LoaderDot = ({ progress, phaseOffset, pattern }: { progress: SharedValue<number>; phaseOffset: number; pattern: Pattern }) => {
+const patterns = [dotPattern1, dotPattern2, dotPattern3];
+
+const LoaderDot = ({ dotIndex, pattern }: { dotIndex: number; pattern: Pattern }) => {
   const { parse, play } = usePatternComposer();
-  const lastTriggerTime = useSharedValue(0);
 
   useEffect(() => {
     parse(pattern);
-  }, []);
 
-  // Trigger haptic when dot reaches peak of wave
-  useAnimatedReaction(
-    () => progress.value,
-    (current) => {
-      const phase = (current + phaseOffset) % 1;
-      
-      // Trigger haptic when this dot reaches the top of the wave (around 0.25 of its cycle)
-      // and debounce to trigger only once per wave
-      if (phase > 0.2 && phase < 0.3 && Date.now() - lastTriggerTime.value > 400) {
-        lastTriggerTime.value = Date.now();
-        play();
-      }
-    }
-  );
+    // Fire haptics each time this dot hits the bottom line
+    const firstHit = dotIndex * DOT_INTERVAL + CYCLE_DURATION * BOTTOM_HIT_RATIO;
+    let intervalId: ReturnType<typeof setInterval>;
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const phase = (progress.value + phaseOffset) % 1;
-    // Create a sine wave: start at 0, go up (positive), back to 0, go down (negative), back to 0
-    const waveY = Math.sin(phase * Math.PI * 2) * WAVE_HEIGHT;
+    const timeoutId = setTimeout(() => {
+      play();
+      intervalId = setInterval(() => play(), CYCLE_DURATION);
+    }, firstHit);
 
-    return {
-      transform: [{ translateY: waveY }],
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
     };
-  });
+  }, []);
 
   return (
     <Animated.View
       style={[
         styles.dot,
-        animatedStyle,
+        {
+          animationName: waveKeyframes,
+          animationDuration: `${CYCLE_DURATION}ms`,
+          animationDelay: `${dotIndex * DOT_INTERVAL}ms`,
+          animationIterationCount: 'infinite',
+          animationTimingFunction: 'ease-in-out',
+        },
       ]}
     />
   );
 };
 
 export default function DotLoaderDemo() {
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    progress.value = withRepeat(
-      withTiming(1, {
-        duration: ANIMATION_DURATION,
-        easing: Easing.linear,
-      }),
-      -1,
-      false
-    );
-  }, []);
-
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <BasicLayout>
@@ -109,17 +93,16 @@ export default function DotLoaderDemo() {
           Wavy Dot Loader
         </ThemedText>
         <ThemedText style={Margins.marginTop2X}>
-          Watch the three dots move in a wave pattern and feel the haptics feedback at the peak of each wave.
+          Watch the three dots move in a wave pattern and feel the haptic feedback each time a dot hits the bottom.
         </ThemedText>
 
         <View style={styles.loaderContainer}>
           <View style={styles.dotsRow}>
-            {/* Three dots in a row with wave animation */}
-            <LoaderDot progress={progress} phaseOffset={0} pattern={dotPattern1} />
-            <View style={styles.spacer} />
-            <LoaderDot progress={progress} phaseOffset={-0.33} pattern={dotPattern2} />
-            <View style={styles.spacer} />
-            <LoaderDot progress={progress} phaseOffset={-0.66} pattern={dotPattern3} />
+            {patterns.map((pattern, index) => (
+              <View key={index} style={styles.dotWrapper}>
+                <LoaderDot dotIndex={index} pattern={pattern} />
+              </View>
+            ))}
           </View>
         </View>
 
@@ -144,8 +127,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  spacer: {
-    width: DOT_SPACING,
+  dotWrapper: {
+    marginHorizontal: DOT_SPACING / 2,
   },
   dot: {
     width: DOT_SIZE,
