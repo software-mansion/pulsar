@@ -57,6 +57,12 @@ export default function Connection() {
       ws.current.close();
     }
     ws.current = new WebSocket(`${SOCKET_SERVER_URL}?type=sender${params}`);
+    const pingInterval = setInterval(() => {
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, 25_000);
+    ws.current.addEventListener('close', () => clearInterval(pingInterval));
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log(data);

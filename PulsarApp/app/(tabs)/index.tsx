@@ -43,6 +43,7 @@ export default function HomeScreen() {
   const [connectingCode, setConnectingCode] = useState('');
   const tokenRef = useRef('');
   const socketRef = useRef<WebSocket | null>(null);
+  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const patternNotificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -67,6 +68,9 @@ export default function HomeScreen() {
       subscription.remove();
       socketRef.current?.close();
       socketRef.current = null;
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+      }
       if (patternNotificationTimeoutRef.current) {
         clearTimeout(patternNotificationTimeoutRef.current);
       }
@@ -147,6 +151,8 @@ export default function HomeScreen() {
           });
         } else if (json.type === 'peer_disconnected') {
           setConnectionState('CONNECTED_TO_SERVER');
+        } else if (json.type === 'pong') {
+          // keepalive response, no-op
         } else if (json.type === 'broadcast') {
           if (json.message) {
             playPattern(json.message);
@@ -174,6 +180,11 @@ export default function HomeScreen() {
 
     socket.onopen = () => {
       setConnectionState('CONNECTED_TO_SERVER');
+      pingIntervalRef.current = setInterval(() => {
+        if (socketRef.current?.readyState === WebSocket.OPEN) {
+          socketRef.current.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 25_000);
     };
 
     socket.onerror = () => {
@@ -187,6 +198,10 @@ export default function HomeScreen() {
     };
 
     socket.onclose = (e) => {
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+        pingIntervalRef.current = null;
+      }
       if (e.code !== 1000) {
         setConnectionState('ERROR');
         setErrorType('INVALID_DATA');
@@ -207,6 +222,10 @@ export default function HomeScreen() {
     });
     socketRef.current?.close();
     socketRef.current = null;
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
+    }
     setConnectingCode('');
     setHasToken(false);
     setConnectionState('DISCONNECTED');

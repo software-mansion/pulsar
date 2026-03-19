@@ -33,6 +33,16 @@ export class WebSocketHandler {
       ws.on('pong', () => {
         ws.isAlive = true;
       });
+      ws.on('message', (data) => {
+        try {
+          const message = JSON.parse(data.toString());
+          if (message.type === 'ping') {
+            ws.send(JSON.stringify({ type: 'pong' }));
+          }
+        } catch {
+          // ignore non-JSON messages
+        }
+      });
       this.handleConnection(ws, req);
     });
   }
