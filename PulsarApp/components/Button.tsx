@@ -26,14 +26,14 @@ interface Props {
   enabled?: boolean;
 }
 
-function Button({ 
-  label, 
-  style, 
-  onClick, 
-  onComplete, 
-  state = 'default', 
-  showIcon = 'none', 
-  largeIcon = false, 
+function Button({
+  label,
+  style,
+  onClick,
+  onComplete,
+  state = 'default',
+  showIcon = 'none',
+  largeIcon = false,
   fullWidth = false,
   enabled = true,
   ...props }: Props & ViewProps) {

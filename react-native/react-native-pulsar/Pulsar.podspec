@@ -17,6 +17,7 @@ Pod::Spec.new do |s|
     "ios/**/*.{h,m,mm,cpp,swift}",
     "deps/Pulsar/Sources/Pulsar/*.swift",
     "deps/Pulsar/Sources/Pulsar/*/*.swift",
+    "deps/Pulsar/Sources/Pulsar/*/*/*.swift",
   ]
   s.private_header_files = "ios/**/*.h"
 

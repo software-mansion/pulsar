@@ -123,11 +123,6 @@ export default function DotLoaderDemo() {
           </View>
         </View>
 
-        <View style={styles.infoSection}>
-          <ThemedText style={styles.infoText}>
-            Each dot follows a wave pattern with a phase offset, creating a smooth wave motion. Haptic feedback is triggered at the peak of each dot's wave, enhancing the visual motion with tactile feedback.
-          </ThemedText>
-        </View>
       </BasicLayout>
     </ScrollView>
   );
@@ -157,13 +152,5 @@ const styles = StyleSheet.create({
     height: DOT_SIZE,
     borderRadius: DOT_SIZE / 2,
     backgroundColor: '#001A72',
-  },
-  infoSection: {
-    marginTop: 40,
-    paddingHorizontal: 16,
-  },
-  infoText: {
-    lineHeight: 22,
-    color: '#666',
   },
 });

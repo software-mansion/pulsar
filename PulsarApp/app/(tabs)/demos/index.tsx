@@ -2,9 +2,9 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import BasicLayout from '@/components/BasicLayout';
-import Card from '@/components/Card';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
 
@@ -18,39 +18,31 @@ const defaultEdges = {
 const demos = [
   {
     slug: 'slider-demo',
-    title: 'Slider demo',
-    description: 'Todo todo todo todo todo todo todo todo todo todo todo.',
+    title: 'Slider',
   },
   {
     slug: 'buttons-demo',
-    title: 'Buttons demo',
-    description: 'Todo todo todo todo todo todo todo todo todo todo todo.',
+    title: 'Buttons',
   },
   {
     slug: 'countdown-timer-demo',
     title: 'Countdown timer',
-    description: 'Todo todo todo todo todo todo todo todo todo todo todo.',
   },
-
   {
     slug: 'balloon-demo',
-    title: 'Balloon demo',
-    description: 'Todo todo todo todo todo todo todo todo todo todo todo.',
+    title: 'Balloon',
   },
   {
     slug: 'dot-loader-demo',
     title: 'Rotating Dot Loader',
-    description: 'Watch three dots rotate with synchronized haptic feedback on each pass.',
   },
   {
     slug: 'notification-haptics-demo',
     title: 'Notification Haptics',
-    description: 'Experience different haptic patterns for various notification types.',
   },
   {
     slug: 'sensor-haptics-demo',
     title: 'Accelerometer Haptics',
-    description: 'Tilt your device and feel haptics when the dot collides or scratches the circle boundary.',
   },
 ];
 
@@ -62,10 +54,10 @@ export default function DemosScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <BasicLayout>
           <ThemedText type="title" style={Margins.marginTop4X}>
-            Real-world haptics demos
+            Haptics demos
           </ThemedText>
           <ThemedText style={Margins.marginTop2X}>
-            Pick a scenario to see how haptics can improve everyday interactions.
+            Feel them with real use cases.
           </ThemedText>
 
           <View style={styles.list}>
@@ -81,13 +73,12 @@ export default function DemosScreen() {
                 }}
               >
                 <Link.Trigger>
-                  <Card style={styles.card}>
+                  <View style={styles.card}>
                     <ThemedText type="subtitle" style={styles.cardTitle}>
                       {demo.title}
                     </ThemedText>
-                    <ThemedText style={styles.cardDescription}>{demo.description}</ThemedText>
-                    <ThemedText style={styles.cardLink}>Open demo </ThemedText>
-                  </Card>
+                    <Ionicons name="chevron-forward" size={20} color="#38ACDD" style={styles.cardArrow} />
+                  </View>
                 </Link.Trigger>
               </Link>
             ))}
@@ -110,17 +101,23 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
+    backgroundColor: 'white',
+    boxShadow: '-3px 3px 0px #38ACDD',
+    borderRadius: 4,
+    borderColor: '#38ACDD',
+    borderWidth: 2,
+    padding: 15,
     paddingVertical: 18,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardTitle: {
     fontSize: 20,
     lineHeight: 26,
+    flex: 1,
   },
-  cardDescription: {
-    marginTop: 6,
-  },
-  cardLink: {
-    marginTop: 10,
-    color: '#001A72',
+  cardArrow: {
+    marginLeft: 8,
   },
 });

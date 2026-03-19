@@ -10,14 +10,13 @@ import Animated, {
 
 interface HapticSliderProps {
   value: number;
-  onValueChange: (value: number) => void;
+  onValueChange?: (value: number) => void;
   min?: number;
   max?: number;
   step?: number;
   style?: ViewStyle;
 }
 
-const SLIDER_WIDTH = 300;
 const THUMB_SIZE = 30;
 const TRACK_HEIGHT = 6;
 
@@ -29,34 +28,41 @@ export default function HapticSlider({
   step = 1,
   style,
 }: HapticSliderProps) {
-  const [sliderWidth, setSliderWidth] = useState(SLIDER_WIDTH);
-  const thumbPosition = useSharedValue(((value - min) / (max - min)) * sliderWidth);
+  const [sliderWidth, setSliderWidth] = useState(0);
+  const [internalValue, setInternalValue] = useState(value);
+  const sliderWidthSV = useSharedValue(0);
+  const thumbPosition = useSharedValue(0);
   const isActive = useSharedValue(false);
+  const dragOffset = useSharedValue(0);
 
   useEffect(() => {
-    thumbPosition.value = withSpring(((value - min) / (max - min)) * sliderWidth, {
-      damping: 8,
-      mass: 1,
-      overshootClamping: true,
-    });
-  }, [value, sliderWidth, min, max, thumbPosition]);
+    if (sliderWidth === 0) return;
+    const thumbRange = sliderWidth - THUMB_SIZE;
+    thumbPosition.value = THUMB_SIZE / 2 + ((internalValue - min) / (max - min)) * thumbRange;
+  }, [sliderWidth]);
+
+  const handleValueChange = (steppedValue: number) => {
+    setInternalValue(steppedValue);
+    onValueChange?.(steppedValue);
+  };
 
   const pan = Gesture.Pan()
-    .onStart(() => {
+    .onStart((event) => {
       isActive.value = true;
+      dragOffset.value = thumbPosition.value - (event.absoluteX - THUMB_SIZE / 2);
     })
     .onUpdate((event) => {
-      const newPosition = Math.max(
-        0,
-        Math.min(event.absoluteX - THUMB_SIZE / 2, sliderWidth)
-      );
+      const thumbMin = THUMB_SIZE / 2;
+      const thumbMax = sliderWidthSV.value - THUMB_SIZE / 2;
+      const thumbRange = sliderWidthSV.value - THUMB_SIZE;
+      const newPosition = Math.max(thumbMin, Math.min(event.absoluteX - THUMB_SIZE / 2 + dragOffset.value, thumbMax));
       thumbPosition.value = newPosition;
 
-      const percentage = newPosition / sliderWidth;
+      const percentage = (newPosition - thumbMin) / thumbRange;
       const newValue = min + percentage * (max - min);
       const steppedValue = Math.round(newValue / step) * step;
 
-      runOnJS(onValueChange)(steppedValue);
+      runOnJS(handleValueChange)(steppedValue);
     })
     .onFinalize(() => {
       isActive.value = false;
@@ -64,63 +70,47 @@ export default function HapticSlider({
 
   const tap = Gesture.Tap()
     .onStart((event) => {
-      const newPosition = Math.max(
-        0,
-        Math.min(event.absoluteX - THUMB_SIZE / 2, sliderWidth)
-      );
+      const thumbMin = THUMB_SIZE / 2;
+      const thumbMax = sliderWidthSV.value - THUMB_SIZE / 2;
+      const thumbRange = sliderWidthSV.value - THUMB_SIZE;
+      const newPosition = Math.max(thumbMin, Math.min(event.absoluteX - THUMB_SIZE / 2, thumbMax));
       thumbPosition.value = withSpring(newPosition, {
         damping: 8,
         mass: 1,
         overshootClamping: true,
       });
 
-      const percentage = newPosition / sliderWidth;
+      const percentage = (newPosition - thumbMin) / thumbRange;
       const newValue = min + percentage * (max - min);
       const steppedValue = Math.round(newValue / step) * step;
 
-      runOnJS(onValueChange)(steppedValue);
+      runOnJS(handleValueChange)(steppedValue);
     });
 
   const animatedThumbStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateX: thumbPosition.value - THUMB_SIZE / 2,
-      },
-    ],
+    transform: [{ translateX: thumbPosition.value - THUMB_SIZE / 2 }],
   }));
 
-  const filledTrackWidth = ((value - min) / (max - min)) * sliderWidth;
+  const filledTrackWidth = THUMB_SIZE / 2 + ((internalValue - min) / (max - min)) * (sliderWidth - THUMB_SIZE);
 
   return (
     <GestureDetector gesture={Gesture.Exclusive(pan, tap)}>
       <View
         style={[styles.container, style]}
         onLayout={(event) => {
-          setSliderWidth(event.nativeEvent.layout.width - 10);
+          const w = event.nativeEvent.layout.width - 10;
+          setSliderWidth(w);
+          sliderWidthSV.value = w;
         }}
       >
         {/* Track background */}
         <View style={[styles.track, { width: sliderWidth }]}>
           {/* Filled track */}
-          <View
-            style={[
-              styles.filledTrack,
-              {
-                width: filledTrackWidth,
-              },
-            ]}
-          />
+          <View style={[styles.filledTrack, { width: filledTrackWidth }]} />
         </View>
 
         {/* Tick marks */}
-        <View
-          style={[
-            styles.tickContainer,
-            {
-              width: sliderWidth,
-            },
-          ]}
-        >
+        <View style={[styles.tickContainer, { width: sliderWidth }]}>
           {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
             <View
               key={i}
@@ -153,7 +143,7 @@ const styles = StyleSheet.create({
   },
   track: {
     height: TRACK_HEIGHT,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#E0F0FA',
     borderRadius: TRACK_HEIGHT / 2,
     overflow: 'hidden',
   },
@@ -180,16 +170,8 @@ const styles = StyleSheet.create({
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
-    backgroundColor: 'rgba(100, 200, 255, 1)',
+    backgroundColor: '#E0F0FA',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    borderColor: 'rgba(100, 200, 255, 1)',
   },
 });

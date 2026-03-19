@@ -6,7 +6,7 @@ import BasicLayout from '@/components/BasicLayout';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
 import HapticDemoButton from '@/components/demo/HapticDemoButton';
-import Animated, { FadeInDown, FadeInUp, FadeOutDown } from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 
 export default function CountdownTimerDemo() {
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -52,7 +52,7 @@ export default function CountdownTimerDemo() {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev === null) {
-          return 10;
+          return 7;
         }
         if (prev > 0) {
           const next = prev - 1;
@@ -76,7 +76,7 @@ export default function CountdownTimerDemo() {
   }, [isActive, tickComposer, finalTickComposer, completeComposer]);
 
   const handleStart = () => {
-    setCountdown(10);
+    setCountdown(7);
     setIsActive(true);
   };
 
@@ -88,10 +88,10 @@ export default function CountdownTimerDemo() {
   return (
     <BasicLayout>
       <ThemedText type="title" style={Margins.marginTop4X}>
-        Workout interval
+        Countdown timer
       </ThemedText>
       <ThemedText style={Margins.marginTop2X}>
-        This demo will guide interval changes with distinct haptic pulses.
+        Experience haptic feedback synced to a countdown timer.
       </ThemedText>
 
       <View style={styles.timerContainer}>

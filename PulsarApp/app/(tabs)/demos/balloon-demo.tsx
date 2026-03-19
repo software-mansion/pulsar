@@ -10,6 +10,8 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -106,6 +108,7 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
   const progress = useSharedValue(0);
   const balloonOpacity = useSharedValue(1);
   const poppedOpacity = useSharedValue(0);
+  const shakeOffset = useSharedValue(0);
   const poppedRef = useRef(false);
   const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -132,6 +135,8 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
     poppedRef.current = true;
     popComposer.play();
 
+    cancelAnimation(shakeOffset);
+    shakeOffset.value = withTiming(0, { duration: 50 });
     balloonOpacity.value = withTiming(0, { duration: POP_FADE_MS });
     poppedOpacity.value = withTiming(1, { duration: POP_FADE_MS });
 
@@ -160,18 +165,27 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
       if ((prev < 0.25 && current >= 0.25) || (prev < 0.5 && current >= 0.5) || (prev < 0.75 && current >= 0.75)) {
         runOnJS(playRise)();
       }
+
+      if (current >= 0.75 && prev < 0.75) {
+        shakeOffset.value = withRepeat(
+          withSequence(withTiming(5, { duration: 40 }), withTiming(-5, { duration: 40 })),
+          -1,
+          true,
+        );
+      } else if (current < 0.75 && prev >= 0.75) {
+        cancelAnimation(shakeOffset);
+        shakeOffset.value = withTiming(0, { duration: 50 });
+      }
     },
     [],
   );
 
   const balloonStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(progress.value, [0, 1], [0, -24], Extrapolation.CLAMP);
-    const scale = interpolate(progress.value, [0, 1], [1, 1.2], Extrapolation.CLAMP);
-    const opacity = interpolate(progress.value, [0, 1], [1, 0.85], Extrapolation.CLAMP);
+    const scale = interpolate(progress.value, [0, 1], [1, 1.4], Extrapolation.CLAMP);
 
     return {
-      transform: [{ translateY }, { scale }],
-      opacity: opacity * balloonOpacity.value,
+      transform: [{ translateX: shakeOffset.value }, { scale }],
+      opacity: balloonOpacity.value,
     };
   });
 
@@ -213,17 +227,14 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
   );
 }
 
-export default function TypingFeedbackDemo() {
+export default function BalloonDemo() {
   return (
     <BasicLayout>
       <ThemedText type="title" style={Margins.marginTop4X}>
         Popping balloons
       </ThemedText>
       <ThemedText style={Margins.marginTop2X}>
-        Long press each dot to charge it. As it rises, subtle haptics guide the buildup.
-      </ThemedText>
-      <ThemedText style={styles.helperText}>
-        Reach the top to pop it with a unique haptic burst. Popped balloons respawn after a short cooldown.
+        Long press each balloon to pump it up!
       </ThemedText>
 
       <View style={styles.grid}>
@@ -253,33 +264,30 @@ const styles = StyleSheet.create({
   },
   cell: {
     width: '48%',
-    borderWidth: 1,
-    borderColor: Colors.light.borderColor,
-    borderRadius: 14,
-    paddingVertical: 16,
     alignItems: 'center',
-    backgroundColor: Colors.light.background,
+    justifyContent: 'center',
+    paddingVertical: 16,
   },
   dotSlot: {
-    width: 64,
-    height: 64,
+    width: 110,
+    height: 110,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
   dot: {
     position: 'absolute',
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: Colors.light.tint,
   },
   poppedDot: {
     position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
     borderStyle: 'dashed',
     borderColor: Colors.light.borderColor,
     opacity: 0.7,

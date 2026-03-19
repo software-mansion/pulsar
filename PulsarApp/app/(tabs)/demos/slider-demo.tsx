@@ -1,85 +1,65 @@
 import { StyleSheet, ScrollView, View } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useHapticsComposer, Pattern } from 'react-native-pulsar';
 
 import BasicLayout from '@/components/BasicLayout';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
 import HapticSlider from '@/components/demo/HapticSlider';
+import { useSharedValue } from 'react-native-reanimated';
 
-// Pattern 1: Quick short tick (sharp click sound)
 const quickTickPattern: Pattern = {
   discretePattern: [
     { time: 0, amplitude: 1, frequency: 1 },
     { time: 40, amplitude: 0, frequency: 1 },
   ],
-  continuousPattern: {
-    amplitude: [],
-    frequency: [],
-  },
+  continuousPattern: { amplitude: [], frequency: [] },
 };
 
-// Pattern 2: Medium soft tick (gentle feedback)
 const softTickPattern: Pattern = {
   discretePattern: [
     { time: 0, amplitude: 0.6, frequency: 0.4 },
     { time: 60, amplitude: 0, frequency: 0.4 },
   ],
-  continuousPattern: {
-    amplitude: [],
-    frequency: [],
-  },
+  continuousPattern: { amplitude: [], frequency: [] },
 };
 
-// Pattern 3: Deep resonant tick (bass-like feedback)
 const deepTickPattern: Pattern = {
   discretePattern: [
     { time: 0, amplitude: 0.8, frequency: 0.2 },
     { time: 80, amplitude: 0, frequency: 0.2 },
   ],
-  continuousPattern: {
-    amplitude: [],
-    frequency: [],
-  },
+  continuousPattern: { amplitude: [], frequency: [] },
 };
 
 export default function SliderDemo() {
-  const [value1, setValue1] = useState(50);
-  const [value2, setValue2] = useState(50);
-  const [value3, setValue3] = useState(50);
+  const value1 = useSharedValue(50);
+  const value2 = useSharedValue(50);
+  const value3 = useSharedValue(50);
 
   const quickTickComposer = useHapticsComposer(quickTickPattern);
   const softTickComposer = useHapticsComposer(softTickPattern);
   const deepTickComposer = useHapticsComposer(deepTickPattern);
 
   const handleSlider1Change = useCallback((newValue: number) => {
-    const oldTick = Math.floor(value1 / 10);
+    const oldTick = Math.floor(value1.value / 10);
     const newTick = Math.floor(newValue / 10);
-    
-    if (oldTick !== newTick) {
-      quickTickComposer.play();
-    }
-    setValue1(newValue);
+    if (oldTick !== newTick) quickTickComposer.play();
+    value1.value = newValue;
   }, [value1, quickTickComposer]);
 
   const handleSlider2Change = useCallback((newValue: number) => {
-    const oldTick = Math.floor(value2 / 10);
+    const oldTick = Math.floor(value2.value / 10);
     const newTick = Math.floor(newValue / 10);
-    
-    if (oldTick !== newTick) {
-      softTickComposer.play();
-    }
-    setValue2(newValue);
+    if (oldTick !== newTick) softTickComposer.play();
+    value2.value = newValue;
   }, [value2, softTickComposer]);
 
   const handleSlider3Change = useCallback((newValue: number) => {
-    const oldTick = Math.floor(value3 / 10);
+    const oldTick = Math.floor(value3.value / 10);
     const newTick = Math.floor(newValue / 10);
-    
-    if (oldTick !== newTick) {
-      deepTickComposer.play();
-    }
-    setValue3(newValue);
+    if (oldTick !== newTick) deepTickComposer.play();
+    value3.value = newValue;
   }, [value3, deepTickComposer]);
 
   return (
@@ -97,51 +77,33 @@ export default function SliderDemo() {
             <ThemedText type="subtitle" style={styles.sliderTitle}>
               Quick Tick
             </ThemedText>
-            <ThemedText style={styles.sliderDescription}>
-              Sharp, fast feedback (High frequency)
-            </ThemedText>
             <HapticSlider
-              value={value1}
+              value={50}
               onValueChange={handleSlider1Change}
               style={styles.slider}
             />
-            <ThemedText style={styles.sliderValue}>
-              Value: {Math.round(value1)}
-            </ThemedText>
           </View>
 
           <View style={styles.sliderCard}>
             <ThemedText type="subtitle" style={styles.sliderTitle}>
               Soft Tick
             </ThemedText>
-            <ThemedText style={styles.sliderDescription}>
-              Gentle, subtle feedback (Medium frequency)
-            </ThemedText>
             <HapticSlider
-              value={value2}
+              value={50}
               onValueChange={handleSlider2Change}
               style={styles.slider}
             />
-            <ThemedText style={styles.sliderValue}>
-              Value: {Math.round(value2)}
-            </ThemedText>
           </View>
 
           <View style={styles.sliderCard}>
             <ThemedText type="subtitle" style={styles.sliderTitle}>
               Deep Tick
             </ThemedText>
-            <ThemedText style={styles.sliderDescription}>
-              Resonant, powerful feedback (Low frequency)
-            </ThemedText>
             <HapticSlider
-              value={value3}
+              value={50}
               onValueChange={handleSlider3Change}
               style={styles.slider}
             />
-            <ThemedText style={styles.sliderValue}>
-              Value: {Math.round(value3)}
-            </ThemedText>
           </View>
         </View>
       </BasicLayout>
@@ -164,7 +126,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 12,
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 4,
+    borderColor: '#38ACDD',
+    borderWidth: 2,
+    boxShadow: '-3px 3px 0px #38ACDD',
   },
   sliderTitle: {
     marginBottom: 8,
@@ -175,12 +140,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   slider: {
-    marginVertical: 12,
     height: 40,
-  },
-  sliderValue: {
-    marginTop: 8,
-    fontSize: 14,
-    opacity: 0.8,
   },
 });
