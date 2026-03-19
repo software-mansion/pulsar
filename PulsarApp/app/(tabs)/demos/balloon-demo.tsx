@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Pattern, usePatternComposer } from 'react-native-pulsar';
+import { useRealtimeComposer } from 'react-native-pulsar';
 import Animated, {
   Easing,
   Extrapolation,
@@ -23,87 +23,10 @@ const BALLOON_COUNT = 4;
 const CHARGE_TO_POP_MS = 950;
 const RELEASE_RESET_MS = 180;
 const POP_FADE_MS = 120;
-const COOLDOWN_MS = 1400;
+const COOLDOWN_MS = 1000;
 
-const risePatterns: Pattern[] = [
-  {
-    discretePattern: [
-      { time: 0, amplitude: 0.35, frequency: 0.9 },
-      { time: 35, amplitude: 0, frequency: 0.9 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-  {
-    discretePattern: [
-      { time: 0, amplitude: 0.3, frequency: 0.6 },
-      { time: 45, amplitude: 0, frequency: 0.6 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-  {
-    discretePattern: [
-      { time: 0, amplitude: 0.4, frequency: 0.4 },
-      { time: 55, amplitude: 0, frequency: 0.4 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-  {
-    discretePattern: [
-      { time: 0, amplitude: 0.32, frequency: 0.2 },
-      { time: 65, amplitude: 0, frequency: 0.2 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-];
-
-const popPatterns: Pattern[] = [
-  {
-    discretePattern: [
-      { time: 0, amplitude: 1, frequency: 0.9 },
-      { time: 40, amplitude: 0, frequency: 0.9 },
-      { time: 70, amplitude: 0.45, frequency: 0.7 },
-      { time: 110, amplitude: 0, frequency: 0.7 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-  {
-    discretePattern: [
-      { time: 0, amplitude: 0.85, frequency: 0.65 },
-      { time: 50, amplitude: 0, frequency: 0.65 },
-      { time: 90, amplitude: 0.65, frequency: 0.4 },
-      { time: 135, amplitude: 0, frequency: 0.4 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-  {
-    discretePattern: [
-      { time: 0, amplitude: 0.9, frequency: 0.35 },
-      { time: 65, amplitude: 0, frequency: 0.35 },
-      { time: 110, amplitude: 0.55, frequency: 0.2 },
-      { time: 160, amplitude: 0, frequency: 0.2 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-  {
-    discretePattern: [
-      { time: 0, amplitude: 0.75, frequency: 1 },
-      { time: 35, amplitude: 0, frequency: 1 },
-      { time: 65, amplitude: 0.95, frequency: 0.55 },
-      { time: 115, amplitude: 0, frequency: 0.55 },
-    ],
-    continuousPattern: { amplitude: [], frequency: [] },
-  },
-];
-
-type BalloonCellProps = {
-  index: number;
-  risePattern: Pattern;
-  popPattern: Pattern;
-};
-
-function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
-  const riseComposer = usePatternComposer();
-  const popComposer = usePatternComposer();
+function BalloonCell(_: { index: number }) {
+  const composer = useRealtimeComposer();
 
   const progress = useSharedValue(0);
   const balloonOpacity = useSharedValue(1);
@@ -113,19 +36,12 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
   const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    riseComposer.parse(risePattern);
-    popComposer.parse(popPattern);
-
     return () => {
       if (cooldownTimerRef.current) {
         clearTimeout(cooldownTimerRef.current);
       }
     };
-  }, [popComposer, popPattern, riseComposer, risePattern]);
-
-  const playRise = () => {
-    riseComposer.play();
-  };
+  }, []);
 
   const handlePop = () => {
     if (poppedRef.current) {
@@ -133,7 +49,6 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
     }
 
     poppedRef.current = true;
-    popComposer.play();
 
     cancelAnimation(shakeOffset);
     shakeOffset.value = withTiming(0, { duration: 50 });
@@ -155,17 +70,24 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
   useAnimatedReaction(
     () => progress.value,
     (current, previous) => {
+      'worklet';
       const prev = previous ?? 0;
 
       if (current >= 1 && prev < 1) {
+        composer.stop();
+        composer.playDiscrete(1.0, 1.0);
         runOnJS(handlePop)();
         return;
       }
 
-      if ((prev < 0.25 && current >= 0.25) || (prev < 0.5 && current >= 0.5) || (prev < 0.75 && current >= 0.75)) {
-        runOnJS(playRise)();
+      // Drive continuous haptic with increasing amplitude and frequency as balloon pumps
+      if (current > 0 && current < 1) {
+        const amplitude = interpolate(current, [0, 0.75, 1], [0.06, 0.3, 0.55], Extrapolation.CLAMP);
+        const frequency = interpolate(current, [0, 1], [0.15, 0.8], Extrapolation.CLAMP);
+        composer.set(amplitude, frequency);
       }
 
+      // Start/stop shake animation at 0.75
       if (current >= 0.75 && prev < 0.75) {
         shakeOffset.value = withRepeat(
           withSequence(withTiming(5, { duration: 40 }), withTiming(-5, { duration: 40 })),
@@ -175,6 +97,12 @@ function BalloonCell({ index, risePattern, popPattern }: BalloonCellProps) {
       } else if (current < 0.75 && prev >= 0.75) {
         cancelAnimation(shakeOffset);
         shakeOffset.value = withTiming(0, { duration: 50 });
+      }
+
+      // Discrete impulses escalating through the shake zone
+      if ((prev < 0.80 && current >= 0.80) || (prev < 0.88 && current >= 0.88) || (prev < 0.94 && current >= 0.94)) {
+        const shakeProg = interpolate(current, [0.75, 1], [0, 1], Extrapolation.CLAMP);
+        composer.playDiscrete(0.45 + shakeProg * 0.35, 0.65 + shakeProg * 0.25);
       }
     },
     [],
@@ -239,12 +167,7 @@ export default function BalloonDemo() {
 
       <View style={styles.grid}>
         {Array.from({ length: BALLOON_COUNT }).map((_, index) => (
-          <BalloonCell
-            key={`balloon-${index}`}
-            index={index}
-            risePattern={risePatterns[index]}
-            popPattern={popPatterns[index]}
-          />
+          <BalloonCell key={`balloon-${index}`} index={index} />
         ))}
       </View>
     </BasicLayout>
@@ -288,7 +211,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 3,
-    borderStyle: 'dashed',
+    borderStyle: 'dotted',
     borderColor: Colors.light.borderColor,
     opacity: 0.7,
   },
