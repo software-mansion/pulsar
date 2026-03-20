@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { isRunningInExpoGo } from 'expo';
 import { Stack, useNavigationContainerRef, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -8,7 +8,6 @@ import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 import { PostHogProvider } from 'posthog-react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Theme } from '@/constants/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { FilterProvider } from '@/contexts/FilterContext';
@@ -37,7 +36,6 @@ export const unstable_settings = {
 };
 
 function RootLayout() {
-  const colorScheme = useColorScheme();
   const navigationRef = useNavigationContainerRef();
   const pathname = usePathname();
   const params = useGlobalSearchParams();
@@ -79,7 +77,7 @@ function RootLayout() {
         <StoreReviewProvider>
           <FilterProvider>
             <OnboardingProvider>
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : {...DefaultTheme, ...Theme}}>
+              <ThemeProvider value={{...DefaultTheme, ...Theme}}>
                 <Stack>
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
