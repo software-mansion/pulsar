@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Pressable, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, Pressable, ScrollView, Switch } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import Button from '@/components/Button';
 import { Colors } from '@/constants/theme';
@@ -9,6 +9,7 @@ import { TagsInfo } from '@/constants/Tags';
 import { useFilters } from '@/contexts/FilterContext';
 import { usePostHog } from 'posthog-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Settings } from 'react-native-pulsar';
 
 const closeIcon = require('@/assets/images/x.svg');
 const checkIcon = require('@/assets/images/check.svg');
@@ -30,7 +31,7 @@ const defaultEdges = {
 
 export default function FiltersModal() {
   const posthog = usePostHog();
-  const { selectedTags, setSelectedTags } = useFilters();
+  const { selectedTags, setSelectedTags, soundEnabled, setSoundEnabled } = useFilters();
 
   const createInitialStates = (): FiltersCollection => {
     const states: FiltersCollection = {};
@@ -47,6 +48,11 @@ export default function FiltersModal() {
   };
 
   const [filters, setFilters] = useState<FiltersCollection>(createInitialStates);
+
+  const handleSoundToggle = (value: boolean) => {
+    setSoundEnabled(value);
+    Settings.enableSound(value);
+  };
 
   const toggleFilter = (groupName: string, tagName: string) => {
     setFilters(prev => ({
@@ -108,6 +114,19 @@ export default function FiltersModal() {
         </View>
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={true}>
+          <View style={styles.soundToggleSection}>
+            <ThemedText style={styles.sectionTitle}>Settings</ThemedText>
+            <View style={styles.soundToggleRow}>
+              <Text style={styles.checkboxLabel}>Sound</Text>
+              <Switch
+                value={soundEnabled}
+                onValueChange={handleSoundToggle}
+                trackColor={{ false: '#D8EEF7', true: '#87CCE8' }}
+                thumbColor={soundEnabled ? '#2B85AB' : '#f0f0f0'}
+              />
+            </View>
+          </View>
+
           {TagsInfo.map(group => (
             <FilterSection
               key={group.groupName}
@@ -268,5 +287,14 @@ const styles = StyleSheet.create({
   },
   showResultsButton: {
     width: '100%',
+  },
+  soundToggleSection: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  soundToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });
