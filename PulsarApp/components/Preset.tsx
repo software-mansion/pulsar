@@ -25,6 +25,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 	const imageAspectRatio =
 		imageMeta?.width && imageMeta?.height ? imageMeta.width / imageMeta.height : undefined;
 	const imageWidth = imageAspectRatio ? IMAGE_HEIGHT * imageAspectRatio : undefined;
+	const effectiveRatio = duration ? Math.min(1, duration / 1000) : 1;
 
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [viewportWidth, setViewportWidth] = useState(0);
@@ -35,7 +36,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 		() => progress.value,
 		(currentProgress) => {
 			if (imageWidth && viewportWidth > 0 && currentProgress > 0) {
-				const indicatorPosition = currentProgress * imageWidth;
+				const indicatorPosition = currentProgress * effectiveRatio * imageWidth;
 				const scrollX = Math.max(0, indicatorPosition - viewportWidth / 2);
 				scrollTo(scrollViewRef, scrollX, 0, false);
 			}
@@ -78,7 +79,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 
 	const animatedIndicatorStyle = useAnimatedStyle(() => {
 		return {
-			left: `${progress.value * 100}%`,
+			left: progress.value * effectiveRatio * (imageWidth ?? 1000),
 		};
 	});
 
@@ -116,19 +117,20 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 						style={styles.imagesScroll}
 						contentContainerStyle={styles.imagesContent}
 					>
-						<Image
-							source={image}
-							style={[
-								styles.image,
-								imageWidth ? { width: imageWidth } : undefined,
-							]}
-							resizeMode="contain"
-						/>
+						<View style={{ position: 'relative', height: IMAGE_HEIGHT, width: imageWidth }}>
+							<Image
+								source={image}
+								style={[
+									styles.image,
+									imageWidth ? { width: imageWidth } : undefined,
+								]}
+								resizeMode="contain"
+							/>
+							{isPlaying && (
+								<Animated.View style={[styles.playIndicator, animatedIndicatorStyle]} />
+							)}
+						</View>
 					</ScrollView>
-					
-					{isPlaying && (
-						<Animated.View style={[styles.playIndicator, animatedIndicatorStyle]} />
-					)}
 				</View>
 
 				<Button
@@ -182,12 +184,10 @@ const styles = StyleSheet.create({
 	imagesContent: {
 		height: IMAGE_HEIGHT + 20,
 		alignItems: 'center',
+		paddingHorizontal: 5,
 	},
 	image: {
 		height: IMAGE_HEIGHT,
-		alignSelf: 'center',
-		paddingTop: 5,
-		paddingBottom: 5,
 		paddingHorizontal: 5,
 	},
 	placeholderText: {
