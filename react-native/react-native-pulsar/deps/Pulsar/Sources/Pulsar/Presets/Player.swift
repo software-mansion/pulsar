@@ -5,20 +5,26 @@ import AVFAudio
 
 @objc public class Player : NSObject {
   private var patternComposer: PatternComposer!
-  
-  public init(_ haptics: Pulsar, rawContinuousPattern: [[[Double]]] = [], rawDiscretePattern: [[Double]] = []) {
+  private var audioOnly: Bool = false
+
+  public init(_ haptics: Pulsar, audioOnly: Bool = false, rawContinuousPattern: [[[Double]]] = [], rawDiscretePattern: [[Double]] = []) {
     super.init()
+    self.audioOnly = audioOnly
     patternComposer = haptics.getPatternComposer()
-    
+
     let continuousPoints = convertContinuousPattern(rawContinuousPattern)
     let discretePoints = convertDiscretePattern(rawDiscretePattern)
     let patternData = PatternData(continuousPattern: continuousPoints, discretePattern: discretePoints)
-    
+
     patternComposer.parsePattern(hapticsData: patternData)
   }
-  
+
   @objc public func play() {
-    patternComposer.play()
+    if audioOnly {
+      patternComposer.playAudioOnly()
+    } else {
+      patternComposer.play()
+    }
   }
   
   @objc public func stop() {

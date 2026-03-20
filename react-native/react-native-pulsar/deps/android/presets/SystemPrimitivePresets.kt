@@ -45,7 +45,7 @@ class SystemEffectClickPreset(haptics: Pulsar, private val systemPresets: System
         haptics,
         PatternData(
             rawDiscretePattern = listOf(
-                listOf(.1f, 1.0f, 1.0f),
+                listOf(0f, 0.65f, 0.85f),
             ),
         ),
         true
@@ -62,7 +62,8 @@ class SystemDoubleClickPreset(haptics: Pulsar, private val systemPresets: System
         haptics,
         PatternData(
             rawDiscretePattern = listOf(
-                listOf(.1f, 1.0f, 1.0f),
+                listOf(0f,    0.65f, 0.85f),
+                listOf(120f,  0.55f, 0.8f),
             ),
         ),
         true
@@ -79,7 +80,7 @@ class SystemTickPreset(haptics: Pulsar, private val systemPresets: SystemPrimiti
         haptics,
         PatternData(
             rawDiscretePattern = listOf(
-                listOf(.1f, 1.0f, 1.0f),
+                listOf(0f, 0.2f, 0.9f),
             ),
         ),
         true
@@ -96,7 +97,7 @@ class SystemHeavyClickPreset(haptics: Pulsar, private val systemPresets: SystemP
         haptics,
         PatternData(
             rawDiscretePattern = listOf(
-                listOf(.1f, 1.0f, 1.0f),
+                listOf(0f, 0.9f, 0.45f),
             ),
         ),
         true

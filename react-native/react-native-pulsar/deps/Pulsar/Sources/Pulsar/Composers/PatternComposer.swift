@@ -103,6 +103,10 @@ public class PatternComposer: NSObject {
       print("Error playing pattern: \(error.localizedDescription)")
     }
   }
+
+  @objc public func playAudioOnly() {
+    audioSimulator.play(buffer: audioBuffer)
+  }
   
   @objc public func stop() {
     do {
