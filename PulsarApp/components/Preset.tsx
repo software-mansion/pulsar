@@ -99,7 +99,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 				<ThemedText type="subtitle" style={styles.title}>
 					{title}
 				</ThemedText>
-				<ThemedText>{subtitle}</ThemedText>
+				<ThemedText style={styles.description}>{subtitle}</ThemedText>
 
 				<View 
 					style={styles.border}
@@ -167,6 +167,9 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		marginTop: 6,
+	},
+	description: {
+		fontSize: 14,
 	},
 	border: {
 		borderWidth: 1,
