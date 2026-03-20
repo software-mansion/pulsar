@@ -3,7 +3,7 @@ import { Text, Button, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePatternComposer } from "react-native-pulsar";
 
-export default function TestingScreen() {
+export /*default*/ function TestingScreen() {
   const socketRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState<"idle" | "connecting" | "connected" | "disconnected" | "error">("idle");
   const [lastMessage, setLastMessage] = useState<string>("No messages yet");

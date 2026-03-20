@@ -95,18 +95,17 @@ const notifications: Notification[] = [
   },
 ];
 
-const NotificationToast = ({ notification, onAnimationEnd }: { notification: Notification; onAnimationEnd: () => void }) => {
+const NotificationToast = ({ notification }: { notification: Notification }) => {
   const composer = usePatternComposer(notification.pattern);
 
   useEffect(() => {
-    // Play haptic when notification appears
     composer.play();
   }, []);
 
   return (
     <Animated.View
       entering={FadeInDown.springify()}
-      exiting={FadeOutDown.springify().withCallback(onAnimationEnd)}
+      exiting={FadeOutDown.springify()}
       style={[styles.notification, { borderLeftColor: notification.color }]}
     >
       <View style={styles.notificationContent}>
@@ -122,13 +121,11 @@ const NotificationToast = ({ notification, onAnimationEnd }: { notification: Not
 };
 
 export default function NotificationHapticsDemo() {
-  const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [displayedNotification, setDisplayedNotification] = useState<Notification | null>(null);
 
   const playSequence = () => {
     setIsPlaying(true);
-    setCurrentNotificationIndex(0);
     showNextNotification(0);
   };
 
@@ -141,14 +138,9 @@ export default function NotificationHapticsDemo() {
 
     setDisplayedNotification(notifications[index]);
 
-    // Schedule next notification after 2.5 seconds (includes animation time)
     setTimeout(() => {
       showNextNotification(index + 1);
     }, 2500);
-  };
-
-  const handleNotificationAnimationEnd = () => {
-    // Animation complete, wait for next one
   };
 
   return (
@@ -158,14 +150,14 @@ export default function NotificationHapticsDemo() {
           Notification Haptics
         </ThemedText>
         <ThemedText style={Margins.marginTop2X}>
-          Each notification type has its own unique haptic pattern. Press the button to play all notifications sequentially.
+          Each notification type has its own unique haptic pattern that matches its intention.
         </ThemedText>
 
         <View style={styles.notificationDisplay}>
           {displayedNotification && (
             <NotificationToast
+              key={displayedNotification.id}
               notification={displayedNotification}
-              onAnimationEnd={handleNotificationAnimationEnd}
             />
           )}
         </View>
@@ -174,29 +166,10 @@ export default function NotificationHapticsDemo() {
           <HapticDemoButton
             label={isPlaying ? 'Playing... ' : 'Play All Notifications'}
             onPress={playSequence}
-            disabled={isPlaying}
             style={styles.playButton}
           />
         </View>
 
-        <View style={styles.notificationList}>
-          <ThemedText style={styles.sectionTitle}>Notification Types:</ThemedText>
-          {notifications.map((notif) => (
-            <View key={notif.id} style={styles.notificationItem}>
-              <View style={[styles.colorIndicator, { backgroundColor: notif.color }]} />
-              <View style={styles.notificationItemText}>
-                <ThemedText style={styles.notificationItemTitle}>{notif.title}</ThemedText>
-                <ThemedText style={styles.notificationItemDesc}>{notif.message}</ThemedText>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.infoSection}>
-          <ThemedText style={styles.infoText}>
-            Different notification types trigger different haptic feedback patterns—success notifications feel celebratory, warnings feel urgent, and messages feel gentle.
-          </ThemedText>
-        </View>
       </BasicLayout>
     </ScrollView>
   );
@@ -212,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   notification: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: 'white',
     borderLeftWidth: 4,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -228,7 +201,6 @@ const styles = StyleSheet.create({
   },
   notificationMessage: {
     fontSize: 13,
-    color: '#666',
   },
   buttonContainer: {
     marginTop: 40,
@@ -236,48 +208,5 @@ const styles = StyleSheet.create({
   },
   playButton: {
     width: '100%',
-  },
-  notificationList: {
-    marginTop: 40,
-    marginHorizontal: 16,
-    paddingBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  notificationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  colorIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  notificationItemText: {
-    flex: 1,
-  },
-  notificationItemTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  notificationItemDesc: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 2,
-  },
-  infoSection: {
-    marginTop: 20,
-    paddingHorizontal: 16,
-  },
-  infoText: {
-    lineHeight: 22,
-    color: '#666',
   },
 });
