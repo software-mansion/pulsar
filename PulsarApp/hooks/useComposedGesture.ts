@@ -12,9 +12,12 @@ export const useComposedGesture = (
 ): SimultaneousGesture => {
   const normalizePosition = (x: number, y: number) => {
     'worklet';
+    const { width, height } = containerSize.value;
+    const cx = Math.max(0, Math.min(width, x));
+    const cy = Math.max(0, Math.min(height, y));
     return {
-      x: (containerSize.value.width > 0 ? x / containerSize.value.width : 0),
-      y: 0.2 + 0.8 * (1 - (containerSize.value.height > 0 ? y / containerSize.value.height : 0)),
+      x: width > 0 ? cx / width : 0,
+      y: 0.2 + 0.8 * (1 - (height > 0 ? cy / height : 0)),
     };
   };
   const tapGesture = Gesture.Tap()
@@ -32,7 +35,9 @@ export const useComposedGesture = (
     // .onEnd(() => {});
 
   const panGesture = Gesture.Pan()
-    // .onBegin((e) => {})
+    .onBegin((e) => {
+      recordEvent('pan', 0, 0);
+    })
     .onUpdate((e) => {
       const normalized = normalizePosition(e.x, e.y);
       composer.set(normalized.y, normalized.x);
@@ -46,5 +51,27 @@ export const useComposedGesture = (
       recordEvent('pan', 0, 0);
     });
 
-  return Gesture.Simultaneous(tapGesture, panGesture);
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(80)
+    .onStart((e) => {
+      if ((global as any).pressInterval != undefined) {
+        clearInterval((global as any).pressInterval);
+        (global as any).pressInterval = null;
+      }
+
+      const normalized = normalizePosition(e.x, e.y);
+      const intervalMs = 80;;
+      composer.playDiscrete(normalized.y, normalized.x);
+      (global as any).pressInterval = setInterval(() => {
+        composer.playDiscrete(normalized.y, normalized.x);
+      }, intervalMs);
+    })
+    .onFinalize(() => {
+      if ((global as any).pressInterval != undefined) {
+        clearInterval((global as any).pressInterval);
+        (global as any).pressInterval = null;
+      }
+    });
+
+  return Gesture.Simultaneous(tapGesture, longPressGesture, panGesture);
 };
