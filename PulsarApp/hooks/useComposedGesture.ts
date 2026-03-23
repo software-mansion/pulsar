@@ -31,11 +31,10 @@ export const useComposedGesture = (
       global.tapTimer = setTimeout(() => {
         tapIndicatorPosition.value = { x: -100, y: -100 };
       }, 100);
-    })
-    // .onEnd(() => {});
+    });
 
   const panGesture = Gesture.Pan()
-    .onBegin((e) => {
+    .onStart(() => {
       recordEvent('pan', 0, 0);
     })
     .onUpdate((e) => {
@@ -60,10 +59,12 @@ export const useComposedGesture = (
       }
 
       const normalized = normalizePosition(e.x, e.y);
-      const intervalMs = 80;;
+      const intervalMs = 80;
       composer.playDiscrete(normalized.y, normalized.x);
+      recordEvent('tap', normalized.x, normalized.y);
       (global as any).pressInterval = setInterval(() => {
         composer.playDiscrete(normalized.y, normalized.x);
+        recordEvent('tap', normalized.x, normalized.y);
       }, intervalMs);
     })
     .onFinalize(() => {

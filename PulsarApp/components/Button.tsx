@@ -25,6 +25,7 @@ interface Props {
   largeIcon?: boolean;
   fullWidth?: boolean;
   enabled?: boolean;
+  disableHaptics?: boolean;
 }
 
 function Button({
@@ -37,6 +38,7 @@ function Button({
   largeIcon = false,
   fullWidth = false,
   enabled = true,
+  disableHaptics = false,
   ...props }: Props & ViewProps) {
   const [pressed, setPressed] = useState(false);
   const isLoading = state === 'loading';
@@ -45,7 +47,7 @@ function Button({
     .onBegin(() => {
       setPressed(true);
       if (!isLoading && enabled) {
-        Presets.BtnPrimary();
+        if (!disableHaptics) Presets.BtnPrimary();
         onClick?.();
       }
     }).runOnJS(true);

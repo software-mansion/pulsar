@@ -137,6 +137,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 					label={isPlaying ? 'Stop' : 'Play'}
 					showIcon={isPlaying ? 'stop' : 'play'}
 					onClick={handlePress}
+					disableHaptics
 				/>
 
 			</View>
