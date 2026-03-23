@@ -29,29 +29,21 @@ export const useComposedGesture = (
         tapIndicatorPosition.value = { x: -100, y: -100 };
       }, 100);
     })
-    .onEnd(() => {
-      // tapIndicatorPosition.value = { x: -100, y: -100 };
-    });
+    // .onEnd(() => {});
 
   const panGesture = Gesture.Pan()
-    .onBegin((e) => {
-      // const normalized = normalizePosition(e.x, e.y);
-      // console.log('Pan begin', { absolute: { x: e.x, y: e.y }, normalized });
-      // panIndicatorPosition.value = { x: e.x, y: e.y };
-    })
+    // .onBegin((e) => {})
     .onUpdate((e) => {
       const normalized = normalizePosition(e.x, e.y);
       composer.set(normalized.y, normalized.x);
       recordEvent('pan', normalized.x, normalized.y);
-      // console.log('Pan update', { absolute: { x: e.x, y: e.y }, normalized });
       const clamped = clampIndicatorPosition(e.x, e.y);
       panIndicatorPosition.value = clamped;
     })
     .onEnd((e) => {
       composer.stop();
-      // const normalized = normalizePosition(e.x, e.y);
-      // console.log('Pan end', { absolute: { x: e.x, y: e.y }, normalized });
       panIndicatorPosition.value = { x: -100, y: -100 };
+      recordEvent('pan', 0, 0);
     });
 
   return Gesture.Simultaneous(tapGesture, panGesture);

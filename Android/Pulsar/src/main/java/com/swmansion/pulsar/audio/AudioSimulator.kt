@@ -377,6 +377,7 @@ class AudioSimulator(
             // Continuous waves
             config.continuousData.forEachIndexed { waveIdx, waveConfig ->
                 if (waveConfig.data.amplitude.isNotEmpty() && waveConfig.data.frequency.isNotEmpty()) {
+                    if (tMs < waveConfig.data.amplitude[0].time) return@forEachIndexed
                     val amp = valueForTime(waveConfig.data.amplitude, tMs, continuousAmpCursors, waveIdx)
                     val freq = valueForTime(waveConfig.data.frequency, tMs, continuousFreqCursors, waveIdx)
                         .coerceIn(20f, sampleRateF / 2f)

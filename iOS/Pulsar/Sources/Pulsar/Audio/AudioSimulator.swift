@@ -300,6 +300,7 @@ public class AudioSimulator: NSObject {
 			for waveIdx in 0..<continuousData.count {
 				let waveConfig = continuousData[waveIdx]
 				if !waveConfig.data.amplitude.isEmpty && !waveConfig.data.frequency.isEmpty {
+					if tMs < Float(waveConfig.data.amplitude[0].time) { continue }
 					let amp = valueForTime(waveConfig.data.amplitude, tMs, cursor: &continuousAmpCursors[waveIdx])
 					let freq = valueForTime(waveConfig.data.frequency, tMs, cursor: &continuousFreqCursors[waveIdx])
 
