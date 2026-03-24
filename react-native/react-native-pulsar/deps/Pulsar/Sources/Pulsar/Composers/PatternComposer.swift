@@ -7,8 +7,10 @@ public class PatternComposer: NSObject {
   private var engine: HapticEngineWrapper!
   private var discreteLine = DiscreteLine()
   private var continuousLine = ContinuousLine()
-  private var continuousPlayer: CHHapticPatternPlayer?
-  private var discretePlayer: CHHapticPatternPlayer?
+  private var continuousPlayerId: Int?
+  private var discretePlayerId: Int?
+  private var continuousPattern: CHHapticPattern?
+  private var discretePattern: CHHapticPattern?
   private var audioBuffer: AVAudioPCMBuffer?
   private var audioSimulator: AudioSimulator!
     
@@ -19,10 +21,7 @@ public class PatternComposer: NSObject {
   }
   
   deinit {
-    do {
-      try continuousPlayer?.stop(atTime: 0)
-      try discretePlayer?.stop(atTime: 0)
-    } catch {}
+    stop()
   }
   
   public func parseJSON(_ jsonData: String) -> PatternData? {
@@ -55,7 +54,7 @@ public class PatternComposer: NSObject {
     
     do {
       if (!intensityCurveLine.isEmpty && !sharpnessCurveLine.isEmpty) {
-        let continuousPattern = try CHHapticPattern(
+        let pattern = try CHHapticPattern(
           events: [
             CHHapticEvent(
               eventType: .hapticContinuous,
@@ -72,15 +71,17 @@ public class PatternComposer: NSObject {
             sharpnessCurveLine.getCurve
           ]
         )
-        continuousPlayer = engine.getPlayer(pattern: continuousPattern)
+        continuousPattern = pattern
+        continuousPlayerId = engine.createPlayer(pattern: pattern)
       }
-      
+
       if (!discreteLine.getEvents.isEmpty) {
-        let discretePattern = try CHHapticPattern(
+        let pattern = try CHHapticPattern(
           events: discreteLine.getEvents,
           parameters: []
         )
-        discretePlayer = engine.getPlayer(pattern: discretePattern)
+        discretePattern = pattern
+        discretePlayerId = engine.createPlayer(pattern: pattern)
       }
     } catch {
       print("Error playing pattern: \(error.localizedDescription)")
@@ -95,13 +96,9 @@ public class PatternComposer: NSObject {
   }
   
   @objc public func play() {
-    do {
-      audioSimulator.play(buffer: audioBuffer)
-      try continuousPlayer?.start(atTime: 0)
-      try discretePlayer?.start(atTime: 0)
-    } catch {
-      print("Error playing pattern: \(error.localizedDescription)")
-    }
+    audioSimulator.play(buffer: audioBuffer)
+    if let id = continuousPlayerId { engine.playPlayer(id: id, pattern: continuousPattern) }
+    if let id = discretePlayerId { engine.playPlayer(id: id, pattern: discretePattern) }
   }
 
   @objc public func playAudioOnly() {
@@ -109,12 +106,8 @@ public class PatternComposer: NSObject {
   }
   
   @objc public func stop() {
-    do {
-      audioSimulator.stop()
-      try continuousPlayer?.stop(atTime: 0)
-      try discretePlayer?.stop(atTime: 0)
-    } catch {
-      print("Error stopping pattern: \(error.localizedDescription)")
-    }
+    audioSimulator.stop()
+    if let id = continuousPlayerId { engine.stopPlayer(id: id) }
+    if let id = discretePlayerId { engine.stopPlayer(id: id) }
   }
 }

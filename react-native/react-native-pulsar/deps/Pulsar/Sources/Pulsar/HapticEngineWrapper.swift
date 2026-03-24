@@ -4,9 +4,18 @@ import SwiftUI
 
 public class HapticEngineWrapper {
 
+  private struct PlayerEntry {
+    let player: CHHapticPatternPlayer
+    let isRealtime: Bool
+  }
+
   private var engine: CHHapticEngine?
   private var initialized: Bool = false
   private var isHapticsEnabled: Bool = true
+  private var playerRegistry: [Int: PlayerEntry] = [:]
+  private var playerCreationOrder: [Int] = []
+  private let playerLimit = 20
+  private var nextPlayerId: Int = 0
   
   public init() {
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
@@ -76,21 +85,25 @@ public class HapticEngineWrapper {
     initialized = false
   }
   
-  public func getPlayer(pattern: CHHapticPattern?) -> CHHapticPatternPlayer? {
+  public func createPlayer(pattern: CHHapticPattern?) -> Int? {
     startEngine()
+    guard let player = buildPatternPlayer(pattern: pattern) else { return nil }
+    return registerPlayer(player, isRealtime: false)
+  }
+
+  private func buildPatternPlayer(pattern: CHHapticPattern?) -> CHHapticPatternPlayer? {
     do {
       return try engine?.makePlayer(with: pattern ?? CHHapticPattern(events: [], parameters: []))
     } catch {
-        print("Error making pattern: \(error.localizedDescription)")
+      print("Error making pattern: \(error.localizedDescription)")
+      return nil
     }
-    return nil
   }
-  
-  public func getRealtimePlayer() -> CHHapticAdvancedPatternPlayer? {
+
+  public func createRealtimePlayer() -> Int? {
     startEngine()
     let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1)
     let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0)
-    
     let event = CHHapticEvent(
       eventType: .hapticContinuous,
       parameters: [intensityParam, sharpnessParam],
@@ -99,11 +112,68 @@ public class HapticEngineWrapper {
     )
     do {
       let pattern = try CHHapticPattern(events: [event], parameters: [])
-      return try engine?.makeAdvancedPlayer(with: pattern)
+      let player = try engine?.makeAdvancedPlayer(with: pattern)
+      guard let player = player else { return nil }
+      return registerPlayer(player, isRealtime: true)
     } catch {
-      print("Error playing pattern: \(error.localizedDescription)")
+      print("Error creating realtime player: \(error.localizedDescription)")
     }
     return nil
+  }
+
+  public func playPlayer(id: Int, pattern: CHHapticPattern? = nil) {
+    if let entry = playerRegistry[id] {
+      do {
+        try entry.player.start(atTime: 0)
+      } catch {
+        print("Error starting player: \(error.localizedDescription)")
+      }
+    } else if let pattern = pattern {
+      // Player was evicted — recreate and re-register under the same ID
+      startEngine()
+      guard let player = buildPatternPlayer(pattern: pattern) else { return }
+      evictOldestPlayerIfNeeded()
+      playerRegistry[id] = PlayerEntry(player: player, isRealtime: false)
+      playerCreationOrder.append(id)
+      do {
+        try player.start(atTime: 0)
+      } catch {
+        print("Error starting recreated player: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  public func stopPlayer(id: Int) {
+    guard let entry = playerRegistry[id] else { return }
+    do {
+      try entry.player.stop(atTime: 0)
+    } catch {
+      print("Error stopping player: \(error.localizedDescription)")
+    }
+  }
+
+  public func getRealtimePlayer(id: Int) -> CHHapticAdvancedPatternPlayer? {
+    return playerRegistry[id]?.player as? CHHapticAdvancedPatternPlayer
+  }
+
+  public func removePlayer(id: Int) {
+    playerRegistry.removeValue(forKey: id)
+    playerCreationOrder.removeAll { $0 == id }
+  }
+
+  private func registerPlayer(_ player: CHHapticPatternPlayer, isRealtime: Bool) -> Int {
+    evictOldestPlayerIfNeeded()
+    let id = nextPlayerId
+    nextPlayerId += 1
+    playerRegistry[id] = PlayerEntry(player: player, isRealtime: isRealtime)
+    playerCreationOrder.append(id)
+    return id
+  }
+
+  private func evictOldestPlayerIfNeeded() {
+    guard playerRegistry.count >= playerLimit else { return }
+    let oldestId = playerCreationOrder.removeFirst()
+    playerRegistry.removeValue(forKey: oldestId)
   }
   
   func isHapticsSupported() -> Bool {
