@@ -43,6 +43,11 @@ export const TagsInfo = [
     groupName: 'Shape',
     tags: [
       {
+        name: 'Peak',
+        description: 'Haptics with a single amplitude peak — a quick rise and fall in intensity.',
+        usage: 'Ideal for single-event feedback, such as button presses or selection confirmations. Common situations: like or heart button tap, photo shutter release, item selection confirmation, swipe action completion, quick reply send.',
+      },
+      {
         name: 'Impulses',
         description: 'Haptics with a discrete pattern — short, distinct pulses separated by silence.',
         usage: 'Useful for click-like feedback, Morse-style cues, or sequences of distinct tactile events. Common situations: step counter tick, quantity increment, metronome cue, item added to cart, typing indicator in chat.',
@@ -51,11 +56,6 @@ export const TagsInfo = [
         name: 'Solid',
         description: 'Haptics with a long continuous pattern at a constant amplitude — a steady, uniform vibration.',
         usage: 'Good for indicating ongoing processes, loading states, or sustained alerts that need consistent presence. Common situations: file upload or download in progress, active voice recording, hold-to-confirm gesture, persistent alarm, live activity tracking.',
-      },
-      {
-        name: 'Bump',
-        description: 'Haptics with a single amplitude peak, typically near the middle of the preset — a smooth rise and fall.',
-        usage: 'Ideal for single-event confirmations, gentle taps, or UI interactions with one clear tactile moment. Common situations: like or heart button tap, photo shutter release, item selection confirmation, swipe action completion, quick reply send.',
       },
       {
         name: 'Bumps',
