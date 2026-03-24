@@ -52,7 +52,7 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
         val timeDiff = nextPoint.time - prevPoint.time
         val amplitudeDiff = nextPoint.amplitude - prevPoint.amplitude
         val frequencyDiff = nextPoint.frequency - prevPoint.frequency
-        val progress = (time - prevPoint.time) / timeDiff
+        val progress = (time - prevPoint.time).toFloat() / timeDiff
 
         val interpolatedAmplitude = prevPoint.amplitude + amplitudeDiff * progress
         val interpolatedFrequency = prevPoint.frequency + frequencyDiff * progress
