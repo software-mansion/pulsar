@@ -9,11 +9,20 @@ import Card from './Card';
 import { ThemedText } from './themed-text';
 
 export function useFilteredPresets() {
-  const { selectedTags, showSystemPresets } = useFilters();
+  const { selectedTags, showSystemPresets, selectedSystemPresetTags } = useFilters();
 
-  const activePresets = showSystemPresets
-    ? (Platform.OS === 'ios' ? IOSPresetsConfig : AndroidPresetsConfig)
-    : PresetsConfig;
+  const activePresets = useMemo(() => {
+    if (!showSystemPresets) {
+      return PresetsConfig;
+    }
+    const base = Platform.OS === 'ios' ? IOSPresetsConfig : AndroidPresetsConfig;
+    if (selectedSystemPresetTags.length === 0) {
+      return [];
+    }
+    return base.filter(preset =>
+      selectedSystemPresetTags.some(tag => preset.tags.includes(tag))
+    );
+  }, [showSystemPresets, selectedSystemPresetTags]);
 
   const selectedTagsByGroup = useMemo(() => {
     const grouped: Record<string, string[]> = {};

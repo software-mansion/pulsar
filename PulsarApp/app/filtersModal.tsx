@@ -31,7 +31,17 @@ const defaultEdges = {
 
 export default function FiltersModal() {
   const posthog = usePostHog();
-  const { selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets } = useFilters();
+  const { selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags } = useFilters();
+
+  const SYSTEM_PRESET_TAG_OPTIONS = ['Effect', 'Primitive', 'Vendor'];
+
+  const toggleSystemPresetTag = (tag: string) => {
+    setSelectedSystemPresetTags(
+      selectedSystemPresetTags.includes(tag)
+        ? selectedSystemPresetTags.filter(t => t !== tag)
+        : [...selectedSystemPresetTags, tag]
+    );
+  };
 
   const createInitialStates = (): FiltersCollection => {
     const states: FiltersCollection = {};
@@ -134,6 +144,20 @@ export default function FiltersModal() {
                 thumbColor={showSystemPresets ? '#2B85AB' : '#f0f0f0'}
               />
             </View>
+            {showSystemPresets && (
+              <View style={styles.systemPresetTagsSection}>
+                <View style={styles.optionsGrid}>
+                  {SYSTEM_PRESET_TAG_OPTIONS.map(tag => (
+                    <CheckboxItem
+                      key={tag}
+                      label={tag}
+                      checked={selectedSystemPresetTags.includes(tag)}
+                      onToggle={() => toggleSystemPresetTag(tag)}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
           </View>
 
           {TagsInfo.map(group => (
@@ -308,5 +332,8 @@ const styles = StyleSheet.create({
   },
   marginTop: {
     marginTop: 12,
+  },
+  systemPresetTagsSection: {
+    marginTop: 16,
   },
 });
