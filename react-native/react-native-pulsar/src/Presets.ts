@@ -59,6 +59,40 @@ export default {
         'worklet';
         Pulsar.Pulsar_play('SystemEffectHeavyClickPreset');
       },
+
+      PrimitiveClickPreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveClickPreset');
+      },
+      PrimitiveLowTickPreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveLowTickPreset');
+      },
+      PrimitiveQuickFallPreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveQuickFallPreset');
+      },
+      PrimitiveQuickRisePreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveQuickRisePreset');
+      },
+      PrimitiveSlowRisePreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveSlowRisePreset');
+      },
+      PrimitiveSpinPreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveSpinPreset');
+      },
+      PrimitiveThudPreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveThudPreset');
+      },
+      PrimitiveTickPreset: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemPrimitiveTickPreset');
+      },
+
       LongPressPreset: () => {
         'worklet';
         Pulsar.Pulsar_play('SystemLongPressPreset');
