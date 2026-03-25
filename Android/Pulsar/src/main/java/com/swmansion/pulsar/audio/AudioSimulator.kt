@@ -95,6 +95,20 @@ class AudioSimulator(
                                 lastWriteTime = System.currentTimeMillis()
                             }
                         }
+
+                        // Write trailing silence equal to the AudioTrack's internal buffer size.
+                        // In MODE_STREAM, write() returns as soon as data is queued in the internal
+                        // buffer — for short patterns the buffer drains to hardware AFTER the mutex
+                        // is released, so a subsequent stop()+flush() discards the audio before it
+                        // is ever heard. Writing silence here pushes the real audio all the way
+                        // through the internal buffer and out to hardware before we return.
+                        val silencePadding = ByteArray(bufferSizeInFrames * 2) // 16-bit PCM, mono
+                        var silenceWritten = 0
+                        while (silenceWritten < silencePadding.size) {
+                            val written = write(silencePadding, silenceWritten, silencePadding.size - silenceWritten)
+                            if (written <= 0) break
+                            silenceWritten += written
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
