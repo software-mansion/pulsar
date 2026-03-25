@@ -1,18 +1,19 @@
 import { SelectBox } from '../SelectBox/SelectBox';
 import { Tag } from '../Tag/Tag';
-import { Checkbox } from '../Checkbox/Checkbox';
 import style from './Filters.module.scss';
 import { TagsInfo } from '../PresetsList/Tags';
 import { useCallback, useMemo } from 'react';
 
+const SYSTEM_PRESET_OPTIONS = ['iOS', 'Android Primitives', 'Android Effects', 'Android Vendor'];
+
 interface Props {
   selectedTags: string[];
   setSelectedTags: (tags: string[] | ((tags: string[]) => string[])) => void;
-  showSystemPresets: boolean;
-  setShowSystemPresets: (value: boolean) => void;
+  selectedSystemPresets: string[];
+  setSelectedSystemPresets: (value: string[] | ((v: string[]) => string[])) => void;
 }
 
-export function Filters({ selectedTags, setSelectedTags, showSystemPresets, setShowSystemPresets }: Props) {
+export function Filters({ selectedTags, setSelectedTags, selectedSystemPresets, setSelectedSystemPresets }: Props) {
   const onOptionChange = useCallback(
     (options: { label: string; checked: boolean }[]) => {
       setSelectedTags((current) => {
@@ -26,6 +27,19 @@ export function Filters({ selectedTags, setSelectedTags, showSystemPresets, setS
     [setSelectedTags],
   );
 
+  const onSystemPresetChange = useCallback(
+    (options: { label: string; checked: boolean }[]) => {
+      setSelectedSystemPresets((current) => {
+        const set = new Set(current);
+        options.forEach((opt) => {
+          opt.checked ? set.add(opt.label) : set.delete(opt.label);
+        });
+        return Array.from(set);
+      });
+    },
+    [setSelectedSystemPresets],
+  );
+
   const renderGroups = useMemo(() => {
     return TagsInfo.map((group) => ({
       groupName: group.groupName,
@@ -35,6 +49,13 @@ export function Filters({ selectedTags, setSelectedTags, showSystemPresets, setS
       })),
     }));
   }, [selectedTags]);
+
+  const systemPresetsOptions = useMemo(() => {
+    return SYSTEM_PRESET_OPTIONS.map((name) => ({
+      label: name,
+      checked: selectedSystemPresets.includes(name),
+    }));
+  }, [selectedSystemPresets]);
 
   return (
     <div className={style.filters}>
@@ -47,11 +68,11 @@ export function Filters({ selectedTags, setSelectedTags, showSystemPresets, setS
             onOptionChange={onOptionChange}
           />
         ))}
-        <Checkbox
-          id="system-presets"
-          label="System presets"
-          checked={showSystemPresets}
-          onChange={(_, checked) => setShowSystemPresets(checked)}
+        <SelectBox
+          title="System presets"
+          options={systemPresetsOptions}
+          onOptionChange={onSystemPresetChange}
+          wide
         />
       </div>
 

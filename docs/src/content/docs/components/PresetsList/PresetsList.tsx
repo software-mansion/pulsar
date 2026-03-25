@@ -21,11 +21,33 @@ declare global {
 export function PresetsList() {
   const [showModal, setShowModal] = useState<'no' | 'tags' | 'chart'>('no');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showSystemPresets, setShowSystemPresets] = useState(false);
+  const [selectedSystemPresets, setSelectedSystemPresets] = useState<string[]>([]);
 
-  const activePresets = showSystemPresets
-    ? [...IOSPresetsConfig, ...AndroidPresetsConfig]
-    : PresetsConfig;
+  const androidSystemPresetTagMap: Record<string, string> = {
+    'Android Primitives': 'Primitive',
+    'Android Effects': 'Effect',
+    'Android Vendor': 'Vendor',
+  };
+
+  const activePresets = useMemo(() => {
+    if (selectedSystemPresets.length > 0) {
+      let result: typeof PresetsConfig = [];
+      if (selectedSystemPresets.includes('iOS')) {
+        result = [...result, ...IOSPresetsConfig];
+      }
+      const selectedAndroidTags = selectedSystemPresets
+        .filter((s) => s in androidSystemPresetTagMap)
+        .map((s) => androidSystemPresetTagMap[s]);
+      if (selectedAndroidTags.length > 0) {
+        const androidFiltered = AndroidPresetsConfig.filter((preset) =>
+          selectedAndroidTags.some((tag) => preset.data.tags.includes(tag)),
+        );
+        result = [...result, ...androidFiltered];
+      }
+      return result;
+    }
+    return PresetsConfig;
+  }, [selectedSystemPresets]);
 
   function handleSetSelectedTags(tags: string[] | ((tags: string[]) => string[])) {
     if (typeof tags === 'function') {
@@ -99,8 +121,8 @@ export function PresetsList() {
       <Filters
         selectedTags={selectedTags}
         setSelectedTags={handleSetSelectedTags}
-        showSystemPresets={showSystemPresets}
-        setShowSystemPresets={setShowSystemPresets}
+        selectedSystemPresets={selectedSystemPresets}
+        setSelectedSystemPresets={setSelectedSystemPresets}
       />
 
       {filteredPresets.length > 0 && (

@@ -53,6 +53,14 @@
     max-width: calc(100vw - 20px);
     box-sizing: border-box;
 
+    &.wideDropdown {
+      width: 360px;
+
+      .optionsContainer {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+    }
+
     @media (max-width: 400px) {
       width: auto;
       min-width: 200px;
