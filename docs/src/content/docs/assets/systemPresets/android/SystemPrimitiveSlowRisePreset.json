@@ -1,0 +1,25 @@
+{
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.4
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "name": "SystemPrimitiveSlowRisePreset",
+  "description": "VibrationEffect.Composition.PRIMITIVE_SLOW_RISE",
+  "tags": [
+    "System",
+    "Android",
+    "Primitive",
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 250
+}

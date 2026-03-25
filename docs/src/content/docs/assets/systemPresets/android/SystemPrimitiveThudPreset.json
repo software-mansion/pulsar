@@ -1,0 +1,25 @@
+{
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.2
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "name": "SystemPrimitiveThudPreset",
+  "description": "VibrationEffect.Composition.PRIMITIVE_THUD",
+  "tags": [
+    "System",
+    "Android",
+    "Primitive",
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 100
+}

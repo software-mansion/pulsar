@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.3,
-      "frequency": 0.8
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemKeyboardTapPreset",
-  "description": "A keyboard tap feedback using HapticFeedbackConstants.KEYBOARD_TAP. Light, crisp feedback for each key tap on a virtual keyboard.",
+  "description": "HapticFeedbackConstants.KEYBOARD_TAP (Vendor-specific)",
   "tags": [
     "System",
-    "Keyboard",
-    "Tap"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

@@ -6,12 +6,20 @@
       "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemEffectClickPreset",
-  "description": "A standard click effect using VibrationEffect.EFFECT_CLICK. Represents a typical UI tap or button press feedback.",
+  "description": "VibrationEffect.EFFECT_CLICK",
   "tags": [
     "System",
-    "Click",
-    "Impact"
+    "Android",
+    "Effect",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

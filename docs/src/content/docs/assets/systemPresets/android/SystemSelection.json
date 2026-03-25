@@ -2,18 +2,22 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.15,
-      "frequency": 0.85
+      "amplitude": 0.4,
+      "frequency": 0.7
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemSelection",
-  "description": "A subtle, high-frequency selection change feedback using UISelectionFeedbackGenerator. Used when the user moves through a series of discrete values. This is a compatibility fallback implementation based on the iOS preset, used on Android when no native equivalent is available.",
+  "description": "Fallback implementation of iOS UISelectionFeedbackGenerator.selection preset.",
   "tags": [
-    "System",
-    "Selection",
+    "iOS Fallback",
     "Gentle",
-    "Fallback"
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
-  "fallback": true,
   "duration": 50
 }

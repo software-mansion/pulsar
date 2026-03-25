@@ -2,28 +2,37 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.8,
-      "frequency": 0.3
+      "amplitude": 0.7,
+      "frequency": 0.5
     },
     {
       "time": 100,
-      "amplitude": 0.5,
-      "frequency": 0.3
+      "amplitude": 0.7,
+      "frequency": 0.5
     },
     {
       "time": 200,
+      "amplitude": 0.7,
+      "frequency": 0.8
+    },
+    {
+      "time": 250,
       "amplitude": 0.8,
-      "frequency": 0.3
+      "frequency": 0.4
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemNotificationError",
-  "description": "A three-pulse error notification feedback using UINotificationFeedbackGenerator. Signals a failed action or error state to the user.",
+  "description": "UINotificationFeedbackGenerator.error",
   "tags": [
     "System",
-    "Notification",
-    "Error",
-    "Bumps",
-    "Bold"
+    "Substantial",
+    "Elastic",
+    "Impulses",
+    "Extended"
   ],
   "duration": 250
 }

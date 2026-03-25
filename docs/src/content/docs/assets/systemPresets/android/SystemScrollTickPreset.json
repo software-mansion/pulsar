@@ -2,17 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.15,
+      "amplitude": 0.2,
       "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemScrollTickPreset",
-  "description": "A scroll tick feedback using HapticFeedbackConstants.SCROLL_TICK. Very light, high-frequency feedback for each incremental scroll step.",
+  "description": "HapticFeedbackConstants.SCROLL_TICK (Vendor-specific)",
   "tags": [
     "System",
-    "Scroll",
-    "Tick",
-    "Gentle"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

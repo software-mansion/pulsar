@@ -1,0 +1,25 @@
+{
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "name": "SystemPrimitiveSpinPreset",
+  "description": "VibrationEffect.Composition.PRIMITIVE_SPIN",
+  "tags": [
+    "System",
+    "Android",
+    "Primitive",
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 200
+}

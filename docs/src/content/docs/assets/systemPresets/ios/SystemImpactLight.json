@@ -2,16 +2,22 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.3,
-      "frequency": 0.7
+      "amplitude": 0.55,
+      "frequency": 0.4
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemImpactLight",
-  "description": "A light, subtle impact feedback using UIImpactFeedbackGenerator with .light style. Ideal for minor interactions that need gentle confirmation.",
+  "description": "UIImpactFeedbackGenerator.light",
   "tags": [
     "System",
-    "Impact",
-    "Light"
+    "Gentle",
+    "Soft",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

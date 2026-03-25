@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.3,
-      "frequency": 0.78
+      "amplitude": 0.2,
+      "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemContextClickPreset",
-  "description": "A context click feedback using HapticFeedbackConstants.CONTEXT_CLICK. Feedback for mouse-like secondary button interactions on compatible devices.",
+  "description": "HapticFeedbackConstants.CONTEXT_CLICK (Vendor-specific)",
   "tags": [
     "System",
-    "Click",
-    "Context"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

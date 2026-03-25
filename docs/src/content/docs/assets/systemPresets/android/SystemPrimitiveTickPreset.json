@@ -1,0 +1,25 @@
+{
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.2,
+      "frequency": 0.9
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "name": "SystemPrimitiveTickPreset",
+  "description": "VibrationEffect.Composition.PRIMITIVE_TICK",
+  "tags": [
+    "System",
+    "Android",
+    "Primitive",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 50
+}

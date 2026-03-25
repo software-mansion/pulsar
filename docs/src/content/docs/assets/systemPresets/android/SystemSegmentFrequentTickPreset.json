@@ -2,17 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.1,
+      "amplitude": 0.12,
       "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemSegmentFrequentTickPreset",
-  "description": "A frequent segment tick feedback using HapticFeedbackConstants.SEGMENT_FREQUENT_TICK (API 34+). Very light, crisp tick for rapid segment value changes.",
+  "description": "HapticFeedbackConstants.SEGMENT_FREQUENT_TICK (Vendor-specific)",
   "tags": [
     "System",
-    "Segment",
-    "Tick",
-    "Gentle"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

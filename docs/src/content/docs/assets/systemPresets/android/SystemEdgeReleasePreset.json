@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.35,
-      "frequency": 0.4
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemEdgeReleasePreset",
-  "description": "An edge release feedback using HapticFeedbackConstants.EDGE_RELEASE. Moderate feedback when releasing a squeezed device edge.",
+  "description": "HapticFeedbackConstants.EDGE_RELEASE (Vendor-specific)",
   "tags": [
     "System",
-    "Edge",
-    "Release"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.35,
-      "frequency": 0.5
+      "amplitude": 0.9,
+      "frequency": 0.45
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemDragStartPreset",
-  "description": "A drag start feedback using HapticFeedbackConstants.DRAG_START (API 34+). Confirms that a drag operation has been initiated.",
+  "description": "HapticFeedbackConstants.DRAG_START (Vendor-specific)",
   "tags": [
     "System",
-    "Drag",
-    "Impact"
+    "Android",
+    "Vendor",
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

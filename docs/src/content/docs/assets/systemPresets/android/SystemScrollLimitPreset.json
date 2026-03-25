@@ -2,17 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.55,
-      "frequency": 0.3
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemScrollLimitPreset",
-  "description": "A scroll limit feedback using HapticFeedbackConstants.SCROLL_LIMIT. Notifies the user they have reached the end of a scrollable content area.",
+  "description": "HapticFeedbackConstants.SCROLL_LIMIT (Vendor-specific)",
   "tags": [
     "System",
-    "Scroll",
-    "Limit",
-    "Impact"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

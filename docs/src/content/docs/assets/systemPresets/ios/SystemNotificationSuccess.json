@@ -2,22 +2,27 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.4,
-      "frequency": 0.5
+      "amplitude": 0.6,
+      "frequency": 0.6
     },
     {
-      "time": 110,
-      "amplitude": 0.8,
-      "frequency": 0.5
+      "time": 150,
+      "amplitude": 1,
+      "frequency": 1
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemNotificationSuccess",
-  "description": "A two-pulse success notification feedback using UINotificationFeedbackGenerator. Communicates successful completion of an action.",
+  "description": "UINotificationFeedbackGenerator.success",
   "tags": [
     "System",
-    "Notification",
-    "Success",
-    "Bumps"
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 160
 }

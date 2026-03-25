@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.22,
-      "frequency": 0.8
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemScrollItemFocusPreset",
-  "description": "A scroll item focus feedback using HapticFeedbackConstants.SCROLL_ITEM_FOCUS. Subtle feedback when a scroll item snaps into the focused position.",
+  "description": "HapticFeedbackConstants.SCROLL_ITEM_FOCUS (Vendor-specific)",
   "tags": [
     "System",
-    "Scroll",
-    "Selection"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

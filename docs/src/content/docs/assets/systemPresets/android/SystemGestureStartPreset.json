@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.42,
-      "frequency": 0.55
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemGestureStartPreset",
-  "description": "A gesture start feedback using HapticFeedbackConstants.GESTURE_START (API 30+). Signals the beginning of a gesture interaction.",
+  "description": "HapticFeedbackConstants.GESTURE_START (Vendor-specific)",
   "tags": [
     "System",
-    "Gesture",
-    "Impact"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.25,
-      "frequency": 0.55
+      "amplitude": 0.2,
+      "frequency": 0.4
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemToggleOffPreset",
-  "description": "A toggle-off feedback using HapticFeedbackConstants.TOGGLE_OFF (API 34+). Confirms a toggle switch has been turned off, slightly softer than toggle-on.",
+  "description": "HapticFeedbackConstants.TOGGLE_OFF (Vendor-specific)",
   "tags": [
     "System",
-    "Toggle",
-    "Click"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

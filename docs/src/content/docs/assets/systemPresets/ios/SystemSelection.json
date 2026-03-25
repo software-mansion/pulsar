@@ -2,16 +2,22 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.15,
-      "frequency": 0.85
+      "amplitude": 0.4,
+      "frequency": 0.7
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemSelection",
-  "description": "A subtle, high-frequency selection change feedback using UISelectionFeedbackGenerator. Used when the user moves through a series of discrete values.",
+  "description": "UISelectionFeedbackGenerator.selection",
   "tags": [
     "System",
-    "Selection",
-    "Gentle"
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

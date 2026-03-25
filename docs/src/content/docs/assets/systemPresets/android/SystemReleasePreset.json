@@ -2,22 +2,29 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.65,
-      "frequency": 0.3
+      "amplitude": 0.81,
+      "frequency": 0.61
     },
     {
-      "time": 130,
-      "amplitude": 0.75,
-      "frequency": 0.25
+      "time": 120,
+      "amplitude": 0.7,
+      "frequency": 0.35
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemReleasePreset",
-  "description": "A reject/release feedback using HapticFeedbackConstants.REJECT (API 30+). Two-pulse low-frequency pattern indicating a rejected or released action.",
+  "description": "HapticFeedbackConstants.REJECT (Vendor-specific)",
   "tags": [
     "System",
-    "Reject",
-    "Bumps",
-    "Bold"
+    "Android",
+    "Vendor",
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Short"
   ],
-  "duration": 180
+  "duration": 170
 }

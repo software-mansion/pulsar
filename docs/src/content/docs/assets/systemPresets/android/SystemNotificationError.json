@@ -2,30 +2,37 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.8,
-      "frequency": 0.3
+      "amplitude": 0.7,
+      "frequency": 0.5
     },
     {
       "time": 100,
-      "amplitude": 0.5,
-      "frequency": 0.3
+      "amplitude": 0.7,
+      "frequency": 0.5
     },
     {
       "time": 200,
+      "amplitude": 0.7,
+      "frequency": 0.8
+    },
+    {
+      "time": 250,
       "amplitude": 0.8,
-      "frequency": 0.3
+      "frequency": 0.4
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemNotificationError",
-  "description": "A three-pulse error notification feedback using UINotificationFeedbackGenerator. Signals a failed action or error state to the user. This is a compatibility fallback implementation based on the iOS preset, used on Android when no native equivalent is available.",
+  "description": "Fallback implementation of iOS UINotificationFeedbackGenerator.error preset.",
   "tags": [
-    "System",
-    "Notification",
-    "Error",
-    "Bumps",
-    "Bold",
-    "Fallback"
+    "iOS Fallback",
+    "Substantial",
+    "Elastic",
+    "Impulses",
+    "Extended"
   ],
-  "fallback": true,
   "duration": 250
 }

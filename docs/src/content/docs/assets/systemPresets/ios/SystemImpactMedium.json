@@ -2,16 +2,22 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.6,
-      "frequency": 0.5
+      "amplitude": 0.7,
+      "frequency": 0.3
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemImpactMedium",
-  "description": "A medium-strength impact feedback using UIImpactFeedbackGenerator with .medium style. Suitable for standard taps and button presses.",
+  "description": "UIImpactFeedbackGenerator.medium",
   "tags": [
     "System",
-    "Impact",
-    "Medium"
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

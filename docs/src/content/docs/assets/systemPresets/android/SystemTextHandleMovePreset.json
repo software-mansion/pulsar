@@ -3,15 +3,23 @@
     {
       "time": 0,
       "amplitude": 0.12,
-      "frequency": 0.85
+      "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemTextHandleMovePreset",
-  "description": "A text handle move feedback using HapticFeedbackConstants.TEXT_HANDLE_MOVE (API 27+). Very subtle feedback when dragging text selection handles.",
+  "description": "HapticFeedbackConstants.TEXT_HANDLE_MOVE (Vendor-specific)",
   "tags": [
     "System",
-    "Text",
-    "Gentle"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

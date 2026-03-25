@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.18,
+      "amplitude": 0.12,
       "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemClockTickPreset",
-  "description": "A clock tick feedback using HapticFeedbackConstants.CLOCK_TICK. Very light, precise tick for time pickers or other rhythmic interactions.",
+  "description": "HapticFeedbackConstants.CLOCK_TICK (Vendor-specific)",
   "tags": [
     "System",
-    "Tick",
-    "Gentle"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

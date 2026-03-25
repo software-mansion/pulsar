@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.55,
-      "frequency": 0.35
+      "amplitude": 0.9,
+      "frequency": 0.45
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemLongPressPreset",
-  "description": "A long press feedback using HapticFeedbackConstants.LONG_PRESS. Confirms a long-press gesture has been recognized.",
+  "description": "HapticFeedbackConstants.LONG_PRESS (Vendor-specific)",
   "tags": [
     "System",
-    "LongPress",
-    "Impact"
+    "Android",
+    "Vendor",
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

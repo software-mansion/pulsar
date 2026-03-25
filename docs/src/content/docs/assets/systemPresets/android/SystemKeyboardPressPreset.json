@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.35,
-      "frequency": 0.65
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemKeyboardPressPreset",
-  "description": "A keyboard key press feedback using HapticFeedbackConstants.KEYBOARD_PRESS (API 27+). Feedback for pressing down on a virtual key.",
+  "description": "HapticFeedbackConstants.KEYBOARD_PRESS (Vendor-specific)",
   "tags": [
     "System",
-    "Keyboard",
-    "Press"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

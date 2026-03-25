@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.22,
-      "frequency": 0.7
+      "amplitude": 0.2,
+      "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemKeyboardReleasePreset",
-  "description": "A keyboard key release feedback using HapticFeedbackConstants.KEYBOARD_RELEASE (API 27+). Softer feedback for releasing a virtual key.",
+  "description": "HapticFeedbackConstants.KEYBOARD_RELEASE (Vendor-specific)",
   "tags": [
     "System",
-    "Keyboard",
-    "Release"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

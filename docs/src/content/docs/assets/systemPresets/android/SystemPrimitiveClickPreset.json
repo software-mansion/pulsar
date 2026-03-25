@@ -1,0 +1,24 @@
+{
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.65,
+      "frequency": 0.85
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "name": "SystemPrimitiveClickPreset",
+  "description": "VibrationEffect.Composition.PRIMITIVE_CLICK",
+  "tags": [
+    "System",
+    "Android",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 50
+}

@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.4,
-      "frequency": 0.7
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemVirtualKeyPreset",
-  "description": "A virtual key press feedback using HapticFeedbackConstants.VIRTUAL_KEY. Simulates pressing a virtual on-screen key.",
+  "description": "HapticFeedbackConstants.VIRTUAL_KEY (Vendor-specific)",
   "tags": [
     "System",
-    "VirtualKey",
-    "Click"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

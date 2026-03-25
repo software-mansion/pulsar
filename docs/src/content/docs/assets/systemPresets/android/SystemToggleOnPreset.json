@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.4,
-      "frequency": 0.65
+      "amplitude": 0.5,
+      "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemToggleOnPreset",
-  "description": "A toggle-on feedback using HapticFeedbackConstants.TOGGLE_ON (API 34+). Confirms a toggle switch has been turned on.",
+  "description": "HapticFeedbackConstants.TOGGLE_ON (Vendor-specific)",
   "tags": [
     "System",
-    "Toggle",
-    "Click"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

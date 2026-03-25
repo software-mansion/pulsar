@@ -8,7 +8,7 @@ import Foundation
   @objc public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.3, 0.7]
+      [0, 0.55, 0.4]
     ])
 //CODEGEN_END_{system_preset}
     self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
@@ -35,7 +35,7 @@ import Foundation
   public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.6, 0.5]
+      [0, 0.7, 0.3]
     ])
 //CODEGEN_END_{system_preset}
     self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
@@ -62,7 +62,7 @@ import Foundation
   public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 1, 0.2]
+      [0, 1, 0.45]
     ])
 //CODEGEN_END_{system_preset}
     self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .heavy)
@@ -89,7 +89,7 @@ import Foundation
   public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.25, 0.1]
+      [0, 0.6, 0.1]
     ])
 //CODEGEN_END_{system_preset}
     self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .soft)
@@ -116,7 +116,7 @@ import Foundation
   public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.7, 1]
+      [0, 0.8, 0.95]
     ])
 //CODEGEN_END_{system_preset}
     self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
@@ -143,8 +143,8 @@ import Foundation
   public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.4, 0.5],
-      [110, 0.8, 0.5]
+      [0, 0.6, 0.6],
+      [150, 1, 1]
     ])
 //CODEGEN_END_{system_preset}
     self.feedbackGenerator = UINotificationFeedbackGenerator()
@@ -171,9 +171,8 @@ import Foundation
   public init(_ haptics: Pulsar) {
   //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.5, 0.5],
-      [120, 0.5, 0.5],
-      [240, 0.5, 0.5]
+      [0, 0.95, 1],
+      [150, 0.6, 0.9]
     ])
   //CODEGEN_END_{system_preset}
     self.feedbackGenerator = UINotificationFeedbackGenerator()
@@ -200,9 +199,10 @@ import Foundation
   public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.8, 0.3],
-      [100, 0.5, 0.3],
-      [200, 0.8, 0.3]
+      [0, 0.7, 0.5],
+      [100, 0.7, 0.5],
+      [200, 0.7, 0.8],
+      [250, 0.8, 0.4]
     ])
 //CODEGEN_END_{system_preset}
     self.feedbackGenerator = UINotificationFeedbackGenerator()
@@ -229,7 +229,7 @@ import Foundation
   public init(_ haptics: Pulsar) {
 //CODEGEN_BEGIN_{system_preset}
     super.init(haptics, audioOnly: true, rawDiscretePattern: [
-      [0, 0.15, 0.85]
+      [0, 0.4, 0.7]
     ])
 //CODEGEN_END_{system_preset}
     self.feedbackGenerator = UISelectionFeedbackGenerator()

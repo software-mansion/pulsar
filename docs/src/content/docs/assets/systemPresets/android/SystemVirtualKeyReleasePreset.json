@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.18,
-      "frequency": 0.65
+      "amplitude": 0.2,
+      "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemVirtualKeyReleasePreset",
-  "description": "A virtual key release feedback using HapticFeedbackConstants.VIRTUAL_KEY_RELEASE (API 27+). Gentle feedback when releasing an on-screen key.",
+  "description": "HapticFeedbackConstants.VIRTUAL_KEY_RELEASE (Vendor-specific)",
   "tags": [
     "System",
-    "VirtualKey",
-    "Release"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

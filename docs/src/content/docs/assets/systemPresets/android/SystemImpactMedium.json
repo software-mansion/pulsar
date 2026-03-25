@@ -2,18 +2,22 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.6,
-      "frequency": 0.5
+      "amplitude": 0.7,
+      "frequency": 0.3
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemImpactMedium",
-  "description": "A medium-strength impact feedback using UIImpactFeedbackGenerator with .medium style. Suitable for standard taps and button presses. This is a compatibility fallback implementation based on the iOS preset, used on Android when no native equivalent is available.",
+  "description": "Fallback implementation of iOS UIImpactFeedbackGenerator.medium preset.",
   "tags": [
-    "System",
-    "Impact",
-    "Medium",
-    "Fallback"
+    "iOS Fallback",
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
-  "fallback": true,
   "duration": 50
 }

@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.3,
-      "frequency": 0.6
+      "amplitude": 0.2,
+      "frequency": 0.9
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemDragCrossingPreset",
-  "description": "A drag crossing feedback using HapticFeedbackConstants.DRAG_CROSSING. Feedback when a dragged item crosses over another element.",
+  "description": "HapticFeedbackConstants.DRAG_CROSSING (Vendor-specific)",
   "tags": [
     "System",
-    "Drag",
-    "Click"
+    "Android",
+    "Vendor",
+    "Gentle",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

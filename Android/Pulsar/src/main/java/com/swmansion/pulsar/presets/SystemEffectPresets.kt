@@ -65,8 +65,8 @@ class SystemEffectDoubleClickPreset(haptics: Pulsar, private val systemPresets: 
 //CODEGEN_BEGIN_{system_preset}
         PatternData(
             rawDiscretePattern = listOf(
-                listOf(0.0f, 0.65f, 0.85f),
-                listOf(120.0f, 0.55f, 0.8f),
+                listOf(0.0f, 0.81f, 0.61f),
+                listOf(120.0f, 0.7f, 0.35f),
             ),
         ),
 //CODEGEN_END_{system_preset}

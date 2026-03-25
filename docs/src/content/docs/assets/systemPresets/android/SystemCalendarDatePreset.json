@@ -2,16 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.28,
-      "frequency": 0.75
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemCalendarDatePreset",
-  "description": "A calendar date selection feedback using HapticFeedbackConstants.CALENDAR_DATE. Gentle feedback when scrolling through or selecting calendar dates.",
+  "description": "HapticFeedbackConstants.CALENDAR_DATE (Vendor-specific)",
   "tags": [
     "System",
-    "Selection",
-    "Gentle"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

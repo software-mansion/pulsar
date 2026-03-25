@@ -2,19 +2,22 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.25,
+      "amplitude": 0.6,
       "frequency": 0.1
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemImpactSoft",
-  "description": "A very soft, low-frequency impact feedback using UIImpactFeedbackGenerator with .soft style. Great for gentle, non-intrusive interactions. This is a compatibility fallback implementation based on the iOS preset, used on Android when no native equivalent is available.",
+  "description": "Fallback implementation of iOS UIImpactFeedbackGenerator.soft preset.",
   "tags": [
-    "System",
-    "Impact",
-    "Soft",
+    "iOS Fallback",
     "Gentle",
-    "Fallback"
+    "Soft",
+    "Impulses",
+    "Impulse"
   ],
-  "fallback": true,
   "duration": 50
 }

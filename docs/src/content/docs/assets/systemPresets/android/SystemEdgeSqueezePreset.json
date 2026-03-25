@@ -2,17 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.65,
-      "frequency": 0.3
+      "amplitude": 0.9,
+      "frequency": 0.45
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemEdgeSqueezePreset",
-  "description": "An edge squeeze feedback using HapticFeedbackConstants.EDGE_SQUEEZE. Strong, low-frequency feedback when squeezing the device edge.",
+  "description": "HapticFeedbackConstants.EDGE_SQUEEZE (Vendor-specific)",
   "tags": [
     "System",
-    "Edge",
-    "Impact",
-    "Bold"
+    "Android",
+    "Vendor",
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Impulse"
   ],
   "duration": 50
 }

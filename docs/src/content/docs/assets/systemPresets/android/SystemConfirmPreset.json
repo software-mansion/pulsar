@@ -2,21 +2,24 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.4,
-      "frequency": 0.55
-    },
-    {
-      "time": 120,
-      "amplitude": 0.75,
-      "frequency": 0.55
+      "amplitude": 0.65,
+      "frequency": 0.85
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemConfirmPreset",
-  "description": "A confirm feedback using HapticFeedbackConstants.CONFIRM (API 30+). Two-pulse pattern that communicates successful confirmation of an action.",
+  "description": "HapticFeedbackConstants.CONFIRM (Vendor-specific)",
   "tags": [
     "System",
-    "Confirm",
-    "Bumps"
+    "Android",
+    "Vendor",
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Impulse"
   ],
-  "duration": 170
+  "duration": 50
 }

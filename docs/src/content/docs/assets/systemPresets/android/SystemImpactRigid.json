@@ -2,19 +2,22 @@
   "discretePattern": [
     {
       "time": 0,
-      "amplitude": 0.7,
-      "frequency": 1.0
+      "amplitude": 0.8,
+      "frequency": 0.95
     }
   ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
   "name": "SystemImpactRigid",
-  "description": "A sharp, high-frequency impact feedback using UIImpactFeedbackGenerator with .rigid style. Ideal for snappy, precise interactions like toggling or locking. This is a compatibility fallback implementation based on the iOS preset, used on Android when no native equivalent is available.",
+  "description": "Fallback implementation of iOS UIImpactFeedbackGenerator.rigid preset.",
   "tags": [
-    "System",
-    "Impact",
+    "iOS Fallback",
+    "Substantial",
     "Rigid",
-    "Sharp",
-    "Fallback"
+    "Impulses",
+    "Impulse"
   ],
-  "fallback": true,
   "duration": 50
 }
