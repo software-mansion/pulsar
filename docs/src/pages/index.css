@@ -37,6 +37,8 @@
     --font-size-xl: 22px;
     --font-size-2xl: 32px;
     --font-size-3xl: 40px;
+
+    --font-line-height-3xl: 50px;
   }
 }
 
@@ -49,6 +51,8 @@
     --font-size-xl: 20px;
     --font-size-2xl: 28px;
     --font-size-3xl: 32px;
+
+    --font-line-height-3xl: 40px;
   }
 }
 
