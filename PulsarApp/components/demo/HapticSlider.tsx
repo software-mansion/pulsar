@@ -5,7 +5,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
 
@@ -66,10 +65,6 @@ export default function HapticSlider({
     thumbPosition.value = THUMB_SIZE / 2 + ((internalValue.value - min) / (max - min)) * thumbRange;
   }, [sliderWidth]);
 
-  const handleValueChange = (steppedValue: number) => {
-    onValueChange?.(steppedValue);
-  };
-
   const pan = Gesture.Pan()
     .onStart((event) => {
       isActive.value = true;
@@ -86,7 +81,7 @@ export default function HapticSlider({
       const newValue = min + percentage * (max - min);
       const steppedValue = Math.round(newValue / step) * step;
       internalValue.value = steppedValue;
-
+      
       onValueChange?.(steppedValue);
     })
     .onFinalize(() => {
@@ -110,7 +105,7 @@ export default function HapticSlider({
       const steppedValue = Math.round(newValue / step) * step;
       internalValue.value = steppedValue;
 
-      runOnJS(handleValueChange)(steppedValue);
+      onValueChange?.(steppedValue);
     });
 
   const animatedThumbStyle = useAnimatedStyle(() => ({
