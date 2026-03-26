@@ -1,0 +1,54 @@
+{
+  "name": "Pulse",
+  "description": "A gentle, steady pulse that quietly signals ongoing activity without demanding attention.",
+  "discretePattern": [],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 300,
+        "value": 0.3
+      },
+      {
+        "time": 700,
+        "value": 0.3
+      },
+      {
+        "time": 1000,
+        "value": 0
+      },
+      {
+        "time": 1300,
+        "value": 0.3
+      },
+      {
+        "time": 1700,
+        "value": 0.3
+      },
+      {
+        "time": 2000,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.4
+      },
+      {
+        "time": 2000,
+        "value": 0.4
+      }
+    ]
+  },
+  "tags": [
+    "Gentle",
+    "Flexible",
+    "Bumps",
+    "Long"
+  ],
+  "duration": 2000
+}

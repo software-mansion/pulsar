@@ -1,0 +1,133 @@
+{
+  "name": "Hammer",
+  "description": "The insistent urgency of a fist on a door, ideal for forceful alerts or escalating persistent notifications.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.75,
+      "frequency": 0.3
+    },
+    {
+      "time": 220,
+      "amplitude": 0.8,
+      "frequency": 0.32
+    },
+    {
+      "time": 420,
+      "amplitude": 0.88,
+      "frequency": 0.3
+    },
+    {
+      "time": 590,
+      "amplitude": 0.92,
+      "frequency": 0.32
+    },
+    {
+      "time": 740,
+      "amplitude": 1,
+      "frequency": 0.3
+    },
+    {
+      "time": 870,
+      "amplitude": 1,
+      "frequency": 0.3
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.75
+      },
+      {
+        "time": 90,
+        "value": 0.05
+      },
+      {
+        "time": 180,
+        "value": 0
+      },
+      {
+        "time": 220,
+        "value": 0.8
+      },
+      {
+        "time": 310,
+        "value": 0.05
+      },
+      {
+        "time": 380,
+        "value": 0
+      },
+      {
+        "time": 420,
+        "value": 0.88
+      },
+      {
+        "time": 508,
+        "value": 0.05
+      },
+      {
+        "time": 550,
+        "value": 0
+      },
+      {
+        "time": 590,
+        "value": 0.92
+      },
+      {
+        "time": 678,
+        "value": 0.05
+      },
+      {
+        "time": 710,
+        "value": 0
+      },
+      {
+        "time": 740,
+        "value": 1
+      },
+      {
+        "time": 816,
+        "value": 0.05
+      },
+      {
+        "time": 840,
+        "value": 0
+      },
+      {
+        "time": 870,
+        "value": 1
+      },
+      {
+        "time": 950,
+        "value": 0.05
+      },
+      {
+        "time": 1050,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.28
+      },
+      {
+        "time": 1050,
+        "value": 0.28
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Soft",
+    "Saw",
+    "Long"
+  ],
+  "duration": 1050
+}

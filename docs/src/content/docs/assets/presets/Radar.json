@@ -1,0 +1,111 @@
+{
+  "name": "Radar",
+  "description": "The focused sweep of active scanning, ideal for network requests or polling states.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.55
+    },
+    {
+      "time": 800,
+      "amplitude": 0.55,
+      "frequency": 0.55
+    },
+    {
+      "time": 1600,
+      "amplitude": 0.55,
+      "frequency": 0.55
+    },
+    {
+      "time": 2400,
+      "amplitude": 0.55,
+      "frequency": 0.55
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 6,
+        "value": 0.55
+      },
+      {
+        "time": 50,
+        "value": 0.2
+      },
+      {
+        "time": 120,
+        "value": 0
+      },
+      {
+        "time": 800,
+        "value": 0
+      },
+      {
+        "time": 806,
+        "value": 0.55
+      },
+      {
+        "time": 850,
+        "value": 0.2
+      },
+      {
+        "time": 920,
+        "value": 0
+      },
+      {
+        "time": 1600,
+        "value": 0
+      },
+      {
+        "time": 1606,
+        "value": 0.55
+      },
+      {
+        "time": 1650,
+        "value": 0.2
+      },
+      {
+        "time": 1720,
+        "value": 0
+      },
+      {
+        "time": 2400,
+        "value": 0
+      },
+      {
+        "time": 2406,
+        "value": 0.55
+      },
+      {
+        "time": 2450,
+        "value": 0.2
+      },
+      {
+        "time": 2520,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.55
+      },
+      {
+        "time": 2520,
+        "value": 0.55
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 2520
+}

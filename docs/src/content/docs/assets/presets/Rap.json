@@ -1,0 +1,27 @@
+{
+  "name": "Rap",
+  "description": "A clean double-knock that announces an alert quietly, ideal for non-urgent in-app notifications.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.5
+    },
+    {
+      "time": 120,
+      "amplitude": 0.4,
+      "frequency": 0.5
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 120
+}

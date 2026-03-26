@@ -1,0 +1,74 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.6
+      },
+      {
+        "time": 62,
+        "value": 0
+      },
+      {
+        "time": 100,
+        "value": 0.6
+      },
+      {
+        "time": 162,
+        "value": 0
+      },
+      {
+        "time": 200,
+        "value": 0.7
+      },
+      {
+        "time": 280,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.6
+      },
+      {
+        "time": 200,
+        "value": 0.65
+      },
+      {
+        "time": 280,
+        "value": 0.63
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.6
+    },
+    {
+      "time": 100,
+      "amplitude": 0.6,
+      "frequency": 0.6
+    },
+    {
+      "time": 200,
+      "amplitude": 0.7,
+      "frequency": 0.65
+    }
+  ],
+  "name": "Poke",
+  "description": "Someone specifically called your name, ideal for mentions, tags, or direct-attention notifications.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Extended"
+  ],
+  "duration": 280
+}

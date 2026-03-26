@@ -1,0 +1,57 @@
+{
+  "name": "Stamp",
+  "description": "Calm and decisive, communicates acceptance without drama, suited for dialog confirmations.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.5
+    },
+    {
+      "time": 150,
+      "amplitude": 0.55,
+      "frequency": 0.5
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.55
+      },
+      {
+        "time": 55,
+        "value": 0
+      },
+      {
+        "time": 150,
+        "value": 0.55
+      },
+      {
+        "time": 205,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 205,
+        "value": 0.5
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulses",
+    "Short"
+  ],
+  "duration": 205
+}

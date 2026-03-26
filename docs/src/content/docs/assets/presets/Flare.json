@@ -1,0 +1,101 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 20,
+        "value": 0.18
+      },
+      {
+        "time": 60,
+        "value": 0.52
+      },
+      {
+        "time": 90,
+        "value": 0.95
+      },
+      {
+        "time": 100,
+        "value": 1
+      },
+      {
+        "time": 120,
+        "value": 0.75
+      },
+      {
+        "time": 140,
+        "value": 0.65
+      },
+      {
+        "time": 200,
+        "value": 0.35
+      },
+      {
+        "time": 380,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.7
+      },
+      {
+        "time": 60,
+        "value": 0.82
+      },
+      {
+        "time": 100,
+        "value": 0.92
+      },
+      {
+        "time": 200,
+        "value": 0.75
+      },
+      {
+        "time": 380,
+        "value": 0.6
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.2,
+      "frequency": 0.7
+    },
+    {
+      "time": 60,
+      "amplitude": 0.55,
+      "frequency": 0.8
+    },
+    {
+      "time": 100,
+      "amplitude": 1,
+      "frequency": 0.9
+    },
+    {
+      "time": 140,
+      "amplitude": 0.7,
+      "frequency": 0.85
+    },
+    {
+      "time": 200,
+      "amplitude": 0.4,
+      "frequency": 0.75
+    }
+  ],
+  "name": "Flare",
+  "description": "A mind-blowing jolt, ideal for overwhelming surprise or impossible-to-believe reveals.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Peak",
+    "Extended"
+  ],
+  "duration": 380,
+  "emoji": "🤯"
+}

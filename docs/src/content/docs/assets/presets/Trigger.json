@@ -1,0 +1,74 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 4,
+        "value": 1
+      },
+      {
+        "time": 55,
+        "value": 0.35
+      },
+      {
+        "time": 80,
+        "value": 0.5
+      },
+      {
+        "time": 140,
+        "value": 0.2
+      },
+      {
+        "time": 200,
+        "value": 0.25
+      },
+      {
+        "time": 280,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.72
+      },
+      {
+        "time": 80,
+        "value": 0.55
+      },
+      {
+        "time": 280,
+        "value": 0.42
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.872,
+      "frequency": 0.7
+    },
+    {
+      "time": 80,
+      "amplitude": 0.5,
+      "frequency": 0.55
+    },
+    {
+      "time": 200,
+      "amplitude": 0.25,
+      "frequency": 0.45
+    }
+  ],
+  "name": "Trigger",
+  "description": "The decisive moment of release, ideal for weapon discharge, trigger confirmation, or releasing a charged gesture.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Peak",
+    "Extended"
+  ],
+  "duration": 280
+}

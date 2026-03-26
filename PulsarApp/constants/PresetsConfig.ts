@@ -4,17 +4,14 @@ import { PresetProps } from "./types";
 // CODEGEN_BEGIN_{imports}
 const AfterglowImage = require('@/assets/presets/Afterglow.png');
 const AftershockImage = require('@/assets/presets/Aftershock.png');
-const AimingFireImage = require('@/assets/presets/AimingFire.png');
-const AimingLockImage = require('@/assets/presets/AimingLock.png');
 const AlarmImage = require('@/assets/presets/Alarm.png');
-const AngerFrustrationImage = require('@/assets/presets/AngerFrustration.png');
 const AnvilImage = require('@/assets/presets/Anvil.png');
 const ApplauseImage = require('@/assets/presets/Applause.png');
-const AttentionImage = require('@/assets/presets/Attention.png');
+const AscentImage = require('@/assets/presets/Ascent.png');
 const BalloonPopImage = require('@/assets/presets/BalloonPop.png');
-const BangDoorImage = require('@/assets/presets/BangDoor.png');
 const BarrageImage = require('@/assets/presets/Barrage.png');
 const BassDropImage = require('@/assets/presets/BassDrop.png');
+const BatterImage = require('@/assets/presets/Batter.png');
 const BellTollImage = require('@/assets/presets/BellToll.png');
 const BlipImage = require('@/assets/presets/Blip.png');
 const BloomImage = require('@/assets/presets/Bloom.png');
@@ -22,117 +19,119 @@ const BongoImage = require('@/assets/presets/Bongo.png');
 const BoulderImage = require('@/assets/presets/Boulder.png');
 const BreakingWaveImage = require('@/assets/presets/BreakingWave.png');
 const BreathImage = require('@/assets/presets/Breath.png');
+const BreathingImage = require('@/assets/presets/Breathing.png');
 const BuildupImage = require('@/assets/presets/Buildup.png');
+const BurstImage = require('@/assets/presets/Burst.png');
+const BuzzImage = require('@/assets/presets/Buzz.png');
 const CadenceImage = require('@/assets/presets/Cadence.png');
 const CameraShutterImage = require('@/assets/presets/CameraShutter.png');
 const CanterImage = require('@/assets/presets/Canter.png');
 const CascadeImage = require('@/assets/presets/Cascade.png');
 const CastanetsImage = require('@/assets/presets/Castanets.png');
 const CatPawImage = require('@/assets/presets/CatPaw.png');
+const ChargeImage = require('@/assets/presets/Charge.png');
+const ChimeImage = require('@/assets/presets/Chime.png');
 const ChipImage = require('@/assets/presets/Chip.png');
 const ChirpImage = require('@/assets/presets/Chirp.png');
+const ClamorImage = require('@/assets/presets/Clamor.png');
+const ClaspImage = require('@/assets/presets/Clasp.png');
 const CleaveImage = require('@/assets/presets/Cleave.png');
+const CoilImage = require('@/assets/presets/Coil.png');
 const CoinDropImage = require('@/assets/presets/CoinDrop.png');
 const CombinationLockImage = require('@/assets/presets/CombinationLock.png');
-const ConfirmImage = require('@/assets/presets/Confirm.png');
-const CowboyImage = require('@/assets/presets/Cowboy.png');
 const CrescendoImage = require('@/assets/presets/Crescendo.png');
-const CrossedEyesImage = require('@/assets/presets/CrossedEyes.png');
-const CursingImage = require('@/assets/presets/Cursing.png');
 const DewdropImage = require('@/assets/presets/Dewdrop.png');
 const DirgeImage = require('@/assets/presets/Dirge.png');
 const DissolveImage = require('@/assets/presets/Dissolve.png');
 const DogBarkImage = require('@/assets/presets/DogBark.png');
 const DroneImage = require('@/assets/presets/Drone.png');
 const EngineRevImage = require('@/assets/presets/EngineRev.png');
-const ErrorBuzzImage = require('@/assets/presets/ErrorBuzz.png');
-const ExplodingHeadImage = require('@/assets/presets/ExplodingHead.png');
+const ExhaleImage = require('@/assets/presets/Exhale.png');
 const ExplosionImage = require('@/assets/presets/Explosion.png');
-const EyeRollingImage = require('@/assets/presets/EyeRolling.png');
 const FadeOutImage = require('@/assets/presets/FadeOut.png');
 const FanfareImage = require('@/assets/presets/Fanfare.png');
 const FeatherImage = require('@/assets/presets/Feather.png');
+const FinaleImage = require('@/assets/presets/Finale.png');
 const FingerDrumImage = require('@/assets/presets/FingerDrum.png');
 const FirecrackerImage = require('@/assets/presets/Firecracker.png');
 const FizzImage = require('@/assets/presets/Fizz.png');
+const FlareImage = require('@/assets/presets/Flare.png');
 const FlickImage = require('@/assets/presets/Flick.png');
+const FlinchImage = require('@/assets/presets/Flinch.png');
+const FlourishImage = require('@/assets/presets/Flourish.png');
+const FlurryImage = require('@/assets/presets/Flurry.png');
+const FlushImage = require('@/assets/presets/Flush.png');
 const GallopImage = require('@/assets/presets/Gallop.png');
-const GameComboImage = require('@/assets/presets/GameCombo.png');
-const GameHitImage = require('@/assets/presets/GameHit.png');
-const GameLevelUpImage = require('@/assets/presets/GameLevelUp.png');
-const GamePickupImage = require('@/assets/presets/GamePickup.png');
 const GavelImage = require('@/assets/presets/Gavel.png');
 const GlitchImage = require('@/assets/presets/Glitch.png');
-const GravityFreefallImage = require('@/assets/presets/GravityFreefall.png');
-const GrinningSquintingImage = require('@/assets/presets/GrinningSquinting.png');
 const GuitarStrumImage = require('@/assets/presets/GuitarStrum.png');
 const HailImage = require('@/assets/presets/Hail.png');
+const HammerImage = require('@/assets/presets/Hammer.png');
 const HeartbeatImage = require('@/assets/presets/Heartbeat.png');
 const HeraldImage = require('@/assets/presets/Herald.png');
 const HoofBeatImage = require('@/assets/presets/HoofBeat.png');
 const IgnitionImage = require('@/assets/presets/Ignition.png');
+const ImpactImage = require('@/assets/presets/Impact.png');
 const JoltImage = require('@/assets/presets/Jolt.png');
 const KeyboardMechanicalImage = require('@/assets/presets/KeyboardMechanical.png');
 const KeyboardMembraneImage = require('@/assets/presets/KeyboardMembrane.png');
-const KnockDoorImage = require('@/assets/presets/KnockDoor.png');
+const KnellImage = require('@/assets/presets/Knell.png');
+const KnockImage = require('@/assets/presets/Knock.png');
+const LamentImage = require('@/assets/presets/Lament.png');
 const LatchImage = require('@/assets/presets/Latch.png');
-const LevelUpImage = require('@/assets/presets/LevelUp.png');
 const LighthouseImage = require('@/assets/presets/Lighthouse.png');
-const LoaderBreathingImage = require('@/assets/presets/LoaderBreathing.png');
-const LoaderPulseImage = require('@/assets/presets/LoaderPulse.png');
-const LoaderRadarImage = require('@/assets/presets/LoaderRadar.png');
-const LoaderSpinImage = require('@/assets/presets/LoaderSpin.png');
-const LoaderWaveImage = require('@/assets/presets/LoaderWave.png');
+const LiltImage = require('@/assets/presets/Lilt.png');
 const LockImage = require('@/assets/presets/Lock.png');
-const LongPressImage = require('@/assets/presets/LongPress.png');
+const LopeImage = require('@/assets/presets/Lope.png');
 const MarchImage = require('@/assets/presets/March.png');
-const MarioGameOverImage = require('@/assets/presets/MarioGameOver.png');
 const MetronomeImage = require('@/assets/presets/Metronome.png');
 const MurmurImage = require('@/assets/presets/Murmur.png');
-const NewMessageImage = require('@/assets/presets/NewMessage.png');
-const NotificationImage = require('@/assets/presets/Notification.png');
-const NotificationKnockImage = require('@/assets/presets/NotificationKnock.png');
-const NotificationUrgentImage = require('@/assets/presets/NotificationUrgent.png');
-const NotifyInfoStandardImage = require('@/assets/presets/NotifyInfoStandard.png');
-const NotifyReminderFinalImage = require('@/assets/presets/NotifyReminderFinal.png');
-const NotifyReminderNudgeImage = require('@/assets/presets/NotifyReminderNudge.png');
-const NotifySocialMentionImage = require('@/assets/presets/NotifySocialMention.png');
-const NotifySocialMessageImage = require('@/assets/presets/NotifySocialMessage.png');
-const NotifyTimerDoneImage = require('@/assets/presets/NotifyTimerDone.png');
+const NudgeImage = require('@/assets/presets/Nudge.png');
 const PassingCarImage = require('@/assets/presets/PassingCar.png');
 const PatterImage = require('@/assets/presets/Patter.png');
 const PealImage = require('@/assets/presets/Peal.png');
 const PeckImage = require('@/assets/presets/Peck.png');
 const PendulumImage = require('@/assets/presets/Pendulum.png');
 const PingImage = require('@/assets/presets/Ping.png');
+const PipImage = require('@/assets/presets/Pip.png');
 const PistonImage = require('@/assets/presets/Piston.png');
+const PlinkImage = require('@/assets/presets/Plink.png');
+const PlummetImage = require('@/assets/presets/Plummet.png');
 const PlunkImage = require('@/assets/presets/Plunk.png');
+const PokeImage = require('@/assets/presets/Poke.png');
+const PoundImage = require('@/assets/presets/Pound.png');
 const PowerDownImage = require('@/assets/presets/PowerDown.png');
 const PropelImage = require('@/assets/presets/Propel.png');
+const PulseImage = require('@/assets/presets/Pulse.png');
+const PummelImage = require('@/assets/presets/Pummel.png');
 const PushImage = require('@/assets/presets/Push.png');
+const RadarImage = require('@/assets/presets/Radar.png');
 const RainImage = require('@/assets/presets/Rain.png');
+const RampImage = require('@/assets/presets/Ramp.png');
+const RapImage = require('@/assets/presets/Rap.png');
 const RatchetImage = require('@/assets/presets/Ratchet.png');
-const ReadySteadyGoImage = require('@/assets/presets/ReadySteadyGo.png');
 const ReboundImage = require('@/assets/presets/Rebound.png');
-const ReliefSighImage = require('@/assets/presets/ReliefSigh.png');
 const RippleImage = require('@/assets/presets/Ripple.png');
 const RivetImage = require('@/assets/presets/Rivet.png');
 const RustleImage = require('@/assets/presets/Rustle.png');
-const SearchingImage = require('@/assets/presets/Searching.png');
-const SearchSuccessImage = require('@/assets/presets/SearchSuccess.png');
-const SelectionSnapImage = require('@/assets/presets/SelectionSnap.png');
 const ShockwaveImage = require('@/assets/presets/Shockwave.png');
-const SneezingImage = require('@/assets/presets/Sneezing.png');
+const SnapImage = require('@/assets/presets/Snap.png');
+const SonarImage = require('@/assets/presets/Sonar.png');
 const SparkImage = require('@/assets/presets/Spark.png');
+const SpinImage = require('@/assets/presets/Spin.png');
+const StaggerImage = require('@/assets/presets/Stagger.png');
+const StampImage = require('@/assets/presets/Stamp.png');
 const StampedeImage = require('@/assets/presets/Stampede.png');
 const StompImage = require('@/assets/presets/Stomp.png');
 const StoneSkipImage = require('@/assets/presets/StoneSkip.png');
 const StrikeImage = require('@/assets/presets/Strike.png');
-const SuccessFlourishImage = require('@/assets/presets/SuccessFlourish.png');
-const SurpriseGaspImage = require('@/assets/presets/SurpriseGasp.png');
+const SummonImage = require('@/assets/presets/Summon.png');
+const SurgeImage = require('@/assets/presets/Surge.png');
 const SwayImage = require('@/assets/presets/Sway.png');
+const SweepImage = require('@/assets/presets/Sweep.png');
+const SwellImage = require('@/assets/presets/Swell.png');
 const SyncopateImage = require('@/assets/presets/Syncopate.png');
-const TadaImage = require('@/assets/presets/Tada.png');
+const ThrobImage = require('@/assets/presets/Throb.png');
 const ThudImage = require('@/assets/presets/Thud.png');
 const ThumpImage = require('@/assets/presets/Thump.png');
 const ThunderImage = require('@/assets/presets/Thunder.png');
@@ -141,18 +140,19 @@ const TickTockImage = require('@/assets/presets/TickTock.png');
 const TidalSurgeImage = require('@/assets/presets/TidalSurge.png');
 const TideSwellImage = require('@/assets/presets/TideSwell.png');
 const TremorImage = require('@/assets/presets/Tremor.png');
+const TriggerImage = require('@/assets/presets/Trigger.png');
+const TriumphImage = require('@/assets/presets/Triumph.png');
+const TrumpetImage = require('@/assets/presets/Trumpet.png');
 const TypewriterImage = require('@/assets/presets/Typewriter.png');
-const VictoryImage = require('@/assets/presets/Victory.png');
-const VomitingImage = require('@/assets/presets/Vomiting.png');
+const UnfurlImage = require('@/assets/presets/Unfurl.png');
 const VortexImage = require('@/assets/presets/Vortex.png');
+const WaneImage = require('@/assets/presets/Wane.png');
 const WarDrumImage = require('@/assets/presets/WarDrum.png');
-const WarningPulseImage = require('@/assets/presets/WarningPulse.png');
-const WarningUrgentImage = require('@/assets/presets/WarningUrgent.png');
 const WaterfallImage = require('@/assets/presets/Waterfall.png');
+const WaveImage = require('@/assets/presets/Wave.png');
 const WispImage = require('@/assets/presets/Wisp.png');
 const WobbleImage = require('@/assets/presets/Wobble.png');
 const WoodpeckerImage = require('@/assets/presets/Woodpecker.png');
-const ZeldaChestImage = require('@/assets/presets/ZeldaChest.png');
 const ZipperImage = require('@/assets/presets/Zipper.png');
 // CODEGEN_END_{imports}
 
@@ -175,36 +175,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Aftershock,
   },
   {
-    name: 'AimingFire',
-    description: 'The decisive moment of release, ideal for weapon discharge, trigger confirmation, or releasing a charged gesture.',
-    tags: ["Bold","Flexible","Peak","Extended"],
-    duration: 280,
-    image: AimingFireImage,
-    play: Presets.AimingFire,
-  },
-  {
-    name: 'AimingLock',
-    description: 'The satisfying snap of acquiring a target, ideal for lock-on, cursor snap-to, or radar acquisition.',
-    tags: ["Bold","Rigid","Impulses","Short"],
-    duration: 220,
-    image: AimingLockImage,
-    play: Presets.AimingLock,
-  },
-  {
     name: 'Alarm',
     description: 'Relentless and urgent, best for critical errors or emergencies that require immediate attention.',
     tags: ["Bold","Rigid","Pattern","Extended"],
     duration: 1130,
     image: AlarmImage,
     play: Presets.Alarm,
-  },
-  {
-    name: 'AngerFrustration',
-    description: 'Escalating rage that peaks at full force, suited for blocked actions, critical failures, or frustrated moments.',
-    tags: ["Bold","Rigid","Saw","Extended"],
-    duration: 450,
-    image: AngerFrustrationImage,
-    play: Presets.AngerFrustration,
   },
   {
     name: 'Anvil',
@@ -223,12 +199,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Applause,
   },
   {
-    name: 'Attention',
-    description: 'A commanding signal that refuses to be ignored, ideal for incoming calls or urgent attention-demand moments.',
-    tags: ["Bold","Flexible","Bumps","Extended"],
-    duration: 500,
-    image: AttentionImage,
-    play: Presets.Attention,
+    name: 'Ascent',
+    description: 'The rush of leveling up, evoking the classic RPG reward of growth and progression.',
+    tags: ["Bold","Flexible","Pattern","Long"],
+    duration: 2400,
+    image: AscentImage,
+    play: Presets.Ascent,
   },
   {
     name: 'BalloonPop',
@@ -237,14 +213,6 @@ export const PresetsConfig: Array<PresetProps> = [
     duration: 1700,
     image: BalloonPopImage,
     play: Presets.BalloonPop,
-  },
-  {
-    name: 'BangDoor',
-    description: 'The insistent urgency of a fist on a door, ideal for forceful alerts or escalating persistent notifications.',
-    tags: ["Bold","Soft","Saw","Long"],
-    duration: 1050,
-    image: BangDoorImage,
-    play: Presets.BangDoor,
   },
   {
     name: 'Barrage',
@@ -261,6 +229,14 @@ export const PresetsConfig: Array<PresetProps> = [
     duration: 71,
     image: BassDropImage,
     play: Presets.BassDrop,
+  },
+  {
+    name: 'Batter',
+    description: 'An unrestrained explosion of rage, suited for catastrophic errors or total loss of control.',
+    tags: ["Bold","Flexible","Saw","Extended"],
+    duration: 380,
+    image: BatterImage,
+    play: Presets.Batter,
   },
   {
     name: 'BellToll',
@@ -319,12 +295,36 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Breath,
   },
   {
+    name: 'Breathing',
+    description: 'Calm and unobtrusive, ideal for background processing that should not disturb the user.',
+    tags: ["Substantial","Soft","Bumps","Long"],
+    duration: 6000,
+    image: BreathingImage,
+    play: Presets.Breathing,
+  },
+  {
     name: 'Buildup',
     description: 'An energizing crescendo of rising intensity, ideal for charging actions or building anticipation.',
     tags: ["Bold","Flexible","Impulses","Extended"],
     duration: 309,
     image: BuildupImage,
     play: Presets.Buildup,
+  },
+  {
+    name: 'Burst',
+    description: 'The tension-and-release of a sneeze, imitates the involuntary build and explosion.',
+    tags: ["Bold","Flexible","Peak","Extended"],
+    duration: 300,
+    image: BurstImage,
+    play: Presets.Burst,
+  },
+  {
+    name: 'Buzz',
+    description: 'An unmistakable hard rejection, suited for critical errors, access denied, or blocked actions.',
+    tags: ["Bold","Rigid","Ramp","Extended"],
+    duration: 350,
+    image: BuzzImage,
+    play: Presets.Buzz,
   },
   {
     name: 'Cadence',
@@ -375,6 +375,22 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.CatPaw,
   },
   {
+    name: 'Charge',
+    description: 'The electric buildup of a countdown, perfect for race starts or any go moment.',
+    tags: ["Bold","Rigid","Pattern","Long"],
+    duration: 2046,
+    image: ChargeImage,
+    play: Presets.Charge,
+  },
+  {
+    name: 'Chime',
+    description: 'A warm, friendly double-tap, ideal for incoming messages or chat notifications.',
+    tags: ["Substantial","Flexible","Bumps","Extended"],
+    duration: 380,
+    image: ChimeImage,
+    play: Presets.Chime,
+  },
+  {
     name: 'Chip',
     description: 'Sharp, authoritative, and precise, suited for confirmations that demand clarity and definition.',
     tags: ["Substantial","Rigid","Impulses","Impulse"],
@@ -391,12 +407,36 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Chirp,
   },
   {
+    name: 'Clamor',
+    description: 'Impossible to ignore, suited for critical warnings, emergency alerts, or safety-critical states.',
+    tags: ["Bold","Flexible","Saw","Extended"],
+    duration: 430,
+    image: ClamorImage,
+    play: Presets.Clamor,
+  },
+  {
+    name: 'Clasp',
+    description: 'The satisfying snap of acquiring a target, ideal for lock-on, cursor snap-to, or radar acquisition.',
+    tags: ["Bold","Rigid","Impulses","Short"],
+    duration: 220,
+    image: ClaspImage,
+    play: Presets.Clasp,
+  },
+  {
     name: 'Cleave',
     description: 'Signals an irreversible, high-stakes action for deletes, removes, or anything the user cannot undo.',
     tags: ["Bold","Rigid","Impulses","Bumps","Short"],
     duration: 250,
     image: CleaveImage,
     play: Presets.Cleave,
+  },
+  {
+    name: 'Coil',
+    description: 'Rising tension that releases into certainty, ideal for long-press activation or charge-complete feedback.',
+    tags: ["Substantial","Flexible","Peak","Long"],
+    duration: 650,
+    image: CoilImage,
+    play: Presets.Coil,
   },
   {
     name: 'CoinDrop',
@@ -415,44 +455,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.CombinationLock,
   },
   {
-    name: 'Confirm',
-    description: 'Calm and decisive, communicates acceptance without drama, suited for dialog confirmations.',
-    tags: ["Substantial","Soft","Impulses","Short"],
-    duration: 205,
-    image: ConfirmImage,
-    play: Presets.Confirm,
-  },
-  {
-    name: 'Cowboy',
-    description: 'A galloping bounce with swagger, ideal for adventurous or playful UI moments.',
-    tags: ["Substantial","Rigid","Pattern","Extended"],
-    duration: 450,
-    image: CowboyImage,
-    play: Presets.Cowboy,
-  },
-  {
     name: 'Crescendo',
     description: 'A rising build that peaks with energy, ideal for charge-up moments or building anticipation.',
     tags: ["Substantial","Rigid","Impulses","Long"],
     duration: 601,
     image: CrescendoImage,
     play: Presets.Crescendo,
-  },
-  {
-    name: 'CrossedEyes',
-    description: 'Woozy and disorienting, ideal for confusion, error overload, or hit-stun effects.',
-    tags: ["Substantial","Flexible","Saw","Extended"],
-    duration: 320,
-    image: CrossedEyesImage,
-    play: Presets.CrossedEyes,
-  },
-  {
-    name: 'Cursing',
-    description: 'An unrestrained explosion of rage, suited for catastrophic errors or total loss of control.',
-    tags: ["Bold","Flexible","Saw","Extended"],
-    duration: 380,
-    image: CursingImage,
-    play: Presets.Cursing,
   },
   {
     name: 'Dewdrop',
@@ -503,20 +511,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.EngineRev,
   },
   {
-    name: 'ErrorBuzz',
-    description: 'An unmistakable hard rejection, suited for critical errors, access denied, or blocked actions.',
-    tags: ["Bold","Rigid","Ramp","Extended"],
-    duration: 350,
-    image: ErrorBuzzImage,
-    play: Presets.ErrorBuzz,
-  },
-  {
-    name: 'ExplodingHead',
-    description: 'A mind-blowing jolt, ideal for overwhelming surprise or impossible-to-believe reveals.',
-    tags: ["Bold","Rigid","Peak","Extended"],
-    duration: 380,
-    image: ExplodingHeadImage,
-    play: Presets.ExplodingHead,
+    name: 'Exhale',
+    description: 'Tension releasing into calm, ideal for completing a stressful task or resolving an error.',
+    tags: ["Substantial","Flexible","Ramp","Long"],
+    duration: 1200,
+    image: ExhaleImage,
+    play: Presets.Exhale,
   },
   {
     name: 'Explosion',
@@ -525,14 +525,6 @@ export const PresetsConfig: Array<PresetProps> = [
     duration: 1000,
     image: ExplosionImage,
     play: Presets.Explosion,
-  },
-  {
-    name: 'EyeRolling',
-    description: 'A lazy, dismissive fade, fitting for sarcastic or indifferent UI moments.',
-    tags: ["Gentle","Flexible","Ramp","Extended"],
-    duration: 450,
-    image: EyeRollingImage,
-    play: Presets.EyeRolling,
   },
   {
     name: 'FadeOut',
@@ -559,6 +551,14 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Feather,
   },
   {
+    name: 'Finale',
+    description: 'A countdown that closes with emphasis, ideal for timer completions or countdown-finished alerts.',
+    tags: ["Bold","Flexible","Bumps","Long"],
+    duration: 680,
+    image: FinaleImage,
+    play: Presets.Finale,
+  },
+  {
     name: 'FingerDrum',
     description: 'Three casual, even taps, ideal for low-key acknowledgements or non-urgent rhythm patterns.',
     tags: ["Substantial","Flexible","Impulses","Extended"],
@@ -583,6 +583,14 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Fizz,
   },
   {
+    name: 'Flare',
+    description: 'A mind-blowing jolt, ideal for overwhelming surprise or impossible-to-believe reveals.',
+    tags: ["Bold","Rigid","Peak","Extended"],
+    duration: 380,
+    image: FlareImage,
+    play: Presets.Flare,
+  },
+  {
     name: 'Flick',
     description: 'A light, quick tap with minimal presence, ideal for chips, tags, and filters.',
     tags: ["Gentle","Flexible","Peak","Impulse"],
@@ -591,44 +599,44 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Flick,
   },
   {
+    name: 'Flinch',
+    description: 'A shock to the senses, ideal for unexpected alerts or startling reveals.',
+    tags: ["Bold","Flexible","Bumps","Extended"],
+    duration: 280,
+    image: FlinchImage,
+    play: Presets.Flinch,
+  },
+  {
+    name: 'Flourish',
+    description: 'Triumphant and expansive, ideal for achievement unlocked or major task completions.',
+    tags: ["Bold","Rigid","Peak","Long"],
+    duration: 917,
+    image: FlourishImage,
+    play: Presets.Flourish,
+  },
+  {
+    name: 'Flurry',
+    description: 'The thrill of a combo streak, ideal for hit combos, chain multipliers, or rapid-fire scoring.',
+    tags: ["Bold","Rigid","Bumps","Extended"],
+    duration: 300,
+    image: FlurryImage,
+    play: Presets.Flurry,
+  },
+  {
+    name: 'Flush',
+    description: 'The involuntary heave of disgust, ideal for aversion reactions or gross-out moments in playful UI contexts.',
+    tags: ["Bold","Flexible","Peak","Extended"],
+    duration: 380,
+    image: FlushImage,
+    play: Presets.Flush,
+  },
+  {
     name: 'Gallop',
     description: 'A natural four-beat rhythm, suited for multi-step processes or organic rhythmic feedback.',
     tags: ["Bold","Flexible","Impulses","Long"],
     duration: 750,
     image: GallopImage,
     play: Presets.Gallop,
-  },
-  {
-    name: 'GameCombo',
-    description: 'The thrill of a combo streak, ideal for hit combos, chain multipliers, or rapid-fire scoring.',
-    tags: ["Bold","Rigid","Bumps","Extended"],
-    duration: 300,
-    image: GameComboImage,
-    play: Presets.GameCombo,
-  },
-  {
-    name: 'GameHit',
-    description: 'The instant punch of impact, perfect for collision events or taking a hit in games.',
-    tags: ["Bold","Flexible","Peak","Short"],
-    duration: 200,
-    image: GameHitImage,
-    play: Presets.GameHit,
-  },
-  {
-    name: 'GameLevelUp',
-    description: 'The joy of growing stronger, ideal for level-up moments or rank promotion celebrations.',
-    tags: ["Bold","Rigid","Bumps","Long"],
-    duration: 650,
-    image: GameLevelUpImage,
-    play: Presets.GameLevelUp,
-  },
-  {
-    name: 'GamePickup',
-    description: 'A light, sparkling burst, ideal for in-game collectibles or power-up feedback.',
-    tags: ["Gentle","Rigid","Impulses","Impulse"],
-    duration: 100,
-    image: GamePickupImage,
-    play: Presets.GamePickup,
   },
   {
     name: 'Gavel',
@@ -647,22 +655,6 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Glitch,
   },
   {
-    name: 'GravityFreefall',
-    description: 'The terrifying pause before impact, ideal for drop effects or dramatic collision moments.',
-    tags: ["Bold","Soft","Peak","Long"],
-    duration: 1050,
-    image: GravityFreefallImage,
-    play: Presets.GravityFreefall,
-  },
-  {
-    name: 'GrinningSquinting',
-    description: 'An irrepressible swell of delight, ideal for reaction moments or expressions of pure joy.',
-    tags: ["Bold","Rigid","Saw","Extended"],
-    duration: 330,
-    image: GrinningSquintingImage,
-    play: Presets.GrinningSquinting,
-  },
-  {
     name: 'GuitarStrum',
     description: 'A rich, resonant strike that lingers, ideal for musical interactions or warm confirmation moments.',
     tags: ["Bold","Flexible","Ramp","Long"],
@@ -677,6 +669,14 @@ export const PresetsConfig: Array<PresetProps> = [
     duration: 430,
     image: HailImage,
     play: Presets.Hail,
+  },
+  {
+    name: 'Hammer',
+    description: 'The insistent urgency of a fist on a door, ideal for forceful alerts or escalating persistent notifications.',
+    tags: ["Bold","Soft","Saw","Long"],
+    duration: 1050,
+    image: HammerImage,
+    play: Presets.Hammer,
   },
   {
     name: 'Heartbeat',
@@ -711,6 +711,14 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Ignition,
   },
   {
+    name: 'Impact',
+    description: 'The instant punch of impact, perfect for collision events or taking a hit in games.',
+    tags: ["Bold","Flexible","Peak","Short"],
+    duration: 200,
+    image: ImpactImage,
+    play: Presets.Impact,
+  },
+  {
     name: 'Jolt',
     description: 'The most intense hit possible, suited for critical alerts or any moment that demands absolute impact.',
     tags: ["Bold","Rigid","Impulses","Impulse"],
@@ -735,12 +743,28 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.KeyboardMembrane,
   },
   {
-    name: 'KnockDoor',
+    name: 'Knell',
+    description: 'A commanding last-chance signal, ideal for final reminders or deadline-critical alerts.',
+    tags: ["Bold","Flexible","Bumps","Extended"],
+    duration: 550,
+    image: KnellImage,
+    play: Presets.Knell,
+  },
+  {
+    name: 'Knock',
     description: 'A polite knock announcing arrival, ideal for gentle attention requests or non-urgent presence alerts.',
     tags: ["Substantial","Soft","Bumps","Long"],
     duration: 760,
-    image: KnockDoorImage,
-    play: Presets.KnockDoor,
+    image: KnockImage,
+    play: Presets.Knock,
+  },
+  {
+    name: 'Lament',
+    description: 'The sinking finality of defeat, captures the deflating feeling of a game-over moment.',
+    tags: ["Bold","Flexible","Pattern","Long"],
+    duration: 2450,
+    image: LamentImage,
+    play: Presets.Lament,
   },
   {
     name: 'Latch',
@@ -751,14 +775,6 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Latch,
   },
   {
-    name: 'LevelUp',
-    description: 'The rush of leveling up, evoking the classic RPG reward of growth and progression.',
-    tags: ["Bold","Flexible","Pattern","Long"],
-    duration: 2400,
-    image: LevelUpImage,
-    play: Presets.LevelUp,
-  },
-  {
     name: 'Lighthouse',
     description: 'Steady and bias-free, suitable for neutral status updates or steady-state notifications.',
     tags: ["Substantial","Flexible","Pattern","Long"],
@@ -767,44 +783,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Lighthouse,
   },
   {
-    name: 'LoaderBreathing',
-    description: 'Calm and unobtrusive, ideal for background processing that should not disturb the user.',
-    tags: ["Substantial","Soft","Bumps","Long"],
-    duration: 6000,
-    image: LoaderBreathingImage,
-    play: Presets.LoaderBreathing,
-  },
-  {
-    name: 'LoaderPulse',
-    description: 'A gentle, steady pulse that quietly signals ongoing activity without demanding attention.',
-    tags: ["Gentle","Flexible","Bumps","Long"],
-    duration: 2000,
-    image: LoaderPulseImage,
-    play: Presets.LoaderPulse,
-  },
-  {
-    name: 'LoaderRadar',
-    description: 'The focused sweep of active scanning, ideal for network requests or polling states.',
-    tags: ["Substantial","Flexible","Pattern","Long"],
-    duration: 2520,
-    image: LoaderRadarImage,
-    play: Presets.LoaderRadar,
-  },
-  {
-    name: 'LoaderSpin',
-    description: 'A crisp, mechanical rhythm communicating repeating progress, great for looping or spinner states.',
-    tags: ["Substantial","Flexible","Saw","Long"],
-    duration: 1808,
-    image: LoaderSpinImage,
-    play: Presets.LoaderSpin,
-  },
-  {
-    name: 'LoaderWave',
-    description: 'Gentle and uninterrupting, communicates ongoing activity without breaking the user\'s focus.',
-    tags: ["Substantial","Soft","Bumps","Long"],
-    duration: 2800,
-    image: LoaderWaveImage,
-    play: Presets.LoaderWave,
+    name: 'Lilt',
+    description: 'Warm and personal, ideal for direct messages or social notifications from people you know.',
+    tags: ["Substantial","Flexible","Bumps","Extended"],
+    duration: 360,
+    image: LiltImage,
+    play: Presets.Lilt,
   },
   {
     name: 'Lock',
@@ -815,12 +799,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Lock,
   },
   {
-    name: 'LongPress',
-    description: 'Rising tension that releases into certainty, ideal for long-press activation or charge-complete feedback.',
-    tags: ["Substantial","Flexible","Peak","Long"],
-    duration: 650,
-    image: LongPressImage,
-    play: Presets.LongPress,
+    name: 'Lope',
+    description: 'A galloping bounce with swagger, ideal for adventurous or playful UI moments.',
+    tags: ["Substantial","Rigid","Pattern","Extended"],
+    duration: 450,
+    image: LopeImage,
+    play: Presets.Lope,
   },
   {
     name: 'March',
@@ -829,14 +813,6 @@ export const PresetsConfig: Array<PresetProps> = [
     duration: 900,
     image: MarchImage,
     play: Presets.March,
-  },
-  {
-    name: 'MarioGameOver',
-    description: 'The sinking finality of defeat, captures the deflating feeling of a game-over moment.',
-    tags: ["Bold","Flexible","Pattern","Long"],
-    duration: 2450,
-    image: MarioGameOverImage,
-    play: Presets.MarioGameOver,
   },
   {
     name: 'Metronome',
@@ -855,84 +831,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Murmur,
   },
   {
-    name: 'NewMessage',
-    description: 'A warm, friendly double-tap, ideal for incoming messages or chat notifications.',
-    tags: ["Substantial","Flexible","Bumps","Extended"],
-    duration: 380,
-    image: NewMessageImage,
-    play: Presets.NewMessage,
-  },
-  {
-    name: 'Notification',
+    name: 'Nudge',
     description: 'A polite, unobtrusive double tap that announces a notification without being intrusive.',
     tags: ["Substantial","Flexible","Bumps","Short"],
     duration: 180,
-    image: NotificationImage,
-    play: Presets.Notification,
-  },
-  {
-    name: 'NotificationKnock',
-    description: 'A clean double-knock that announces an alert quietly, ideal for non-urgent in-app notifications.',
-    tags: ["Substantial","Flexible","Bumps","Short"],
-    duration: 120,
-    image: NotificationKnockImage,
-    play: Presets.NotificationKnock,
-  },
-  {
-    name: 'NotificationUrgent',
-    description: 'Impossible to ignore, ideal for critical alerts or notifications that cannot wait.',
-    tags: ["Bold","Rigid","Bumps","Extended"],
-    duration: 265,
-    image: NotificationUrgentImage,
-    play: Presets.NotificationUrgent,
-  },
-  {
-    name: 'NotifyInfoStandard',
-    description: 'A neutral heads-up suited as a baseline for informational notifications.',
-    tags: ["Substantial","Flexible","Bumps","Short"],
-    duration: 215,
-    image: NotifyInfoStandardImage,
-    play: Presets.NotifyInfoStandard,
-  },
-  {
-    name: 'NotifyReminderFinal',
-    description: 'A commanding last-chance signal, ideal for final reminders or deadline-critical alerts.',
-    tags: ["Bold","Flexible","Bumps","Extended"],
-    duration: 550,
-    image: NotifyReminderFinalImage,
-    play: Presets.NotifyReminderFinal,
-  },
-  {
-    name: 'NotifyReminderNudge',
-    description: 'A patient nudge that quietly escalates, ideal for reminders that build attention without anxiety.',
-    tags: ["Substantial","Flexible","Bumps","Extended"],
-    duration: 425,
-    image: NotifyReminderNudgeImage,
-    play: Presets.NotifyReminderNudge,
-  },
-  {
-    name: 'NotifySocialMention',
-    description: 'Someone specifically called your name, ideal for mentions, tags, or direct-attention notifications.',
-    tags: ["Substantial","Flexible","Bumps","Extended"],
-    duration: 280,
-    image: NotifySocialMentionImage,
-    play: Presets.NotifySocialMention,
-  },
-  {
-    name: 'NotifySocialMessage',
-    description: 'Warm and personal, ideal for direct messages or social notifications from people you know.',
-    tags: ["Substantial","Flexible","Bumps","Extended"],
-    duration: 360,
-    image: NotifySocialMessageImage,
-    play: Presets.NotifySocialMessage,
-  },
-  {
-    name: 'NotifyTimerDone',
-    description: 'A countdown that closes with emphasis, ideal for timer completions or countdown-finished alerts.',
-    tags: ["Bold","Flexible","Bumps","Long"],
-    duration: 680,
-    image: NotifyTimerDoneImage,
-    play: Presets.NotifyTimerDone,
+    image: NudgeImage,
+    play: Presets.Nudge,
   },
   {
     name: 'PassingCar',
@@ -983,6 +887,14 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Ping,
   },
   {
+    name: 'Pip',
+    description: 'A light, sparkling burst, ideal for in-game collectibles or power-up feedback.',
+    tags: ["Gentle","Rigid","Impulses","Impulse"],
+    duration: 100,
+    image: PipImage,
+    play: Presets.Pip,
+  },
+  {
     name: 'Piston',
     description: 'Two forceful, immediate strikes, ideal for commanding double-confirmations or high-energy paired actions.',
     tags: ["Bold","Flexible","Impulses","Impulse"],
@@ -991,12 +903,44 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Piston,
   },
   {
+    name: 'Plink',
+    description: 'A neutral heads-up suited as a baseline for informational notifications.',
+    tags: ["Substantial","Flexible","Bumps","Short"],
+    duration: 215,
+    image: PlinkImage,
+    play: Presets.Plink,
+  },
+  {
+    name: 'Plummet',
+    description: 'The terrifying pause before impact, ideal for drop effects or dramatic collision moments.',
+    tags: ["Bold","Soft","Peak","Long"],
+    duration: 1050,
+    image: PlummetImage,
+    play: Presets.Plummet,
+  },
+  {
     name: 'Plunk',
     description: 'Understated but present, suitable for subdued feedback that still has noticeable weight.',
     tags: ["Substantial","Soft","Impulses","Impulse"],
     duration: 0,
     image: PlunkImage,
     play: Presets.Plunk,
+  },
+  {
+    name: 'Poke',
+    description: 'Someone specifically called your name, ideal for mentions, tags, or direct-attention notifications.',
+    tags: ["Substantial","Flexible","Bumps","Extended"],
+    duration: 280,
+    image: PokeImage,
+    play: Presets.Poke,
+  },
+  {
+    name: 'Pound',
+    description: 'Impossible to ignore, ideal for critical alerts or notifications that cannot wait.',
+    tags: ["Bold","Rigid","Bumps","Extended"],
+    duration: 265,
+    image: PoundImage,
+    play: Presets.Pound,
   },
   {
     name: 'PowerDown',
@@ -1015,12 +959,36 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Propel,
   },
   {
+    name: 'Pulse',
+    description: 'A gentle, steady pulse that quietly signals ongoing activity without demanding attention.',
+    tags: ["Gentle","Flexible","Bumps","Long"],
+    duration: 2000,
+    image: PulseImage,
+    play: Presets.Pulse,
+  },
+  {
+    name: 'Pummel',
+    description: 'Escalating rage that peaks at full force, suited for blocked actions, critical failures, or frustrated moments.',
+    tags: ["Bold","Rigid","Saw","Extended"],
+    duration: 450,
+    image: PummelImage,
+    play: Presets.Pummel,
+  },
+  {
     name: 'Push',
     description: 'A quieter click that supports without competing, ideal for secondary actions.',
     tags: ["Gentle","Flexible","Peak","Impulse"],
     duration: 90,
     image: PushImage,
     play: Presets.Push,
+  },
+  {
+    name: 'Radar',
+    description: 'The focused sweep of active scanning, ideal for network requests or polling states.',
+    tags: ["Substantial","Flexible","Pattern","Long"],
+    duration: 2520,
+    image: RadarImage,
+    play: Presets.Radar,
   },
   {
     name: 'Rain',
@@ -1031,6 +999,22 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Rain,
   },
   {
+    name: 'Ramp',
+    description: 'The joy of growing stronger, ideal for level-up moments or rank promotion celebrations.',
+    tags: ["Bold","Rigid","Bumps","Long"],
+    duration: 650,
+    image: RampImage,
+    play: Presets.Ramp,
+  },
+  {
+    name: 'Rap',
+    description: 'A clean double-knock that announces an alert quietly, ideal for non-urgent in-app notifications.',
+    tags: ["Substantial","Flexible","Bumps","Short"],
+    duration: 120,
+    image: RapImage,
+    play: Presets.Rap,
+  },
+  {
     name: 'Ratchet',
     description: 'A firm, assertive triple beat, suited for strong confirmations or emphatic acknowledgements.',
     tags: ["Bold","Rigid","Impulses","Extended"],
@@ -1039,28 +1023,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Ratchet,
   },
   {
-    name: 'ReadySteadyGo',
-    description: 'The electric buildup of a countdown, perfect for race starts or any go moment.',
-    tags: ["Bold","Rigid","Pattern","Long"],
-    duration: 2046,
-    image: ReadySteadyGoImage,
-    play: Presets.ReadySteadyGo,
-  },
-  {
     name: 'Rebound',
     description: 'A strong opening that softens on the second hit, ideal for double-tap confirmations.',
     tags: ["Bold","Rigid","Impulses","Impulse"],
     duration: 80,
     image: ReboundImage,
     play: Presets.Rebound,
-  },
-  {
-    name: 'ReliefSigh',
-    description: 'Tension releasing into calm, ideal for completing a stressful task or resolving an error.',
-    tags: ["Substantial","Flexible","Ramp","Long"],
-    duration: 1200,
-    image: ReliefSighImage,
-    play: Presets.ReliefSigh,
   },
   {
     name: 'Ripple',
@@ -1087,30 +1055,6 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Rustle,
   },
   {
-    name: 'Searching',
-    description: 'The rhythmic pulse of active searching, ideal for search operations or background polling states.',
-    tags: ["Substantial","Rigid","Pattern","Long"],
-    duration: 2100,
-    image: SearchingImage,
-    play: Presets.Searching,
-  },
-  {
-    name: 'SearchSuccess',
-    description: 'The eureka moment, ideal for conveying the satisfying rush of finding what you were looking for.',
-    tags: ["Bold","Rigid","Pattern","Long"],
-    duration: 2000,
-    image: SearchSuccessImage,
-    play: Presets.SearchSuccess,
-  },
-  {
-    name: 'SelectionSnap',
-    description: 'A firm snap that conveys a locked-in selection, perfect for toggles, switches, or confirming a choice.',
-    tags: ["Substantial","Flexible","Impulses","Impulse"],
-    duration: 90,
-    image: SelectionSnapImage,
-    play: Presets.SelectionSnap,
-  },
-  {
     name: 'Shockwave',
     description: 'The pressure wave of a nearby explosion, ideal for detonations, force fields, or dramatic impacts.',
     tags: ["Bold","Flexible","Ramp","Long"],
@@ -1119,12 +1063,20 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Shockwave,
   },
   {
-    name: 'Sneezing',
-    description: 'The tension-and-release of a sneeze, imitates the involuntary build and explosion.',
-    tags: ["Bold","Flexible","Peak","Extended"],
-    duration: 300,
-    image: SneezingImage,
-    play: Presets.Sneezing,
+    name: 'Snap',
+    description: 'A firm snap that conveys a locked-in selection, perfect for toggles, switches, or confirming a choice.',
+    tags: ["Substantial","Flexible","Impulses","Impulse"],
+    duration: 90,
+    image: SnapImage,
+    play: Presets.Snap,
+  },
+  {
+    name: 'Sonar',
+    description: 'The eureka moment, ideal for conveying the satisfying rush of finding what you were looking for.',
+    tags: ["Bold","Rigid","Pattern","Long"],
+    duration: 2000,
+    image: SonarImage,
+    play: Presets.Sonar,
   },
   {
     name: 'Spark',
@@ -1133,6 +1085,30 @@ export const PresetsConfig: Array<PresetProps> = [
     duration: 185,
     image: SparkImage,
     play: Presets.Spark,
+  },
+  {
+    name: 'Spin',
+    description: 'A crisp, mechanical rhythm communicating repeating progress, great for looping or spinner states.',
+    tags: ["Substantial","Flexible","Saw","Long"],
+    duration: 1808,
+    image: SpinImage,
+    play: Presets.Spin,
+  },
+  {
+    name: 'Stagger',
+    description: 'Woozy and disorienting, ideal for confusion, error overload, or hit-stun effects.',
+    tags: ["Substantial","Flexible","Saw","Extended"],
+    duration: 320,
+    image: StaggerImage,
+    play: Presets.Stagger,
+  },
+  {
+    name: 'Stamp',
+    description: 'Calm and decisive, communicates acceptance without drama, suited for dialog confirmations.',
+    tags: ["Substantial","Soft","Impulses","Short"],
+    duration: 205,
+    image: StampImage,
+    play: Presets.Stamp,
   },
   {
     name: 'Stampede',
@@ -1167,20 +1143,20 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Strike,
   },
   {
-    name: 'SuccessFlourish',
-    description: 'Triumphant and expansive, ideal for achievement unlocked or major task completions.',
-    tags: ["Bold","Rigid","Peak","Long"],
-    duration: 917,
-    image: SuccessFlourishImage,
-    play: Presets.SuccessFlourish,
+    name: 'Summon',
+    description: 'A commanding signal that refuses to be ignored, ideal for incoming calls or urgent attention-demand moments.',
+    tags: ["Bold","Flexible","Bumps","Extended"],
+    duration: 500,
+    image: SummonImage,
+    play: Presets.Summon,
   },
   {
-    name: 'SurpriseGasp',
-    description: 'A shock to the senses, ideal for unexpected alerts or startling reveals.',
-    tags: ["Bold","Flexible","Bumps","Extended"],
-    duration: 280,
-    image: SurpriseGaspImage,
-    play: Presets.SurpriseGasp,
+    name: 'Surge',
+    description: 'An irrepressible swell of delight, ideal for reaction moments or expressions of pure joy.',
+    tags: ["Bold","Rigid","Saw","Extended"],
+    duration: 330,
+    image: SurgeImage,
+    play: Presets.Surge,
   },
   {
     name: 'Sway',
@@ -1191,6 +1167,22 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Sway,
   },
   {
+    name: 'Sweep',
+    description: 'The rhythmic pulse of active searching, ideal for search operations or background polling states.',
+    tags: ["Substantial","Rigid","Pattern","Long"],
+    duration: 2100,
+    image: SweepImage,
+    play: Presets.Sweep,
+  },
+  {
+    name: 'Swell',
+    description: 'A patient nudge that quietly escalates, ideal for reminders that build attention without anxiety.',
+    tags: ["Substantial","Flexible","Bumps","Extended"],
+    duration: 425,
+    image: SwellImage,
+    play: Presets.Swell,
+  },
+  {
     name: 'Syncopate',
     description: 'A lively three-beat rhythm with mixed texture, ideal for multi-step confirmations or animated feedback.',
     tags: ["Bold","Rigid","Impulses","Extended"],
@@ -1199,12 +1191,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Syncopate,
   },
   {
-    name: 'Tada',
-    description: 'A joyful flourish that peaks in triumph, ideal for celebrations or milestone completions.',
-    tags: ["Bold","Flexible","Saw","Extended"],
-    duration: 460,
-    image: TadaImage,
-    play: Presets.Tada,
+    name: 'Throb',
+    description: 'An accelerated heartbeat that signals something is wrong, ideal for pre-danger tension or warning states.',
+    tags: ["Substantial","Flexible","Impulses","Short"],
+    duration: 230,
+    image: ThrobImage,
+    play: Presets.Throb,
   },
   {
     name: 'Thud',
@@ -1271,6 +1263,30 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Tremor,
   },
   {
+    name: 'Trigger',
+    description: 'The decisive moment of release, ideal for weapon discharge, trigger confirmation, or releasing a charged gesture.',
+    tags: ["Bold","Flexible","Peak","Extended"],
+    duration: 280,
+    image: TriggerImage,
+    play: Presets.Trigger,
+  },
+  {
+    name: 'Triumph',
+    description: 'Pure triumph, conveys the overwhelming joy of a major win or achievement.',
+    tags: ["Bold","Flexible","Saw","Long"],
+    duration: 1100,
+    image: TriumphImage,
+    play: Presets.Triumph,
+  },
+  {
+    name: 'Trumpet',
+    description: 'A joyful flourish that peaks in triumph, ideal for celebrations or milestone completions.',
+    tags: ["Bold","Flexible","Saw","Extended"],
+    duration: 460,
+    image: TrumpetImage,
+    play: Presets.Trumpet,
+  },
+  {
     name: 'Typewriter',
     description: 'The nostalgic thud of a vintage typewriter, perfect for retro keyboard or analog-feel experiences.',
     tags: ["Bold","Flexible","Peak","Short"],
@@ -1279,20 +1295,12 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Typewriter,
   },
   {
-    name: 'Victory',
-    description: 'Pure triumph, conveys the overwhelming joy of a major win or achievement.',
-    tags: ["Bold","Flexible","Saw","Long"],
-    duration: 1100,
-    image: VictoryImage,
-    play: Presets.Victory,
-  },
-  {
-    name: 'Vomiting',
-    description: 'The involuntary heave of disgust, ideal for aversion reactions or gross-out moments in playful UI contexts.',
-    tags: ["Bold","Flexible","Peak","Extended"],
-    duration: 380,
-    image: VomitingImage,
-    play: Presets.Vomiting,
+    name: 'Unfurl',
+    description: 'The unmistakable thrill of discovery, evoking the iconic joy of opening a treasure chest.',
+    tags: ["Bold","Flexible","Pattern","Long"],
+    duration: 1180,
+    image: UnfurlImage,
+    play: Presets.Unfurl,
   },
   {
     name: 'Vortex',
@@ -1303,6 +1311,14 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.Vortex,
   },
   {
+    name: 'Wane',
+    description: 'A lazy, dismissive fade, fitting for sarcastic or indifferent UI moments.',
+    tags: ["Gentle","Flexible","Ramp","Extended"],
+    duration: 450,
+    image: WaneImage,
+    play: Presets.Wane,
+  },
+  {
     name: 'WarDrum',
     description: 'Three steady drum-like beats, ideal for grounded triple confirmations or structured repetitive feedback.',
     tags: ["Bold","Soft","Impulses","Extended"],
@@ -1311,28 +1327,20 @@ export const PresetsConfig: Array<PresetProps> = [
     play: Presets.WarDrum,
   },
   {
-    name: 'WarningPulse',
-    description: 'An accelerated heartbeat that signals something is wrong, ideal for pre-danger tension or warning states.',
-    tags: ["Substantial","Flexible","Impulses","Short"],
-    duration: 230,
-    image: WarningPulseImage,
-    play: Presets.WarningPulse,
-  },
-  {
-    name: 'WarningUrgent',
-    description: 'Impossible to ignore, suited for critical warnings, emergency alerts, or safety-critical states.',
-    tags: ["Bold","Flexible","Saw","Extended"],
-    duration: 430,
-    image: WarningUrgentImage,
-    play: Presets.WarningUrgent,
-  },
-  {
     name: 'Waterfall',
     description: 'A rush of energy that spills and softens, ideal for clearing actions or flowing state transitions.',
     tags: ["Bold","Flexible","Impulses","Extended"],
     duration: 309,
     image: WaterfallImage,
     play: Presets.Waterfall,
+  },
+  {
+    name: 'Wave',
+    description: 'Gentle and uninterrupting, communicates ongoing activity without breaking the user\'s focus.',
+    tags: ["Substantial","Soft","Bumps","Long"],
+    duration: 2800,
+    image: WaveImage,
+    play: Presets.Wave,
   },
   {
     name: 'Wisp',
@@ -1357,14 +1365,6 @@ export const PresetsConfig: Array<PresetProps> = [
     duration: 460,
     image: WoodpeckerImage,
     play: Presets.Woodpecker,
-  },
-  {
-    name: 'ZeldaChest',
-    description: 'The unmistakable thrill of discovery, evoking the iconic joy of opening a treasure chest.',
-    tags: ["Bold","Flexible","Pattern","Long"],
-    duration: 1180,
-    image: ZeldaChestImage,
-    play: Presets.ZeldaChest,
   },
   {
     name: 'Zipper',

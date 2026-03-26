@@ -1,0 +1,83 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.78
+      },
+      {
+        "time": 70,
+        "value": 0
+      },
+      {
+        "time": 120,
+        "value": 0.78
+      },
+      {
+        "time": 190,
+        "value": 0
+      },
+      {
+        "time": 240,
+        "value": 0.78
+      },
+      {
+        "time": 310,
+        "value": 0
+      },
+      {
+        "time": 360,
+        "value": 0.78
+      },
+      {
+        "time": 430,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.68
+      },
+      {
+        "time": 430,
+        "value": 0.68
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.8,
+      "frequency": 0.68
+    },
+    {
+      "time": 120,
+      "amplitude": 0.8,
+      "frequency": 0.68
+    },
+    {
+      "time": 240,
+      "amplitude": 0.8,
+      "frequency": 0.68
+    },
+    {
+      "time": 360,
+      "amplitude": 0.8,
+      "frequency": 0.68
+    }
+  ],
+  "name": "Clamor",
+  "description": "Impossible to ignore, suited for critical warnings, emergency alerts, or safety-critical states.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Saw",
+    "Extended"
+  ],
+  "duration": 430
+}

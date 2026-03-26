@@ -204,21 +204,9 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Aftershock');
   },
-  AimingFire: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('AimingFire');
-  },
-  AimingLock: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('AimingLock');
-  },
   Alarm: () => { 
     'worklet';
     Pulsar.Pulsar_play('Alarm');
-  },
-  AngerFrustration: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('AngerFrustration');
   },
   Anvil: () => { 
     'worklet';
@@ -228,17 +216,13 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Applause');
   },
-  Attention: () => { 
+  Ascent: () => { 
     'worklet';
-    Pulsar.Pulsar_play('Attention');
+    Pulsar.Pulsar_play('Ascent');
   },
   BalloonPop: () => { 
     'worklet';
     Pulsar.Pulsar_play('BalloonPop');
-  },
-  BangDoor: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('BangDoor');
   },
   Barrage: () => { 
     'worklet';
@@ -247,6 +231,10 @@ export default {
   BassDrop: () => { 
     'worklet';
     Pulsar.Pulsar_play('BassDrop');
+  },
+  Batter: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Batter');
   },
   BellToll: () => { 
     'worklet';
@@ -276,9 +264,21 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Breath');
   },
+  Breathing: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Breathing');
+  },
   Buildup: () => { 
     'worklet';
     Pulsar.Pulsar_play('Buildup');
+  },
+  Burst: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Burst');
+  },
+  Buzz: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Buzz');
   },
   Cadence: () => { 
     'worklet';
@@ -304,6 +304,14 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('CatPaw');
   },
+  Charge: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Charge');
+  },
+  Chime: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Chime');
+  },
   Chip: () => { 
     'worklet';
     Pulsar.Pulsar_play('Chip');
@@ -312,9 +320,21 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Chirp');
   },
+  Clamor: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Clamor');
+  },
+  Clasp: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Clasp');
+  },
   Cleave: () => { 
     'worklet';
     Pulsar.Pulsar_play('Cleave');
+  },
+  Coil: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Coil');
   },
   CoinDrop: () => { 
     'worklet';
@@ -324,25 +344,9 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('CombinationLock');
   },
-  Confirm: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('Confirm');
-  },
-  Cowboy: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('Cowboy');
-  },
   Crescendo: () => { 
     'worklet';
     Pulsar.Pulsar_play('Crescendo');
-  },
-  CrossedEyes: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('CrossedEyes');
-  },
-  Cursing: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('Cursing');
   },
   Dewdrop: () => { 
     'worklet';
@@ -368,21 +372,13 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('EngineRev');
   },
-  ErrorBuzz: () => { 
+  Exhale: () => { 
     'worklet';
-    Pulsar.Pulsar_play('ErrorBuzz');
-  },
-  ExplodingHead: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('ExplodingHead');
+    Pulsar.Pulsar_play('Exhale');
   },
   Explosion: () => { 
     'worklet';
     Pulsar.Pulsar_play('Explosion');
-  },
-  EyeRolling: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('EyeRolling');
   },
   FadeOut: () => { 
     'worklet';
@@ -396,6 +392,10 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Feather');
   },
+  Finale: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Finale');
+  },
   FingerDrum: () => { 
     'worklet';
     Pulsar.Pulsar_play('FingerDrum');
@@ -408,29 +408,33 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Fizz');
   },
+  Flare: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Flare');
+  },
   Flick: () => { 
     'worklet';
     Pulsar.Pulsar_play('Flick');
   },
+  Flinch: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Flinch');
+  },
+  Flourish: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Flourish');
+  },
+  Flurry: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Flurry');
+  },
+  Flush: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Flush');
+  },
   Gallop: () => { 
     'worklet';
     Pulsar.Pulsar_play('Gallop');
-  },
-  GameCombo: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('GameCombo');
-  },
-  GameHit: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('GameHit');
-  },
-  GameLevelUp: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('GameLevelUp');
-  },
-  GamePickup: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('GamePickup');
   },
   Gavel: () => { 
     'worklet';
@@ -440,14 +444,6 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Glitch');
   },
-  GravityFreefall: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('GravityFreefall');
-  },
-  GrinningSquinting: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('GrinningSquinting');
-  },
   GuitarStrum: () => { 
     'worklet';
     Pulsar.Pulsar_play('GuitarStrum');
@@ -455,6 +451,10 @@ export default {
   Hail: () => { 
     'worklet';
     Pulsar.Pulsar_play('Hail');
+  },
+  Hammer: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Hammer');
   },
   Heartbeat: () => { 
     'worklet';
@@ -472,6 +472,10 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Ignition');
   },
+  Impact: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Impact');
+  },
   Jolt: () => { 
     'worklet';
     Pulsar.Pulsar_play('Jolt');
@@ -484,57 +488,41 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('KeyboardMembrane');
   },
-  KnockDoor: () => { 
+  Knell: () => { 
     'worklet';
-    Pulsar.Pulsar_play('KnockDoor');
+    Pulsar.Pulsar_play('Knell');
+  },
+  Knock: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Knock');
+  },
+  Lament: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Lament');
   },
   Latch: () => { 
     'worklet';
     Pulsar.Pulsar_play('Latch');
   },
-  LevelUp: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('LevelUp');
-  },
   Lighthouse: () => { 
     'worklet';
     Pulsar.Pulsar_play('Lighthouse');
   },
-  LoaderBreathing: () => { 
+  Lilt: () => { 
     'worklet';
-    Pulsar.Pulsar_play('LoaderBreathing');
-  },
-  LoaderPulse: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('LoaderPulse');
-  },
-  LoaderRadar: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('LoaderRadar');
-  },
-  LoaderSpin: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('LoaderSpin');
-  },
-  LoaderWave: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('LoaderWave');
+    Pulsar.Pulsar_play('Lilt');
   },
   Lock: () => { 
     'worklet';
     Pulsar.Pulsar_play('Lock');
   },
-  LongPress: () => { 
+  Lope: () => { 
     'worklet';
-    Pulsar.Pulsar_play('LongPress');
+    Pulsar.Pulsar_play('Lope');
   },
   March: () => { 
     'worklet';
     Pulsar.Pulsar_play('March');
-  },
-  MarioGameOver: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('MarioGameOver');
   },
   Metronome: () => { 
     'worklet';
@@ -544,45 +532,9 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Murmur');
   },
-  NewMessage: () => { 
+  Nudge: () => { 
     'worklet';
-    Pulsar.Pulsar_play('NewMessage');
-  },
-  Notification: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('Notification');
-  },
-  NotificationKnock: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotificationKnock');
-  },
-  NotificationUrgent: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotificationUrgent');
-  },
-  NotifyInfoStandard: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotifyInfoStandard');
-  },
-  NotifyReminderFinal: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotifyReminderFinal');
-  },
-  NotifyReminderNudge: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotifyReminderNudge');
-  },
-  NotifySocialMention: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotifySocialMention');
-  },
-  NotifySocialMessage: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotifySocialMessage');
-  },
-  NotifyTimerDone: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('NotifyTimerDone');
+    Pulsar.Pulsar_play('Nudge');
   },
   PassingCar: () => { 
     'worklet';
@@ -608,13 +560,33 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Ping');
   },
+  Pip: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Pip');
+  },
   Piston: () => { 
     'worklet';
     Pulsar.Pulsar_play('Piston');
   },
+  Plink: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Plink');
+  },
+  Plummet: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Plummet');
+  },
   Plunk: () => { 
     'worklet';
     Pulsar.Pulsar_play('Plunk');
+  },
+  Poke: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Poke');
+  },
+  Pound: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Pound');
   },
   PowerDown: () => { 
     'worklet';
@@ -624,29 +596,41 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Propel');
   },
+  Pulse: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Pulse');
+  },
+  Pummel: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Pummel');
+  },
   Push: () => { 
     'worklet';
     Pulsar.Pulsar_play('Push');
+  },
+  Radar: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Radar');
   },
   Rain: () => { 
     'worklet';
     Pulsar.Pulsar_play('Rain');
   },
+  Ramp: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Ramp');
+  },
+  Rap: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Rap');
+  },
   Ratchet: () => { 
     'worklet';
     Pulsar.Pulsar_play('Ratchet');
   },
-  ReadySteadyGo: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('ReadySteadyGo');
-  },
   Rebound: () => { 
     'worklet';
     Pulsar.Pulsar_play('Rebound');
-  },
-  ReliefSigh: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('ReliefSigh');
   },
   Ripple: () => { 
     'worklet';
@@ -660,29 +644,33 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Rustle');
   },
-  Searching: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('Searching');
-  },
-  SearchSuccess: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('SearchSuccess');
-  },
-  SelectionSnap: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('SelectionSnap');
-  },
   Shockwave: () => { 
     'worklet';
     Pulsar.Pulsar_play('Shockwave');
   },
-  Sneezing: () => { 
+  Snap: () => { 
     'worklet';
-    Pulsar.Pulsar_play('Sneezing');
+    Pulsar.Pulsar_play('Snap');
+  },
+  Sonar: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Sonar');
   },
   Spark: () => { 
     'worklet';
     Pulsar.Pulsar_play('Spark');
+  },
+  Spin: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Spin');
+  },
+  Stagger: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Stagger');
+  },
+  Stamp: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Stamp');
   },
   Stampede: () => { 
     'worklet';
@@ -700,25 +688,33 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Strike');
   },
-  SuccessFlourish: () => { 
+  Summon: () => { 
     'worklet';
-    Pulsar.Pulsar_play('SuccessFlourish');
+    Pulsar.Pulsar_play('Summon');
   },
-  SurpriseGasp: () => { 
+  Surge: () => { 
     'worklet';
-    Pulsar.Pulsar_play('SurpriseGasp');
+    Pulsar.Pulsar_play('Surge');
   },
   Sway: () => { 
     'worklet';
     Pulsar.Pulsar_play('Sway');
   },
+  Sweep: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Sweep');
+  },
+  Swell: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Swell');
+  },
   Syncopate: () => { 
     'worklet';
     Pulsar.Pulsar_play('Syncopate');
   },
-  Tada: () => { 
+  Throb: () => { 
     'worklet';
-    Pulsar.Pulsar_play('Tada');
+    Pulsar.Pulsar_play('Throb');
   },
   Thud: () => { 
     'worklet';
@@ -752,37 +748,45 @@ export default {
     'worklet';
     Pulsar.Pulsar_play('Tremor');
   },
+  Trigger: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Trigger');
+  },
+  Triumph: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Triumph');
+  },
+  Trumpet: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Trumpet');
+  },
   Typewriter: () => { 
     'worklet';
     Pulsar.Pulsar_play('Typewriter');
   },
-  Victory: () => { 
+  Unfurl: () => { 
     'worklet';
-    Pulsar.Pulsar_play('Victory');
-  },
-  Vomiting: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('Vomiting');
+    Pulsar.Pulsar_play('Unfurl');
   },
   Vortex: () => { 
     'worklet';
     Pulsar.Pulsar_play('Vortex');
   },
+  Wane: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Wane');
+  },
   WarDrum: () => { 
     'worklet';
     Pulsar.Pulsar_play('WarDrum');
   },
-  WarningPulse: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('WarningPulse');
-  },
-  WarningUrgent: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('WarningUrgent');
-  },
   Waterfall: () => { 
     'worklet';
     Pulsar.Pulsar_play('Waterfall');
+  },
+  Wave: () => { 
+    'worklet';
+    Pulsar.Pulsar_play('Wave');
   },
   Wisp: () => { 
     'worklet';
@@ -795,10 +799,6 @@ export default {
   Woodpecker: () => { 
     'worklet';
     Pulsar.Pulsar_play('Woodpecker');
-  },
-  ZeldaChest: () => { 
-    'worklet';
-    Pulsar.Pulsar_play('ZeldaChest');
   },
   Zipper: () => { 
     'worklet';

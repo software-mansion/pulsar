@@ -70,17 +70,14 @@ class PresetsWrapper(
 // CODEGEN_BEGIN_{mappers}
         AfterglowPreset.name to { haptics -> AfterglowPreset(haptics) },
         AftershockPreset.name to { haptics -> AftershockPreset(haptics) },
-        AimingFirePreset.name to { haptics -> AimingFirePreset(haptics) },
-        AimingLockPreset.name to { haptics -> AimingLockPreset(haptics) },
         AlarmPreset.name to { haptics -> AlarmPreset(haptics) },
-        AngerFrustrationPreset.name to { haptics -> AngerFrustrationPreset(haptics) },
         AnvilPreset.name to { haptics -> AnvilPreset(haptics) },
         ApplausePreset.name to { haptics -> ApplausePreset(haptics) },
-        AttentionPreset.name to { haptics -> AttentionPreset(haptics) },
+        AscentPreset.name to { haptics -> AscentPreset(haptics) },
         BalloonPopPreset.name to { haptics -> BalloonPopPreset(haptics) },
-        BangDoorPreset.name to { haptics -> BangDoorPreset(haptics) },
         BarragePreset.name to { haptics -> BarragePreset(haptics) },
         BassDropPreset.name to { haptics -> BassDropPreset(haptics) },
+        BatterPreset.name to { haptics -> BatterPreset(haptics) },
         BellTollPreset.name to { haptics -> BellTollPreset(haptics) },
         BlipPreset.name to { haptics -> BlipPreset(haptics) },
         BloomPreset.name to { haptics -> BloomPreset(haptics) },
@@ -88,117 +85,119 @@ class PresetsWrapper(
         BoulderPreset.name to { haptics -> BoulderPreset(haptics) },
         BreakingWavePreset.name to { haptics -> BreakingWavePreset(haptics) },
         BreathPreset.name to { haptics -> BreathPreset(haptics) },
+        BreathingPreset.name to { haptics -> BreathingPreset(haptics) },
         BuildupPreset.name to { haptics -> BuildupPreset(haptics) },
+        BurstPreset.name to { haptics -> BurstPreset(haptics) },
+        BuzzPreset.name to { haptics -> BuzzPreset(haptics) },
         CadencePreset.name to { haptics -> CadencePreset(haptics) },
         CameraShutterPreset.name to { haptics -> CameraShutterPreset(haptics) },
         CanterPreset.name to { haptics -> CanterPreset(haptics) },
         CascadePreset.name to { haptics -> CascadePreset(haptics) },
         CastanetsPreset.name to { haptics -> CastanetsPreset(haptics) },
         CatPawPreset.name to { haptics -> CatPawPreset(haptics) },
+        ChargePreset.name to { haptics -> ChargePreset(haptics) },
+        ChimePreset.name to { haptics -> ChimePreset(haptics) },
         ChipPreset.name to { haptics -> ChipPreset(haptics) },
         ChirpPreset.name to { haptics -> ChirpPreset(haptics) },
+        ClamorPreset.name to { haptics -> ClamorPreset(haptics) },
+        ClaspPreset.name to { haptics -> ClaspPreset(haptics) },
         CleavePreset.name to { haptics -> CleavePreset(haptics) },
+        CoilPreset.name to { haptics -> CoilPreset(haptics) },
         CoinDropPreset.name to { haptics -> CoinDropPreset(haptics) },
         CombinationLockPreset.name to { haptics -> CombinationLockPreset(haptics) },
-        ConfirmPreset.name to { haptics -> ConfirmPreset(haptics) },
-        CowboyPreset.name to { haptics -> CowboyPreset(haptics) },
         CrescendoPreset.name to { haptics -> CrescendoPreset(haptics) },
-        CrossedEyesPreset.name to { haptics -> CrossedEyesPreset(haptics) },
-        CursingPreset.name to { haptics -> CursingPreset(haptics) },
         DewdropPreset.name to { haptics -> DewdropPreset(haptics) },
         DirgePreset.name to { haptics -> DirgePreset(haptics) },
         DissolvePreset.name to { haptics -> DissolvePreset(haptics) },
         DogBarkPreset.name to { haptics -> DogBarkPreset(haptics) },
         DronePreset.name to { haptics -> DronePreset(haptics) },
         EngineRevPreset.name to { haptics -> EngineRevPreset(haptics) },
-        ErrorBuzzPreset.name to { haptics -> ErrorBuzzPreset(haptics) },
-        ExplodingHeadPreset.name to { haptics -> ExplodingHeadPreset(haptics) },
+        ExhalePreset.name to { haptics -> ExhalePreset(haptics) },
         ExplosionPreset.name to { haptics -> ExplosionPreset(haptics) },
-        EyeRollingPreset.name to { haptics -> EyeRollingPreset(haptics) },
         FadeOutPreset.name to { haptics -> FadeOutPreset(haptics) },
         FanfarePreset.name to { haptics -> FanfarePreset(haptics) },
         FeatherPreset.name to { haptics -> FeatherPreset(haptics) },
+        FinalePreset.name to { haptics -> FinalePreset(haptics) },
         FingerDrumPreset.name to { haptics -> FingerDrumPreset(haptics) },
         FirecrackerPreset.name to { haptics -> FirecrackerPreset(haptics) },
         FizzPreset.name to { haptics -> FizzPreset(haptics) },
+        FlarePreset.name to { haptics -> FlarePreset(haptics) },
         FlickPreset.name to { haptics -> FlickPreset(haptics) },
+        FlinchPreset.name to { haptics -> FlinchPreset(haptics) },
+        FlourishPreset.name to { haptics -> FlourishPreset(haptics) },
+        FlurryPreset.name to { haptics -> FlurryPreset(haptics) },
+        FlushPreset.name to { haptics -> FlushPreset(haptics) },
         GallopPreset.name to { haptics -> GallopPreset(haptics) },
-        GameComboPreset.name to { haptics -> GameComboPreset(haptics) },
-        GameHitPreset.name to { haptics -> GameHitPreset(haptics) },
-        GameLevelUpPreset.name to { haptics -> GameLevelUpPreset(haptics) },
-        GamePickupPreset.name to { haptics -> GamePickupPreset(haptics) },
         GavelPreset.name to { haptics -> GavelPreset(haptics) },
         GlitchPreset.name to { haptics -> GlitchPreset(haptics) },
-        GravityFreefallPreset.name to { haptics -> GravityFreefallPreset(haptics) },
-        GrinningSquintingPreset.name to { haptics -> GrinningSquintingPreset(haptics) },
         GuitarStrumPreset.name to { haptics -> GuitarStrumPreset(haptics) },
         HailPreset.name to { haptics -> HailPreset(haptics) },
+        HammerPreset.name to { haptics -> HammerPreset(haptics) },
         HeartbeatPreset.name to { haptics -> HeartbeatPreset(haptics) },
         HeraldPreset.name to { haptics -> HeraldPreset(haptics) },
         HoofBeatPreset.name to { haptics -> HoofBeatPreset(haptics) },
         IgnitionPreset.name to { haptics -> IgnitionPreset(haptics) },
+        ImpactPreset.name to { haptics -> ImpactPreset(haptics) },
         JoltPreset.name to { haptics -> JoltPreset(haptics) },
         KeyboardMechanicalPreset.name to { haptics -> KeyboardMechanicalPreset(haptics) },
         KeyboardMembranePreset.name to { haptics -> KeyboardMembranePreset(haptics) },
-        KnockDoorPreset.name to { haptics -> KnockDoorPreset(haptics) },
+        KnellPreset.name to { haptics -> KnellPreset(haptics) },
+        KnockPreset.name to { haptics -> KnockPreset(haptics) },
+        LamentPreset.name to { haptics -> LamentPreset(haptics) },
         LatchPreset.name to { haptics -> LatchPreset(haptics) },
-        LevelUpPreset.name to { haptics -> LevelUpPreset(haptics) },
         LighthousePreset.name to { haptics -> LighthousePreset(haptics) },
-        LoaderBreathingPreset.name to { haptics -> LoaderBreathingPreset(haptics) },
-        LoaderPulsePreset.name to { haptics -> LoaderPulsePreset(haptics) },
-        LoaderRadarPreset.name to { haptics -> LoaderRadarPreset(haptics) },
-        LoaderSpinPreset.name to { haptics -> LoaderSpinPreset(haptics) },
-        LoaderWavePreset.name to { haptics -> LoaderWavePreset(haptics) },
+        LiltPreset.name to { haptics -> LiltPreset(haptics) },
         LockPreset.name to { haptics -> LockPreset(haptics) },
-        LongPressPreset.name to { haptics -> LongPressPreset(haptics) },
+        LopePreset.name to { haptics -> LopePreset(haptics) },
         MarchPreset.name to { haptics -> MarchPreset(haptics) },
-        MarioGameOverPreset.name to { haptics -> MarioGameOverPreset(haptics) },
         MetronomePreset.name to { haptics -> MetronomePreset(haptics) },
         MurmurPreset.name to { haptics -> MurmurPreset(haptics) },
-        NewMessagePreset.name to { haptics -> NewMessagePreset(haptics) },
-        NotificationPreset.name to { haptics -> NotificationPreset(haptics) },
-        NotificationKnockPreset.name to { haptics -> NotificationKnockPreset(haptics) },
-        NotificationUrgentPreset.name to { haptics -> NotificationUrgentPreset(haptics) },
-        NotifyInfoStandardPreset.name to { haptics -> NotifyInfoStandardPreset(haptics) },
-        NotifyReminderFinalPreset.name to { haptics -> NotifyReminderFinalPreset(haptics) },
-        NotifyReminderNudgePreset.name to { haptics -> NotifyReminderNudgePreset(haptics) },
-        NotifySocialMentionPreset.name to { haptics -> NotifySocialMentionPreset(haptics) },
-        NotifySocialMessagePreset.name to { haptics -> NotifySocialMessagePreset(haptics) },
-        NotifyTimerDonePreset.name to { haptics -> NotifyTimerDonePreset(haptics) },
+        NudgePreset.name to { haptics -> NudgePreset(haptics) },
         PassingCarPreset.name to { haptics -> PassingCarPreset(haptics) },
         PatterPreset.name to { haptics -> PatterPreset(haptics) },
         PealPreset.name to { haptics -> PealPreset(haptics) },
         PeckPreset.name to { haptics -> PeckPreset(haptics) },
         PendulumPreset.name to { haptics -> PendulumPreset(haptics) },
         PingPreset.name to { haptics -> PingPreset(haptics) },
+        PipPreset.name to { haptics -> PipPreset(haptics) },
         PistonPreset.name to { haptics -> PistonPreset(haptics) },
+        PlinkPreset.name to { haptics -> PlinkPreset(haptics) },
+        PlummetPreset.name to { haptics -> PlummetPreset(haptics) },
         PlunkPreset.name to { haptics -> PlunkPreset(haptics) },
+        PokePreset.name to { haptics -> PokePreset(haptics) },
+        PoundPreset.name to { haptics -> PoundPreset(haptics) },
         PowerDownPreset.name to { haptics -> PowerDownPreset(haptics) },
         PropelPreset.name to { haptics -> PropelPreset(haptics) },
+        PulsePreset.name to { haptics -> PulsePreset(haptics) },
+        PummelPreset.name to { haptics -> PummelPreset(haptics) },
         PushPreset.name to { haptics -> PushPreset(haptics) },
+        RadarPreset.name to { haptics -> RadarPreset(haptics) },
         RainPreset.name to { haptics -> RainPreset(haptics) },
+        RampPreset.name to { haptics -> RampPreset(haptics) },
+        RapPreset.name to { haptics -> RapPreset(haptics) },
         RatchetPreset.name to { haptics -> RatchetPreset(haptics) },
-        ReadySteadyGoPreset.name to { haptics -> ReadySteadyGoPreset(haptics) },
         ReboundPreset.name to { haptics -> ReboundPreset(haptics) },
-        ReliefSighPreset.name to { haptics -> ReliefSighPreset(haptics) },
         RipplePreset.name to { haptics -> RipplePreset(haptics) },
         RivetPreset.name to { haptics -> RivetPreset(haptics) },
         RustlePreset.name to { haptics -> RustlePreset(haptics) },
-        SearchingPreset.name to { haptics -> SearchingPreset(haptics) },
-        SearchSuccessPreset.name to { haptics -> SearchSuccessPreset(haptics) },
-        SelectionSnapPreset.name to { haptics -> SelectionSnapPreset(haptics) },
         ShockwavePreset.name to { haptics -> ShockwavePreset(haptics) },
-        SneezingPreset.name to { haptics -> SneezingPreset(haptics) },
+        SnapPreset.name to { haptics -> SnapPreset(haptics) },
+        SonarPreset.name to { haptics -> SonarPreset(haptics) },
         SparkPreset.name to { haptics -> SparkPreset(haptics) },
+        SpinPreset.name to { haptics -> SpinPreset(haptics) },
+        StaggerPreset.name to { haptics -> StaggerPreset(haptics) },
+        StampPreset.name to { haptics -> StampPreset(haptics) },
         StampedePreset.name to { haptics -> StampedePreset(haptics) },
         StompPreset.name to { haptics -> StompPreset(haptics) },
         StoneSkipPreset.name to { haptics -> StoneSkipPreset(haptics) },
         StrikePreset.name to { haptics -> StrikePreset(haptics) },
-        SuccessFlourishPreset.name to { haptics -> SuccessFlourishPreset(haptics) },
-        SurpriseGaspPreset.name to { haptics -> SurpriseGaspPreset(haptics) },
+        SummonPreset.name to { haptics -> SummonPreset(haptics) },
+        SurgePreset.name to { haptics -> SurgePreset(haptics) },
         SwayPreset.name to { haptics -> SwayPreset(haptics) },
+        SweepPreset.name to { haptics -> SweepPreset(haptics) },
+        SwellPreset.name to { haptics -> SwellPreset(haptics) },
         SyncopatePreset.name to { haptics -> SyncopatePreset(haptics) },
-        TadaPreset.name to { haptics -> TadaPreset(haptics) },
+        ThrobPreset.name to { haptics -> ThrobPreset(haptics) },
         ThudPreset.name to { haptics -> ThudPreset(haptics) },
         ThumpPreset.name to { haptics -> ThumpPreset(haptics) },
         ThunderPreset.name to { haptics -> ThunderPreset(haptics) },
@@ -207,18 +206,19 @@ class PresetsWrapper(
         TidalSurgePreset.name to { haptics -> TidalSurgePreset(haptics) },
         TideSwellPreset.name to { haptics -> TideSwellPreset(haptics) },
         TremorPreset.name to { haptics -> TremorPreset(haptics) },
+        TriggerPreset.name to { haptics -> TriggerPreset(haptics) },
+        TriumphPreset.name to { haptics -> TriumphPreset(haptics) },
+        TrumpetPreset.name to { haptics -> TrumpetPreset(haptics) },
         TypewriterPreset.name to { haptics -> TypewriterPreset(haptics) },
-        VictoryPreset.name to { haptics -> VictoryPreset(haptics) },
-        VomitingPreset.name to { haptics -> VomitingPreset(haptics) },
+        UnfurlPreset.name to { haptics -> UnfurlPreset(haptics) },
         VortexPreset.name to { haptics -> VortexPreset(haptics) },
+        WanePreset.name to { haptics -> WanePreset(haptics) },
         WarDrumPreset.name to { haptics -> WarDrumPreset(haptics) },
-        WarningPulsePreset.name to { haptics -> WarningPulsePreset(haptics) },
-        WarningUrgentPreset.name to { haptics -> WarningUrgentPreset(haptics) },
         WaterfallPreset.name to { haptics -> WaterfallPreset(haptics) },
+        WavePreset.name to { haptics -> WavePreset(haptics) },
         WispPreset.name to { haptics -> WispPreset(haptics) },
         WobblePreset.name to { haptics -> WobblePreset(haptics) },
         WoodpeckerPreset.name to { haptics -> WoodpeckerPreset(haptics) },
-        ZeldaChestPreset.name to { haptics -> ZeldaChestPreset(haptics) },
         ZipperPreset.name to { haptics -> ZipperPreset(haptics) },
 // CODEGEN_END_{mappers}
     )
@@ -450,20 +450,8 @@ class PresetsWrapper(
         getCacheablePreset(AftershockPreset.name)!!.play()
     }
 
-    fun aimingFire() {
-        getCacheablePreset(AimingFirePreset.name)!!.play()
-    }
-
-    fun aimingLock() {
-        getCacheablePreset(AimingLockPreset.name)!!.play()
-    }
-
     fun alarm() {
         getCacheablePreset(AlarmPreset.name)!!.play()
-    }
-
-    fun angerFrustration() {
-        getCacheablePreset(AngerFrustrationPreset.name)!!.play()
     }
 
     fun anvil() {
@@ -474,16 +462,12 @@ class PresetsWrapper(
         getCacheablePreset(ApplausePreset.name)!!.play()
     }
 
-    fun attention() {
-        getCacheablePreset(AttentionPreset.name)!!.play()
+    fun ascent() {
+        getCacheablePreset(AscentPreset.name)!!.play()
     }
 
     fun balloonPop() {
         getCacheablePreset(BalloonPopPreset.name)!!.play()
-    }
-
-    fun bangDoor() {
-        getCacheablePreset(BangDoorPreset.name)!!.play()
     }
 
     fun barrage() {
@@ -492,6 +476,10 @@ class PresetsWrapper(
 
     fun bassDrop() {
         getCacheablePreset(BassDropPreset.name)!!.play()
+    }
+
+    fun batter() {
+        getCacheablePreset(BatterPreset.name)!!.play()
     }
 
     fun bellToll() {
@@ -522,8 +510,20 @@ class PresetsWrapper(
         getCacheablePreset(BreathPreset.name)!!.play()
     }
 
+    fun breathing() {
+        getCacheablePreset(BreathingPreset.name)!!.play()
+    }
+
     fun buildup() {
         getCacheablePreset(BuildupPreset.name)!!.play()
+    }
+
+    fun burst() {
+        getCacheablePreset(BurstPreset.name)!!.play()
+    }
+
+    fun buzz() {
+        getCacheablePreset(BuzzPreset.name)!!.play()
     }
 
     fun cadence() {
@@ -550,6 +550,14 @@ class PresetsWrapper(
         getCacheablePreset(CatPawPreset.name)!!.play()
     }
 
+    fun charge() {
+        getCacheablePreset(ChargePreset.name)!!.play()
+    }
+
+    fun chime() {
+        getCacheablePreset(ChimePreset.name)!!.play()
+    }
+
     fun chip() {
         getCacheablePreset(ChipPreset.name)!!.play()
     }
@@ -558,8 +566,20 @@ class PresetsWrapper(
         getCacheablePreset(ChirpPreset.name)!!.play()
     }
 
+    fun clamor() {
+        getCacheablePreset(ClamorPreset.name)!!.play()
+    }
+
+    fun clasp() {
+        getCacheablePreset(ClaspPreset.name)!!.play()
+    }
+
     fun cleave() {
         getCacheablePreset(CleavePreset.name)!!.play()
+    }
+
+    fun coil() {
+        getCacheablePreset(CoilPreset.name)!!.play()
     }
 
     fun coinDrop() {
@@ -570,24 +590,8 @@ class PresetsWrapper(
         getCacheablePreset(CombinationLockPreset.name)!!.play()
     }
 
-    fun confirm() {
-        getCacheablePreset(ConfirmPreset.name)!!.play()
-    }
-
-    fun cowboy() {
-        getCacheablePreset(CowboyPreset.name)!!.play()
-    }
-
     fun crescendo() {
         getCacheablePreset(CrescendoPreset.name)!!.play()
-    }
-
-    fun crossedEyes() {
-        getCacheablePreset(CrossedEyesPreset.name)!!.play()
-    }
-
-    fun cursing() {
-        getCacheablePreset(CursingPreset.name)!!.play()
     }
 
     fun dewdrop() {
@@ -614,20 +618,12 @@ class PresetsWrapper(
         getCacheablePreset(EngineRevPreset.name)!!.play()
     }
 
-    fun errorBuzz() {
-        getCacheablePreset(ErrorBuzzPreset.name)!!.play()
-    }
-
-    fun explodingHead() {
-        getCacheablePreset(ExplodingHeadPreset.name)!!.play()
+    fun exhale() {
+        getCacheablePreset(ExhalePreset.name)!!.play()
     }
 
     fun explosion() {
         getCacheablePreset(ExplosionPreset.name)!!.play()
-    }
-
-    fun eyeRolling() {
-        getCacheablePreset(EyeRollingPreset.name)!!.play()
     }
 
     fun fadeOut() {
@@ -642,6 +638,10 @@ class PresetsWrapper(
         getCacheablePreset(FeatherPreset.name)!!.play()
     }
 
+    fun finale() {
+        getCacheablePreset(FinalePreset.name)!!.play()
+    }
+
     fun fingerDrum() {
         getCacheablePreset(FingerDrumPreset.name)!!.play()
     }
@@ -654,28 +654,32 @@ class PresetsWrapper(
         getCacheablePreset(FizzPreset.name)!!.play()
     }
 
+    fun flare() {
+        getCacheablePreset(FlarePreset.name)!!.play()
+    }
+
     fun flick() {
         getCacheablePreset(FlickPreset.name)!!.play()
     }
 
+    fun flinch() {
+        getCacheablePreset(FlinchPreset.name)!!.play()
+    }
+
+    fun flourish() {
+        getCacheablePreset(FlourishPreset.name)!!.play()
+    }
+
+    fun flurry() {
+        getCacheablePreset(FlurryPreset.name)!!.play()
+    }
+
+    fun flush() {
+        getCacheablePreset(FlushPreset.name)!!.play()
+    }
+
     fun gallop() {
         getCacheablePreset(GallopPreset.name)!!.play()
-    }
-
-    fun gameCombo() {
-        getCacheablePreset(GameComboPreset.name)!!.play()
-    }
-
-    fun gameHit() {
-        getCacheablePreset(GameHitPreset.name)!!.play()
-    }
-
-    fun gameLevelUp() {
-        getCacheablePreset(GameLevelUpPreset.name)!!.play()
-    }
-
-    fun gamePickup() {
-        getCacheablePreset(GamePickupPreset.name)!!.play()
     }
 
     fun gavel() {
@@ -686,20 +690,16 @@ class PresetsWrapper(
         getCacheablePreset(GlitchPreset.name)!!.play()
     }
 
-    fun gravityFreefall() {
-        getCacheablePreset(GravityFreefallPreset.name)!!.play()
-    }
-
-    fun grinningSquinting() {
-        getCacheablePreset(GrinningSquintingPreset.name)!!.play()
-    }
-
     fun guitarStrum() {
         getCacheablePreset(GuitarStrumPreset.name)!!.play()
     }
 
     fun hail() {
         getCacheablePreset(HailPreset.name)!!.play()
+    }
+
+    fun hammer() {
+        getCacheablePreset(HammerPreset.name)!!.play()
     }
 
     fun heartbeat() {
@@ -718,6 +718,10 @@ class PresetsWrapper(
         getCacheablePreset(IgnitionPreset.name)!!.play()
     }
 
+    fun impact() {
+        getCacheablePreset(ImpactPreset.name)!!.play()
+    }
+
     fun jolt() {
         getCacheablePreset(JoltPreset.name)!!.play()
     }
@@ -730,56 +734,40 @@ class PresetsWrapper(
         getCacheablePreset(KeyboardMembranePreset.name)!!.play()
     }
 
-    fun knockDoor() {
-        getCacheablePreset(KnockDoorPreset.name)!!.play()
+    fun knell() {
+        getCacheablePreset(KnellPreset.name)!!.play()
+    }
+
+    fun knock() {
+        getCacheablePreset(KnockPreset.name)!!.play()
+    }
+
+    fun lament() {
+        getCacheablePreset(LamentPreset.name)!!.play()
     }
 
     fun latch() {
         getCacheablePreset(LatchPreset.name)!!.play()
     }
 
-    fun levelUp() {
-        getCacheablePreset(LevelUpPreset.name)!!.play()
-    }
-
     fun lighthouse() {
         getCacheablePreset(LighthousePreset.name)!!.play()
     }
 
-    fun loaderBreathing() {
-        getCacheablePreset(LoaderBreathingPreset.name)!!.play()
-    }
-
-    fun loaderPulse() {
-        getCacheablePreset(LoaderPulsePreset.name)!!.play()
-    }
-
-    fun loaderRadar() {
-        getCacheablePreset(LoaderRadarPreset.name)!!.play()
-    }
-
-    fun loaderSpin() {
-        getCacheablePreset(LoaderSpinPreset.name)!!.play()
-    }
-
-    fun loaderWave() {
-        getCacheablePreset(LoaderWavePreset.name)!!.play()
+    fun lilt() {
+        getCacheablePreset(LiltPreset.name)!!.play()
     }
 
     fun lock() {
         getCacheablePreset(LockPreset.name)!!.play()
     }
 
-    fun longPress() {
-        getCacheablePreset(LongPressPreset.name)!!.play()
+    fun lope() {
+        getCacheablePreset(LopePreset.name)!!.play()
     }
 
     fun march() {
         getCacheablePreset(MarchPreset.name)!!.play()
-    }
-
-    fun marioGameOver() {
-        getCacheablePreset(MarioGameOverPreset.name)!!.play()
     }
 
     fun metronome() {
@@ -790,44 +778,8 @@ class PresetsWrapper(
         getCacheablePreset(MurmurPreset.name)!!.play()
     }
 
-    fun newMessage() {
-        getCacheablePreset(NewMessagePreset.name)!!.play()
-    }
-
-    fun notification() {
-        getCacheablePreset(NotificationPreset.name)!!.play()
-    }
-
-    fun notificationKnock() {
-        getCacheablePreset(NotificationKnockPreset.name)!!.play()
-    }
-
-    fun notificationUrgent() {
-        getCacheablePreset(NotificationUrgentPreset.name)!!.play()
-    }
-
-    fun notifyInfoStandard() {
-        getCacheablePreset(NotifyInfoStandardPreset.name)!!.play()
-    }
-
-    fun notifyReminderFinal() {
-        getCacheablePreset(NotifyReminderFinalPreset.name)!!.play()
-    }
-
-    fun notifyReminderNudge() {
-        getCacheablePreset(NotifyReminderNudgePreset.name)!!.play()
-    }
-
-    fun notifySocialMention() {
-        getCacheablePreset(NotifySocialMentionPreset.name)!!.play()
-    }
-
-    fun notifySocialMessage() {
-        getCacheablePreset(NotifySocialMessagePreset.name)!!.play()
-    }
-
-    fun notifyTimerDone() {
-        getCacheablePreset(NotifyTimerDonePreset.name)!!.play()
+    fun nudge() {
+        getCacheablePreset(NudgePreset.name)!!.play()
     }
 
     fun passingCar() {
@@ -854,12 +806,32 @@ class PresetsWrapper(
         getCacheablePreset(PingPreset.name)!!.play()
     }
 
+    fun pip() {
+        getCacheablePreset(PipPreset.name)!!.play()
+    }
+
     fun piston() {
         getCacheablePreset(PistonPreset.name)!!.play()
     }
 
+    fun plink() {
+        getCacheablePreset(PlinkPreset.name)!!.play()
+    }
+
+    fun plummet() {
+        getCacheablePreset(PlummetPreset.name)!!.play()
+    }
+
     fun plunk() {
         getCacheablePreset(PlunkPreset.name)!!.play()
+    }
+
+    fun poke() {
+        getCacheablePreset(PokePreset.name)!!.play()
+    }
+
+    fun pound() {
+        getCacheablePreset(PoundPreset.name)!!.play()
     }
 
     fun powerDown() {
@@ -870,28 +842,40 @@ class PresetsWrapper(
         getCacheablePreset(PropelPreset.name)!!.play()
     }
 
+    fun pulse() {
+        getCacheablePreset(PulsePreset.name)!!.play()
+    }
+
+    fun pummel() {
+        getCacheablePreset(PummelPreset.name)!!.play()
+    }
+
     fun push() {
         getCacheablePreset(PushPreset.name)!!.play()
+    }
+
+    fun radar() {
+        getCacheablePreset(RadarPreset.name)!!.play()
     }
 
     fun rain() {
         getCacheablePreset(RainPreset.name)!!.play()
     }
 
+    fun ramp() {
+        getCacheablePreset(RampPreset.name)!!.play()
+    }
+
+    fun rap() {
+        getCacheablePreset(RapPreset.name)!!.play()
+    }
+
     fun ratchet() {
         getCacheablePreset(RatchetPreset.name)!!.play()
     }
 
-    fun readySteadyGo() {
-        getCacheablePreset(ReadySteadyGoPreset.name)!!.play()
-    }
-
     fun rebound() {
         getCacheablePreset(ReboundPreset.name)!!.play()
-    }
-
-    fun reliefSigh() {
-        getCacheablePreset(ReliefSighPreset.name)!!.play()
     }
 
     fun ripple() {
@@ -906,28 +890,32 @@ class PresetsWrapper(
         getCacheablePreset(RustlePreset.name)!!.play()
     }
 
-    fun searching() {
-        getCacheablePreset(SearchingPreset.name)!!.play()
-    }
-
-    fun searchSuccess() {
-        getCacheablePreset(SearchSuccessPreset.name)!!.play()
-    }
-
-    fun selectionSnap() {
-        getCacheablePreset(SelectionSnapPreset.name)!!.play()
-    }
-
     fun shockwave() {
         getCacheablePreset(ShockwavePreset.name)!!.play()
     }
 
-    fun sneezing() {
-        getCacheablePreset(SneezingPreset.name)!!.play()
+    fun snap() {
+        getCacheablePreset(SnapPreset.name)!!.play()
+    }
+
+    fun sonar() {
+        getCacheablePreset(SonarPreset.name)!!.play()
     }
 
     fun spark() {
         getCacheablePreset(SparkPreset.name)!!.play()
+    }
+
+    fun spin() {
+        getCacheablePreset(SpinPreset.name)!!.play()
+    }
+
+    fun stagger() {
+        getCacheablePreset(StaggerPreset.name)!!.play()
+    }
+
+    fun stamp() {
+        getCacheablePreset(StampPreset.name)!!.play()
     }
 
     fun stampede() {
@@ -946,24 +934,32 @@ class PresetsWrapper(
         getCacheablePreset(StrikePreset.name)!!.play()
     }
 
-    fun successFlourish() {
-        getCacheablePreset(SuccessFlourishPreset.name)!!.play()
+    fun summon() {
+        getCacheablePreset(SummonPreset.name)!!.play()
     }
 
-    fun surpriseGasp() {
-        getCacheablePreset(SurpriseGaspPreset.name)!!.play()
+    fun surge() {
+        getCacheablePreset(SurgePreset.name)!!.play()
     }
 
     fun sway() {
         getCacheablePreset(SwayPreset.name)!!.play()
     }
 
+    fun sweep() {
+        getCacheablePreset(SweepPreset.name)!!.play()
+    }
+
+    fun swell() {
+        getCacheablePreset(SwellPreset.name)!!.play()
+    }
+
     fun syncopate() {
         getCacheablePreset(SyncopatePreset.name)!!.play()
     }
 
-    fun tada() {
-        getCacheablePreset(TadaPreset.name)!!.play()
+    fun throb() {
+        getCacheablePreset(ThrobPreset.name)!!.play()
     }
 
     fun thud() {
@@ -998,36 +994,44 @@ class PresetsWrapper(
         getCacheablePreset(TremorPreset.name)!!.play()
     }
 
+    fun trigger() {
+        getCacheablePreset(TriggerPreset.name)!!.play()
+    }
+
+    fun triumph() {
+        getCacheablePreset(TriumphPreset.name)!!.play()
+    }
+
+    fun trumpet() {
+        getCacheablePreset(TrumpetPreset.name)!!.play()
+    }
+
     fun typewriter() {
         getCacheablePreset(TypewriterPreset.name)!!.play()
     }
 
-    fun victory() {
-        getCacheablePreset(VictoryPreset.name)!!.play()
-    }
-
-    fun vomiting() {
-        getCacheablePreset(VomitingPreset.name)!!.play()
+    fun unfurl() {
+        getCacheablePreset(UnfurlPreset.name)!!.play()
     }
 
     fun vortex() {
         getCacheablePreset(VortexPreset.name)!!.play()
     }
 
+    fun wane() {
+        getCacheablePreset(WanePreset.name)!!.play()
+    }
+
     fun warDrum() {
         getCacheablePreset(WarDrumPreset.name)!!.play()
     }
 
-    fun warningPulse() {
-        getCacheablePreset(WarningPulsePreset.name)!!.play()
-    }
-
-    fun warningUrgent() {
-        getCacheablePreset(WarningUrgentPreset.name)!!.play()
-    }
-
     fun waterfall() {
         getCacheablePreset(WaterfallPreset.name)!!.play()
+    }
+
+    fun wave() {
+        getCacheablePreset(WavePreset.name)!!.play()
     }
 
     fun wisp() {
@@ -1040,10 +1044,6 @@ class PresetsWrapper(
 
     fun woodpecker() {
         getCacheablePreset(WoodpeckerPreset.name)!!.play()
-    }
-
-    fun zeldaChest() {
-        getCacheablePreset(ZeldaChestPreset.name)!!.play()
     }
 
     fun zipper() {

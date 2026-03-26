@@ -1,0 +1,101 @@
+{
+  "emoji": "🤬",
+  "name": "Batter",
+  "description": "An unrestrained explosion of rage, suited for catastrophic errors or total loss of control.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.35
+    },
+    {
+      "time": 60,
+      "amplitude": 0.82,
+      "frequency": 0.32
+    },
+    {
+      "time": 120,
+      "amplitude": 0.95,
+      "frequency": 0.36
+    },
+    {
+      "time": 175,
+      "amplitude": 0.85,
+      "frequency": 0.33
+    },
+    {
+      "time": 225,
+      "amplitude": 1,
+      "frequency": 0.38
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.9
+      },
+      {
+        "time": 45,
+        "value": 0.35
+      },
+      {
+        "time": 60,
+        "value": 0.8
+      },
+      {
+        "time": 102,
+        "value": 0.32
+      },
+      {
+        "time": 120,
+        "value": 0.93
+      },
+      {
+        "time": 158,
+        "value": 0.35
+      },
+      {
+        "time": 175,
+        "value": 0.83
+      },
+      {
+        "time": 208,
+        "value": 0.38
+      },
+      {
+        "time": 225,
+        "value": 1
+      },
+      {
+        "time": 380,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.35
+      },
+      {
+        "time": 225,
+        "value": 0.38
+      },
+      {
+        "time": 380,
+        "value": 0.32
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Saw",
+    "Extended"
+  ],
+  "duration": 380
+}

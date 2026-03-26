@@ -1,0 +1,56 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.9
+      },
+      {
+        "time": 100,
+        "value": 0.85
+      },
+      {
+        "time": 150,
+        "value": 0.65
+      },
+      {
+        "time": 250,
+        "value": 0.3
+      },
+      {
+        "time": 350,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.85
+      },
+      {
+        "time": 350,
+        "value": 0.8
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.85
+    }
+  ],
+  "name": "Buzz",
+  "description": "An unmistakable hard rejection, suited for critical errors, access denied, or blocked actions.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Ramp",
+    "Extended"
+  ],
+  "duration": 350
+}
