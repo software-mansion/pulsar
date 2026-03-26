@@ -6,6 +6,7 @@ import Animated, {
   useSharedValue,
   withSpring,
   runOnJS,
+  SharedValue,
 } from 'react-native-reanimated';
 
 interface HapticSliderProps {
@@ -20,6 +21,30 @@ interface HapticSliderProps {
 const THUMB_SIZE = 30;
 const TRACK_HEIGHT = 6;
 
+function TickMark({
+  index,
+  sliderWidthSV,
+  internalValue,
+  min,
+  max,
+}: {
+  index: number;
+  sliderWidthSV: SharedValue<number>;
+  internalValue: SharedValue<number>;
+  min: number;
+  max: number;
+}) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const tickLeft = (index / 10) * sliderWidthSV.value;
+    const filledTrackWidth =
+      THUMB_SIZE / 2 + ((internalValue.value - min) / (max - min)) * (sliderWidthSV.value - THUMB_SIZE);
+    return {
+      backgroundColor: tickLeft <= filledTrackWidth ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)',
+    };
+  });
+  return <Animated.View style={[styles.tick, animatedStyle]} />;
+}
+
 export default function HapticSlider({
   value,
   onValueChange,
@@ -29,7 +54,7 @@ export default function HapticSlider({
   style,
 }: HapticSliderProps) {
   const [sliderWidth, setSliderWidth] = useState(0);
-  const [internalValue, setInternalValue] = useState(value);
+  const internalValue = useSharedValue(value);
   const sliderWidthSV = useSharedValue(0);
   const thumbPosition = useSharedValue(0);
   const isActive = useSharedValue(false);
@@ -38,11 +63,10 @@ export default function HapticSlider({
   useEffect(() => {
     if (sliderWidth === 0) return;
     const thumbRange = sliderWidth - THUMB_SIZE;
-    thumbPosition.value = THUMB_SIZE / 2 + ((internalValue - min) / (max - min)) * thumbRange;
+    thumbPosition.value = THUMB_SIZE / 2 + ((internalValue.value - min) / (max - min)) * thumbRange;
   }, [sliderWidth]);
 
   const handleValueChange = (steppedValue: number) => {
-    setInternalValue(steppedValue);
     onValueChange?.(steppedValue);
   };
 
@@ -61,8 +85,9 @@ export default function HapticSlider({
       const percentage = (newPosition - thumbMin) / thumbRange;
       const newValue = min + percentage * (max - min);
       const steppedValue = Math.round(newValue / step) * step;
+      internalValue.value = steppedValue;
 
-      runOnJS(handleValueChange)(steppedValue);
+      onValueChange?.(steppedValue);
     })
     .onFinalize(() => {
       isActive.value = false;
@@ -83,6 +108,7 @@ export default function HapticSlider({
       const percentage = (newPosition - thumbMin) / thumbRange;
       const newValue = min + percentage * (max - min);
       const steppedValue = Math.round(newValue / step) * step;
+      internalValue.value = steppedValue;
 
       runOnJS(handleValueChange)(steppedValue);
     });
@@ -91,7 +117,9 @@ export default function HapticSlider({
     transform: [{ translateX: thumbPosition.value - THUMB_SIZE / 2 }],
   }));
 
-  const filledTrackWidth = THUMB_SIZE / 2 + ((internalValue - min) / (max - min)) * (sliderWidth - THUMB_SIZE);
+  const animatedFilledTrackStyle = useAnimatedStyle(() => ({
+    width: THUMB_SIZE / 2 + ((internalValue.value - min) / (max - min)) * (sliderWidthSV.value - THUMB_SIZE),
+  }));
 
   return (
     <GestureDetector gesture={Gesture.Exclusive(pan, tap)}>
@@ -106,24 +134,19 @@ export default function HapticSlider({
         {/* Track background */}
         <View style={[styles.track, { width: sliderWidth }]}>
           {/* Filled track */}
-          <View style={[styles.filledTrack, { width: filledTrackWidth }]} />
+          <Animated.View style={[styles.filledTrack, animatedFilledTrackStyle]} />
         </View>
 
         {/* Tick marks */}
         <View style={[styles.tickContainer, { width: sliderWidth }]}>
           {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-            <View
+            <TickMark
               key={i}
-              style={[
-                styles.tick,
-                {
-                  left: (i / 10) * sliderWidth,
-                  backgroundColor:
-                    (i / 10) * sliderWidth <= filledTrackWidth
-                      ? 'rgba(255, 255, 255, 0.8)'
-                      : 'rgba(255, 255, 255, 0.3)',
-                },
-              ]}
+              index={i}
+              sliderWidthSV={sliderWidthSV}
+              internalValue={internalValue}
+              min={min}
+              max={max}
             />
           ))}
         </View>

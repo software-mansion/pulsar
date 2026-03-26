@@ -9,12 +9,11 @@ import { Margins } from '@/constants/theme';
 
 const DOT_SIZE = 12;
 const WAVE_HEIGHT = 30;
-const CYCLE_DURATION = 3000; // ms for one full cycle (wave + long rest pause)
+const CYCLE_DURATION = 1500; // ms for one full cycle (wave + long rest pause)
 const DOT_INTERVAL = 220;    // ms between each dot starting its wave
 const DOT_SPACING = 20;
-const BOTTOM_HIT_RATIO = 0.14; // 14% into cycle = bottom (420ms — snappy drop)
+const BOTTOM_HIT_RATIO = 0.21;
 
-// CSS keyframes: snappy drop to bottom (0-14%), bounce back (14-28%), long rest (28-100%)
 const waveKeyframes = {
   '0%':   { transform: [{ translateY: 0 }] },
   '14%':  { transform: [{ translateY: -WAVE_HEIGHT }] },

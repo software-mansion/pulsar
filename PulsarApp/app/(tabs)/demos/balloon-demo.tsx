@@ -20,13 +20,63 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors, Margins } from '@/constants/theme';
 
 const BALLOON_COUNT = 4;
-const CHARGE_TO_POP_MS = 950;
 const RELEASE_RESET_MS = 180;
 const POP_FADE_MS = 120;
 const COOLDOWN_MS = 1000;
 
-function BalloonCell(_: { index: number }) {
+interface BalloonParams {
+  chargeMs: number;
+  // Inflation phase (0 → shakeThreshold): amplitude ramps up, frequency ramps down (air slows as resistance grows)
+  ampMin: number;
+  ampMid: number;
+  freqHigh: number; // freq at start of inflation (rushing air)
+  freqLow: number;  // freq at shakeThreshold (straining)
+  // Shake phase (shakeThreshold → 1): discrete impulses synced to direction reversals
+  ampMax: number;         // max impulse amplitude at progress=1
+  shakeImpulseFreq: number; // impulse frequency character during shake
+  shakeAmt: number;
+  shakeDur: number;
+  shakeThreshold: number;
+}
+
+const BALLOON_PARAMS: BalloonParams[] = [
+  {
+    // Balloon 0: balanced feel
+    chargeMs: 950,
+    ampMin: 0.05, ampMid: 0.28, ampMax: 0.75,
+    freqHigh: 0.75, freqLow: 0.22,
+    shakeImpulseFreq: 0.50,
+    shakeAmt: 5, shakeDur: 40, shakeThreshold: 0.75,
+  },
+  {
+    // Balloon 1: heavy & deep — slow, low-frequency thumps
+    chargeMs: 1100,
+    ampMin: 0.07, ampMid: 0.35, ampMax: 0.85,
+    freqHigh: 0.50, freqLow: 0.10,
+    shakeImpulseFreq: 0.18,
+    shakeAmt: 8, shakeDur: 58, shakeThreshold: 0.72,
+  },
+  {
+    // Balloon 2: light & crisp — quick, high-pitched taps
+    chargeMs: 780,
+    ampMin: 0.03, ampMid: 0.18, ampMax: 0.50,
+    freqHigh: 0.95, freqLow: 0.40,
+    shakeImpulseFreq: 0.82,
+    shakeAmt: 4, shakeDur: 26, shakeThreshold: 0.78,
+  },
+  {
+    // Balloon 3: erratic — mid energy, uneven rhythm from irregular shake
+    chargeMs: 870,
+    ampMin: 0.06, ampMid: 0.25, ampMax: 0.75,
+    freqHigh: 0.68, freqLow: 0.18,
+    shakeImpulseFreq: 0.42,
+    shakeAmt: 6, shakeDur: 32, shakeThreshold: 0.73,
+  },
+];
+
+function BalloonCell({ index }: { index: number }) {
   const composer = useRealtimeComposer();
+  const params = BALLOON_PARAMS[index % BALLOON_PARAMS.length]!;
 
   const progress = useSharedValue(0);
   const balloonOpacity = useSharedValue(1);
@@ -67,12 +117,15 @@ function BalloonCell(_: { index: number }) {
     }, COOLDOWN_MS);
   };
 
+  const { ampMin, ampMid, ampMax, freqHigh, freqLow, shakeImpulseFreq, shakeAmt, shakeDur, shakeThreshold } = params;
+
   useAnimatedReaction(
     () => progress.value,
     (current, previous) => {
       'worklet';
       const prev = previous ?? 0;
 
+      // Pop
       if (current >= 1 && prev < 1) {
         composer.stop();
         composer.playDiscrete(1.0, 1.0);
@@ -80,29 +133,47 @@ function BalloonCell(_: { index: number }) {
         return;
       }
 
-      // Drive continuous haptic with increasing amplitude and frequency as balloon pumps
-      if (current > 0 && current < 1) {
-        const amplitude = interpolate(current, [0, 0.75, 1], [0.06, 0.3, 0.55], Extrapolation.CLAMP);
-        const frequency = interpolate(current, [0, 1], [0.15, 0.8], Extrapolation.CLAMP);
+      // Release: balloon deflates — one soft puff
+      if (current <= 0 && prev > 0.05) {
+        composer.stop();
+        composer.playDiscrete(0.18, freqLow);
+        return;
+      }
+
+      // Inflation phase: amplitude builds, frequency drops (air slows as resistance grows)
+      if (current > 0 && current < shakeThreshold) {
+        const amplitude = interpolate(current, [0, shakeThreshold], [ampMin, ampMid], Extrapolation.CLAMP);
+        const frequency = interpolate(current, [0, shakeThreshold], [freqHigh, freqLow], Extrapolation.CLAMP);
         composer.set(amplitude, frequency);
       }
 
-      // Start/stop shake animation at 0.75
-      if (current >= 0.75 && prev < 0.75) {
+      // Enter shake zone: stop continuous haptic, let shakeOffset drive impulses
+      if (current >= shakeThreshold && prev < shakeThreshold) {
         shakeOffset.value = withRepeat(
-          withSequence(withTiming(5, { duration: 40 }), withTiming(-5, { duration: 40 })),
+          withSequence(withTiming(shakeAmt, { duration: shakeDur }), withTiming(-shakeAmt, { duration: shakeDur })),
           -1,
           true,
         );
-      } else if (current < 0.75 && prev >= 0.75) {
+      } else if (current < shakeThreshold && prev >= shakeThreshold) {
         cancelAnimation(shakeOffset);
         shakeOffset.value = withTiming(0, { duration: 50 });
       }
+    },
+    [],
+  );
 
-      // Discrete impulses escalating through the shake zone
-      if ((prev < 0.80 && current >= 0.80) || (prev < 0.88 && current >= 0.88) || (prev < 0.94 && current >= 0.94)) {
-        const shakeProg = interpolate(current, [0.75, 1], [0, 1], Extrapolation.CLAMP);
-        composer.playDiscrete(0.45 + shakeProg * 0.35, 0.65 + shakeProg * 0.25);
+  // Shake-synced impulses: fire on each direction reversal (zero-crossing of shakeOffset)
+  useAnimatedReaction(
+    () => shakeOffset.value,
+    (current, previous) => {
+      'worklet';
+      const prev = previous ?? 0;
+      if (progress.value < shakeThreshold) return;
+
+      const crossed = (prev > 0.5 && current < -0.5) || (prev < -0.5 && current > 0.5);
+      if (crossed) {
+        const prog = interpolate(progress.value, [shakeThreshold, 1], [0, 1], Extrapolation.CLAMP);
+        composer.playDiscrete(ampMid + prog * (ampMax - ampMid), shakeImpulseFreq);
       }
     },
     [],
@@ -128,7 +199,7 @@ function BalloonCell(_: { index: number }) {
 
     cancelAnimation(progress);
     progress.value = withTiming(1, {
-      duration: CHARGE_TO_POP_MS,
+      duration: params.chargeMs,
       easing: Easing.out(Easing.cubic),
     });
   };

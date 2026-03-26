@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Pattern, usePatternComposer } from 'react-native-pulsar';
+import { Presets } from 'react-native-pulsar';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 
@@ -12,94 +12,51 @@ interface Notification {
   id: string;
   title: string;
   message: string;
-  pattern: Pattern;
+  play: () => void;
   color: string;
 }
 
-// Define different notification types with unique haptic patterns
 const notifications: Notification[] = [
   {
     id: 'success',
     title: '✓ Success',
     message: 'Payment received successfully',
     color: '#10B981',
-    pattern: {
-      discretePattern: [
-        { time: 0, amplitude: 0.9, frequency: 0.8 },
-        { time: 50, amplitude: 0, frequency: 0.8 },
-        { time: 100, amplitude: 1, frequency: 0.85 },
-        { time: 150, amplitude: 0, frequency: 0.85 },
-      ],
-      continuousPattern: { amplitude: [], frequency: [] },
-    },
+    play: Presets.Confirm,
   },
   {
     id: 'alert',
     title: '! Alert',
     message: 'Low battery warning',
     color: '#F59E0B',
-    pattern: {
-      discretePattern: [
-        { time: 0, amplitude: 0.8, frequency: 0.3 },
-        { time: 80, amplitude: 0, frequency: 0.3 },
-        { time: 120, amplitude: 0.8, frequency: 0.3 },
-        { time: 200, amplitude: 0, frequency: 0.3 },
-      ],
-      continuousPattern: { amplitude: [], frequency: [] },
-    },
+    play: Presets.NotifyTimerDone,
   },
   {
     id: 'message',
     title: '✉ Message',
     message: 'You have a new message',
     color: '#3B82F6',
-    pattern: {
-      discretePattern: [
-        { time: 0, amplitude: 0.6, frequency: 0.9 },
-        { time: 40, amplitude: 0, frequency: 0.9 },
-        { time: 80, amplitude: 0.5, frequency: 0.85 },
-        { time: 120, amplitude: 0, frequency: 0.85 },
-      ],
-      continuousPattern: { amplitude: [], frequency: [] },
-    },
+    play: Presets.NewMessage,
   },
   {
     id: 'error',
     title: '✗ Error',
     message: 'Connection failed',
     color: '#EF4444',
-    pattern: {
-      discretePattern: [
-        { time: 0, amplitude: 1, frequency: 0.2 },
-        { time: 100, amplitude: 0, frequency: 0.2 },
-        { time: 150, amplitude: 0.95, frequency: 0.15 },
-        { time: 250, amplitude: 0, frequency: 0.15 },
-      ],
-      continuousPattern: { amplitude: [], frequency: [] },
-    },
+    play: Presets.ErrorBuzz,
   },
   {
     id: 'reminder',
     title: '◉ Reminder',
     message: 'Meeting starts in 15 minutes',
     color: '#8B5CF6',
-    pattern: {
-      discretePattern: [
-        { time: 0, amplitude: 0.7, frequency: 0.7 },
-        { time: 50, amplitude: 0, frequency: 0.7 },
-        { time: 120, amplitude: 0.7, frequency: 0.7 },
-        { time: 170, amplitude: 0, frequency: 0.7 },
-      ],
-      continuousPattern: { amplitude: [], frequency: [] },
-    },
+    play: Presets.NotifyReminderNudge,
   },
 ];
 
 const NotificationToast = ({ notification }: { notification: Notification }) => {
-  const composer = usePatternComposer(notification.pattern);
-
   useEffect(() => {
-    composer.play();
+    notification.play();
   }, []);
 
   return (
@@ -140,7 +97,7 @@ export default function NotificationHapticsDemo() {
 
     setTimeout(() => {
       showNextNotification(index + 1);
-    }, 2500);
+    }, 1000);
   };
 
   return (

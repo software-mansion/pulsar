@@ -9,54 +9,47 @@ import HapticDemoButton from '@/components/demo/HapticDemoButton';
 export default function ButtonsDemo() {
   const tapPattern: Pattern = {
     discretePattern: [
-      { time: 0, amplitude: 1, frequency: 0.9 },
-      { time: 35, amplitude: 0, frequency: 0.9 },
+      { time: 0, amplitude: 1.0, frequency: 1.0 },
     ],
     continuousPattern: { amplitude: [], frequency: [] },
   };
 
   const softPattern: Pattern = {
     discretePattern: [
-      { time: 0, amplitude: 0.55, frequency: 0.45 },
-      { time: 60, amplitude: 0, frequency: 0.45 },
+      { time: 0, amplitude: 0.4, frequency: 0.7 },
     ],
     continuousPattern: { amplitude: [], frequency: [] },
   };
 
   const deepPattern: Pattern = {
     discretePattern: [
-      { time: 0, amplitude: 0.8, frequency: 0.2 },
-      { time: 80, amplitude: 0, frequency: 0.2 },
+      { time: 0, amplitude: 0.9, frequency: 0.1 },
     ],
     continuousPattern: { amplitude: [], frequency: [] },
   };
 
   const doublePattern: Pattern = {
     discretePattern: [
-      { time: 0, amplitude: 0.85, frequency: 0.75 },
-      { time: 45, amplitude: 0, frequency: 0.75 },
-      { time: 95, amplitude: 0.85, frequency: 0.75 },
-      { time: 135, amplitude: 0, frequency: 0.75 },
+      { time: 0, amplitude: 0.9, frequency: 0.8 },
+      { time: 60, amplitude: 0.9, frequency: 0.8 },
     ],
     continuousPattern: { amplitude: [], frequency: [] },
   };
 
   const knockPattern: Pattern = {
     discretePattern: [
-      { time: 0, amplitude: 0.9, frequency: 0.35 },
-      { time: 90, amplitude: 0, frequency: 0.35 },
+      { time: 0, amplitude: 1.0, frequency: 0.3 },
+      { time: 180, amplitude: 0.8, frequency: 0.25 },
     ],
     continuousPattern: { amplitude: [], frequency: [] },
   };
 
   const ripplePattern: Pattern = {
     discretePattern: [
-      { time: 0, amplitude: 0.3, frequency: 0.9 },
-      { time: 35, amplitude: 0, frequency: 0.9 },
-      { time: 70, amplitude: 0.6, frequency: 0.6 },
-      { time: 110, amplitude: 0, frequency: 0.6 },
-      { time: 145, amplitude: 0.9, frequency: 0.35 },
-      { time: 195, amplitude: 0, frequency: 0.35 },
+      { time: 0, amplitude: 1.0, frequency: 0.7 },
+      { time: 70, amplitude: 0.7, frequency: 0.55 },
+      { time: 140, amplitude: 0.45, frequency: 0.45 },
+      { time: 210, amplitude: 0.25, frequency: 0.35 },
     ],
     continuousPattern: { amplitude: [], frequency: [] },
   };

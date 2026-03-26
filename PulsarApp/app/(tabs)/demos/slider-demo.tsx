@@ -42,6 +42,7 @@ export default function SliderDemo() {
   const deepTickComposer = useHapticsComposer(deepTickPattern);
 
   const handleSlider1Change = useCallback((newValue: number) => {
+    'worklet';
     const oldTick = Math.floor(value1.value / 10);
     const newTick = Math.floor(newValue / 10);
     if (oldTick !== newTick) quickTickComposer.play();
@@ -49,6 +50,7 @@ export default function SliderDemo() {
   }, [value1, quickTickComposer]);
 
   const handleSlider2Change = useCallback((newValue: number) => {
+    'worklet';
     const oldTick = Math.floor(value2.value / 10);
     const newTick = Math.floor(newValue / 10);
     if (oldTick !== newTick) softTickComposer.play();
@@ -56,6 +58,7 @@ export default function SliderDemo() {
   }, [value2, softTickComposer]);
 
   const handleSlider3Change = useCallback((newValue: number) => {
+    'worklet';
     const oldTick = Math.floor(value3.value / 10);
     const newTick = Math.floor(newValue / 10);
     if (oldTick !== newTick) deepTickComposer.play();
