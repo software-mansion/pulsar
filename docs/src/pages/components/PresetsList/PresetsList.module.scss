@@ -14,7 +14,7 @@
   }
 
   @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px 12px;
     margin-top: 16px;
     margin-bottom: 20px;

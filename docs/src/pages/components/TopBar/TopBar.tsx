@@ -25,9 +25,9 @@ export function TopBar() {
           <span>Pulsar</span>
         </div>
         <div className={styles.menuItems}>
-          {/* <a href="/presets-playground">Presets</a> */}
-          {/* <a href="#">Live Preview</a> */}
-          {/* <a href="#">Tutorials</a> */}
+          <a href="/presets-playground">Presets</a>
+          <a href="/getting-started">Getting started</a>
+          <a href="/sdk">Docs</a>
         </div>
         <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
@@ -57,11 +57,11 @@ export function TopBar() {
               <a href="/presets-playground" onClick={closeMenu}>
                 Presets
               </a>
-              <a href="#" onClick={closeMenu}>
-                Live Preview
+              <a href="/getting-started" onClick={closeMenu}>
+                Getting started
               </a>
-              <a href="#" onClick={closeMenu}>
-                Tutorials
+              <a href="/sdk" onClick={closeMenu}>
+                Docs
               </a>
             </nav>
             <div className={styles.mobileMenuFooter}>

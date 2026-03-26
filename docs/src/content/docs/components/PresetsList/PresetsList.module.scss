@@ -13,6 +13,10 @@
     font-size: var(--font-size-xs);
     gap: 10px;
     display: flex;
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-end;
+    }
     .inner {
       display: flex;
       align-items: center;

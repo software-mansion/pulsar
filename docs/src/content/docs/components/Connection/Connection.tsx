@@ -170,13 +170,13 @@ export default function Connection() {
         {!paired && (
           <Accordion title="How to connect a device? 🤔">
             <Point index={1}>
-              <div>Download PulsarApp from the App Store or Google Play.</div>
+              <div>Scan QRCode to open PulsarApp and connect your device.</div>
             </Point>
             <Point index={2}>
-              <div>Open the app and go to the Device Connection section.</div>
+              <div>After you connect your device, you will feel the presets on your phone.</div>
             </Point>
             <Point index={3}>
-              <div>Scan the QR code above or type the pairing code into PulsarApp.</div>
+              <div>If you have any problem with QRCode just enter the code manually.</div>
             </Point>
           </Accordion>
         )}
