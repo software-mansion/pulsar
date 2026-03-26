@@ -410,11 +410,18 @@ function ConnectionForm({
     <Collapsible title="How to connect a device? 🤔" style={Margins.marginTop4X}>
       <Point index={1}>
         <ThemedText>
-          Open Pulsar documentation on Presets page and find Device Connection section.
+          Open Pulsar documentation on Presets playground and find Device Connection section.
         </ThemedText>
       </Point>
       <Point index={2}>
-        <ThemedText>Type Paring code into PulsarApp and click Connect button or scan a QR code.</ThemedText>
+        <ThemedText>
+          Scan QR code or type Pairing code into PulsarApp and click Connect button.
+        </ThemedText>
+      </Point>
+      <Point index={3}>
+        <ThemedText>
+          Select one of the presets on the website and experience the haptics right on your device.
+        </ThemedText>
       </Point>
     </Collapsible>
   </Animated.View>);
