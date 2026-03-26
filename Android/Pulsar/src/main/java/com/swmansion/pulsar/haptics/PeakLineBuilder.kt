@@ -3,7 +3,7 @@ package com.swmansion.pulsar.haptics
 import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ValuePoint
 
-class PeakLineBuilder() {
+class PeakLineBuilder(private val minTransitionDuration: Long = 15L) {
     fun convertToContinuousPatternOfAmplitude(
         pattern: List<ConfigPoint>,
         baseline: ValueLineBuilder
@@ -40,8 +40,8 @@ class PeakLineBuilder() {
     }
 
     private fun peakTiming(time: Long): List<Long> {
-        val slopeDuration = 15L
-        val peakDuration = 10L
+        val slopeDuration = (minTransitionDuration * 0.75).toLong()
+        val peakDuration = (minTransitionDuration * 0.25).toLong()
         return listOf(
             time - slopeDuration - peakDuration / 2,
             time - peakDuration / 2,
