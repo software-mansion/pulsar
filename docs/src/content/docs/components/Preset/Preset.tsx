@@ -21,7 +21,19 @@ function getSwiftPresetImport(shortName: string) {
   return `import Pulsar\n\nlet pulsar = Pulsar()\npulsar.getPresets().${shortName}()`;
 }
 
+const SYSTEM_CROSS_PLATFORM_PRESETS = new Set([
+  'ImpactLight', 'ImpactMedium', 'ImpactHeavy', 'ImpactSoft', 'ImpactRigid',
+  'NotificationSuccess', 'NotificationWarning', 'NotificationError', 'Selection',
+]);
+
 function getReactNativePresetImport(shortName: string) {
+  if (shortName.startsWith('System')) {
+    const name = shortName.slice('System'.length);
+    if (SYSTEM_CROSS_PLATFORM_PRESETS.has(name)) {
+      return `import { Presets } from 'react-native-pulsar';\n\nPresets.System.${name}()`;
+    }
+    return `import { Presets } from 'react-native-pulsar';\n\nPresets.System.Android.${name}()`;
+  }
   return `import { Presets } from 'react-native-pulsar';\n\nPresets.${shortName}()`;
 }
 

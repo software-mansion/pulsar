@@ -131,8 +131,8 @@ export function PresetsList() {
 
       {filteredPresets.length === 0 && <NoResult />}
 
-      {filteredPresets.map((preset, index) => (
-        <Preset key={index} {...preset} />
+      {filteredPresets.map((preset) => (
+        <Preset key={preset.data.name} {...preset} />
       ))}
 
       {showModal === 'tags' && <TagsModal onClose={() => setShowModal('no')} />}
