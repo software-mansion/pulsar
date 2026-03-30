@@ -155,13 +155,13 @@ export default function HomeScreen() {
             setHasToken(true);
           });
           setConnectionState('FULLY_CONNECTED');
-          Presets.Confirm();
+          Presets.BreakingWave();
           posthog.capture('device_connected', {
             connection_type: 'new',
           });
         } else if (json.type === 'connection_restored') {
           setConnectionState('FULLY_CONNECTED');
-          Presets.Confirm();
+          Presets.BreakingWave();
           posthog.capture('device_connected', {
             connection_type: 'restored',
           });
@@ -206,7 +206,7 @@ export default function HomeScreen() {
     socket.onerror = () => {
       setConnectionState('ERROR');
       setErrorType('CONNECTION_FAILED');
-      Presets.ErrorBuzz();
+      Presets.Chirp();
       posthog.capture('device_connection_failed', {
         error_type: 'CONNECTION_FAILED',
         connection_action: action,
@@ -222,7 +222,7 @@ export default function HomeScreen() {
       if (e.code !== 1000) {
         setConnectionState('ERROR');
         setErrorType('INVALID_DATA');
-        Presets.ErrorBuzz();
+        Presets.Chirp();
         posthog.capture('device_connection_failed', {
           error_type: 'INVALID_DATA',
           close_code: e.code,
