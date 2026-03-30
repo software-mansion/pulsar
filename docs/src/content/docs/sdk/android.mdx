@@ -241,6 +241,14 @@ val presets = pulsar.getPresets()
   ]}
 />
 
+**Example**
+
+```kotlin
+val presets = pulsar.getPresets()
+
+presets.applause()
+```
+
 ### System presets
 
 These mirror standard haptic feedback styles shared across platforms.
@@ -260,6 +268,14 @@ These mirror standard haptic feedback styles shared across platforms.
     ["systemSelection()", "Selection change feedback"],
   ]}
 />
+
+**Example**
+
+```kotlin
+val presets = pulsar.getPresets()
+
+presets.systemImpactMedium()
+```
 
 ### Android-specific system presets
 
@@ -308,6 +324,14 @@ Android exposes additional system effects beyond the cross-platform set.
     ["systemVirtualKeyRelease()", "HapticFeedbackConstants.VIRTUAL_KEY_RELEASE"],
   ]}
 />
+
+**Example**
+
+```kotlin
+val presets = pulsar.getPresets()
+
+presets.systemPrimitiveClick()
+```
 
 ### Playing by name
 

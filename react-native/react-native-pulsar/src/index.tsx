@@ -4,14 +4,11 @@ import useRealtimeComposer from './useRealtimeComposer';
 import usePatternComposer from './usePatternComposer';
 import useAdaptiveHaptics from './useAdaptiveHaptics';
 
-const useHapticsComposer = usePatternComposer;
-
 export {
   Presets,
   Settings,
   useRealtimeComposer,
   usePatternComposer,
-  useHapticsComposer,
   useAdaptiveHaptics,
 };
 

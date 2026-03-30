@@ -39,6 +39,8 @@ head:
 ---
 
 import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import CollapsibleTable from '../../../components/CollapsibleTable.astro';
+import CollapsibleList from '../../../components/CollapsibleList.astro';
 
 The Pulsar React Native SDK (`react-native-pulsar`) exposes haptic feedback through three building blocks: `Presets`, `usePatternComposer`, and `useRealtimeComposer`. All preset functions and hook methods are worklet-compatible for use with Reanimated.
 
@@ -99,28 +101,194 @@ import { Presets } from 'react-native-pulsar';
 
 ### Built-in presets
 
-| Function               | Description                    |
-| ---------------------- | ------------------------------ |
-| `Presets.Earthquake()` | Rumbling earthquake pattern    |
-| `Presets.Success()`    | Positive confirmation feedback |
-| `Presets.Fail()`       | Negative failure feedback      |
-| `Presets.Tap()`        | Simple single tap              |
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0]}
+  colMinWidths={{ 0: "130px"}}
+  rows={[
+    ["Afterglow()", "A three-beat phrase that dissolves gently, ideal for soft endings or gradually quieting feedback."],
+    ["Aftershock()", "A firm opening that settles calmly, ideal for transitions needing a strong start and a gentle finish."],
+    ["Alarm()", "Relentless and urgent, best for critical errors or emergencies that require immediate attention."],
+    ["Anvil()", "The full weight of a massive collision, conveys sheer physical force and momentum."],
+    ["Applause()", "A growing wave of appreciation, ideal for celebratory moments or social approval."],
+    ["Ascent()", "The rush of leveling up, evoking the classic RPG reward of growth and progression."],
+    ["BalloonPop()", "Mounting suspense that bursts into release, perfect for countdowns or suspenseful reveals."],
+    ["Barrage()", "An overwhelming storm of rapid impacts, suited for maxing out a meter or total sensory overload moments."],
+    ["BassDrop()", "Two grounded thumps with a tonal descent, suited for distinct double-confirmation feedback."],
+    ["Batter()", "An unrestrained explosion of rage, suited for catastrophic errors or total loss of control."],
+    ["BellToll()", "Three notes that soften as they land, suited for closing interactions or softening after a strong start."],
+    ["Blip()", "A composed, subtle heads-up, ideal for non-critical warnings that should not interrupt the user."],
+    ["Bloom()", "A quiet confirmation of completion, ideal for subtle task completions or non-intrusive positive reinforcement."],
+    ["Bongo()", "Two balanced bursts of three, suited for structured multi-step or paired sequence feedback."],
+    ["Boulder()", "Deep and weighty without sharpness, great for heavy object impacts or grounded confirmation feedback."],
+    ["BreakingWave()", "Two measured steps leading into a stronger landing, ideal for escalating confirmations or staged actions."],
+    ["Breath()", "Slow, calming in-and-out rhythm, ideal for meditation guides or breathing exercises."],
+    ["Breathing()", "Calm and unobtrusive, ideal for background processing that should not disturb the user."],
+    ["Buildup()", "An energizing crescendo of rising intensity, ideal for charging actions or building anticipation."],
+    ["Burst()", "The tension-and-release of a sneeze, imitates the involuntary build and explosion."],
+    ["Buzz()", "An unmistakable hard rejection, suited for critical errors, access denied, or blocked actions."],
+    ["Cadence()", "A natural two-beat rhythm with a subtle textural shift, suitable for double-tap confirmations."],
+    ["CameraShutter()", "The satisfying click of capturing a moment, ideal for photo capture or scan confirmation."],
+    ["Canter()", "A three-beat rhythm with natural variation, suited for multi-step feedback where each step has character."],
+    ["Cascade()", "A long sequence that unwinds from intensity to calm, ideal for complex multi-phase transitions or step-by-step completions."],
+    ["Castanets()", "A crisp, decisive pair of sharp taps, ideal for double-confirmation or back-to-back interaction feedback."],
+    ["CatPaw()", "A calm, warm pair of taps, ideal for gentle confirmations or soft paired acknowledgements."],
+    ["Charge()", "The electric buildup of a countdown, perfect for race starts or any go moment."],
+    ["Chime()", "A warm, friendly double-tap, ideal for incoming messages or chat notifications."],
+    ["Chip()", "Sharp, authoritative, and precise, suited for confirmations that demand clarity and definition."],
+    ["Chirp()", "Light-hearted and cheerful, ideal for positive micro-interactions or small wins."],
+    ["Clamor()", "Impossible to ignore, suited for critical warnings, emergency alerts, or safety-critical states."],
+    ["Clasp()", "The satisfying snap of acquiring a target, ideal for lock-on, cursor snap-to, or radar acquisition."],
+    ["Cleave()", "Signals an irreversible, high-stakes action for deletes, removes, or anything the user cannot undo."],
+    ["Coil()", "Rising tension that releases into certainty, ideal for long-press activation or charge-complete feedback."],
+    ["CoinDrop()", "A playful cascade of coins, ideal for reward moments, payment confirmations, or in-app purchases."],
+    ["CombinationLock()", "The ritual of cracking a code, ideal for combination inputs or multi-step secure unlocking."],
+    ["Crescendo()", "A rising build that peaks with energy, ideal for charge-up moments or building anticipation."],
+    ["Dewdrop()", "A quiet confirmation of success, ideal for operations that completed without needing attention."],
+    ["Dirge()", "Heavy and fading like a dying heartache, best for conveying grief, loss, or deep sorrow."],
+    ["Dissolve()", "A gentle, soothing fade, ideal for calm relief after a mild challenge or successful low-stakes action."],
+    ["DogBark()", "Two forceful low bursts like a sharp bark, ideal for alert sounds or short punchy notification moments."],
+    ["Drone()", "Flat and going nowhere, communicates idle waiting, disengagement, or nothing happening."],
+    ["EngineRev()", "The thrill of revving to full throttle, ideal for racing games or mechanical acceleration feedback."],
+    ["Exhale()", "Tension releasing into calm, ideal for completing a stressful task or resolving an error."],
+    ["Explosion()", "A catastrophic detonation that echoes into rumble, ideal for game destruction events or dramatic impacts."],
+    ["FadeOut()", "A graceful drift toward silence, ideal for dismissals or transitions that should feel calm and natural."],
+    ["Fanfare()", "A short burst of triumph, ideal for achievement unlocked, rank-ups, or moments that deserve a cheer."],
+    ["Feather()", "A gentle, non-disruptive nudge, ideal for low-priority reminders."],
+    ["Finale()", "A countdown that closes with emphasis, ideal for timer completions or countdown-finished alerts."],
+    ["FingerDrum()", "Three casual, even taps, ideal for low-key acknowledgements or non-urgent rhythm patterns."],
+    ["Firecracker()", "Two maximum-force strikes demanding immediate response, suited for urgent double-confirmations or critical alerts."],
+    ["Fizz()", "Bubbling with joy, ideal for success celebrations or upbeat positive feedback."],
+    ["Flare()", "A mind-blowing jolt, ideal for overwhelming surprise or impossible-to-believe reveals."],
+    ["Flick()", "A light, quick tap with minimal presence, ideal for chips, tags, and filters."],
+    ["Flinch()", "A shock to the senses, ideal for unexpected alerts or startling reveals."],
+    ["Flourish()", "Triumphant and expansive, ideal for achievement unlocked or major task completions."],
+    ["Flurry()", "The thrill of a combo streak, ideal for hit combos, chain multipliers, or rapid-fire scoring."],
+    ["Flush()", "The involuntary heave of disgust, ideal for aversion reactions or gross-out moments in playful UI contexts."],
+    ["Gallop()", "A natural four-beat rhythm, suited for multi-step processes or organic rhythmic feedback."],
+    ["Gavel()", "Two weighty, deliberate taps, suited for decisive double-step actions or bold acknowledgement feedback."],
+    ["Glitch()", "The haptic feel of a system glitching, ideal for data corruption, errors, or intentional glitch aesthetics."],
+    ["GuitarStrum()", "A rich, resonant strike that lingers, ideal for musical interactions or warm confirmation moments."],
+    ["Hail()", "An unpredictable, relentless barrage, ideal for weather events or disorienting overload feedback."],
+    ["Hammer()", "The insistent urgency of a fist on a door, ideal for forceful alerts or escalating persistent notifications."],
+    ["Heartbeat()", "The familiar lub-dub of life and tension, perfect for health apps or anxious waiting moments."],
+    ["Herald()", "Two gentle knocks building to a decisive third, ideal for staged confirmations with a clear conclusion."],
+    ["HoofBeat()", "Two warm, grounded taps, ideal for mellow double confirmations or soft paired feedback."],
+    ["Ignition()", "Three beats that sharpen with each hit, ideal for staged confirmations or escalating emphasis."],
+    ["Impact()", "The instant punch of impact, perfect for collision events or taking a hit in games."],
+    ["Jolt()", "The most intense hit possible, suited for critical alerts or any moment that demands absolute impact."],
+    ["KeyboardMechanical()", "The satisfying two-stage snap of a mechanical key, great for precision typing or keyboard simulations."],
+    ["KeyboardMembrane()", "A soft, muffled press, best for simulating the quiet feel of a membrane keyboard."],
+    ["Knell()", "A commanding last-chance signal, ideal for final reminders or deadline-critical alerts."],
+    ["Knock()", "A polite knock announcing arrival, ideal for gentle attention requests or non-urgent presence alerts."],
+    ["Lament()", "The sinking finality of defeat, captures the deflating feeling of a game-over moment."],
+    ["Latch()", "The clear feel of something switching off, communicates deactivation or opting out."],
+    ["Lighthouse()", "Steady and bias-free, suitable for neutral status updates or steady-state notifications."],
+    ["Lilt()", "Warm and personal, ideal for direct messages or social notifications from people you know."],
+    ["Lock()", "The satisfying click of locking into place, ideal for locking, latching, or secure-confirmation interactions."],
+    ["Lope()", "A galloping bounce with swagger, ideal for adventurous or playful UI moments."],
+    ["March()", "Like an encouraging pat on the back, ideal for motivational confirmations or achievement feedback."],
+    ["Metronome()", "Balanced and unemotional, ideal for neutral confirmations, pagination steps, or generic two-step feedback."],
+    ["Murmur()", "Two soft, quiet taps, ideal for subtle double-step interactions or unobtrusive confirmations."],
+    ["Nudge()", "A polite, unobtrusive double tap that announces a notification without being intrusive."],
+    ["PassingCar()", "The whoosh of something passing at speed, ideal for vehicle pass-by or motion-blur effects."],
+    ["Patter()", "Three mild, unforced taps, ideal for low-key acknowledgements or non-urgent triple feedback."],
+    ["Peal()", "Firm and measured, conveys that something needs attention soon without triggering panic."],
+    ["Peck()", "An ultra-short, precise tap, perfect for small icon buttons."],
+    ["Pendulum()", "A rhythmic swing that gradually settles, ideal for winding-down moments or calm settling effects."],
+    ["Ping()", "A precise, definitive click, ideal for list selections or any interaction where clarity of choice matters."],
+    ["Pip()", "A light, sparkling burst, ideal for in-game collectibles or power-up feedback."],
+    ["Piston()", "Two forceful, immediate strikes, ideal for commanding double-confirmations or high-energy paired actions."],
+    ["Plink()", "A neutral heads-up suited as a baseline for informational notifications."],
+    ["Plummet()", "The terrifying pause before impact, ideal for drop effects or dramatic collision moments."],
+    ["Plunk()", "Understated but present, suitable for subdued feedback that still has noticeable weight."],
+    ["Poke()", "Someone specifically called your name, ideal for mentions, tags, or direct-attention notifications."],
+    ["Pound()", "Impossible to ignore, ideal for critical alerts or notifications that cannot wait."],
+    ["PowerDown()", "A steady deceleration to silence, communicates shutdown, power-off, or deactivation."],
+    ["Propel()", "A confident forward push communicating that a form or action has been decisively submitted."],
+    ["Pulse()", "A gentle, steady pulse that quietly signals ongoing activity without demanding attention."],
+    ["Pummel()", "Escalating rage that peaks at full force, suited for blocked actions, critical failures, or frustrated moments."],
+    ["Push()", "A quieter click that supports without competing, ideal for secondary actions."],
+    ["Radar()", "The focused sweep of active scanning, ideal for network requests or polling states."],
+    ["Rain()", "Soft and unpredictable, ideal for ambient atmospheric effects or organic ambient notifications."],
+    ["Ramp()", "The joy of growing stronger, ideal for level-up moments or rank promotion celebrations."],
+    ["Rap()", "A clean double-knock that announces an alert quietly, ideal for non-urgent in-app notifications."],
+    ["Ratchet()", "A firm, assertive triple beat, suited for strong confirmations or emphatic acknowledgements."],
+    ["Rebound()", "A strong opening that softens on the second hit, ideal for double-tap confirmations."],
+    ["Ripple()", "A strong hit that radiates outward in softening waves, ideal for touch ripples or impact echo effects."],
+    ["Rivet()", "Three sharp, assertive beats, suited for triple-step confirmations or high-confidence feedback."],
+    ["Rustle()", "A gentle heads-up that does not demand immediate action, ideal for mild warnings."],
+    ["Shockwave()", "The pressure wave of a nearby explosion, ideal for detonations, force fields, or dramatic impacts."],
+    ["Snap()", "A firm snap that conveys a locked-in selection, perfect for toggles, switches, or confirming a choice."],
+    ["Sonar()", "The eureka moment, ideal for conveying the satisfying rush of finding what you were looking for."],
+    ["Spark()", "The snap of electric ignition, ideal for discharge effects, ignition moments, or quick-fire activation."],
+    ["Spin()", "A crisp, mechanical rhythm communicating repeating progress, great for looping or spinner states."],
+    ["Stagger()", "Woozy and disorienting, ideal for confusion, error overload, or hit-stun effects."],
+    ["Stamp()", "Calm and decisive, communicates acceptance without drama, suited for dialog confirmations."],
+    ["Stampede()", "Four deep, measured thumps, suited for grounded step-by-step confirmation feedback."],
+    ["Stomp()", "Three deep, grounded beats, suitable for unhurried triple confirmations or calm rhythmic emphasis."],
+    ["StoneSkip()", "Three firm taps with a softening finish, suited for decisive but composed triple confirmations."],
+    ["Strike()", "A confident, decisive strike that delivers a clear and satisfying response for the main call-to-action."],
+    ["Summon()", "A commanding signal that refuses to be ignored, ideal for incoming calls or urgent attention-demand moments."],
+    ["Surge()", "An irrepressible swell of delight, ideal for reaction moments or expressions of pure joy."],
+    ["Sway()", "Reassuring and rhythmic, ideal for calming or encouraging feedback."],
+    ["Sweep()", "The rhythmic pulse of active searching, ideal for search operations or background polling states."],
+    ["Swell()", "A patient nudge that quietly escalates, ideal for reminders that build attention without anxiety."],
+    ["Syncopate()", "A lively three-beat rhythm with mixed texture, ideal for multi-step confirmations or animated feedback."],
+    ["Throb()", "An accelerated heartbeat that signals something is wrong, ideal for pre-danger tension or warning states."],
+    ["Thud()", "A soft, warm acknowledgement, ideal for opening a menu or drawer."],
+    ["Thump()", "Confident and present without being harsh, useful for bold feedback that avoids aggression."],
+    ["Thunder()", "The raw power of a thunderstorm, ideal for dramatic reveals or moments of overwhelming force."],
+    ["ThunderRoll()", "A dramatic arc of mounting intensity, ideal for thunderstorm effects or climactic UI transitions."],
+    ["TickTock()", "The steady pulse of time, ideal for timing feedback, countdowns, or metronome-style interactions."],
+    ["TidalSurge()", "Two waves of escalating intensity, suited for compound actions or impactful paired confirmations."],
+    ["TideSwell()", "A long wave-like arc that rises and falls, ideal for extended ambient effects or fluid UI transitions."],
+    ["Tremor()", "Pure, heavy rumble with no sharpness, ideal for seismic events or maximum-weight impact simulations."],
+    ["Trigger()", "The decisive moment of release, ideal for weapon discharge, trigger confirmation, or releasing a charged gesture."],
+    ["Triumph()", "Pure triumph, conveys the overwhelming joy of a major win or achievement."],
+    ["Trumpet()", "A joyful flourish that peaks in triumph, ideal for celebrations or milestone completions."],
+    ["Typewriter()", "The nostalgic thud of a vintage typewriter, perfect for retro keyboard or analog-feel experiences."],
+    ["Unfurl()", "The unmistakable thrill of discovery, evoking the iconic joy of opening a treasure chest."],
+    ["Vortex()", "An irresistible pull into the unknown, ideal for drain animations or dramatic disappearing transitions."],
+    ["Wane()", "A lazy, dismissive fade, fitting for sarcastic or indifferent UI moments."],
+    ["WarDrum()", "Three steady drum-like beats, ideal for grounded triple confirmations or structured repetitive feedback."],
+    ["Waterfall()", "A rush of energy that spills and softens, ideal for clearing actions or flowing state transitions."],
+    ["Wave()", "Gentle and non-interrupting, communicates ongoing activity without breaking the user's focus."],
+    ["Wisp()", "A barely-there touch, best for ghost or outline buttons that should feel subtle and unobtrusive."],
+    ["Wobble()", "A gentle correction without alarm, ideal for minor validation errors or soft negative feedback."],
+    ["Woodpecker()", "Mechanical and relentless, ideal for repetitive automated sequences where precision is key."],
+    ["Zipper()", "The familiar drag and snap of a zipper closing, ideal for closure interactions or drawer animations."],
+  ]}
+/>
+
+**Example**
+
+```ts
+import { Presets } from 'react-native-pulsar';
+
+Presets.hammer();
+```
 
 ### System presets
 
-Mirrors the platform's native haptic feedback styles.
+#### Common system presets
+Platform-specific haptic feedback styles, common across iOS and Android.
 
-| Function                               | Description               |
-| -------------------------------------- | ------------------------- |
-| `Presets.System.ImpactLight()`         | Light impact              |
-| `Presets.System.ImpactMedium()`        | Medium impact             |
-| `Presets.System.ImpactHeavy()`         | Heavy impact              |
-| `Presets.System.ImpactSoft()`          | Soft impact               |
-| `Presets.System.ImpactRigid()`         | Rigid impact              |
-| `Presets.System.NotificationSuccess()` | Success notification      |
-| `Presets.System.NotificationWarning()` | Warning notification      |
-| `Presets.System.NotificationError()`   | Error notification        |
-| `Presets.System.Selection()`           | Selection change feedback |
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0, 1]}
+  rows={[
+    ["ImpactHeavy()", "UIImpactFeedbackGenerator.heavy"],
+    ["ImpactLight()", "UIImpactFeedbackGenerator.light"],
+    ["ImpactMedium()", "UIImpactFeedbackGenerator.medium"],
+    ["ImpactRigid()", "UIImpactFeedbackGenerator.rigid"],
+    ["ImpactSoft()", "UIImpactFeedbackGenerator.soft"],
+    ["NotificationError()", "UINotificationFeedbackGenerator.error"],
+    ["NotificationSuccess()", "UINotificationFeedbackGenerator.success"],
+    ["NotificationWarning()", "UINotificationFeedbackGenerator.warning"],
+    ["Selection()", "UISelectionFeedbackGenerator.selection"],
+  ]}
+/>
 
 **Example**
 
@@ -131,6 +299,62 @@ import { Gesture } from 'react-native-gesture-handler';
 const tap = Gesture.Tap().onEnd(() => {
   Presets.System.ImpactMedium();
 });
+```
+
+#### Android-specific system presets
+
+Additional system haptic feedback styles that are only available on Android.
+
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0, 1]}
+  rows={[
+    ["CalendarDate()", "HapticFeedbackConstants.CALENDAR_DATE"],
+    ["ClockTick()", "HapticFeedbackConstants.CLOCK_TICK"],
+    ["Confirm()", "HapticFeedbackConstants.CONFIRM"],
+    ["ContextClick()", "HapticFeedbackConstants.CONTEXT_CLICK"],
+    ["DragCrossing()", "HapticFeedbackConstants.DRAG_CROSSING"],
+    ["DragStart()", "HapticFeedbackConstants.DRAG_START"],
+    ["EdgeRelease()", "HapticFeedbackConstants.EDGE_RELEASE"],
+    ["EdgeSqueeze()", "HapticFeedbackConstants.EDGE_SQUEEZE"],
+    ["EffectClick()", "VibrationEffect.EFFECT_CLICK"],
+    ["EffectDoubleClick()", "VibrationEffect.EFFECT_DOUBLE_CLICK"],
+    ["EffectHeavyClick()", "VibrationEffect.EFFECT_HEAVY_CLICK"],
+    ["EffectTick()", "VibrationEffect.EFFECT_TICK"],
+    ["GestureEnd()", "HapticFeedbackConstants.GESTURE_END"],
+    ["GestureStart()", "HapticFeedbackConstants.GESTURE_START"],
+    ["KeyboardPress()", "HapticFeedbackConstants.KEYBOARD_PRESS"],
+    ["KeyboardRelease()", "HapticFeedbackConstants.KEYBOARD_RELEASE"],
+    ["KeyboardTap()", "HapticFeedbackConstants.KEYBOARD_TAP"],
+    ["LongPress()", "HapticFeedbackConstants.LONG_PRESS"],
+    ["PrimitiveClick()", "VibrationEffect.Composition.PRIMITIVE_CLICK"],
+    ["PrimitiveLowTick()", "VibrationEffect.Composition.PRIMITIVE_LOW_TICK"],
+    ["PrimitiveQuickFall()", "VibrationEffect.Composition.PRIMITIVE_QUICK_FALL"],
+    ["PrimitiveQuickRise()", "VibrationEffect.Composition.PRIMITIVE_QUICK_RISE"],
+    ["PrimitiveSlowRise()", "VibrationEffect.Composition.PRIMITIVE_SLOW_RISE"],
+    ["PrimitiveSpin()", "VibrationEffect.Composition.PRIMITIVE_SPIN"],
+    ["PrimitiveThud()", "VibrationEffect.Composition.PRIMITIVE_THUD"],
+    ["PrimitiveTick()", "VibrationEffect.Composition.PRIMITIVE_TICK"],
+    ["Release()", "HapticFeedbackConstants.REJECT"],
+    ["ScrollItemFocus()", "HapticFeedbackConstants.SCROLL_ITEM_FOCUS"],
+    ["ScrollLimit()", "HapticFeedbackConstants.SCROLL_LIMIT"],
+    ["ScrollTick()", "HapticFeedbackConstants.SCROLL_TICK"],
+    ["SegmentFrequentTick()", "HapticFeedbackConstants.SEGMENT_FREQUENT_TICK"],
+    ["SegmentTick()", "HapticFeedbackConstants.SEGMENT_TICK"],
+    ["TextHandleMove()", "HapticFeedbackConstants.TEXT_HANDLE_MOVE"],
+    ["ToggleOff()", "HapticFeedbackConstants.TOGGLE_OFF"],
+    ["ToggleOn()", "HapticFeedbackConstants.TOGGLE_ON"],
+    ["VirtualKey()", "HapticFeedbackConstants.VIRTUAL_KEY"],
+    ["VirtualKeyRelease()", "HapticFeedbackConstants.VIRTUAL_KEY_RELEASE"],
+  ]}
+/>
+
+**Example**
+
+```ts
+import { Presets } from 'react-native-pulsar';
+
+Presets.System.Android.PrimitiveLowTick();
 ```
 
 ---
@@ -156,6 +380,10 @@ A haptic pattern to parse on mount. When provided, the pattern is parsed automat
 #### `play()`
 
 Plays the parsed pattern.
+
+#### `stop()`
+
+Stops the active pattern.
 
 #### `parse(pattern: Pattern)`
 
@@ -256,6 +484,65 @@ function MyComponent() {
 
 ---
 
+## useAdaptiveHaptics
+
+A React hook that plays haptics from a cross-platform `AdaptivePreset`. It automatically selects the correct configuration for the current platform (iOS or Android). Each platform can provide either a custom `Pattern` or a native preset function.
+
+```ts
+const { play } = useAdaptiveHaptics(preset: AdaptivePreset);
+```
+
+### Parameters
+
+#### `preset: AdaptivePreset`
+
+An object with `ios` and `android` keys. Each value is either a `Pattern` object or a function that triggers a native preset directly.
+
+```ts
+type AdaptivePresetConfig = (() => void) | Pattern;
+
+type AdaptivePreset = {
+  ios: AdaptivePresetConfig;
+  android: AdaptivePresetConfig;
+};
+```
+
+### Returns
+
+#### `play()`
+
+Plays the haptic for the current platform. If the platform config is a function, it is called directly. If it is a `Pattern`, it is played via the pattern composer.
+
+### Example
+
+```tsx
+import { useAdaptiveHaptics, Presets } from 'react-native-pulsar';
+
+const adaptivePreset = {
+  ios: Presets.Success,      // native iOS preset function
+  android: {                 // custom pattern for Android
+    discretePattern: [
+      { time: 0, amplitude: 1, frequency: 0.5 },
+      { time: 150, amplitude: 0.6, frequency: 0.4 },
+    ],
+    continuousPattern: {
+      amplitude: [],
+      frequency: [],
+    },
+  },
+};
+
+function MyComponent() {
+  const haptics = useAdaptiveHaptics(adaptivePreset);
+
+  return (
+    <Button onPress={haptics.play} title="Tap me" />
+  );
+}
+```
+
+---
+
 ## Settings
 
 Global configuration for the Pulsar SDK. All methods are available on the `Settings` object.
@@ -274,7 +561,8 @@ import { Settings } from 'react-native-pulsar';
 | `Settings.stopHaptics()`                         | Stop all currently playing haptics          |
 | `Settings.shutDownEngine()`                      | Shut down the haptic engine                 |
 | `Settings.getHapticsSupportLevel()`              | Returns the device's `HapticSupport` level  |
-| `Settings.forceHapticsSupportLevel(level)`       | Override the detected support level         |
+| `Settings.forceHapticsSupportLevel(level)`       | (Android only) Override the detected support level         |
+| `Settings.enableImpulseCompositionMode(state: boolean)`       | (Android only) Enable or disable impulse composition mode         |
 
 ### Example
 
