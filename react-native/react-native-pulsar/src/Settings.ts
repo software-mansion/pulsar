@@ -8,7 +8,8 @@ Pulsar.Pulsar_preloadPresets;
 Pulsar.Pulsar_stopHaptics;
 Pulsar.Pulsar_shutDownEngine;
 Pulsar.Pulsar_hapticSupport;
-Pulsar.Pulsar_forceHapticsSupportLevel
+Pulsar.Pulsar_forceHapticsSupportLevel;
+Pulsar.Pulsar_enableImpulseCompositionMode;
 
 const Settings = {
   enableHaptics: (state: boolean) => {
@@ -37,8 +38,11 @@ const Settings = {
   },
   forceHapticsSupportLevel: (level: HapticSupport) => {
     Pulsar.Pulsar_forceHapticsSupportLevel(level);
+  },
+  enableImpulseCompositionMode: (state: boolean) => {
+    Pulsar.Pulsar_enableImpulseCompositionMode(state);
   }
-  
+
 } as const;
 
 export default Settings;

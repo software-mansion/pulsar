@@ -86,6 +86,10 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     // do nothing on Android
   }
 
+  override fun Pulsar_enableImpulseCompositionMode(state: Boolean) {
+    pulsar.enableImpulseCompositionMode(state)
+  }
+
   // PatternComposer -----------------------------------------------------------------
 
   private fun patternDataFromJSPattern(data: ReadableMap): PatternData {

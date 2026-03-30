@@ -159,6 +159,18 @@ fun PublicAPIsScreen(pulsar: Pulsar?) {
             }
 
             item {
+                var impulseCompositionEnabled by remember { mutableStateOf(false) }
+                APITestRow(
+                    label = "enableImpulseCompositionMode",
+                    state = "Impulse composition: ${if (impulseCompositionEnabled) "ON" else "OFF"}",
+                    onButtonClick = {
+                        impulseCompositionEnabled = !impulseCompositionEnabled
+                        pulsar?.enableImpulseCompositionMode(impulseCompositionEnabled)
+                    }
+                )
+            }
+
+            item {
                 APITestRow(
                     label = "PatternComposer.parsePattern()",
                     state = "Ready",

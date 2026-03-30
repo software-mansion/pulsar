@@ -69,6 +69,10 @@ RCT_EXPORT_MODULE()
   // do nothing on iOS
 }
 
+- (void)Pulsar_enableImpulseCompositionMode:(BOOL)state {
+  // do nothing on iOS
+}
+
 // PatternComposer -----------------------------------------------------------------
 
 static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) {

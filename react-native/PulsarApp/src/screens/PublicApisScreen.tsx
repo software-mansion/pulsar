@@ -96,6 +96,14 @@ export default function PublicApisScreen() {
     setLastAction(`Forced support to: ${HAPTIC_SUPPORT_LABELS[level]}`);
   };
 
+  const [impulseCompositionEnabled, setImpulseCompositionEnabled] = useState(false);
+  const handleToggleImpulseCompositionMode = () => {
+    const newState = !impulseCompositionEnabled;
+    Settings.enableImpulseCompositionMode(newState);
+    setImpulseCompositionEnabled(newState);
+    setLastAction(`Impulse composition mode ${newState ? 'enabled' : 'disabled'}`);
+  };
+
   // PatternComposer Methods
   const handleParsePattern = () => {
     const pattern: Pattern = {
@@ -210,6 +218,13 @@ export default function PublicApisScreen() {
             title="Shut Down Engine"
             subtitle="Pulsar_shutDownEngine()"
             onPress={handleShutDownEngine}
+          />
+
+          <ApiButton
+            title={`${impulseCompositionEnabled ? 'Disable' : 'Enable'} Impulse Composition Mode`}
+            subtitle="Settings.enableImpulseCompositionMode()"
+            onPress={handleToggleImpulseCompositionMode}
+            status={impulseCompositionEnabled ? '✅ Enabled' : '❌ Disabled'}
           />
         </View>
 
