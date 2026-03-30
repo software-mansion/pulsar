@@ -42,6 +42,14 @@ Apple's Core Haptics framework calls these **continuous** events, shaped by para
 
 A Pulsar pattern contains both a discrete array and a continuous envelope. The haptic engine plays them simultaneously, letting you layer sharp taps on top of a sustained rumble. See the platform-specific SDK pages for data structures and code examples.
 
+## Testing haptics on simulators
+
+iOS and Android simulators do not support haptic hardware, which makes it difficult to verify that your haptic patterns feel correct during development. Pulsar provides a more convenient approach: it generates audio based on the haptic pattern description and plays it instead of vibration. This works for all built-in presets and for custom patterns - Pulsar generates the sound from the pattern parameters, so you can hear the shape of any haptic you define.
+
+Because of this, Pulsar plays sound by default in debug builds. This lets you test and iterate on haptic patterns on a simulator without needing a physical device. Each haptic event produces an audible tone that reflects its amplitude, frequency, and duration, giving you an immediate sense of how the pattern will feel.
+
+You can disable audio output at any time through the SDK configuration if you prefer a silent debug experience.
+
 ## Preloading
 
 A **preset** is a ready-to-use haptic pattern bundled with the SDK. Playing a preset for the first time requires allocating resources, creating a pattern player, and preparing the haptic engine. These steps add latency to the first playback.

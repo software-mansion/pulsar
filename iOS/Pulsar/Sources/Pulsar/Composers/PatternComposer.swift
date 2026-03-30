@@ -24,16 +24,6 @@ public class PatternComposer: NSObject {
     stop()
   }
 
-  public func parseJSON(_ jsonData: String) -> PatternData? {
-    let decoder = JSONDecoder()
-    do {
-      let hapticData = try decoder.decode(PatternData.self, from: jsonData.data(using: .utf8)!)
-      return hapticData
-    } catch {
-      return nil
-    }
-  }
-
   @objc public func parsePattern(hapticsData: PatternData) {
     discreteLine.reset()
     continuousLine.reset()

@@ -437,7 +437,7 @@ Available names:
     "SystemNotificationWarning",
     "SystemSelection",
   ]}
-  initialItems={5}
+  initialItems={8}
   columns={2}
   code
 />
@@ -496,14 +496,6 @@ Stops all playback.
 
 ```swift
 func stop()
-```
-
-#### `parseJSON(_:)`
-
-Parses a JSON string into a `PatternData` object. Returns `nil` if the JSON is invalid.
-
-```swift
-func parseJSON(_ jsonData: String) -> PatternData?
 ```
 
 ### Example
@@ -643,7 +635,10 @@ class PatternData: NSObject, Codable {
   let continuousPattern: ContinuousPattern
   let discretePattern: [DiscretePoint]
 
-  init(continuousPattern: ContinuousPattern, discretePattern: [DiscretePoint])
+  init(
+    continuousPattern: ContinuousPattern,
+    discretePattern: [DiscretePoint]
+  )
 }
 ```
 
