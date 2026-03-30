@@ -5,6 +5,7 @@
   margin-bottom: 16px;
   background-color: white;
   position: relative;
+  scroll-margin-top: 80px;
   .tagsBar {
     display: flex;
     gap: 8px;
@@ -12,9 +13,27 @@
   }
   .header {
     margin-bottom: 20px;
+    .nameRow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .name {
       font-weight: var(--font-weight-bold);
       font-size: var(--font-size-xl);
+    }
+    .anchorLink {
+      font-size: var(--font-size-lg);
+      color: var(--color-blue-50);
+      text-decoration: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      &:hover {
+        color: var(--color-blue-80, var(--color-blue-50));
+      }
+    }
+    &:hover .anchorLink {
+      opacity: 1;
     }
     .description {
       font-size: var(--font-size-md);

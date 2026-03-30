@@ -29,8 +29,13 @@ function getKotlinPresetImport(shortName: string) {
     return `import com.swmansion.pulsar\n\nlet pulsar = Pulsar()\npulsar.getPresets().${shortName}()`;
   }
 
+function toAnchorId(name: string) {
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
 export function Preset(preset: PresetConfig) {
   const { data } = preset;
+  const anchorId = toAnchorId(data.name);
   const [usageViewed, setUsageViewed] = useState(false);
   const [definitionOpen, setDefinitionOpen] = useState(false);
 
@@ -52,7 +57,7 @@ export function Preset(preset: PresetConfig) {
   }
 
   return (
-    <div className={style.preset}>
+    <div id={anchorId} className={style.preset}>
       {data.tags && data.tags.length > 0 && (
         <div className={style.tagsBar}>
           {data.tags.map((tag, idx) => (
@@ -66,7 +71,10 @@ export function Preset(preset: PresetConfig) {
       </button>
 
       <div className={style.header}>
-        <div className={style.name}>{data.name}</div>
+        <div className={style.nameRow}>
+          <div className={style.name}>{data.name}</div>
+          <a href={`#${anchorId}`} className={style.anchorLink} aria-label={`Link to ${data.name}`}>#</a>
+        </div>
         <div className={style.description}>{data.description}</div>
       </div>
 
