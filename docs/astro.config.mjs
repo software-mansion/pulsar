@@ -46,7 +46,7 @@ export default defineConfig({
         {
           label: 'SDK',
           items: [
-            { label: 'Overview', slug: 'sdk' },
+            { label: 'Overview', slug: 'sdk/overview' },
             { label: 'iOS', slug: 'sdk/ios' },
             { label: 'Android', slug: 'sdk/android' },
             { label: 'React Native', slug: 'sdk/react-native' },
