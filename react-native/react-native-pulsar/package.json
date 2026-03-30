@@ -49,14 +49,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/piaskowyk/react-native-pulsar.git"
+    "url": "git+https://github.com/software-mansion-labs/pulsar.git"
   },
   "author": "Krzysztof Piaskowy <krzysztof.piaskowy@swmansion.com> (https://github.com/piaskowyk)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/piaskowyk/react-native-pulsar/issues"
+    "url": "https://github.com/software-mansion-labs/pulsar/issues"
   },
-  "homepage": "https://github.com/piaskowyk/react-native-pulsar#readme",
+  "homepage": "https://github.com/software-mansion-labs/pulsar#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

@@ -1,0 +1,38 @@
+name: Publish stable
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (x.y.z). Leave empty to infer from branch name.'
+        required: false
+        default: ''
+      dry-run:
+        description: 'Dry run (does not publish or push git tags)'
+        required: false
+        default: 'false'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # required for creating release tags
+      id-token: write # required for npm provenance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Publish stable
+        uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
+        with:
+          package-name: react-native-pulsar
+          package-json-path: react-native/react-native-pulsar/package.json
+          release-type: stable
+          version: ${{ github.event.inputs.version || '' }}
+          dry-run: ${{ github.event.inputs.dry-run || 'false' }}
+          install-dependencies-command: yarn install --immutable
