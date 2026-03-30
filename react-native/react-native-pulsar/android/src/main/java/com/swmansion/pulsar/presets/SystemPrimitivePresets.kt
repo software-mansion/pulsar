@@ -84,7 +84,7 @@ class SystemPrimitiveClickPreset(haptics: Pulsar, private val systemPresets: Sys
         super.play()
         systemPresets.primitiveClick()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveClickPreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveClick" }
 }
 
 class SystemPrimitiveThudPreset(haptics: Pulsar, private val systemPresets: SystemPrimitivePresets) : Preset,
@@ -106,7 +106,7 @@ class SystemPrimitiveThudPreset(haptics: Pulsar, private val systemPresets: Syst
         super.play()
         systemPresets.primitiveThud()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveThudPreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveThud" }
 }
 
 class SystemPrimitiveSpinPreset(haptics: Pulsar, private val systemPresets: SystemPrimitivePresets) : Preset,
@@ -128,7 +128,7 @@ class SystemPrimitiveSpinPreset(haptics: Pulsar, private val systemPresets: Syst
         super.play()
         systemPresets.primitiveSpin()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveSpinPreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveSpin" }
 }
 
 class SystemPrimitiveQuickRisePreset(haptics: Pulsar, private val systemPresets: SystemPrimitivePresets) : Preset,
@@ -150,7 +150,7 @@ class SystemPrimitiveQuickRisePreset(haptics: Pulsar, private val systemPresets:
         super.play()
         systemPresets.primitiveQuickRise()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveQuickRisePreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveQuickRise" }
 }
 
 class SystemPrimitiveSlowRisePreset(haptics: Pulsar, private val systemPresets: SystemPrimitivePresets) : Preset,
@@ -172,7 +172,7 @@ class SystemPrimitiveSlowRisePreset(haptics: Pulsar, private val systemPresets: 
         super.play()
         systemPresets.primitiveSlowRise()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveSlowRisePreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveSlowRise" }
 }
 
 class SystemPrimitiveQuickFallPreset(haptics: Pulsar, private val systemPresets: SystemPrimitivePresets) : Preset,
@@ -194,7 +194,7 @@ class SystemPrimitiveQuickFallPreset(haptics: Pulsar, private val systemPresets:
         super.play()
         systemPresets.primitiveQuickFall()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveQuickFallPreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveQuickFall" }
 }
 
 class SystemPrimitiveTickPreset(haptics: Pulsar, private val systemPresets: SystemPrimitivePresets) : Preset,
@@ -217,7 +217,7 @@ class SystemPrimitiveTickPreset(haptics: Pulsar, private val systemPresets: Syst
         super.play()
         systemPresets.primitiveTick()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveTickPreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveTick" }
 }
 
 class SystemPrimitiveLowTickPreset(haptics: Pulsar, private val systemPresets: SystemPrimitivePresets) : Preset,
@@ -240,5 +240,5 @@ class SystemPrimitiveLowTickPreset(haptics: Pulsar, private val systemPresets: S
         super.play()
         systemPresets.primitiveLowTick()
     }
-    companion object: PresetWithName { override val name = "SystemPrimitiveLowTickPreset" }
+    companion object: PresetWithName { override val name = "SystemPrimitiveLowTick" }
 }

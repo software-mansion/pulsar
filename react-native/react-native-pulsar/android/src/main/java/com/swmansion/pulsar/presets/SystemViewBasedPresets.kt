@@ -113,7 +113,7 @@ class SystemLongPressPreset(haptics: Pulsar, private val systemPresets: SystemVi
         super.play()
         systemPresets.longPress()
     }
-    companion object: PresetWithName { override val name = "SystemLongPressPreset" }
+    companion object: PresetWithName { override val name = "SystemLongPress" }
 }
 
 class SystemVirtualKeyPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -136,7 +136,7 @@ class SystemVirtualKeyPreset(haptics: Pulsar, private val systemPresets: SystemV
         super.play()
         systemPresets.virtualKey()
     }
-    companion object: PresetWithName { override val name = "SystemVirtualKeyPreset" }
+    companion object: PresetWithName { override val name = "SystemVirtualKey" }
 }
 
 class SystemKeyboardTapPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -159,7 +159,7 @@ class SystemKeyboardTapPreset(haptics: Pulsar, private val systemPresets: System
         super.play()
         systemPresets.keyboardTap()
     }
-    companion object: PresetWithName { override val name = "SystemKeyboardTapPreset" }
+    companion object: PresetWithName { override val name = "SystemKeyboardTap" }
 }
 
 class SystemClockTickPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -182,7 +182,7 @@ class SystemClockTickPreset(haptics: Pulsar, private val systemPresets: SystemVi
         super.play()
         systemPresets.clockTick()
     }
-    companion object: PresetWithName { override val name = "SystemClockTickPreset" }
+    companion object: PresetWithName { override val name = "SystemClockTick" }
 }
 
 class SystemCalendarDatePreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -205,7 +205,7 @@ class SystemCalendarDatePreset(haptics: Pulsar, private val systemPresets: Syste
         super.play()
         systemPresets.calendarDate()
     }
-    companion object: PresetWithName { override val name = "SystemCalendarDatePreset" }
+    companion object: PresetWithName { override val name = "SystemCalendarDate" }
 }
 
 class SystemContextClickPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -228,7 +228,7 @@ class SystemContextClickPreset(haptics: Pulsar, private val systemPresets: Syste
         super.play()
         systemPresets.contextClick()
     }
-    companion object: PresetWithName { override val name = "SystemContextClickPreset" }
+    companion object: PresetWithName { override val name = "SystemContextClick" }
 }
 
 class SystemKeyboardPressPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -251,7 +251,7 @@ class SystemKeyboardPressPreset(haptics: Pulsar, private val systemPresets: Syst
         super.play()
         systemPresets.keyboardPress()
     }
-    companion object: PresetWithName { override val name = "SystemKeyboardPressPreset" }
+    companion object: PresetWithName { override val name = "SystemKeyboardPress" }
 }
 
 class SystemKeyboardReleasePreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -274,7 +274,7 @@ class SystemKeyboardReleasePreset(haptics: Pulsar, private val systemPresets: Sy
         super.play()
         systemPresets.keyboardRelease()
     }
-    companion object: PresetWithName { override val name = "SystemKeyboardReleasePreset" }
+    companion object: PresetWithName { override val name = "SystemKeyboardRelease" }
 }
 
 class SystemVirtualKeyReleasePreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -297,7 +297,7 @@ class SystemVirtualKeyReleasePreset(haptics: Pulsar, private val systemPresets: 
         super.play()
         systemPresets.virtualKeyRelease()
     }
-    companion object: PresetWithName { override val name = "SystemVirtualKeyReleasePreset" }
+    companion object: PresetWithName { override val name = "SystemVirtualKeyRelease" }
 }
 
 class SystemTextHandleMovePreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -320,7 +320,7 @@ class SystemTextHandleMovePreset(haptics: Pulsar, private val systemPresets: Sys
         super.play()
         systemPresets.textHandleMove()
     }
-    companion object: PresetWithName { override val name = "SystemTextHandleMovePreset" }
+    companion object: PresetWithName { override val name = "SystemTextHandleMove" }
 }
 
 class SystemDragCrossingPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -343,7 +343,7 @@ class SystemDragCrossingPreset(haptics: Pulsar, private val systemPresets: Syste
         super.play()
         systemPresets.dragCrossing()
     }
-    companion object: PresetWithName { override val name = "SystemDragCrossingPreset" }
+    companion object: PresetWithName { override val name = "SystemDragCrossing" }
 }
 
 class SystemGestureStartPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -366,7 +366,7 @@ class SystemGestureStartPreset(haptics: Pulsar, private val systemPresets: Syste
         super.play()
         systemPresets.gestureStart()
     }
-    companion object: PresetWithName { override val name = "SystemGestureStartPreset" }
+    companion object: PresetWithName { override val name = "SystemGestureStart" }
 }
 
 class SystemGestureEndPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -389,7 +389,7 @@ class SystemGestureEndPreset(haptics: Pulsar, private val systemPresets: SystemV
         super.play()
         systemPresets.gestureEnd()
     }
-    companion object: PresetWithName { override val name = "SystemGestureEndPreset" }
+    companion object: PresetWithName { override val name = "SystemGestureEnd" }
 }
 
 class SystemEdgeSqueezePreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -412,7 +412,7 @@ class SystemEdgeSqueezePreset(haptics: Pulsar, private val systemPresets: System
         super.play()
         systemPresets.edgeSqueeze()
     }
-    companion object: PresetWithName { override val name = "SystemEdgeSqueezePreset" }
+    companion object: PresetWithName { override val name = "SystemEdgeSqueeze" }
 }
 
 class SystemEdgeReleasePreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -435,7 +435,7 @@ class SystemEdgeReleasePreset(haptics: Pulsar, private val systemPresets: System
         super.play()
         systemPresets.edgeRelease()
     }
-    companion object: PresetWithName { override val name = "SystemEdgeReleasePreset" }
+    companion object: PresetWithName { override val name = "SystemEdgeRelease" }
 }
 
 class SystemConfirmPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -458,7 +458,7 @@ class SystemConfirmPreset(haptics: Pulsar, private val systemPresets: SystemView
         super.play()
         systemPresets.confirm()
     }
-    companion object: PresetWithName { override val name = "SystemConfirmPreset" }
+    companion object: PresetWithName { override val name = "SystemConfirm" }
 }
 
 class SystemReleasePreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -482,7 +482,7 @@ class SystemReleasePreset(haptics: Pulsar, private val systemPresets: SystemView
         super.play()
         systemPresets.release()
     }
-    companion object: PresetWithName { override val name = "SystemReleasePreset" }
+    companion object: PresetWithName { override val name = "SystemRelease" }
 }
 
 class SystemScrollTickPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -505,7 +505,7 @@ class SystemScrollTickPreset(haptics: Pulsar, private val systemPresets: SystemV
         super.play()
         systemPresets.scrollTick()
     }
-    companion object: PresetWithName { override val name = "SystemScrollTickPreset" }
+    companion object: PresetWithName { override val name = "SystemScrollTick" }
 }
 
 class SystemScrollItemFocusPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -528,7 +528,7 @@ class SystemScrollItemFocusPreset(haptics: Pulsar, private val systemPresets: Sy
         super.play()
         systemPresets.scrollItemFocus()
     }
-    companion object: PresetWithName { override val name = "SystemScrollItemFocusPreset" }
+    companion object: PresetWithName { override val name = "SystemScrollItemFocus" }
 }
 
 class SystemScrollLimitPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -551,7 +551,7 @@ class SystemScrollLimitPreset(haptics: Pulsar, private val systemPresets: System
         super.play()
         systemPresets.scrollLimit()
     }
-    companion object: PresetWithName { override val name = "SystemScrollLimitPreset" }
+    companion object: PresetWithName { override val name = "SystemScrollLimit" }
 }
 
 class SystemToggleOnPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -574,7 +574,7 @@ class SystemToggleOnPreset(haptics: Pulsar, private val systemPresets: SystemVie
         super.play()
         systemPresets.toggleOn()
     }
-    companion object: PresetWithName { override val name = "SystemToggleOnPreset" }
+    companion object: PresetWithName { override val name = "SystemToggleOn" }
 }
 
 class SystemToggleOffPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -597,7 +597,7 @@ class SystemToggleOffPreset(haptics: Pulsar, private val systemPresets: SystemVi
         super.play()
         systemPresets.toggleOff()
     }
-    companion object: PresetWithName { override val name = "SystemToggleOffPreset" }
+    companion object: PresetWithName { override val name = "SystemToggleOff" }
 }
 
 class SystemDragStartPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -620,7 +620,7 @@ class SystemDragStartPreset(haptics: Pulsar, private val systemPresets: SystemVi
         super.play()
         systemPresets.dragStart()
     }
-    companion object: PresetWithName { override val name = "SystemDragStartPreset" }
+    companion object: PresetWithName { override val name = "SystemDragStart" }
 }
 
 class SystemSegmentTickPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -643,7 +643,7 @@ class SystemSegmentTickPreset(haptics: Pulsar, private val systemPresets: System
         super.play()
         systemPresets.segmentTick()
     }
-    companion object: PresetWithName { override val name = "SystemSegmentTickPreset" }
+    companion object: PresetWithName { override val name = "SystemSegmentTick" }
 }
 
 class SystemSegmentFrequentTickPreset(haptics: Pulsar, private val systemPresets: SystemViewBasedPresets) : Preset,
@@ -666,5 +666,5 @@ class SystemSegmentFrequentTickPreset(haptics: Pulsar, private val systemPresets
         super.play()
         systemPresets.segmentFrequentTick()
     }
-    companion object: PresetWithName { override val name = "SystemSegmentFrequentTickPreset" }
+    companion object: PresetWithName { override val name = "SystemSegmentFrequentTick" }
 }

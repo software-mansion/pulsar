@@ -43,155 +43,155 @@ export default {
     },
 
     Android: {
-      EffectClickPreset: () => {
+      EffectClick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemEffectClickPreset');
+        Pulsar.Pulsar_play('SystemEffectClick');
       },
-      EffectDoubleClickPreset: () => {
+      EffectDoubleClick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemEffectDoubleClickPreset');
+        Pulsar.Pulsar_play('SystemEffectDoubleClick');
       },
-      EffectTickPreset: () => {
+      EffectTick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemEffectTickPreset');
+        Pulsar.Pulsar_play('SystemEffectTick');
       },
-      EffectHeavyClickPreset: () => {
+      EffectHeavyClick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemEffectHeavyClickPreset');
-      },
-
-      PrimitiveClickPreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveClickPreset');
-      },
-      PrimitiveLowTickPreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveLowTickPreset');
-      },
-      PrimitiveQuickFallPreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveQuickFallPreset');
-      },
-      PrimitiveQuickRisePreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveQuickRisePreset');
-      },
-      PrimitiveSlowRisePreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveSlowRisePreset');
-      },
-      PrimitiveSpinPreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveSpinPreset');
-      },
-      PrimitiveThudPreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveThudPreset');
-      },
-      PrimitiveTickPreset: () => {
-        'worklet';
-        Pulsar.Pulsar_play('SystemPrimitiveTickPreset');
+        Pulsar.Pulsar_play('SystemEffectHeavyClick');
       },
 
-      LongPressPreset: () => {
+      PrimitiveClick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemLongPressPreset');
+        Pulsar.Pulsar_play('SystemPrimitiveClick');
       },
-      VirtualKeyPreset: () => {
+      PrimitiveLowTick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemVirtualKeyPreset');
+        Pulsar.Pulsar_play('SystemPrimitiveLowTick');
       },
-      KeyboardTapPreset: () => {
+      PrimitiveQuickFall: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemKeyboardTapPreset');
+        Pulsar.Pulsar_play('SystemPrimitiveQuickFall');
       },
-      ClockTickPreset: () => {
+      PrimitiveQuickRise: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemClockTickPreset');
+        Pulsar.Pulsar_play('SystemPrimitiveQuickRise');
       },
-      CalendarDatePreset: () => {
+      PrimitiveSlowRise: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemCalendarDatePreset');
+        Pulsar.Pulsar_play('SystemPrimitiveSlowRise');
       },
-      ContextClickPreset: () => {
+      PrimitiveSpin: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemContextClickPreset');
+        Pulsar.Pulsar_play('SystemPrimitiveSpin');
       },
-      KeyboardPressPreset: () => {
+      PrimitiveThud: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemKeyboardPressPreset');
+        Pulsar.Pulsar_play('SystemPrimitiveThud');
       },
-      KeyboardReleasePreset: () => {
+      PrimitiveTick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemKeyboardReleasePreset');
+        Pulsar.Pulsar_play('SystemPrimitiveTick');
       },
-      VirtualKeyReleasePreset: () => {
+
+      LongPress: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemVirtualKeyReleasePreset');
+        Pulsar.Pulsar_play('SystemLongPress');
       },
-      TextHandleMovePreset: () => {
+      VirtualKey: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemTextHandleMovePreset');
+        Pulsar.Pulsar_play('SystemVirtualKey');
       },
-      DragCrossingPreset: () => {
+      KeyboardTap: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemDragCrossingPreset');
+        Pulsar.Pulsar_play('SystemKeyboardTap');
       },
-      GestureStartPreset: () => {
+      ClockTick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemGestureStartPreset');
+        Pulsar.Pulsar_play('SystemClockTick');
       },
-      GestureEndPreset: () => {
+      CalendarDate: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemGestureEndPreset');
+        Pulsar.Pulsar_play('SystemCalendarDate');
       },
-      EdgeSqueezePreset: () => {
+      ContextClick: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemEdgeSqueezePreset');
+        Pulsar.Pulsar_play('SystemContextClick');
       },
-      EdgeReleasePreset: () => {
+      KeyboardPress: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemEdgeReleasePreset');
+        Pulsar.Pulsar_play('SystemKeyboardPress');
       },
-      ConfirmPreset: () => {
+      KeyboardRelease: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemConfirmPreset');
+        Pulsar.Pulsar_play('SystemKeyboardRelease');
       },
-      ReleasePreset: () => {
+      VirtualKeyRelease: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemReleasePreset');
+        Pulsar.Pulsar_play('SystemVirtualKeyRelease');
       },
-      ScrollTickPreset: () => {
+      TextHandleMove: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemScrollTickPreset');
+        Pulsar.Pulsar_play('SystemTextHandleMove');
       },
-      ScrollItemFocusPreset: () => {
+      DragCrossing: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemScrollItemFocusPreset');
+        Pulsar.Pulsar_play('SystemDragCrossing');
       },
-      ScrollLimitPreset: () => {
+      GestureStart: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemScrollLimitPreset');
+        Pulsar.Pulsar_play('SystemGestureStart');
       },
-      ToggleOnPreset: () => {
+      GestureEnd: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemToggleOnPreset');
+        Pulsar.Pulsar_play('SystemGestureEnd');
       },
-      ToggleOffPreset: () => {
+      EdgeSqueeze: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemToggleOffPreset');
+        Pulsar.Pulsar_play('SystemEdgeSqueeze');
       },
-      DragStartPreset: () => {
+      EdgeRelease: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemDragStartPreset');
+        Pulsar.Pulsar_play('SystemEdgeRelease');
       },
-      SegmentTickPreset: () => {
+      Confirm: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemSegmentTickPreset');
+        Pulsar.Pulsar_play('SystemConfirm');
       },
-      SegmentFrequentTickPreset: () => {
+      Release: () => {
         'worklet';
-        Pulsar.Pulsar_play('SystemSegmentFrequentTickPreset');
+        Pulsar.Pulsar_play('SystemRelease');
+      },
+      ScrollTick: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemScrollTick');
+      },
+      ScrollItemFocus: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemScrollItemFocus');
+      },
+      ScrollLimit: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemScrollLimit');
+      },
+      ToggleOn: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemToggleOn');
+      },
+      ToggleOff: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemToggleOff');
+      },
+      DragStart: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemDragStart');
+      },
+      SegmentTick: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemSegmentTick');
+      },
+      SegmentFrequentTick: () => {
+        'worklet';
+        Pulsar.Pulsar_play('SystemSegmentFrequentTick');
       },
     },
   },
