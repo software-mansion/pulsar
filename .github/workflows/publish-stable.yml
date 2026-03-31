@@ -10,14 +10,15 @@ on:
       dry-run:
         description: 'Dry run (does not publish or push git tags)'
         required: false
-        default: 'false'
+        type: boolean
+        default: 'true'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # required for creating release tags
-      id-token: write # required for npm provenance
+      contents: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +28,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Publish stable
         uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
         with:
@@ -34,5 +38,5 @@ jobs:
           package-json-path: react-native/react-native-pulsar/package.json
           release-type: stable
           version: ${{ github.event.inputs.version || '' }}
-          dry-run: ${{ github.event.inputs.dry-run || 'false' }}
+          dry-run: ${{ github.event.inputs.dry-run || 'true' }}
           install-dependencies-command: yarn install --immutable
