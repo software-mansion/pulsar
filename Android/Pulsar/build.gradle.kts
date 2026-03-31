@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    `maven-publish`
+    signing
 }
 
 android {
@@ -47,4 +49,66 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.kotlinx.serialization.json)
+}
+
+group = "com.swmansion"
+version = System.getenv("LIB_VERSION") ?: "0.0.1"
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+
+                groupId = "com.swmansion"
+                artifactId = "pulsar"
+                version = version.toString()
+
+                pom {
+                    name.set("Pulsar Android Library")
+                    description.set("Pulsar audio visualization and manipulation library for Android")
+                    url.set("https://github.com/swmansion/pulsar")
+                    
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("https://github.com/swmansion/pulsar/blob/main/LICENSE")
+                        }
+                    }
+                    
+                    developers {
+                        developer {
+                            id.set("swmansion")
+                            name.set("Software Mansion")
+                            email.set("hello@swmansion.com")
+                        }
+                    }
+                    
+                    scm {
+                        connection.set("scm:git:https://github.com/swmansion/pulsar.git")
+                        developerConnection.set("scm:git:https://github.com/swmansion/pulsar.git")
+                        url.set("https://github.com/swmansion/pulsar")
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                url = uri("https://s01.oss.sonatype.org/service/repositories/releases/content/")
+                credentials {
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
+                }
+            }
+        }
+    }
+
+    signing {
+        useInMemoryPgpKeys(
+            System.getenv("GPG_PRIVATE_KEY"),
+            System.getenv("GPG_PASSPHRASE")
+        )
+        sign(publishing.publications["release"])
+    }
 }
