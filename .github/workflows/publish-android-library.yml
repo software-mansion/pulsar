@@ -49,11 +49,3 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           LIB_VERSION: ${{ inputs.version }}
         run: ./gradlew :Pulsar:nmcpPublishAllPublicationsToCentralPortal
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: success()
-        with:
-          tag_name: v${{ inputs.version }}
-          draft: false
-          prerelease: false
