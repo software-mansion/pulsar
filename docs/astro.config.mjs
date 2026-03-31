@@ -5,8 +5,8 @@ import react from '@astrojs/react';
 import { BASE_PATH } from './config.ts';
 
 export default defineConfig({
-  site: 'https://docs.swmansion.com',
-  base: BASE_PATH,
+  // site: 'https://docs.swmansion.com',
+  // base: BASE_PATH,
   vite: {
     css: {
       modules: {
