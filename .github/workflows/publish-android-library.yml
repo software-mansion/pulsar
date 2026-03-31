@@ -48,7 +48,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           LIB_VERSION: ${{ inputs.version }}
-        run: ./gradlew :Pulsar:publishAllPublicationsToCentralPortal
+        run: ./gradlew :Pulsar:nmcpPublishAllPublicationsToCentralPortal
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

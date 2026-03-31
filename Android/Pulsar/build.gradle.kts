@@ -100,9 +100,9 @@ afterEvaluate {
 
     nmcp {
         publishAllPublicationsToCentralPortal {
-            username = System.getenv("MAVEN_USERNAME") ?: ""
-            password = System.getenv("MAVEN_PASSWORD") ?: ""
-            publicationType = "AUTOMATIC"
+            username.set(System.getenv("MAVEN_USERNAME") ?: "")
+            password.set(System.getenv("MAVEN_PASSWORD") ?: "")
+            publishingType.set("AUTOMATIC")
         }
     }
 
