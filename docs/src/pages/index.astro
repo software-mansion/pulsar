@@ -13,6 +13,7 @@ import { SdkSection } from './components/SdkSection/SdkSection';
 import { SwmSection } from './components/SwmSection/SwmSection';
 import { PresetsList } from './components/PresetsList/PresetsList';
 import PostHog from '../components/posthog.astro';
+import { BASE_PATH } from '../../config';
 ---
 
 <!doctype html>
@@ -26,7 +27,7 @@ import PostHog from '../components/posthog.astro';
     />
     <meta name="keywords" content="haptic feedback android, haptic feedback android, react native haptic feedback, ios haptics, react native haptics, ios haptic feedback, haptics feedback, android haptic feedback, haptic feedback react native, swiftui haptic feedback, haptics" />
     <title>Pulsar: Haptic Feedback Library for Swift, Kotlin & React Native</title>
-    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="icon" type="image/svg+xml" href={`${BASE_PATH}/logo.svg`} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Pulsar - a rich and ready-to-use haptics presets library for Swift, Kotlin & React Native" />
     <meta property="og:description" content="Rich and ready-to use haptics library
@@ -54,7 +55,7 @@ Presets that you can hear and feel with Live Preview." />
         subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
       />
       <PresetsList client:load />
-      <Button label="See all presets" url={'/presets-playground'} />
+      <Button label="See all presets" url={`${BASE_PATH}/presets-playground`} />
       <VisitComposer className={commonStyle.spaceTopMedium} />
     </BasicLayout>
 
@@ -72,9 +73,9 @@ Presets that you can hear and feel with Live Preview." />
   </body>
 </html>
 
-<script is:inline>
+<script is:inline define:vars={{ basePath: BASE_PATH }}>
   document.addEventListener('DOMContentLoaded', function () {
-    var seeAllBtn = document.querySelector('a[href="/presets-playground"]');
+    var seeAllBtn = document.querySelector(`a[href="${basePath}/presets-playground"]`);
     if (seeAllBtn) {
       seeAllBtn.addEventListener('click', function () {
         window.posthog?.capture('see_all_presets_clicked');

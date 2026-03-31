@@ -4,6 +4,7 @@ import { Tag } from '../../../content/docs/components/Tag/Tag';
 import type { PresetConfig } from '../../../content/docs/components/Preset/types';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { BASE_PATH } from '../../../../config';
 
 const TOAST_EXIT_DURATION = 300;
 
@@ -51,7 +52,7 @@ export function Preset(preset: PresetConfig) {
         <div className={`${style.toast} ${isExiting ? style.toastExit : style.toastEnter}`} role="status">
           <span>
             To play haptics on your phone, visit the{' '}
-            <a href="/presets-playground">Presets Playground</a>
+            <a href={`${BASE_PATH}/presets-playground`}>Presets Playground</a>
             {' '}where you can connect your device.
           </span>
           <button

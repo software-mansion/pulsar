@@ -5,6 +5,7 @@ import logo from '../../../assets/logo.svg';
 import logoGitHub from '../../../assets/landing-page/logo-github.png';
 import menuIcon from '../../../assets/landing-page/menu.svg';
 import closeIcon from '../../../assets/landing-page/x.svg';
+import { BASE_PATH } from '../../../../config';
 
 export function TopBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,9 +26,9 @@ export function TopBar() {
           <span>Pulsar</span>
         </div>
         <div className={styles.menuItems}>
-          <a href="/presets-playground">Presets</a>
-          <a href="/getting-started">Getting started</a>
-          <a href="/sdk/overview">Docs</a>
+          <a href={`${BASE_PATH}/presets-playground`}>Presets</a>
+          <a href={`${BASE_PATH}/getting-started`}>Getting started</a>
+          <a href={`${BASE_PATH}/sdk/overview`}>Docs</a>
         </div>
         <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
@@ -54,13 +55,13 @@ export function TopBar() {
               />
             </div>
             <nav className={styles.mobileMenuItems}>
-              <a href="/presets-playground" onClick={closeMenu}>
+              <a href={`${BASE_PATH}/presets-playground`} onClick={closeMenu}>
                 Presets
               </a>
-              <a href="/getting-started" onClick={closeMenu}>
+              <a href={`${BASE_PATH}/getting-started`} onClick={closeMenu}>
                 Getting started
               </a>
-              <a href="/sdk/overview" onClick={closeMenu}>
+              <a href={`${BASE_PATH}/sdk/overview`} onClick={closeMenu}>
                 Docs
               </a>
             </nav>

@@ -39,6 +39,7 @@ head:
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { BASE_PATH } from '../../../config';
 
 Pulsar gives you ready-made haptic presets, custom pattern composition, and real-time haptic control for iOS, Android, and React Native. Pick up where your platform left off.
 
@@ -48,7 +49,7 @@ These docs double as an interactive playground. Pair your phone with the browser
 
 <LinkCard
   title="Browse preset playground"
-  href="/presets-playground"
+  href={`${BASE_PATH}/presets-playground`}
   description="Explore the full preset library with live haptic previews. Pair PulsarApp with your browser "
 />
 
@@ -57,34 +58,34 @@ These docs double as an interactive playground. Pair your phone with the browser
 <CardGrid>
   <LinkCard
     title="React Native SDK"
-    href="/sdk/react-native"
+    href={`${BASE_PATH}/sdk/react-native`}
     description="Presets, pattern composer, and real-time haptics via a Turbo Module. Works with Reanimated worklets."
   />
   <LinkCard
     title="iOS SDK"
-    href="/sdk/ios"
+    href={`${BASE_PATH}/sdk/ios`}
     description="Swift Package built on Core Haptics. Supports transient events, continuous envelopes, and audio simulation."
   />
   <LinkCard
     title="Android SDK"
-    href="/sdk/android"
+    href={`${BASE_PATH}/sdk/android`}
     description="Kotlin library with VibrationEffect support and graceful fallbacks for older devices."
   />
 </CardGrid>
 
-New to haptics? Read the [SDK overview](/sdk) first. It covers discrete vs. continuous haptics, preloading, and caching.
+New to haptics? Read the <a href={`${BASE_PATH}/sdk`}>SDK overview</a> first. It covers discrete vs. continuous haptics, preloading, and caching.
 
 ## Go deeper
 
 <CardGrid>
   <LinkCard
     title="SDK overview"
-    href="/sdk"
+    href={`${BASE_PATH}/sdk`}
     description="Core concepts: types of haptics, preloading, and caching."
   />
   <LinkCard
     title="Blog"
-    href="/blog/table-of-content"
+    href={`${BASE_PATH}/blog/table-of-content`}
     description="Why haptics matter, how they work, and when to use them."
   />
 </CardGrid>
