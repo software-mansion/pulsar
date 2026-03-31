@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -105,8 +107,19 @@ afterEvaluate {
     }
 
     signing {
+        val gpgPrivateKey = System.getenv("GPG_PRIVATE_KEY")?.let { key ->
+            if (key.contains("BEGIN PGP PRIVATE KEY BLOCK")) {
+                key
+            } else {
+                runCatching { String(Base64.getDecoder().decode(key)) }
+                    .getOrNull()
+                    ?.takeIf { it.contains("BEGIN PGP PRIVATE KEY BLOCK") }
+                    ?: key
+            }
+        }
+
         useInMemoryPgpKeys(
-            System.getenv("GPG_PRIVATE_KEY"),
+            gpgPrivateKey,
             System.getenv("GPG_PASSPHRASE")
         )
         sign(publishing.publications["release"])
