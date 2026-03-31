@@ -155,13 +155,13 @@ export default function HomeScreen() {
             setHasToken(true);
           });
           setConnectionState('FULLY_CONNECTED');
-          Presets.BreakingWave();
+          Presets.breakingWave();
           posthog.capture('device_connected', {
             connection_type: 'new',
           });
         } else if (json.type === 'connection_restored') {
           setConnectionState('FULLY_CONNECTED');
-          Presets.BreakingWave();
+          Presets.breakingWave();
           posthog.capture('device_connected', {
             connection_type: 'restored',
           });
@@ -206,7 +206,7 @@ export default function HomeScreen() {
     socket.onerror = () => {
       setConnectionState('ERROR');
       setErrorType('CONNECTION_FAILED');
-      Presets.Chirp();
+      Presets.chirp();
       posthog.capture('device_connection_failed', {
         error_type: 'CONNECTION_FAILED',
         connection_action: action,
@@ -222,7 +222,7 @@ export default function HomeScreen() {
       if (e.code !== 1000) {
         setConnectionState('ERROR');
         setErrorType('INVALID_DATA');
-        Presets.Chirp();
+        Presets.chirp();
         posthog.capture('device_connection_failed', {
           error_type: 'INVALID_DATA',
           close_code: e.code,
@@ -235,7 +235,7 @@ export default function HomeScreen() {
   }
 
   const handleDisconnect = () => {
-    Presets.PowerDown();
+    Presets.powerDown();
     posthog.capture('device_disconnected', {
       previous_state: connectionState,
     });
@@ -255,19 +255,21 @@ export default function HomeScreen() {
   const playPattern = (patternName: string): boolean => {
     if (patternName.includes('System')) {
       const key = patternName.replace('System', '').replace('Preset', '');
-      const systemPreset = (Presets.System as any)[key];
+      const normalizedKey = `${key.charAt(0).toLowerCase()}${key.slice(1)}`;
+      const systemPreset = (Presets.System as any)[normalizedKey] ?? (Presets.System as any)[key];
       if (typeof systemPreset === 'function') {
         systemPreset();
         return true;
       }
-      const androidPreset = (Presets.System.Android as any)[key];
+      const androidPreset = (Presets.System.Android as any)[normalizedKey] ?? (Presets.System.Android as any)[key];
       if (typeof androidPreset === 'function') {
         androidPreset();
         return true;
       }
       return false;
     }
-    const preset = (Presets as any)[patternName];
+    const normalizedName = `${patternName.charAt(0).toLowerCase()}${patternName.slice(1)}`;
+    const preset = (Presets as any)[patternName] ?? (Presets as any)[normalizedName];
     if (typeof preset === 'function') {
       preset();
       return true;

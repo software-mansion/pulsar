@@ -21,9 +21,11 @@ interface VisualizationPanelProps {
 export function VisualizationPanel({
   visualization,
   className = '',
-  playOnDevice,
   presetName,
 }: VisualizationPanelProps) {
+  const normalizedPresetName = presetName
+    ? `${presetName.charAt(0).toLowerCase()}${presetName.slice(1)}`
+    : presetName;
   const [isPlaying, setIsPlaying] = useState(false);
   const audioPlayerRef = useRef<AudioPatternUtility | null>(null);
   const isParsed = useRef<boolean>(false);
@@ -79,12 +81,6 @@ export function VisualizationPanel({
   };
 
   const handlePlayOnDevice = async () => {
-    if (playOnDevice) {
-      playOnDevice();
-      window.posthog?.capture('preset_played_on_device', { preset_name: presetName });
-      return;
-    }
-
     const token = localStorage.getItem('hapticsToken');
     if (!token) {
       return;
@@ -98,6 +94,7 @@ export function VisualizationPanel({
         },
         body: JSON.stringify({
           message: presetName,
+          // message: normalizedPresetName,
           token: token,
         }),
       });
