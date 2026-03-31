@@ -23,7 +23,9 @@
       font-size: var(--font-size-xl);
     }
     .anchorLink {
+      cursor: pointer;
       font-size: var(--font-size-lg);
+      font-weight: bold;
       color: var(--color-blue-50);
       text-decoration: none;
       opacity: 0;
