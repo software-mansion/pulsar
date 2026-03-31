@@ -164,7 +164,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Short"],
     duration: 150,
     image: AfterglowImage,
-    play: Presets.Afterglow,
+    play: Presets.afterglow,
   },
   {
     name: 'Aftershock',
@@ -172,7 +172,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Extended"],
     duration: 500,
     image: AftershockImage,
-    play: Presets.Aftershock,
+    play: Presets.aftershock,
   },
   {
     name: 'Alarm',
@@ -180,7 +180,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Pattern","Extended"],
     duration: 1130,
     image: AlarmImage,
-    play: Presets.Alarm,
+    play: Presets.alarm,
   },
   {
     name: 'Anvil',
@@ -188,7 +188,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Ramp","Extended"],
     duration: 500,
     image: AnvilImage,
-    play: Presets.Anvil,
+    play: Presets.anvil,
   },
   {
     name: 'Applause',
@@ -196,7 +196,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Solid","Long"],
     duration: 1564,
     image: ApplauseImage,
-    play: Presets.Applause,
+    play: Presets.applause,
   },
   {
     name: 'Ascent',
@@ -204,7 +204,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Pattern","Long"],
     duration: 2400,
     image: AscentImage,
-    play: Presets.Ascent,
+    play: Presets.ascent,
   },
   {
     name: 'BalloonPop',
@@ -212,7 +212,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Long"],
     duration: 1700,
     image: BalloonPopImage,
-    play: Presets.BalloonPop,
+    play: Presets.balloonPop,
   },
   {
     name: 'Barrage',
@@ -220,7 +220,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Extended"],
     duration: 309,
     image: BarrageImage,
-    play: Presets.Barrage,
+    play: Presets.barrage,
   },
   {
     name: 'BassDrop',
@@ -228,7 +228,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Impulse"],
     duration: 71,
     image: BassDropImage,
-    play: Presets.BassDrop,
+    play: Presets.bassDrop,
   },
   {
     name: 'Batter',
@@ -236,7 +236,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Saw","Extended"],
     duration: 380,
     image: BatterImage,
-    play: Presets.Batter,
+    play: Presets.batter,
   },
   {
     name: 'BellToll',
@@ -244,7 +244,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Extended"],
     duration: 399,
     image: BellTollImage,
-    play: Presets.BellToll,
+    play: Presets.bellToll,
   },
   {
     name: 'Blip',
@@ -252,7 +252,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Peak","Short"],
     duration: 200,
     image: BlipImage,
-    play: Presets.Blip,
+    play: Presets.blip,
   },
   {
     name: 'Bloom',
@@ -260,7 +260,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Bumps","Extended"],
     duration: 300,
     image: BloomImage,
-    play: Presets.Bloom,
+    play: Presets.bloom,
   },
   {
     name: 'Bongo',
@@ -268,7 +268,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Extended"],
     duration: 451,
     image: BongoImage,
-    play: Presets.Bongo,
+    play: Presets.bongo,
   },
   {
     name: 'Boulder',
@@ -276,7 +276,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Impulse"],
     duration: 0,
     image: BoulderImage,
-    play: Presets.Boulder,
+    play: Presets.boulder,
   },
   {
     name: 'BreakingWave',
@@ -284,7 +284,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Short"],
     duration: 202,
     image: BreakingWaveImage,
-    play: Presets.BreakingWave,
+    play: Presets.breakingWave,
   },
   {
     name: 'Breath',
@@ -292,7 +292,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Bumps","Long"],
     duration: 3200,
     image: BreathImage,
-    play: Presets.Breath,
+    play: Presets.breath,
   },
   {
     name: 'Breathing',
@@ -300,7 +300,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Bumps","Long"],
     duration: 6000,
     image: BreathingImage,
-    play: Presets.Breathing,
+    play: Presets.breathing,
   },
   {
     name: 'Buildup',
@@ -308,7 +308,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Extended"],
     duration: 309,
     image: BuildupImage,
-    play: Presets.Buildup,
+    play: Presets.buildup,
   },
   {
     name: 'Burst',
@@ -316,7 +316,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Peak","Extended"],
     duration: 300,
     image: BurstImage,
-    play: Presets.Burst,
+    play: Presets.burst,
   },
   {
     name: 'Buzz',
@@ -324,7 +324,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Ramp","Extended"],
     duration: 350,
     image: BuzzImage,
-    play: Presets.Buzz,
+    play: Presets.buzz,
   },
   {
     name: 'Cadence',
@@ -332,7 +332,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Short"],
     duration: 199,
     image: CadenceImage,
-    play: Presets.Cadence,
+    play: Presets.cadence,
   },
   {
     name: 'CameraShutter',
@@ -340,7 +340,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Impulses","Short"],
     duration: 150,
     image: CameraShutterImage,
-    play: Presets.CameraShutter,
+    play: Presets.cameraShutter,
   },
   {
     name: 'Canter',
@@ -348,7 +348,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Short"],
     duration: 173,
     image: CanterImage,
-    play: Presets.Canter,
+    play: Presets.canter,
   },
   {
     name: 'Cascade',
@@ -356,7 +356,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Long"],
     duration: 1863,
     image: CascadeImage,
-    play: Presets.Cascade,
+    play: Presets.cascade,
   },
   {
     name: 'Castanets',
@@ -364,7 +364,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Short"],
     duration: 199,
     image: CastanetsImage,
-    play: Presets.Castanets,
+    play: Presets.castanets,
   },
   {
     name: 'CatPaw',
@@ -372,7 +372,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Impulses","Impulse"],
     duration: 75,
     image: CatPawImage,
-    play: Presets.CatPaw,
+    play: Presets.catPaw,
   },
   {
     name: 'Charge',
@@ -380,7 +380,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Pattern","Long"],
     duration: 2046,
     image: ChargeImage,
-    play: Presets.Charge,
+    play: Presets.charge,
   },
   {
     name: 'Chime',
@@ -388,7 +388,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Extended"],
     duration: 380,
     image: ChimeImage,
-    play: Presets.Chime,
+    play: Presets.chime,
   },
   {
     name: 'Chip',
@@ -396,7 +396,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Impulses","Impulse"],
     duration: 0,
     image: ChipImage,
-    play: Presets.Chip,
+    play: Presets.chip,
   },
   {
     name: 'Chirp',
@@ -404,7 +404,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Saw","Extended"],
     duration: 360,
     image: ChirpImage,
-    play: Presets.Chirp,
+    play: Presets.chirp,
   },
   {
     name: 'Clamor',
@@ -412,7 +412,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Saw","Extended"],
     duration: 430,
     image: ClamorImage,
-    play: Presets.Clamor,
+    play: Presets.clamor,
   },
   {
     name: 'Clasp',
@@ -420,7 +420,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Short"],
     duration: 220,
     image: ClaspImage,
-    play: Presets.Clasp,
+    play: Presets.clasp,
   },
   {
     name: 'Cleave',
@@ -428,7 +428,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Bumps","Short"],
     duration: 250,
     image: CleaveImage,
-    play: Presets.Cleave,
+    play: Presets.cleave,
   },
   {
     name: 'Coil',
@@ -436,7 +436,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Peak","Long"],
     duration: 650,
     image: CoilImage,
-    play: Presets.Coil,
+    play: Presets.coil,
   },
   {
     name: 'CoinDrop',
@@ -444,7 +444,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Saw","Extended"],
     duration: 675,
     image: CoinDropImage,
-    play: Presets.CoinDrop,
+    play: Presets.coinDrop,
   },
   {
     name: 'CombinationLock',
@@ -452,7 +452,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Saw","Long"],
     duration: 980,
     image: CombinationLockImage,
-    play: Presets.CombinationLock,
+    play: Presets.combinationLock,
   },
   {
     name: 'Crescendo',
@@ -460,7 +460,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Impulses","Long"],
     duration: 601,
     image: CrescendoImage,
-    play: Presets.Crescendo,
+    play: Presets.crescendo,
   },
   {
     name: 'Dewdrop',
@@ -468,7 +468,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Short"],
     duration: 210,
     image: DewdropImage,
-    play: Presets.Dewdrop,
+    play: Presets.dewdrop,
   },
   {
     name: 'Dirge',
@@ -476,7 +476,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Pattern","Long"],
     duration: 2600,
     image: DirgeImage,
-    play: Presets.Dirge,
+    play: Presets.dirge,
   },
   {
     name: 'Dissolve',
@@ -484,7 +484,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Soft","Ramp","Long"],
     duration: 1200,
     image: DissolveImage,
-    play: Presets.Dissolve,
+    play: Presets.dissolve,
   },
   {
     name: 'DogBark',
@@ -492,7 +492,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Bumps","Extended"],
     duration: 500,
     image: DogBarkImage,
-    play: Presets.DogBark,
+    play: Presets.dogBark,
   },
   {
     name: 'Drone',
@@ -500,7 +500,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Pattern","Long"],
     duration: 1780,
     image: DroneImage,
-    play: Presets.Drone,
+    play: Presets.drone,
   },
   {
     name: 'EngineRev',
@@ -508,7 +508,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Long"],
     duration: 1800,
     image: EngineRevImage,
-    play: Presets.EngineRev,
+    play: Presets.engineRev,
   },
   {
     name: 'Exhale',
@@ -516,7 +516,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Ramp","Long"],
     duration: 1200,
     image: ExhaleImage,
-    play: Presets.Exhale,
+    play: Presets.exhale,
   },
   {
     name: 'Explosion',
@@ -524,7 +524,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Ramp","Long"],
     duration: 1000,
     image: ExplosionImage,
-    play: Presets.Explosion,
+    play: Presets.explosion,
   },
   {
     name: 'FadeOut',
@@ -532,7 +532,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Extended"],
     duration: 506,
     image: FadeOutImage,
-    play: Presets.FadeOut,
+    play: Presets.fadeOut,
   },
   {
     name: 'Fanfare',
@@ -540,7 +540,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Bumps","Extended"],
     duration: 580,
     image: FanfareImage,
-    play: Presets.Fanfare,
+    play: Presets.fanfare,
   },
   {
     name: 'Feather',
@@ -548,7 +548,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Ramp","Short"],
     duration: 180,
     image: FeatherImage,
-    play: Presets.Feather,
+    play: Presets.feather,
   },
   {
     name: 'Finale',
@@ -556,7 +556,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Long"],
     duration: 680,
     image: FinaleImage,
-    play: Presets.Finale,
+    play: Presets.finale,
   },
   {
     name: 'FingerDrum',
@@ -564,7 +564,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Extended"],
     duration: 231,
     image: FingerDrumImage,
-    play: Presets.FingerDrum,
+    play: Presets.fingerDrum,
   },
   {
     name: 'Firecracker',
@@ -572,7 +572,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Impulse"],
     duration: 75,
     image: FirecrackerImage,
-    play: Presets.Firecracker,
+    play: Presets.firecracker,
   },
   {
     name: 'Fizz',
@@ -580,7 +580,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Saw","Extended"],
     duration: 500,
     image: FizzImage,
-    play: Presets.Fizz,
+    play: Presets.fizz,
   },
   {
     name: 'Flare',
@@ -588,7 +588,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Peak","Extended"],
     duration: 380,
     image: FlareImage,
-    play: Presets.Flare,
+    play: Presets.flare,
   },
   {
     name: 'Flick',
@@ -596,7 +596,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Peak","Impulse"],
     duration: 80,
     image: FlickImage,
-    play: Presets.Flick,
+    play: Presets.flick,
   },
   {
     name: 'Flinch',
@@ -604,7 +604,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Extended"],
     duration: 280,
     image: FlinchImage,
-    play: Presets.Flinch,
+    play: Presets.flinch,
   },
   {
     name: 'Flourish',
@@ -612,7 +612,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Peak","Long"],
     duration: 917,
     image: FlourishImage,
-    play: Presets.Flourish,
+    play: Presets.flourish,
   },
   {
     name: 'Flurry',
@@ -620,7 +620,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Bumps","Extended"],
     duration: 300,
     image: FlurryImage,
-    play: Presets.Flurry,
+    play: Presets.flurry,
   },
   {
     name: 'Flush',
@@ -628,7 +628,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Peak","Extended"],
     duration: 380,
     image: FlushImage,
-    play: Presets.Flush,
+    play: Presets.flush,
   },
   {
     name: 'Gallop',
@@ -636,7 +636,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Long"],
     duration: 750,
     image: GallopImage,
-    play: Presets.Gallop,
+    play: Presets.gallop,
   },
   {
     name: 'Gavel',
@@ -644,7 +644,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Short"],
     duration: 201,
     image: GavelImage,
-    play: Presets.Gavel,
+    play: Presets.gavel,
   },
   {
     name: 'Glitch',
@@ -652,7 +652,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Pattern","Short"],
     duration: 220,
     image: GlitchImage,
-    play: Presets.Glitch,
+    play: Presets.glitch,
   },
   {
     name: 'GuitarStrum',
@@ -660,7 +660,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Ramp","Long"],
     duration: 1400,
     image: GuitarStrumImage,
-    play: Presets.GuitarStrum,
+    play: Presets.guitarStrum,
   },
   {
     name: 'Hail',
@@ -668,7 +668,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Rigid","Solid","Extended"],
     duration: 430,
     image: HailImage,
-    play: Presets.Hail,
+    play: Presets.hail,
   },
   {
     name: 'Hammer',
@@ -676,7 +676,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Saw","Long"],
     duration: 1050,
     image: HammerImage,
-    play: Presets.Hammer,
+    play: Presets.hammer,
   },
   {
     name: 'Heartbeat',
@@ -684,7 +684,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Pattern","Long"],
     duration: 1000,
     image: HeartbeatImage,
-    play: Presets.Heartbeat,
+    play: Presets.heartbeat,
   },
   {
     name: 'Herald',
@@ -692,7 +692,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Impulses","Short"],
     duration: 208,
     image: HeraldImage,
-    play: Presets.Herald,
+    play: Presets.herald,
   },
   {
     name: 'HoofBeat',
@@ -700,7 +700,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Short"],
     duration: 201,
     image: HoofBeatImage,
-    play: Presets.HoofBeat,
+    play: Presets.hoofBeat,
   },
   {
     name: 'Ignition',
@@ -708,7 +708,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Short"],
     duration: 173,
     image: IgnitionImage,
-    play: Presets.Ignition,
+    play: Presets.ignition,
   },
   {
     name: 'Impact',
@@ -716,7 +716,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Peak","Short"],
     duration: 200,
     image: ImpactImage,
-    play: Presets.Impact,
+    play: Presets.impact,
   },
   {
     name: 'Jolt',
@@ -724,7 +724,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Impulse"],
     duration: 0,
     image: JoltImage,
-    play: Presets.Jolt,
+    play: Presets.jolt,
   },
   {
     name: 'KeyboardMechanical',
@@ -732,7 +732,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Impulses","Impulse"],
     duration: 55,
     image: KeyboardMechanicalImage,
-    play: Presets.KeyboardMechanical,
+    play: Presets.keyboardMechanical,
   },
   {
     name: 'KeyboardMembrane',
@@ -740,7 +740,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Soft","Impulses","Short"],
     duration: 140,
     image: KeyboardMembraneImage,
-    play: Presets.KeyboardMembrane,
+    play: Presets.keyboardMembrane,
   },
   {
     name: 'Knell',
@@ -748,7 +748,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Extended"],
     duration: 550,
     image: KnellImage,
-    play: Presets.Knell,
+    play: Presets.knell,
   },
   {
     name: 'Knock',
@@ -756,7 +756,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Bumps","Long"],
     duration: 760,
     image: KnockImage,
-    play: Presets.Knock,
+    play: Presets.knock,
   },
   {
     name: 'Lament',
@@ -764,7 +764,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Pattern","Long"],
     duration: 2450,
     image: LamentImage,
-    play: Presets.Lament,
+    play: Presets.lament,
   },
   {
     name: 'Latch',
@@ -772,7 +772,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Short"],
     duration: 230,
     image: LatchImage,
-    play: Presets.Latch,
+    play: Presets.latch,
   },
   {
     name: 'Lighthouse',
@@ -780,7 +780,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Pattern","Long"],
     duration: 1050,
     image: LighthouseImage,
-    play: Presets.Lighthouse,
+    play: Presets.lighthouse,
   },
   {
     name: 'Lilt',
@@ -788,7 +788,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Extended"],
     duration: 360,
     image: LiltImage,
-    play: Presets.Lilt,
+    play: Presets.lilt,
   },
   {
     name: 'Lock',
@@ -796,7 +796,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Short"],
     duration: 220,
     image: LockImage,
-    play: Presets.Lock,
+    play: Presets.lock,
   },
   {
     name: 'Lope',
@@ -804,7 +804,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Pattern","Extended"],
     duration: 450,
     image: LopeImage,
-    play: Presets.Lope,
+    play: Presets.lope,
   },
   {
     name: 'March',
@@ -812,7 +812,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Bumps","Long"],
     duration: 900,
     image: MarchImage,
-    play: Presets.March,
+    play: Presets.march,
   },
   {
     name: 'Metronome',
@@ -820,7 +820,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Extended"],
     duration: 280,
     image: MetronomeImage,
-    play: Presets.Metronome,
+    play: Presets.metronome,
   },
   {
     name: 'Murmur',
@@ -828,7 +828,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Impulses","Impulse"],
     duration: 80,
     image: MurmurImage,
-    play: Presets.Murmur,
+    play: Presets.murmur,
   },
   {
     name: 'Nudge',
@@ -836,7 +836,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Short"],
     duration: 180,
     image: NudgeImage,
-    play: Presets.Nudge,
+    play: Presets.nudge,
   },
   {
     name: 'PassingCar',
@@ -844,7 +844,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Peak","Long"],
     duration: 1100,
     image: PassingCarImage,
-    play: Presets.PassingCar,
+    play: Presets.passingCar,
   },
   {
     name: 'Patter',
@@ -852,7 +852,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Impulses","Short"],
     duration: 179,
     image: PatterImage,
-    play: Presets.Patter,
+    play: Presets.patter,
   },
   {
     name: 'Peal',
@@ -860,7 +860,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Extended"],
     duration: 438,
     image: PealImage,
-    play: Presets.Peal,
+    play: Presets.peal,
   },
   {
     name: 'Peck',
@@ -868,7 +868,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Peak","Impulse"],
     duration: 28,
     image: PeckImage,
-    play: Presets.Peck,
+    play: Presets.peck,
   },
   {
     name: 'Pendulum',
@@ -876,7 +876,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Long"],
     duration: 2400,
     image: PendulumImage,
-    play: Presets.Pendulum,
+    play: Presets.pendulum,
   },
   {
     name: 'Ping',
@@ -884,7 +884,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Impulses","Impulse"],
     duration: 35,
     image: PingImage,
-    play: Presets.Ping,
+    play: Presets.ping,
   },
   {
     name: 'Pip',
@@ -892,7 +892,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Rigid","Impulses","Impulse"],
     duration: 100,
     image: PipImage,
-    play: Presets.Pip,
+    play: Presets.pip,
   },
   {
     name: 'Piston',
@@ -900,7 +900,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Impulse"],
     duration: 73,
     image: PistonImage,
-    play: Presets.Piston,
+    play: Presets.piston,
   },
   {
     name: 'Plink',
@@ -908,7 +908,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Short"],
     duration: 215,
     image: PlinkImage,
-    play: Presets.Plink,
+    play: Presets.plink,
   },
   {
     name: 'Plummet',
@@ -916,7 +916,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Peak","Long"],
     duration: 1050,
     image: PlummetImage,
-    play: Presets.Plummet,
+    play: Presets.plummet,
   },
   {
     name: 'Plunk',
@@ -924,7 +924,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Impulses","Impulse"],
     duration: 0,
     image: PlunkImage,
-    play: Presets.Plunk,
+    play: Presets.plunk,
   },
   {
     name: 'Poke',
@@ -932,7 +932,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Extended"],
     duration: 280,
     image: PokeImage,
-    play: Presets.Poke,
+    play: Presets.poke,
   },
   {
     name: 'Pound',
@@ -940,7 +940,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Bumps","Extended"],
     duration: 265,
     image: PoundImage,
-    play: Presets.Pound,
+    play: Presets.pound,
   },
   {
     name: 'PowerDown',
@@ -948,7 +948,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Ramp","Long"],
     duration: 1800,
     image: PowerDownImage,
-    play: Presets.PowerDown,
+    play: Presets.powerDown,
   },
   {
     name: 'Propel',
@@ -956,7 +956,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Extended"],
     duration: 300,
     image: PropelImage,
-    play: Presets.Propel,
+    play: Presets.propel,
   },
   {
     name: 'Pulse',
@@ -964,7 +964,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Bumps","Long"],
     duration: 2000,
     image: PulseImage,
-    play: Presets.Pulse,
+    play: Presets.pulse,
   },
   {
     name: 'Pummel',
@@ -972,7 +972,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Saw","Extended"],
     duration: 450,
     image: PummelImage,
-    play: Presets.Pummel,
+    play: Presets.pummel,
   },
   {
     name: 'Push',
@@ -980,7 +980,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Peak","Impulse"],
     duration: 90,
     image: PushImage,
-    play: Presets.Push,
+    play: Presets.push,
   },
   {
     name: 'Radar',
@@ -988,7 +988,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Pattern","Long"],
     duration: 2520,
     image: RadarImage,
-    play: Presets.Radar,
+    play: Presets.radar,
   },
   {
     name: 'Rain',
@@ -996,7 +996,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Pattern","Long"],
     duration: 950,
     image: RainImage,
-    play: Presets.Rain,
+    play: Presets.rain,
   },
   {
     name: 'Ramp',
@@ -1004,7 +1004,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Bumps","Long"],
     duration: 650,
     image: RampImage,
-    play: Presets.Ramp,
+    play: Presets.ramp,
   },
   {
     name: 'Rap',
@@ -1012,7 +1012,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Short"],
     duration: 120,
     image: RapImage,
-    play: Presets.Rap,
+    play: Presets.rap,
   },
   {
     name: 'Ratchet',
@@ -1020,7 +1020,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Extended"],
     duration: 398,
     image: RatchetImage,
-    play: Presets.Ratchet,
+    play: Presets.ratchet,
   },
   {
     name: 'Rebound',
@@ -1028,7 +1028,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Impulse"],
     duration: 80,
     image: ReboundImage,
-    play: Presets.Rebound,
+    play: Presets.rebound,
   },
   {
     name: 'Ripple',
@@ -1036,7 +1036,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Extended"],
     duration: 420,
     image: RippleImage,
-    play: Presets.Ripple,
+    play: Presets.ripple,
   },
   {
     name: 'Rivet',
@@ -1044,7 +1044,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Short"],
     duration: 150,
     image: RivetImage,
-    play: Presets.Rivet,
+    play: Presets.rivet,
   },
   {
     name: 'Rustle',
@@ -1052,7 +1052,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Extended"],
     duration: 290,
     image: RustleImage,
-    play: Presets.Rustle,
+    play: Presets.rustle,
   },
   {
     name: 'Shockwave',
@@ -1060,7 +1060,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Ramp","Long"],
     duration: 800,
     image: ShockwaveImage,
-    play: Presets.Shockwave,
+    play: Presets.shockwave,
   },
   {
     name: 'Snap',
@@ -1068,7 +1068,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Impulse"],
     duration: 90,
     image: SnapImage,
-    play: Presets.Snap,
+    play: Presets.snap,
   },
   {
     name: 'Sonar',
@@ -1076,7 +1076,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Pattern","Long"],
     duration: 2000,
     image: SonarImage,
-    play: Presets.Sonar,
+    play: Presets.sonar,
   },
   {
     name: 'Spark',
@@ -1084,7 +1084,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Peak","Short"],
     duration: 185,
     image: SparkImage,
-    play: Presets.Spark,
+    play: Presets.spark,
   },
   {
     name: 'Spin',
@@ -1092,7 +1092,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Saw","Long"],
     duration: 1808,
     image: SpinImage,
-    play: Presets.Spin,
+    play: Presets.spin,
   },
   {
     name: 'Stagger',
@@ -1100,7 +1100,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Saw","Extended"],
     duration: 320,
     image: StaggerImage,
-    play: Presets.Stagger,
+    play: Presets.stagger,
   },
   {
     name: 'Stamp',
@@ -1108,7 +1108,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Impulses","Short"],
     duration: 205,
     image: StampImage,
-    play: Presets.Stamp,
+    play: Presets.stamp,
   },
   {
     name: 'Stampede',
@@ -1116,7 +1116,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Long"],
     duration: 750,
     image: StampedeImage,
-    play: Presets.Stampede,
+    play: Presets.stampede,
   },
   {
     name: 'Stomp',
@@ -1124,7 +1124,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Short"],
     duration: 150,
     image: StompImage,
-    play: Presets.Stomp,
+    play: Presets.stomp,
   },
   {
     name: 'StoneSkip',
@@ -1132,7 +1132,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Short"],
     duration: 181,
     image: StoneSkipImage,
-    play: Presets.StoneSkip,
+    play: Presets.stoneSkip,
   },
   {
     name: 'Strike',
@@ -1140,7 +1140,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Peak","Impulse"],
     duration: 80,
     image: StrikeImage,
-    play: Presets.Strike,
+    play: Presets.strike,
   },
   {
     name: 'Summon',
@@ -1148,7 +1148,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Bumps","Extended"],
     duration: 500,
     image: SummonImage,
-    play: Presets.Summon,
+    play: Presets.summon,
   },
   {
     name: 'Surge',
@@ -1156,7 +1156,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Saw","Extended"],
     duration: 330,
     image: SurgeImage,
-    play: Presets.Surge,
+    play: Presets.surge,
   },
   {
     name: 'Sway',
@@ -1164,7 +1164,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Bumps","Long"],
     duration: 1900,
     image: SwayImage,
-    play: Presets.Sway,
+    play: Presets.sway,
   },
   {
     name: 'Sweep',
@@ -1172,7 +1172,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Pattern","Long"],
     duration: 2100,
     image: SweepImage,
-    play: Presets.Sweep,
+    play: Presets.sweep,
   },
   {
     name: 'Swell',
@@ -1180,7 +1180,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Bumps","Extended"],
     duration: 425,
     image: SwellImage,
-    play: Presets.Swell,
+    play: Presets.swell,
   },
   {
     name: 'Syncopate',
@@ -1188,7 +1188,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Impulses","Extended"],
     duration: 399,
     image: SyncopateImage,
-    play: Presets.Syncopate,
+    play: Presets.syncopate,
   },
   {
     name: 'Throb',
@@ -1196,7 +1196,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Short"],
     duration: 230,
     image: ThrobImage,
-    play: Presets.Throb,
+    play: Presets.throb,
   },
   {
     name: 'Thud',
@@ -1204,7 +1204,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Peak","Short"],
     duration: 160,
     image: ThudImage,
-    play: Presets.Thud,
+    play: Presets.thud,
   },
   {
     name: 'Thump',
@@ -1212,7 +1212,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Impulse"],
     duration: 0,
     image: ThumpImage,
-    play: Presets.Thump,
+    play: Presets.thump,
   },
   {
     name: 'Thunder',
@@ -1220,7 +1220,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Peak","Long"],
     duration: 2000,
     image: ThunderImage,
-    play: Presets.Thunder,
+    play: Presets.thunder,
   },
   {
     name: 'ThunderRoll',
@@ -1228,7 +1228,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Long"],
     duration: 670,
     image: ThunderRollImage,
-    play: Presets.ThunderRoll,
+    play: Presets.thunderRoll,
   },
   {
     name: 'TickTock',
@@ -1236,7 +1236,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Pattern","Long"],
     duration: 1200,
     image: TickTockImage,
-    play: Presets.TickTock,
+    play: Presets.tickTock,
   },
   {
     name: 'TidalSurge',
@@ -1244,7 +1244,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Extended"],
     duration: 455,
     image: TidalSurgeImage,
-    play: Presets.TidalSurge,
+    play: Presets.tidalSurge,
   },
   {
     name: 'TideSwell',
@@ -1252,7 +1252,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Impulses","Long"],
     duration: 727,
     image: TideSwellImage,
-    play: Presets.TideSwell,
+    play: Presets.tideSwell,
   },
   {
     name: 'Tremor',
@@ -1260,7 +1260,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Impulse"],
     duration: 0,
     image: TremorImage,
-    play: Presets.Tremor,
+    play: Presets.tremor,
   },
   {
     name: 'Trigger',
@@ -1268,7 +1268,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Peak","Extended"],
     duration: 280,
     image: TriggerImage,
-    play: Presets.Trigger,
+    play: Presets.trigger,
   },
   {
     name: 'Triumph',
@@ -1276,7 +1276,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Saw","Long"],
     duration: 1100,
     image: TriumphImage,
-    play: Presets.Triumph,
+    play: Presets.triumph,
   },
   {
     name: 'Trumpet',
@@ -1284,7 +1284,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Saw","Extended"],
     duration: 460,
     image: TrumpetImage,
-    play: Presets.Trumpet,
+    play: Presets.trumpet,
   },
   {
     name: 'Typewriter',
@@ -1292,7 +1292,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Peak","Short"],
     duration: 200,
     image: TypewriterImage,
-    play: Presets.Typewriter,
+    play: Presets.typewriter,
   },
   {
     name: 'Unfurl',
@@ -1300,7 +1300,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Pattern","Long"],
     duration: 1180,
     image: UnfurlImage,
-    play: Presets.Unfurl,
+    play: Presets.unfurl,
   },
   {
     name: 'Vortex',
@@ -1308,7 +1308,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Flexible","Peak","Long"],
     duration: 1400,
     image: VortexImage,
-    play: Presets.Vortex,
+    play: Presets.vortex,
   },
   {
     name: 'Wane',
@@ -1316,7 +1316,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Ramp","Extended"],
     duration: 450,
     image: WaneImage,
-    play: Presets.Wane,
+    play: Presets.wane,
   },
   {
     name: 'WarDrum',
@@ -1324,7 +1324,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Soft","Impulses","Extended"],
     duration: 398,
     image: WarDrumImage,
-    play: Presets.WarDrum,
+    play: Presets.warDrum,
   },
   {
     name: 'Waterfall',
@@ -1332,7 +1332,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Flexible","Impulses","Extended"],
     duration: 309,
     image: WaterfallImage,
-    play: Presets.Waterfall,
+    play: Presets.waterfall,
   },
   {
     name: 'Wave',
@@ -1340,7 +1340,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Soft","Bumps","Long"],
     duration: 2800,
     image: WaveImage,
-    play: Presets.Wave,
+    play: Presets.wave,
   },
   {
     name: 'Wisp',
@@ -1348,7 +1348,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Peak","Impulse"],
     duration: 60,
     image: WispImage,
-    play: Presets.Wisp,
+    play: Presets.wisp,
   },
   {
     name: 'Wobble',
@@ -1356,7 +1356,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Substantial","Rigid","Peak","Ramp","Short"],
     duration: 180,
     image: WobbleImage,
-    play: Presets.Wobble,
+    play: Presets.wobble,
   },
   {
     name: 'Woodpecker',
@@ -1364,7 +1364,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Bold","Rigid","Solid","Extended"],
     duration: 460,
     image: WoodpeckerImage,
-    play: Presets.Woodpecker,
+    play: Presets.woodpecker,
   },
   {
     name: 'Zipper',
@@ -1372,7 +1372,7 @@ export const PresetsConfig: Array<PresetProps> = [
     tags: ["Gentle","Flexible","Solid","Extended"],
     duration: 460,
     image: ZipperImage,
-    play: Presets.Zipper,
+    play: Presets.zipper,
   },
 // CODEGEN_END_{presets}
 ];
