@@ -10,7 +10,6 @@ export default {
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.swmansion.pulsar.app",
-    associatedDomains: ["applinks:pulsar.godetour.link"],
   },
   android: {
     adaptiveIcon: {
@@ -29,17 +28,6 @@ export default {
           {
             scheme: "pulsarapp",
             host: "connect",
-          },
-        ],
-        category: ["BROWSABLE", "DEFAULT"],
-      },
-      {
-        action: "VIEW",
-        autoVerify: true,
-        data: [
-          {
-            scheme: "https",
-            host: "pulsar.godetour.link",
           },
         ],
         category: ["BROWSABLE", "DEFAULT"],

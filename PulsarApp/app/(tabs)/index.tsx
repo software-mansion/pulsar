@@ -2,7 +2,6 @@ import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Alert, Keyboard } from 'react-native';
 import * as Linking from 'expo-linking';
-import { useDetourContext } from '@swmansion/react-native-detour';
 import { usePostHog } from 'posthog-react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -35,7 +34,6 @@ type ErrorType = 'INVALID_DATA' | 'CONNECTION_FAILED' | null;
 
 export default function HomeScreen() {
   const posthog = usePostHog();
-  const { link, clearLink } = useDetourContext();
   const [connectionState, setConnectionState] = useState<ConnectionState>('INITIAL');
   const [errorType, setErrorType] = useState<ErrorType>(null);
   const [hasToken, setHasToken] = useState(false);
@@ -47,16 +45,6 @@ export default function HomeScreen() {
   const socketRef = useRef<WebSocket | null>(null);
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const patternNotificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (link?.params?.code) {
-      const code = String(link.params.code);
-      setConnectingCode(code);
-      posthog.capture('deep_link_connection_initiated', { has_code: true });
-      handleOnConnect(false, code);
-      clearLink();
-    }
-  }, [link]);
 
   useEffect(() => {
     Settings.enableSound(true);
