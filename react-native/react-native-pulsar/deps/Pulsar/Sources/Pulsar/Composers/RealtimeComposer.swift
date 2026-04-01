@@ -3,7 +3,6 @@ import CoreHaptics
 
 public class RealtimeComposer: NSObject {
   private var engine: HapticEngineWrapper!
-  private var continuousPlayerId: Int?
   private var isPlaying = false
 
   public init(engine: HapticEngineWrapper) {
@@ -16,19 +15,21 @@ public class RealtimeComposer: NSObject {
 
   private func start(amplitude: Float = 0.0, frequency: Float = 0.0) {
     guard !isPlaying else { return }
-    stop()
-    continuousPlayerId = engine?.createRealtimePlayer()
+    guard let player = engine?.getRealtimePlayer() else { return }
     isPlaying = true
     set(amplitude: amplitude, frequency: frequency)
-    if let id = continuousPlayerId { engine?.playPlayer(id: id) }
+    do {
+      try player.start(atTime: 0)
+    } catch {
+      print("Error starting realtime player: \(error.localizedDescription)")
+    }
   }
 
   @objc public func set(amplitude: Float, frequency: Float) {
     if (!isPlaying) {
       start(amplitude: amplitude, frequency: frequency)
     }
-    guard let id = continuousPlayerId, isPlaying,
-          let player = engine?.getRealtimePlayer(id: id) else { return }
+    guard isPlaying, let player = engine?.getRealtimePlayer() else { return }
 
     let parameters = [
       CHHapticDynamicParameter(parameterID: .hapticIntensityControl, value: min(max(amplitude, 0), 1), relativeTime: 0),
@@ -43,11 +44,11 @@ public class RealtimeComposer: NSObject {
 
   @objc public func stop() {
     guard isPlaying else { return }
-    if let id = continuousPlayerId {
-      engine?.stopPlayer(id: id)
-      engine?.removePlayer(id: id)
+    do {
+      try engine?.getRealtimePlayer()?.stop(atTime: 0)
+    } catch {
+      print("Error stopping realtime player: \(error.localizedDescription)")
     }
-    continuousPlayerId = nil
     isPlaying = false
   }
 

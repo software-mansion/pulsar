@@ -16,6 +16,7 @@ public class HapticEngineWrapper {
   private var playerCreationOrder: [Int] = []
   private let playerLimit = 20
   private var nextPlayerId: Int = 0
+  private var cachedRealtimePlayer: CHHapticAdvancedPatternPlayer?
 
   public init() {
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
@@ -83,8 +84,13 @@ public class HapticEngineWrapper {
 
   @objc func appDidBecomeInactive() {
     initialized = false
+    for entry in playerRegistry.values {
+      try? entry.player.stop(atTime: 0)
+    }
     playerRegistry.removeAll()
     playerCreationOrder.removeAll()
+    try? cachedRealtimePlayer?.stop(atTime: 0)
+    cachedRealtimePlayer = nil
   }
 
   public func createPlayer(pattern: CHHapticPattern?) -> Int? {
@@ -102,8 +108,9 @@ public class HapticEngineWrapper {
     }
   }
 
-  public func createRealtimePlayer() -> Int? {
+  public func getRealtimePlayer() -> CHHapticAdvancedPatternPlayer? {
     startEngine()
+    if let player = cachedRealtimePlayer { return player }
     let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1)
     let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0)
     let event = CHHapticEvent(
@@ -114,14 +121,14 @@ public class HapticEngineWrapper {
     )
     do {
       let pattern = try CHHapticPattern(events: [event], parameters: [])
-      let player = try engine?.makeAdvancedPlayer(with: pattern)
-      guard let player = player else { return nil }
-      return registerPlayer(player, isRealtime: true)
+      cachedRealtimePlayer = try engine?.makeAdvancedPlayer(with: pattern)
+      return cachedRealtimePlayer
     } catch {
       print("Error creating realtime player: \(error.localizedDescription)")
+      return nil
     }
-    return nil
   }
+
 
   public func playPlayer(id: Int, pattern: CHHapticPattern? = nil) {
     if let entry = playerRegistry[id] {
@@ -154,11 +161,11 @@ public class HapticEngineWrapper {
     }
   }
 
-  public func getRealtimePlayer(id: Int) -> CHHapticAdvancedPatternPlayer? {
-    return playerRegistry[id]?.player as? CHHapticAdvancedPatternPlayer
-  }
 
   public func removePlayer(id: Int) {
+    if let entry = playerRegistry[id] {
+      try? entry.player.stop(atTime: 0)
+    }
     playerRegistry.removeValue(forKey: id)
     playerCreationOrder.removeAll { $0 == id }
   }
@@ -175,6 +182,9 @@ public class HapticEngineWrapper {
   private func evictOldestPlayerIfNeeded() {
     guard playerRegistry.count >= playerLimit else { return }
     let oldestId = playerCreationOrder.removeFirst()
+    if let entry = playerRegistry[oldestId] {
+      try? entry.player.stop(atTime: 0)
+    }
     playerRegistry.removeValue(forKey: oldestId)
   }
 

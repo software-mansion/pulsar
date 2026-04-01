@@ -48,10 +48,13 @@ export const useComposedGesture = (
       composer.stop();
       panIndicatorPosition.value = { x: -100, y: -100 };
       recordEvent('pan', 0, 0);
+    })
+    .onFinalize(() => {
+      composer.stop();
     });
 
   const longPressGesture = Gesture.LongPress()
-    .minDuration(80)
+    .minDuration(100)
     .onStart((e) => {
       if ((global as any).pressInterval != undefined) {
         clearInterval((global as any).pressInterval);
