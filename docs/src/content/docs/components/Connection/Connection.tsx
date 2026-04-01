@@ -23,7 +23,7 @@ export default function Connection() {
   const [status, setStatus] = useState<boolean>(false);
   const ws = useRef<WebSocket | null>(null);
 
-  const deepLinkUrl = channel !== 'Loading...' ? `pulsarapp://connect?code=${channel}` : '';
+  const deepLinkUrl = channel !== 'Loading...' ? `pulsarapp:///?code=${channel}` : '';
 
   function createChannel() {
     setChannel('Loading...');
