@@ -1,34 +1,34 @@
 import { useRef, useCallback } from "react";
 
-let useSavedValue = (_: number) => { return { value: -1 }; };
-let isReanimatedAvailable = false;
+let hasWorkletsAvailable = false;
+let createSynchronizable = () => { return { getBlocking: () => -1, setBlocking: (_: number) => {} }; };
 try {
-  const reanimated = require('react-native-reanimated');
-  useSavedValue = reanimated.useSharedValue;
-  isReanimatedAvailable = true;
+  const worklets = require('react-native-worklets');
+  createSynchronizable = worklets.createSynchronizable;
+  hasWorkletsAvailable = true;
 } catch (e) {}
 
 export function useSharableState(initialValue: number) {
   const stateRef = useRef(initialValue);
-  const sharedValue = useSavedValue(initialValue);
+  const synchronizable = createSynchronizable();
 
   const set = useCallback((newValue: number) => {
     'worklet';
-    if (isReanimatedAvailable) {
-      sharedValue.value = newValue;
+    if (hasWorkletsAvailable) {
+      synchronizable.setBlocking(newValue);
     } else {
       stateRef.current = newValue;
     }
   }, []);
 
-  const get = useCallback(() => {
+  const get = () => {
     'worklet';
-    if (isReanimatedAvailable) {
-      return sharedValue.value;
+    if (hasWorkletsAvailable) {
+      return synchronizable.getBlocking();
     } else {
       return stateRef.current;
     }
-  }, []);
+  };
 
   return { get, set };
 }

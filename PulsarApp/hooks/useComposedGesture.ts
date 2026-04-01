@@ -44,13 +44,10 @@ export const useComposedGesture = (
       const clamped = clampIndicatorPosition(e.x, e.y);
       panIndicatorPosition.value = clamped;
     })
-    .onEnd((e) => {
+    .onFinalize(() => {
       composer.stop();
       panIndicatorPosition.value = { x: -100, y: -100 };
       recordEvent('pan', 0, 0);
-    })
-    .onFinalize(() => {
-      composer.stop();
     });
 
   const longPressGesture = Gesture.LongPress()
