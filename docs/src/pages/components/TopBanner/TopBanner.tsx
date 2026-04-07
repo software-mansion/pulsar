@@ -22,6 +22,7 @@ export function TopBanner() {
   const [colorClass, setColorClass] = useState('');
   const [showStars, setShowStars] = useState(false);
   const [showAngels, setShowAngels] = useState(false);
+  const [showClouds, setShowClouds] = useState(false);
   const [confettiInstances, setConfettiInstances] = useState<number[]>([]);
   const [backgroundAnimation, setBackgroundAnimation] = useState(styles.wave);
   const [showDecorativeIcons, setShowDecorativeIcons] = useState(true);
@@ -34,17 +35,21 @@ export function TopBanner() {
       setShowStars(false);
       setShowAngels(false);
       setConfettiInstances([]);
+      setShowClouds(true);
     } else if (effect === 'stars') {
       setShowAngels(false);
       setConfettiInstances([]);
+      setShowClouds(false);
       setShowStars(enable);
     } else if (effect === 'angels') {
       setShowStars(false);
       setConfettiInstances([]);
+      setShowClouds(false);
       setShowAngels(enable);
     } else if (effect === 'confetti') {
       setShowStars(false);
       setShowAngels(false);
+      setShowClouds(false);
       setConfettiInstances((prev) => [...prev, Date.now()]);
     }
     setShowDecorativeIcons(false);
@@ -88,6 +93,8 @@ export function TopBanner() {
 
       <div className={styles.rightBar}>
         <div className={styles.phoneBackground}>
+          {showClouds && <CloudEffect />}
+
           {showStars && <StarsEffect onComplete={() => handleAnimationEffect('stars', false)} />}
 
           {showAngels && <AngelEffect />}
@@ -251,6 +258,40 @@ function ConfettiEffect({ onComplete }: { onComplete?: () => void }) {
       <img src={warningIcon.src} />
       <img src={warningIcon.src} />
       <img src={warningIcon.src} />
+    </div>
+  );
+}
+
+function CloudSvg({ size }: { size: number }) {
+  return (
+    <svg width={size} height={Math.round(size * 0.63)} viewBox="-2 -2 104 65" fill="none">
+      <path
+        d="M83,61
+           c9.4,0 17,-7.6 17,-17
+             0,-9.4 -7.6,-17 -17,-17
+             -0.2,0 -0.1,0 -0.2,0
+             -1.7,-15.3 -14.7,-27.2 -30.5,-27.2
+             -12.5,0 -23.2,7.4 -28,18.1
+             -0.9,-0.1 -1.8,-0.2 -2.7,-0.2
+             -12,0 -21.7,9.7 -21.7,21.7
+             0,12 9.7,21.7 21.7,21.7
+           h61.4z"
+        fill="white"
+        stroke="#38acdd"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CloudEffect() {
+  return (
+    <div className={styles.cloudContainer}>
+      <div><CloudSvg size={90} /></div>
+      <div><CloudSvg size={55} /></div>
+      <div><CloudSvg size={72} /></div>
+      <div><CloudSvg size={48} /></div>
     </div>
   );
 }

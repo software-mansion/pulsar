@@ -587,6 +587,85 @@
 }
 
 // --------------------------------------------------
+// cloud animation
+// --------------------------------------------------
+.cloudContainer {
+  z-index: 2;
+  pointer-events: none;
+
+  svg {
+    pointer-events: none;
+    display: block;
+    transform-origin: center center;
+    transform-box: fill-box;
+  }
+
+  div:nth-child(1) {
+    position: absolute;
+    z-index: 2;
+    top: -70px;
+    left: -70px;
+    opacity: 0;
+    animation: appearCloudOpacity 0.8s ease-out forwards;
+    svg { animation: appearCloudScale 0.8s ease-out forwards, floatCloud1 6s ease-in-out 1s infinite; }
+  }
+  div:nth-child(2) {
+    position: absolute;
+    z-index: 2;
+    top: 20px;
+    left: -20px;
+    opacity: 0;
+    animation: appearCloudOpacity 0.8s ease-out 0.2s forwards;
+    svg { animation: appearCloudScale 0.8s ease-out 0.2s forwards, floatCloud2 8s ease-in-out 1.3s infinite; }
+  }
+  div:nth-child(3) {
+    position: absolute;
+    z-index: 2;
+    bottom: 280px;
+    right: -60px;
+    opacity: 0;
+    animation: appearCloudOpacity 0.8s ease-out 0.15s forwards;
+    svg { animation: appearCloudScale 0.8s ease-out 0.15s forwards, floatCloud3 7s ease-in-out 1.15s infinite; }
+  }
+  div:nth-child(4) {
+    position: absolute;
+    z-index: 2;
+    bottom: 200px;
+    right: 0px;
+    opacity: 0;
+    animation: appearCloudOpacity 0.8s ease-out 0.05s forwards;
+    svg { animation: appearCloudScale 0.8s ease-out 0.05s forwards, floatCloud4 5s ease-in-out 1.45s infinite; }
+  }
+}
+
+@keyframes appearCloudOpacity {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes appearCloudScale {
+  0% { transform: scale(0.5); }
+  100% { transform: scale(1); }
+}
+
+@keyframes floatCloud1 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(28px) translateY(-18px); }
+}
+@keyframes floatCloud2 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-24px) translateY(-14px); }
+}
+@keyframes floatCloud3 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(22px) translateY(14px); }
+}
+@keyframes floatCloud4 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-20px) translateY(-14px); }
+}
+
+// --------------------------------------------------
 // angel animation
 // --------------------------------------------------
 .angelContainer {
