@@ -258,10 +258,10 @@ function ConfettiEffect({ onComplete }: { onComplete?: () => void }) {
 function AngelEffect() {
   return (
     <div className={styles.angelContainer}>
-      <img src={angelIcon.src} />
-      <img src={angelIcon.src} />
-      <img src={angelIcon.src} />
-      <img src={angelIcon.src} />
+      <div><img src={angelIcon.src} /></div>
+      <div><img src={angelIcon.src} /></div>
+      <div><img src={angelIcon.src} /></div>
+      <div><img src={angelIcon.src} /></div>
     </div>
   );
 }

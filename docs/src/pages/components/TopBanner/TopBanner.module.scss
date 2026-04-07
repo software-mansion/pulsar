@@ -288,6 +288,8 @@
   animation-duration: 4s;
   animation-timing-function: ease-out;
   animation-iteration-count: infinite;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .wave circle:nth-child(1) {
@@ -310,23 +312,23 @@
   animation-delay: 2s;
 }
 
-@mixin waveGenerator($prefix, $initialSize) {
+@mixin waveGenerator($prefix) {
   @keyframes wave-#{$prefix} {
     0%,
     100% {
-      r: $initialSize;
+      transform: scale(1);
     }
     50% {
-      r: $initialSize * 1.16;
+      transform: scale(1.16);
     }
   }
 }
 
-@include waveGenerator('1', 500);
-@include waveGenerator('2', 400);
-@include waveGenerator('3', 300);
-@include waveGenerator('4', 200);
-@include waveGenerator('5', 100);
+@include waveGenerator('1');
+@include waveGenerator('2');
+@include waveGenerator('3');
+@include waveGenerator('4');
+@include waveGenerator('5');
 
 // --------------------------------------------------
 // heartbeat animation
@@ -337,6 +339,8 @@
   animation-duration: 1.2s;
   animation-timing-function: ease-out;
   animation-iteration-count: infinite;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .heartbeat circle:nth-child(1) {
@@ -360,42 +364,42 @@
   animation-delay: 0s;
 }
 
-@mixin heartbeatGenerator($prefix, $initialSize) {
+@mixin heartbeatGenerator($prefix) {
   @keyframes heartbeat-#{$prefix} {
     0% {
-      r: $initialSize * 1;
+      transform: scale(1);
       opacity: 0.1;
     }
     14% {
-      r: $initialSize * 1.08;
+      transform: scale(1.08);
       opacity: 0.25;
       stroke-width: 2;
     }
     28% {
-      r: $initialSize * 0.97;
+      transform: scale(0.97);
       opacity: 0.15;
       stroke-width: 1;
     }
     42% {
-      r: $initialSize * 1.04;
+      transform: scale(1.04);
       opacity: 0.25;
     }
     70% {
-      r: $initialSize * 1;
+      transform: scale(1);
       opacity: 0.12;
     }
     100% {
-      r: $initialSize * 1;
+      transform: scale(1);
       opacity: 0.12;
     }
   }
 }
 
-@include heartbeatGenerator('1', 500);
-@include heartbeatGenerator('2', 400);
-@include heartbeatGenerator('3', 300);
-@include heartbeatGenerator('4', 200);
-@include heartbeatGenerator('5', 100);
+@include heartbeatGenerator('1');
+@include heartbeatGenerator('2');
+@include heartbeatGenerator('3');
+@include heartbeatGenerator('4');
+@include heartbeatGenerator('5');
 
 // --------------------------------------------------
 // sonar animation
@@ -406,6 +410,8 @@
   animation-timing-function: ease-out;
   animation-iteration-count: infinite;
   animation-duration: 2.8s;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .sonar circle:nth-child(1) {
@@ -429,31 +435,31 @@
   animation-delay: 0s;
 }
 
-@mixin sonarGenerator($prefix, $initialSize) {
+@mixin sonarGenerator($prefix) {
   @keyframes sonar-#{$prefix} {
     0% {
       opacity: 0;
-      r: $initialSize * 0.2;
+      transform: scale(0.2);
       stroke-width: 3;
     }
     12% {
       opacity: 0.45;
-      r: $initialSize * 1;
+      transform: scale(1);
       stroke-width: 1.2;
     }
     100% {
       opacity: 0;
-      r: $initialSize * 1.2;
+      transform: scale(1.2);
       stroke-width: 0.3;
     }
   }
 }
 
-@include sonarGenerator('1', 500);
-@include sonarGenerator('2', 400);
-@include sonarGenerator('3', 300);
-@include sonarGenerator('4', 200);
-@include sonarGenerator('5', 100);
+@include sonarGenerator('1');
+@include sonarGenerator('2');
+@include sonarGenerator('3');
+@include sonarGenerator('4');
+@include sonarGenerator('5');
 
 // --------------------------------------------------
 // quake animation
@@ -464,6 +470,8 @@
   animation-duration: 0.1s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .quake circle:nth-child(odd) {
@@ -493,36 +501,31 @@
   animation-duration: 0.08s;
 }
 
-@mixin quakeGenerator($prefix, $initialSize) {
+@mixin quakeGenerator($prefix) {
   @keyframes quake-#{$prefix} {
     0% {
-      transform: translate(-1.5px, 1px);
-      r: $initialSize * 0.99;
+      transform: translate(-1.5px, 1px) scale(0.99);
     }
     25% {
-      transform: translate(1px, -1.5px);
-      r: $initialSize * 1.01;
+      transform: translate(1px, -1.5px) scale(1.01);
     }
     50% {
-      transform: translate(-0.5px, -1px);
-      r: $initialSize * 0.98;
+      transform: translate(-0.5px, -1px) scale(0.98);
     }
     75% {
-      transform: translate(1.5px, 0.5px);
-      r: $initialSize * 1.02;
+      transform: translate(1.5px, 0.5px) scale(1.02);
     }
     100% {
-      transform: translate(-1px, 1.5px);
-      r: $initialSize * 1;
+      transform: translate(-1px, 1.5px) scale(1);
     }
   }
 }
 
-@include quakeGenerator('1', 500);
-@include quakeGenerator('2', 400);
-@include quakeGenerator('3', 300);
-@include quakeGenerator('4', 200);
-@include quakeGenerator('5', 100);
+@include quakeGenerator('1');
+@include quakeGenerator('2');
+@include quakeGenerator('3');
+@include quakeGenerator('4');
+@include quakeGenerator('5');
 
 // --------------------------------------------------
 // stars animation
@@ -591,40 +594,39 @@
   img {
     z-index: 2;
     pointer-events: none;
-    animation-fill-mode: forwards;
     width: 100px;
   }
-  img:nth-child(1) {
+  div:nth-child(1) {
     position: absolute;
+    z-index: 2;
     top: -70px;
     left: -70px;
-    animation:
-      appearAngel 1s ease-in-out forwards,
-      floatAngel1 3.5s ease-in-out 1s infinite;
+    animation: appearAngel 1s ease-in-out forwards;
+    img { animation: floatAngel1 3.5s ease-in-out 1s infinite; }
   }
-  img:nth-child(2) {
+  div:nth-child(2) {
     position: absolute;
+    z-index: 2;
     top: 20px;
     left: -20px;
-    animation:
-      appearAngel 1s ease-in-out forwards,
-      floatAngel2 2.8s ease-in-out 1s infinite;
+    animation: appearAngel 1s ease-in-out forwards;
+    img { animation: floatAngel2 2.8s ease-in-out 1s infinite; }
   }
-  img:nth-child(3) {
+  div:nth-child(3) {
     position: absolute;
+    z-index: 2;
     bottom: 280px;
     right: -60px;
-    animation:
-      appearAngel 1s ease-in-out forwards,
-      floatAngel3 3.3s ease-in-out 1s infinite;
+    animation: appearAngel 1s ease-in-out forwards;
+    img { animation: floatAngel3 3.3s ease-in-out 1s infinite; }
   }
-  img:nth-child(4) {
+  div:nth-child(4) {
     position: absolute;
+    z-index: 2;
     bottom: 200px;
     right: 0px;
-    animation:
-      appearAngel 1s ease-in-out forwards,
-      floatAngel4 2.5s ease-in-out 1s infinite;
+    animation: appearAngel 1s ease-in-out forwards;
+    img { animation: floatAngel4 2.5s ease-in-out 1s infinite; }
   }
 }
 
