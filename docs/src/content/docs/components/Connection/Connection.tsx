@@ -5,6 +5,8 @@ import { API_SERVER_URL, SOCKET_SERVER_URL } from '../config';
 import style from './Connection.module.scss';
 import refreshIcon from '../../assets/new_assets/refresh.svg';
 import disconnectIcon from '../../assets/new_assets/unplug.svg';
+import appleStoreBadge from '../../assets/interactive-playground/apple.svg';
+import googlePlayBadge from '../../assets/interactive-playground/google.png';
 import { Accordion } from '../Accordion/Accordion';
 import { Point } from '../Point/Point';
 
@@ -169,16 +171,36 @@ export default function Connection() {
         {!paired && (
           <Accordion title="How to connect a device? 🤔">
             <Point index={1}>
-              <div>Scan QRCode to open PulsarApp and connect your device.</div>
+              <div>Download the Pulsar app from the <a href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104" target="_blank" rel="noopener noreferrer">App Store</a>.</div>
             </Point>
             <Point index={2}>
-              <div>After you connect your device, you will feel the presets on your phone.</div>
+              <div>Scan QRCode to open PulsarApp and connect your device.</div>
             </Point>
             <Point index={3}>
+              <div>After you connect your device, you will feel the presets on your phone.</div>
+            </Point>
+            <Point index={4}>
               <div>If you have any problem with QRCode just enter the code manually.</div>
             </Point>
           </Accordion>
         )}
+
+        <div className={style.storeButtons}>
+          <a
+            href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src={appleStoreBadge.src} alt="Download on the App Store" className={style.storeBadge} />
+          </a>
+          <a
+            href="https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src={googlePlayBadge.src} alt="Get it on Google Play" className={style.storeBadge} />
+          </a>
+        </div>
       </div>
     </div>
   );

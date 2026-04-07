@@ -99,6 +99,12 @@ Full API reference and guides are available at the [documentation site](https://
 
 Pulsar library is licensed under [The MIT License](../../LICENSE).
 
+## Try the Pulsar App
+
+Download the Pulsar companion app to feel haptic presets directly on your device:
+
+- [Download on the App Store](https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104)
+
 ## Community Discord
 
 [Join the Software Mansion Community Discord](https://discord.swmansion.com) to chat about haptics or other Software Mansion libraries.
