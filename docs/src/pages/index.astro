@@ -14,6 +14,11 @@ import { SwmSection } from './components/SwmSection/SwmSection';
 import { PresetsList } from './components/PresetsList/PresetsList';
 import PostHog from '../components/posthog.astro';
 import { BASE_PATH } from '../../config';
+import swmLogo from '../assets/swm-logo.svg';
+import starIcon from '../assets/landing-page/star.svg';
+import angelIcon from '../assets/landing-page/angel.svg';
+import warningIcon from '../assets/landing-page/warning.svg';
+import arrowIcon from '../assets/landing-page/arrow.svg';
 ---
 
 <!doctype html>
@@ -28,6 +33,11 @@ import { BASE_PATH } from '../../config';
     <meta name="keywords" content="haptic feedback android, haptic feedback android, react native haptic feedback, ios haptics, react native haptics, ios haptic feedback, haptics feedback, android haptic feedback, haptic feedback react native, swiftui haptic feedback, haptics" />
     <title>Pulsar: Haptic Feedback Library for Swift, Kotlin & React Native</title>
     <link rel="icon" type="image/svg+xml" href={`${BASE_PATH}/logo.svg`} />
+    <link rel="preload" as="image" type="image/svg+xml" href={swmLogo.src} />
+    <link rel="preload" as="image" type="image/svg+xml" href={starIcon.src} />
+    <link rel="preload" as="image" type="image/svg+xml" href={angelIcon.src} />
+    <link rel="preload" as="image" type="image/svg+xml" href={warningIcon.src} />
+    <link rel="preload" as="image" type="image/svg+xml" href={arrowIcon.src} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Pulsar - a rich haptics presets library for Swift, Kotlin & React Native" />
     <meta property="og:description" content="Rich and ready-to-use haptics library
