@@ -96,6 +96,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
       0 -> RealtimeComposerStrategy.ENVELOPE
       1 -> RealtimeComposerStrategy.PRIMITIVE_TICK
       2 -> RealtimeComposerStrategy.PRIMITIVE_COMPLEX
+      3 -> RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES
       else -> return
     }
     realtimeComposer = pulsar.getRealtimeComposer(strategyEnum)

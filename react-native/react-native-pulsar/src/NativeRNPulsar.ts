@@ -20,6 +20,7 @@ export enum RealtimeComposerStrategy {
   ENVELOPE = 0,
   PRIMITIVE_TICK = 1,
   PRIMITIVE_COMPLEX = 2,
+  ENVELOPE_WITH_DISCRETE_PRIMITIVES = 3,
 }
 
 export interface Spec extends TurboModule {
