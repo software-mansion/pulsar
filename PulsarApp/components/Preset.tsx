@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Pressable } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useAnimatedReaction, useAnimatedRef, scrollTo } from 'react-native-reanimated';
 import { usePostHog } from 'posthog-react-native';
 
@@ -17,9 +18,10 @@ export interface PresetProps {
 	image: ImageSourcePropType;
 	onPress: () => void;
 	duration?: number;
+	compact?: boolean;
 }
 
-function Preset({ title, subtitle, tags = [], image, onPress, duration }: PresetProps) {
+function Preset({ title, subtitle, tags = [], image, onPress, duration, compact }: PresetProps) {
 	duration = duration ? duration : 20;
 	const posthog = usePostHog();
 	const imageMeta = Image.resolveAssetSource(image);
@@ -83,6 +85,28 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 			left: progress.value * effectiveRatio * (imageWidth ?? 1000),
 		};
 	});
+
+	if (compact) {
+		return (
+			<Pressable onPress={handlePress}>
+				<Card style={styles.cardCompact} enableAnimation={false}>
+					<View style={styles.compactContainer}>
+						<View style={styles.compactInfo}>
+							<View style={styles.tagsContainerCompact}>
+								{tags.map((tag, index) => (
+									<View key={`${tag}-${index}`} style={styles.tagCompact}>
+										<Text style={styles.tagTextCompact}>{tag}</Text>
+									</View>
+								))}
+							</View>
+							<ThemedText type="subtitle" style={styles.titleCompact}>{title}</ThemedText>
+						</View>
+						<Text style={styles.compactPlayIcon}>{isPlaying ? '■' : '▶'}</Text>
+					</View>
+				</Card>
+			</Pressable>
+		);
+	}
 
 	return (
 		<Card style={styles.card} enableAnimation={false}>
@@ -196,6 +220,42 @@ const styles = StyleSheet.create({
 		fontFamily: Fonts.sans,
 		fontSize: 12,
 		color: Colors.light.text,
+	},
+	cardCompact: {
+		paddingVertical: 10,
+	},
+	compactContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+	},
+	compactInfo: {
+		flex: 1,
+		gap: 4,
+	},
+	tagsContainerCompact: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		gap: 5,
+	},
+	tagCompact: {
+		borderRadius: 999,
+		backgroundColor: '#B5E1F1',
+		paddingHorizontal: 8,
+		paddingVertical: 2,
+	},
+	tagTextCompact: {
+		fontSize: 12,
+		color: '#001A72',
+		fontWeight: '500',
+	},
+	titleCompact: {
+		marginTop: 2,
+	},
+	compactPlayIcon: {
+		fontSize: 18,
+		color: '#001A72',
+		marginLeft: 10,
 	},
 	playIndicator: {
 		position: 'absolute',

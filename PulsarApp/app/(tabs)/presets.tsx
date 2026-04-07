@@ -9,6 +9,7 @@ import Preset from '@/components/Preset';
 import Card from '@/components/Card';
 import SelectedTags from '@/components/SelectedTags';
 import { useMemo } from 'react';
+import { useFilters } from '@/contexts/FilterContext';
 
 const infoIcon = require('@/assets/images/info.svg');
 const slidersIcon = require('@/assets/images/sliders.svg');
@@ -22,6 +23,7 @@ const defaultEdges = {
 
 export default function PresetsScreen() {
   const { filteredPresets, selectedTags } = useFilteredPresets();
+  const { compactLayout } = useFilters();
 
   const listHeader = useMemo(() => (
     <>
@@ -79,9 +81,10 @@ export default function PresetsScreen() {
             image={item.image}
             onPress={item.play}
             duration={item.duration}
+            compact={compactLayout}
           />
         )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => <View style={{ height: compactLayout ? 12 : 30 }} />}
       />
     </SafeAreaView>
   );
@@ -94,9 +97,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: 15,
     paddingBottom: 50,
-  },
-  separator: {
-    height: 30,
   },
   learnMore: {
     color: '#001A72',

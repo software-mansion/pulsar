@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface FilterContextType {
   selectedTags: string[];
@@ -9,6 +10,8 @@ interface FilterContextType {
   setShowSystemPresets: (enabled: boolean) => void;
   selectedSystemPresetTags: string[];
   setSelectedSystemPresetTags: (tags: string[]) => void;
+  compactLayout: boolean;
+  setCompactLayout: (enabled: boolean) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -18,9 +21,20 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showSystemPresets, setShowSystemPresets] = useState(false);
   const [selectedSystemPresetTags, setSelectedSystemPresetTags] = useState<string[]>(['Effect', 'Primitive']);
+  const [compactLayout, setCompactLayout] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem('@pulsar_compact_layout').then(val => {
+      if (val !== null) setCompactLayout(val === 'true');
+    }).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem('@pulsar_compact_layout', compactLayout ? 'true' : 'false').catch(console.error);
+  }, [compactLayout]);
 
   return (
-    <FilterContext.Provider value={{ selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags }}>
+    <FilterContext.Provider value={{ selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags, compactLayout, setCompactLayout }}>
       {children}
     </FilterContext.Provider>
   );
