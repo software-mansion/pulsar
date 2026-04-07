@@ -637,11 +637,12 @@ An optional `strategy` parameter controls how continuous haptics are simulated:
 val realtime = pulsar.getRealtimeComposer(strategy = RealtimeComposerStrategy.ENVELOPE)
 ```
 
-| Strategy            | Description                                     |
-| ------------------- | ----------------------------------------------- |
-| `ENVELOPE`          | Envelope API approximation (API 36+, default)   |
-| `PRIMITIVE_TICK`    | Composition API with varying tick intervals     |
-| `PRIMITIVE_COMPLEX` | Multiple primitives selected based on frequency |
+| Strategy                              | Description                                     |
+| ------------------------------------- | ----------------------------------------------- |
+| `ENVELOPE`                            | Envelope API approximation (API 36+)            |
+| `PRIMITIVE_TICK`                      | Composition API with varying tick intervals     |
+| `PRIMITIVE_COMPLEX`                   | Multiple primitives selected based on frequency |
+| `ENVELOPE_WITH_DISCRETE_PRIMITIVES`   | **Default.** Envelope API for continuous events (API 36+); composition primitives for discrete events (API 33+). |
 
 ### Methods
 
@@ -803,9 +804,10 @@ Controls how continuous haptics are rendered on the device.
 
 ```kotlin
 enum class RealtimeComposerStrategy {
-  ENVELOPE,          // Envelope API approximation (API 36+)
-  PRIMITIVE_TICK,    // Composition API with varying intervals
-  PRIMITIVE_COMPLEX, // Multiple primitives based on frequency
+  ENVELOPE,                           // Envelope API approximation (API 36+)
+  PRIMITIVE_TICK,                     // Composition API with varying intervals
+  PRIMITIVE_COMPLEX,                  // Multiple primitives based on frequency
+  ENVELOPE_WITH_DISCRETE_PRIMITIVES,  // Envelope for continuous; primitives for discrete
 }
 ```
 

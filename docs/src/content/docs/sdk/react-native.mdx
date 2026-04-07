@@ -667,6 +667,7 @@ enum RealtimeComposerStrategy {
   ENVELOPE = 0,
   PRIMITIVE_TICK = 1,
   PRIMITIVE_COMPLEX = 2,
+  ENVELOPE_WITH_DISCRETE_PRIMITIVES = 3,
 }
 ```
 
@@ -675,6 +676,7 @@ enum RealtimeComposerStrategy {
 | `ENVELOPE`        | Approximation based on the Envelope API. Allows control over amplitude and frequency, but the signal oscillates and can be unstable. Available on Android API 36+. |
 | `PRIMITIVE_TICK`  | Approximation using the Composition API TICK primitive at varying intervals. Amplitude is controllable; frequency is simulated by the timing between ticks. Signal is discrete rather than continuous. |
 | `PRIMITIVE_COMPLEX` | Similar to `PRIMITIVE_TICK`, but uses multiple primitives depending on the requested frequency. |
+| `ENVELOPE_WITH_DISCRETE_PRIMITIVES` | **Default.** Hybrid strategy. Uses the Envelope API for continuous events (API 36+) and composition primitives for discrete events (API 33+). Best of both worlds when both event types are used. |
 
 **Example**
 
