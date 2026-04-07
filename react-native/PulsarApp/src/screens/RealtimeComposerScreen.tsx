@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
+  Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
@@ -11,17 +13,33 @@ import Animated, {
   useSharedValue,
   runOnJS,
 } from 'react-native-reanimated';
-import { useRealtimeComposer } from 'react-native-pulsar';
+import { useRealtimeComposer, Settings, RealtimeComposerStrategy } from 'react-native-pulsar';
+
+const STRATEGIES: { label: string; value: RealtimeComposerStrategy }[] = [
+  { label: 'Envelope+Discrete', value: RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES },
+  { label: 'Envelope', value: RealtimeComposerStrategy.ENVELOPE },
+  { label: 'Primitive Complex', value: RealtimeComposerStrategy.PRIMITIVE_COMPLEX },
+  { label: 'Primitive Tick', value: RealtimeComposerStrategy.PRIMITIVE_TICK },
+];
 
 export default function RealtimeComposerScreen() {
   const composer = useRealtimeComposer();
   const containerSize = useSharedValue({ width: 300, height: 300 });
   const tapIndicatorPosition = useSharedValue({ x: -100, y: -100 });
   const panIndicatorPosition = useSharedValue({ x: -100, y: -100 });
+  const [selectedStrategy, setSelectedStrategy] = useState(
+    RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES
+  );
 
   const handleLayout = (event: any) => {
     const { width, height } = event.nativeEvent.layout;
     containerSize.value = { width, height };
+  };
+
+  const handleStrategyChange = (strategy: RealtimeComposerStrategy) => {
+    composer.stop();
+    setSelectedStrategy(strategy);
+    Settings.setRealtimeComposerStrategy(strategy);
   };
 
   const clampValue = (value: number, min: number, max: number) => {
@@ -34,16 +52,14 @@ export default function RealtimeComposerScreen() {
       'worklet';
       const x = clampValue(event.x, 15, containerSize.value.width - 15);
       const y = clampValue(event.y, 15, containerSize.value.height - 15);
-      
+
       tapIndicatorPosition.value = { x, y };
 
-      // Normalized values (0-100)
       const normalizedX = (x / containerSize.value.width) * 100;
       const normalizedY = ((containerSize.value.height - y) / containerSize.value.height) * 100;
 
       composer.playDiscrete(normalizedY, normalizedX);
 
-      // Reset indicator after a short delay
       setTimeout(() => {
         tapIndicatorPosition.value = { x: -100, y: -100 };
       }, 150);
@@ -54,7 +70,7 @@ export default function RealtimeComposerScreen() {
       'worklet';
       const x = clampValue(event.x, 15, containerSize.value.width - 15);
       const y = clampValue(event.y, 15, containerSize.value.height - 15);
-      
+
       panIndicatorPosition.value = { x, y };
 
       const normalizedX = (x / containerSize.value.width);
@@ -66,7 +82,7 @@ export default function RealtimeComposerScreen() {
       'worklet';
       const x = clampValue(event.x, 15, containerSize.value.width - 15);
       const y = clampValue(event.y, 15, containerSize.value.height - 15);
-      
+
       panIndicatorPosition.value = { x, y };
 
       const normalizedX = (x / containerSize.value.width);
@@ -102,6 +118,33 @@ export default function RealtimeComposerScreen() {
         <Text style={styles.instructions}>
           X-axis controls frequency, Y-axis controls intensity
         </Text>
+
+        {Platform.OS === 'android' && (
+          <View style={styles.strategySection}>
+            <Text style={styles.strategyLabel}>Strategy</Text>
+            <View style={styles.strategyRow}>
+              {STRATEGIES.map(({ label, value }) => (
+                <TouchableOpacity
+                  key={value}
+                  style={[
+                    styles.strategyButton,
+                    selectedStrategy === value && styles.strategyButtonSelected,
+                  ]}
+                  onPress={() => handleStrategyChange(value)}
+                >
+                  <Text
+                    style={[
+                      styles.strategyButtonText,
+                      selectedStrategy === value && styles.strategyButtonTextSelected,
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
 
         <GestureDetector gesture={composedGesture}>
           <Animated.View style={styles.gestureArea} onLayout={handleLayout}>
@@ -161,7 +204,37 @@ const styles = StyleSheet.create({
   instructions: {
     fontSize: 12,
     color: '#999',
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  strategySection: {
+    marginBottom: 16,
+  },
+  strategyLabel: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 6,
+  },
+  strategyRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  strategyButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#E0E0E0',
+  },
+  strategyButtonSelected: {
+    backgroundColor: '#1565C0',
+  },
+  strategyButtonText: {
+    fontSize: 12,
+    color: '#555',
+  },
+  strategyButtonTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
   },
   gestureArea: {
     flex: 1,

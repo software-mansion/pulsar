@@ -4,15 +4,19 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -29,24 +33,36 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.types.CompatibilityMode
+import com.swmansion.pulsar.types.RealtimeComposerStrategy
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RealtimeComposerScreen() {
     val context = LocalContext.current
     val engine = remember { HapticEngineWrapper(context) }
-    val realtimeComposer = remember { RealtimeComposer(engine) }
-    
+    var selectedStrategy by remember { mutableStateOf(RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES) }
+    val realtimeComposer = remember(selectedStrategy) {
+        RealtimeComposer(engine, selectedStrategy, engine.getRealCompatibilityMode())
+    }
+
     var amplitude by remember { mutableStateOf(0.5f) }
     var frequency by remember { mutableStateOf(0.5f) }
     var isActive by remember { mutableStateOf(false) }
-    
+
     DisposableEffect(Unit) {
         onDispose {
             realtimeComposer.stop()
         }
     }
-    
+
+    val strategies = listOf(
+        RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES to "Envelope+Discrete",
+        RealtimeComposerStrategy.ENVELOPE to "Envelope",
+        RealtimeComposerStrategy.PRIMITIVE_COMPLEX to "Primitive Complex",
+        RealtimeComposerStrategy.PRIMITIVE_TICK to "Primitive Tick",
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,9 +78,42 @@ fun RealtimeComposerScreen() {
                 fontSize = 20.sp,
                 color = Color.Black
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
+            Text("Strategy", fontSize = 13.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
+                strategies.forEach { (strategy, label) ->
+                    val isSelected = selectedStrategy == strategy
+                    Box(
+                        modifier = Modifier
+                            .clickable {
+                                realtimeComposer.stop()
+                                isActive = false
+                                selectedStrategy = strategy
+                            }
+                            .background(
+                                if (isSelected) Color(0xFF1565C0) else Color(0xFFE0E0E0),
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            label,
+                            fontSize = 11.sp,
+                            color = if (isSelected) Color.White else Color.DarkGray
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 "Amplitude: ${String.format("%.2f", amplitude)}",
                 fontSize = 16.sp,
@@ -80,9 +129,9 @@ fun RealtimeComposerScreen() {
                 fontSize = 16.sp,
                 color = if (isActive) Color.Green else Color.Red
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             Box(
                 modifier = Modifier
                     .size(300.dp)
@@ -92,20 +141,14 @@ fun RealtimeComposerScreen() {
                         detectDragGestures(
                             onDragStart = { offset ->
                                 isActive = true
-                                // Map x position to frequency (0 to 1)
                                 frequency = (offset.x / size.width).coerceIn(0f, 1f)
-                                // Map y position to amplitude (inverted: top = 1, bottom = 0)
                                 amplitude = (1f - (offset.y / size.height)).coerceIn(0f, 1f)
-                                
                                 realtimeComposer.set(amplitude, frequency)
                             },
                             onDrag = { change, _ ->
                                 change.consume()
-                                // Update frequency based on x position
                                 frequency = (change.position.x / size.width).coerceIn(0f, 1f)
-                                // Update amplitude based on y position (inverted)
                                 amplitude = (1f - (change.position.y / size.height)).coerceIn(0f, 1f)
-                                
                                 realtimeComposer.set(amplitude, frequency)
                             },
                             onDragEnd = {
@@ -126,9 +169,9 @@ fun RealtimeComposerScreen() {
                     fontSize = 18.sp
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Text(
                 "← Lower Frequency | Higher Frequency →",
                 fontSize = 12.sp,
