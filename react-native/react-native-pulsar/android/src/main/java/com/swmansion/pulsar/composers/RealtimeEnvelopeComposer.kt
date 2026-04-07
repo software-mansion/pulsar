@@ -11,7 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class RealtimeEnvelopeComposer(
+open class RealtimeEnvelopeComposer(
     private val engine: HapticEngineWrapper
 ) : RealtimeComposable {
 
@@ -45,7 +45,7 @@ class RealtimeEnvelopeComposer(
         }
     }
 
-    override fun playDiscrete(amplitude: Float, frequency: Float) {
+    open override fun playDiscrete(amplitude: Float, frequency: Float) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }

@@ -7,14 +7,15 @@ import com.swmansion.pulsar.types.RealtimeComposerStrategy
 
 class RealtimeComposer(
     engine: HapticEngineWrapper,
-    strategy: RealtimeComposerStrategy = RealtimeComposerStrategy.ENVELOPE,
+    strategy: RealtimeComposerStrategy = RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES,
     compatibilityMode: CompatibilityMode,
 ) : RealtimeComposable {
 
-    var delegate: RealtimeComposable = if (strategy == RealtimeComposerStrategy.ENVELOPE) {
-        RealtimeEnvelopeComposer(engine)
-    } else {
-        RealtimePrimitiveComposer(engine, strategy, compatibilityMode)
+    var delegate: RealtimeComposable = when (strategy) {
+        RealtimeComposerStrategy.ENVELOPE -> RealtimeEnvelopeComposer(engine)
+        RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES -> RealtimeEnvelopeWithDiscretePrimitivesComposer(engine)
+        RealtimeComposerStrategy.PRIMITIVE_TICK -> RealtimePrimitiveTickComposer(engine, compatibilityMode)
+        RealtimeComposerStrategy.PRIMITIVE_COMPLEX -> RealtimePrimitiveComplexComposer(engine, compatibilityMode)
     }
 
     override fun set(amplitude: Float, frequency: Float) {

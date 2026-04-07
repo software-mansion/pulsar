@@ -16,11 +16,17 @@ package com.swmansion.pulsar.types
  *
  * @param PRIMITIVE_COMPLEX - Similar to PRIMITIVE_TICK, but utilizes multiple primitives
  * depending on the requested frequency.
+ *
+ * @param ENVELOPE_WITH_DISCRETE_PRIMITIVES - Hybrid strategy that uses the Envelope API for
+ * continuous events (same as ENVELOPE) but plays platform composition primitives for discrete
+ * events (same as PRIMITIVE_COMPLEX). Requires Android API 36 for continuous mode and API 33
+ * (TIRAMISU) for discrete primitives.
  */
 enum class RealtimeComposerStrategy {
     ENVELOPE,
     PRIMITIVE_TICK,
-    PRIMITIVE_COMPLEX
+    PRIMITIVE_COMPLEX,
+    ENVELOPE_WITH_DISCRETE_PRIMITIVES
 }
 
 interface RealtimeComposable {

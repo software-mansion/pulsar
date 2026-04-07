@@ -17,7 +17,7 @@ open class Pulsar(protected var context: Context) {
     protected var _presets: PresetsWrapper? = null
     var realtimeComposerStrategy =
         if (hapticSupport() >= CompatibilityMode.STANDARD_SUPPORT) {
-            RealtimeComposerStrategy.ENVELOPE
+            RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES
         } else if (hapticSupport() >= CompatibilityMode.LIMITED_SUPPORT) {
             RealtimeComposerStrategy.PRIMITIVE_COMPLEX
         } else {

@@ -8,11 +8,9 @@ import androidx.annotation.RequiresApi
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.RealtimeComposable
-import com.swmansion.pulsar.types.RealtimeComposerStrategy
 
-class RealtimePrimitiveComposer(
+open class RealtimePrimitiveComposer(
     private val engine: HapticEngineWrapper,
-    private val strategy: RealtimeComposerStrategy,
     compatibilityMode: CompatibilityMode,
 ) : RealtimeComposable {
     private var minIntervalMs = 10L
@@ -82,7 +80,7 @@ class RealtimePrimitiveComposer(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun createCompositionEffect(amplitude: Float, frequency: Float): VibrationEffect {
+    protected fun createCompositionEffect(amplitude: Float, frequency: Float): VibrationEffect {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             VibrationEffect.startComposition()
                 .addPrimitive(
@@ -96,14 +94,7 @@ class RealtimePrimitiveComposer(
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun selectPrimitive(value: Float): Int {
-        if (strategy == RealtimeComposerStrategy.PRIMITIVE_TICK) {
-            return VibrationEffect.Composition.PRIMITIVE_TICK
-        }
-        return when {
-            value > 0.66f -> VibrationEffect.Composition.PRIMITIVE_CLICK
-            value > 0.33f -> VibrationEffect.Composition.PRIMITIVE_TICK
-            else -> VibrationEffect.Composition.PRIMITIVE_LOW_TICK
-        }
+    protected open fun selectPrimitive(value: Float): Int {
+        return VibrationEffect.Composition.PRIMITIVE_TICK
     }
 }
