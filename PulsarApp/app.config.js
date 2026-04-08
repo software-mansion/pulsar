@@ -10,6 +10,9 @@ export default {
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.swmansion.pulsar.app",
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     adaptiveIcon: {
