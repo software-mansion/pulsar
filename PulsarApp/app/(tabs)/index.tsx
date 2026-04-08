@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Alert, Keyboard } from 'react-native';
+import { StyleSheet, View, Alert, Keyboard, AppState } from 'react-native';
 import * as Linking from 'expo-linking';
 import { usePostHog } from 'posthog-react-native';
 
@@ -44,8 +44,9 @@ export default function HomeScreen() {
   const [connectingCode, setConnectingCode] = useState('');
   const tokenRef = useRef('');
   const socketRef = useRef<WebSocket | null>(null);
-  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const patternNotificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const patternNotificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const appStateRef = useRef(AppState.currentState);
 
   useEffect(() => {
     Settings.enableSound(true);
@@ -67,8 +68,20 @@ export default function HomeScreen() {
         }
       });
 
+    const appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
+      if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
+        if (tokenRef.current && (!socketRef.current ||
+            (socketRef.current.readyState !== WebSocket.OPEN &&
+             socketRef.current.readyState !== WebSocket.CONNECTING))) {
+          handleOnConnect(true, '');
+        }
+      }
+      appStateRef.current = nextAppState;
+    });
+
     return () => {
       subscription.remove();
+      appStateSubscription.remove();
       socketRef.current?.close();
       socketRef.current = null;
       if (pingIntervalRef.current) {
@@ -179,7 +192,9 @@ export default function HomeScreen() {
           ],
           $exception_source: 'websocket_message',
         });
+        if (AppState.currentState === 'active') {
         Alert.alert('Connection Error', 'Received invalid response from server. Please try again.');
+      }
       }
     };
 
@@ -200,7 +215,9 @@ export default function HomeScreen() {
         error_type: 'CONNECTION_FAILED',
         connection_action: action,
       });
-      Alert.alert('Connection Error', 'An error occurred while connecting. Please check your code and try again.');
+      if (AppState.currentState === 'active') {
+        Alert.alert('Connection Error', 'An error occurred while connecting. Please check your code and try again.');
+      }
     };
 
     socket.onclose = (e) => {
