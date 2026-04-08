@@ -1,0 +1,10 @@
+---
+services:
+  - docker:28-dind
+stages:
+  - build
+  - deploy
+default:
+  image: docker:28
+  before_script:
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
