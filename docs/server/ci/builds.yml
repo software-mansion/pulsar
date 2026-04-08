@@ -1,0 +1,13 @@
+---
+build_server:
+  stage: build
+  script:
+    - docker buildx build
+        --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:latest
+        --cache-to type=inline
+        --pull --push
+        --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+        --tag $CI_REGISTRY_IMAGE:latest
+        .
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
