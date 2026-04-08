@@ -355,13 +355,14 @@ public class AudioSimulator: NSObject {
 		configureAudioContext()
 
 		if playerNode.isPlaying { playerNode.stop() }
-		audioContext.stop()
-		do {
-			try AVAudioSession.sharedInstance().setActive(true)
-			try audioContext.start()
-		} catch {
-			print("Failed to start audio engine: \(error)")
-			return
+		if !audioContext.isRunning {
+			do {
+				try AVAudioSession.sharedInstance().setActive(true)
+				try audioContext.start()
+			} catch {
+				print("Failed to start audio engine: \(error)")
+				return
+			}
 		}
 
 		playerNode.scheduleBuffer(buffer, at: nil, options: []) { [weak self] in
