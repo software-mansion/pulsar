@@ -240,6 +240,13 @@ export default function HomeScreen() {
     };
   }
 
+  const handleRefresh = () => {
+    posthog.capture('device_reconnection_initiated', {
+      previous_state: connectionState,
+    });
+    handleOnConnect(true, '');
+  };
+
   const handleDisconnect = () => {
     Presets.powerDown();
     posthog.capture('device_disconnected', {
@@ -338,11 +345,14 @@ export default function HomeScreen() {
               />}
 
             {(hasToken && (connectionState === 'CONNECTED_TO_SERVER' || connectionState === 'FULLY_CONNECTED' || connectionState === 'CONNECTING')) &&
-              <BaseButton
-                style={Margins.marginTop2X}
-                onPress={handleDisconnect}>
-                <ThemedText style={styles.disconnect}>Disconnect</ThemedText>
-              </BaseButton>}
+              <View style={[styles.buttonRow, Margins.marginTop2X]}>
+                <BaseButton onPress={handleRefresh}>
+                  <ThemedText style={styles.disconnect}>Refresh</ThemedText>
+                </BaseButton>
+                <BaseButton onPress={handleDisconnect}>
+                  <ThemedText style={styles.disconnect}>Disconnect</ThemedText>
+                </BaseButton>
+              </View>}
 
             {(!hasToken || connectionState === 'DISCONNECTED' || connectionState === 'ERROR') && 
               <ConnectionForm 
@@ -525,6 +535,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffac59',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
   },
   disconnect: {
     textAlign: 'center',
