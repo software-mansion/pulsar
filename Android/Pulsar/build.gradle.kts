@@ -55,7 +55,7 @@ dependencies {
 }
 
 group = "com.swmansion"
-version = System.getenv("LIB_VERSION") ?: "0.0.1"
+version = System.getenv("LIB_VERSION") ?: "1.0.0"
 
 afterEvaluate {
     publishing {
