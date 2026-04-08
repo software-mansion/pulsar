@@ -27,17 +27,27 @@
     }
   }
 }
+.togglesRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  flex-direction: column;
+}
+
 .compactToggle {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 12px;
   font-size: var(--font-size-sm);
   cursor: pointer;
   user-select: none;
 
   input[type='checkbox'] {
+    margin-top: -3px;
     cursor: pointer;
+    width: 16px;
+    height: 16px;
   }
 }
 

@@ -10,6 +10,8 @@ import codeIcon from '../../assets/new_assets/code.svg';
 import copyIcon from '../../assets/new_assets/copy.svg';
 import playIcon from '../../assets/new_assets/play.svg';
 import pauseIcon from '../../assets/new_assets/pause.svg';
+import heartIcon from '../../assets/new_assets/heart.svg';
+import heartFillIcon from '../../assets/new_assets/heart-fill.svg';
 import { AudioPatternUtility } from './audio-player';
 import { API_SERVER_URL } from '../config';
 
@@ -60,9 +62,11 @@ interface CompactPresetInternalProps {
   handleCopy: () => void;
   definitionOpen: boolean;
   setDefinitionOpen: (open: boolean) => void;
+  isFavourite: boolean;
+  onToggleFavourite: () => void;
 }
 
-function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitionOpen, setDefinitionOpen }: CompactPresetInternalProps) {
+function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitionOpen, setDefinitionOpen, isFavourite, onToggleFavourite }: CompactPresetInternalProps) {
   const { data } = preset;
   const [isPlaying, setIsPlaying] = useState(false);
   const audioPlayerRef = useRef<AudioPatternUtility | null>(null);
@@ -116,6 +120,9 @@ function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitio
         </div>
       )}
       <div className={style.compactActions}>
+        <button className={`${style.compactCodeButton} ${isFavourite ? style.heartActive : ''}`} onClick={onToggleFavourite} aria-label={isFavourite ? 'Unlike preset' : 'Like preset'}>
+          <img src={isFavourite ? heartFillIcon.src : heartIcon.src} alt="Favourite" />
+        </button>
         <button className={style.compactCodeButton} onClick={() => setDefinitionOpen(true)}>
           <img src={codeIcon.src} alt="Definition" />
         </button>
@@ -139,10 +146,12 @@ function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitio
 
 interface PresetProps extends PresetConfig {
   compact?: boolean;
+  isFavourite?: boolean;
+  onToggleFavourite?: () => void;
 }
 
 export function Preset(preset: PresetProps) {
-  const { data, compact = false } = preset;
+  const { data, compact = false, isFavourite = false, onToggleFavourite = () => {} } = preset;
   const anchorId = toAnchorId(data.name);
   const [usageViewed, setUsageViewed] = useState(false);
   const [definitionOpen, setDefinitionOpen] = useState(false);
@@ -166,7 +175,7 @@ export function Preset(preset: PresetProps) {
 
   if (compact) {
     return (
-      <CompactPreset preset={preset} anchorId={anchorId} definitionJson={definitionJson} handleCopy={handleCopy} definitionOpen={definitionOpen} setDefinitionOpen={setDefinitionOpen} />
+      <CompactPreset preset={preset} anchorId={anchorId} definitionJson={definitionJson} handleCopy={handleCopy} definitionOpen={definitionOpen} setDefinitionOpen={setDefinitionOpen} isFavourite={isFavourite} onToggleFavourite={onToggleFavourite} />
     );
   }
 
@@ -180,9 +189,14 @@ export function Preset(preset: PresetProps) {
         </div>
       )}
 
-      <button className={style.definitionButton} onClick={() => setDefinitionOpen(true)}>
-        <img src={codeIcon.src} alt="Definition" />
-      </button>
+      <div className={style.topRightButtons}>
+        <button className={`${style.heartButton} ${isFavourite ? style.heartActive : ''}`} onClick={onToggleFavourite} aria-label={isFavourite ? 'Unlike preset' : 'Like preset'}>
+          <img src={isFavourite ? heartFillIcon.src : heartIcon.src} alt="Favourite" />
+        </button>
+        <button className={style.definitionButton} onClick={() => setDefinitionOpen(true)}>
+          <img src={codeIcon.src} alt="Definition" />
+        </button>
+      </div>
 
       <div className={style.header}>
         <div className={style.nameRow}>

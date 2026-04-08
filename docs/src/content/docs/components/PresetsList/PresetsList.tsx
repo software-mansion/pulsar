@@ -2,7 +2,7 @@ import style from './PresetsList.module.scss';
 import infoIcon from '../../assets/new_assets/info.svg';
 import { Filters } from '../Filters/Filters';
 import { Preset } from '../Preset/Preset';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { TagsModal } from '../TagsModal/TagsModal';
 import { TagsInfo } from './Tags';
 import { PresetsConfig } from '../../assets/presets/PresetsConfig';
@@ -11,6 +11,7 @@ import { NoResult } from '../NoResult/NoResult';
 import { ChartModal } from '../ChartModal/ChartModal';
 
 const COMPACT_LAYOUT_KEY = 'presets_compact_layout';
+const FAVOURITES_KEY = 'presets_favourites';
 
 declare global {
   interface Window {
@@ -27,11 +28,35 @@ export function PresetsList() {
   const [compactLayout, setCompactLayout] = useState<boolean>(
     () => typeof localStorage !== 'undefined' && localStorage.getItem(COMPACT_LAYOUT_KEY) === 'true'
   );
+  const [favourites, setFavourites] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(FAVOURITES_KEY);
+      if (stored) setFavourites(new Set(JSON.parse(stored)));
+    } catch {}
+  }, []);
+  const [showFavouritesOnly, setShowFavouritesOnly] = useState(false);
 
   function handleCompactToggle(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.checked;
     setCompactLayout(value);
     localStorage.setItem(COMPACT_LAYOUT_KEY, String(value));
+  }
+
+  function handleToggleFavourite(presetName: string) {
+    setFavourites((prev) => {
+      const next = new Set(prev);
+      if (next.has(presetName)) {
+        next.delete(presetName);
+        window.posthog?.capture('preset_unfavourited', { preset_name: presetName });
+      } else {
+        next.add(presetName);
+        window.posthog?.capture('preset_favourited', { preset_name: presetName });
+      }
+      localStorage.setItem(FAVOURITES_KEY, JSON.stringify(Array.from(next)));
+      return next;
+    });
   }
 
   const androidSystemPresetTagMap: Record<string, string> = {
@@ -92,26 +117,28 @@ export function PresetsList() {
   }, [selectedTags]);
 
   const filteredPresets = useMemo(() => {
-    if (selectedTags.length === 0) {
-      return activePresets;
+    let result = activePresets;
+
+    if (selectedTags.length > 0) {
+      result = result.filter((preset) => {
+        const presetTagLabels = preset.data.tags;
+        for (const groupName in selectedTagsByGroup) {
+          const selectedTagsInGroup = selectedTagsByGroup[groupName];
+          const hasTagFromGroup = selectedTagsInGroup.some((tagName) =>
+            presetTagLabels.includes(tagName),
+          );
+          if (!hasTagFromGroup) return false;
+        }
+        return true;
+      });
     }
 
-    return activePresets.filter((preset) => {
-      const presetTagLabels = preset.data.tags;
+    if (showFavouritesOnly) {
+      result = result.filter((preset) => favourites.has(preset.data.name));
+    }
 
-      for (const groupName in selectedTagsByGroup) {
-        const selectedTagsInGroup = selectedTagsByGroup[groupName];
-        const hasTagFromGroup = selectedTagsInGroup.some((tagName) =>
-          presetTagLabels.includes(tagName),
-        );
-        if (!hasTagFromGroup) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [selectedTags, selectedTagsByGroup, activePresets]);
+    return result;
+  }, [selectedTags, selectedTagsByGroup, activePresets, showFavouritesOnly, favourites]);
 
   return (
     <div className={['not-content', style.presets].join(' ')}>
@@ -136,10 +163,16 @@ export function PresetsList() {
         setSelectedSystemPresets={setSelectedSystemPresets}
       />
 
-      <label className={style.compactToggle}>
-        <input type="checkbox" checked={compactLayout} onChange={handleCompactToggle} />
-        Compact list
-      </label>
+      <div className={style.togglesRow}>
+        <label className={style.compactToggle}>
+          <input type="checkbox" checked={compactLayout} onChange={handleCompactToggle} />
+          Compact list
+        </label>
+        <label className={style.compactToggle}>
+          <input type="checkbox" checked={showFavouritesOnly} onChange={(e) => setShowFavouritesOnly(e.target.checked)} />
+          Show favourites only
+        </label>
+      </div>
 
       {filteredPresets.length > 0 && (
         <div className={style.resultCount}>{filteredPresets.length} results</div>
@@ -148,7 +181,13 @@ export function PresetsList() {
       {filteredPresets.length === 0 && <NoResult />}
 
       {filteredPresets.map((preset) => (
-        <Preset key={preset.data.name} {...preset} compact={compactLayout} />
+        <Preset
+          key={preset.data.name}
+          {...preset}
+          compact={compactLayout}
+          isFavourite={favourites.has(preset.data.name)}
+          onToggleFavourite={() => handleToggleFavourite(preset.data.name)}
+        />
       ))}
 
       {showModal === 'tags' && <TagsModal onClose={() => setShowModal('no')} />}
