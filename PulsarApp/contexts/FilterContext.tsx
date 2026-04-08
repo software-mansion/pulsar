@@ -12,6 +12,8 @@ interface FilterContextType {
   setSelectedSystemPresetTags: (tags: string[]) => void;
   compactLayout: boolean;
   setCompactLayout: (enabled: boolean) => void;
+  showFavouritesOnly: boolean;
+  setShowFavouritesOnly: (enabled: boolean) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [showSystemPresets, setShowSystemPresets] = useState(false);
   const [selectedSystemPresetTags, setSelectedSystemPresetTags] = useState<string[]>(['Effect', 'Primitive']);
   const [compactLayout, setCompactLayout] = useState(false);
+  const [showFavouritesOnly, setShowFavouritesOnly] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('@pulsar_compact_layout').then(val => {
@@ -34,7 +37,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   }, [compactLayout]);
 
   return (
-    <FilterContext.Provider value={{ selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags, compactLayout, setCompactLayout }}>
+    <FilterContext.Provider value={{ selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags, compactLayout, setCompactLayout, showFavouritesOnly, setShowFavouritesOnly }}>
       {children}
     </FilterContext.Provider>
   );

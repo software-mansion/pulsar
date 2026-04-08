@@ -3,11 +3,16 @@ import { Image, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } f
 import { Pressable } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useAnimatedReaction, useAnimatedRef, scrollTo } from 'react-native-reanimated';
 import { usePostHog } from 'posthog-react-native';
+import { Image as ExpoImage } from 'expo-image';
 
 import Card from './Card';
 import { ThemedText } from './themed-text';
 import { Colors, Fonts } from '@/constants/theme';
 import Button from './Button';
+import { useFavourites } from '@/contexts/FavouritesContext';
+
+import heartIcon from '@/assets/images/heart.svg';
+import heartFillIcon from '@/assets/images/heart-fill.svg';
 
 const IMAGE_HEIGHT = 160;
 
@@ -29,6 +34,18 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration, compact 
 		imageMeta?.width && imageMeta?.height ? imageMeta.width / imageMeta.height : undefined;
 	const imageWidth = imageAspectRatio ? IMAGE_HEIGHT * imageAspectRatio : undefined;
 	const effectiveRatio = duration ? Math.min(1, duration / 1000) : 1;
+
+	const { isFavourite, toggleFavourite } = useFavourites();
+	const favourite = isFavourite(title);
+
+	const handleFavouritePress = () => {
+		const nowFavourite = !favourite;
+		toggleFavourite(title);
+		posthog.capture(nowFavourite ? 'preset_favourited' : 'preset_unfavourited', {
+			preset_name: title,
+			tags,
+		});
+	};
 
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [viewportWidth, setViewportWidth] = useState(0);
@@ -101,6 +118,9 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration, compact 
 							</View>
 							<ThemedText type="subtitle" style={styles.titleCompact}>{title}</ThemedText>
 						</View>
+						<Pressable onPress={handleFavouritePress} style={styles.compactHeartButton} hitSlop={8}>
+							<ExpoImage source={favourite ? heartFillIcon : heartIcon} style={styles.heartIcon} />
+						</Pressable>
 						<Text style={styles.compactPlayIcon}>{isPlaying ? '■' : '▶'}</Text>
 					</View>
 				</Card>
@@ -111,15 +131,20 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration, compact 
 	return (
 		<Card style={styles.card} enableAnimation={false}>
 			<View style={styles.container}>
-				<View style={styles.tagsContainer}>
-					{tags.map((tag, index) => (
-						<View
-							key={`${tag}-${index}`}
-							style={styles.tag}
-						>
-							<Text style={styles.tagText}>{tag}</Text>
-						</View>
-					))}
+				<View style={styles.tagsRow}>
+					<View style={styles.tagsContainer}>
+						{tags.map((tag, index) => (
+							<View
+								key={`${tag}-${index}`}
+								style={styles.tag}
+							>
+								<Text style={styles.tagText}>{tag}</Text>
+							</View>
+						))}
+					</View>
+					<Pressable onPress={handleFavouritePress} hitSlop={8}>
+						<ExpoImage source={favourite ? heartFillIcon : heartIcon} style={styles.heartIcon} />
+					</Pressable>
 				</View>
 
 				<ThemedText type="subtitle" style={styles.title}>
@@ -178,6 +203,7 @@ const styles = StyleSheet.create({
 		gap: 5,
 	},
 	tagsContainer: {
+		flex: 1,
 		flexDirection: 'row',
 		flexWrap: 'wrap',
 		gap: 8,
@@ -220,6 +246,18 @@ const styles = StyleSheet.create({
 		fontFamily: Fonts.sans,
 		fontSize: 12,
 		color: Colors.light.text,
+	},
+	tagsRow: {
+		flexDirection: 'row',
+		alignItems: 'flex-start',
+		gap: 8,
+	},
+	heartIcon: {
+		width: 22,
+		height: 22,
+	},
+	compactHeartButton: {
+		marginLeft: 10,
 	},
 	cardCompact: {
 		paddingVertical: 10,

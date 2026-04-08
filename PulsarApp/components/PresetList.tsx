@@ -4,12 +4,14 @@ import { PresetsConfig } from '@/constants/PresetsConfig';
 import { AndroidPresetsConfig, IOSPresetsConfig } from '@/constants/SystemPresetsConfig';
 import { TagsInfo } from '@/constants/Tags';
 import { useFilters } from '@/contexts/FilterContext';
+import { useFavourites } from '@/contexts/FavouritesContext';
 import Preset from './Preset';
 import Card from './Card';
 import { ThemedText } from './themed-text';
 
 export function useFilteredPresets() {
-  const { selectedTags, showSystemPresets, selectedSystemPresetTags } = useFilters();
+  const { selectedTags, showSystemPresets, selectedSystemPresetTags, showFavouritesOnly } = useFilters();
+  const { favouritePresets } = useFavourites();
 
   const activePresets = useMemo(() => {
     if (!showSystemPresets) {
@@ -45,28 +47,34 @@ export function useFilteredPresets() {
   }, [selectedTags]);
 
   const filteredPresets = useMemo(() => {
-    if (selectedTags.length === 0) {
-      return activePresets;
+    let presets = activePresets;
+
+    if (selectedTags.length > 0) {
+      presets = presets.filter(preset => {
+        const presetTagLabels = preset.tags;
+
+        for (const groupName in selectedTagsByGroup) {
+          const selectedTagsInGroup = selectedTagsByGroup[groupName];
+          const hasTagFromGroup = selectedTagsInGroup.some(tagName =>
+            presetTagLabels.includes(tagName)
+          );
+          if (!hasTagFromGroup) {
+            return false;
+          }
+        }
+
+        return true;
+      });
     }
 
-    return activePresets.filter(preset => {
-      const presetTagLabels = preset.tags;
+    if (showFavouritesOnly) {
+      presets = presets.filter(preset => favouritePresets.includes(preset.name));
+    }
 
-      for (const groupName in selectedTagsByGroup) {
-        const selectedTagsInGroup = selectedTagsByGroup[groupName];
-        const hasTagFromGroup = selectedTagsInGroup.some(tagName =>
-          presetTagLabels.includes(tagName)
-        );
-        if (!hasTagFromGroup) {
-          return false;
-        }
-      }
+    return presets;
+  }, [selectedTags, selectedTagsByGroup, activePresets, showFavouritesOnly, favouritePresets]);
 
-      return true;
-    });
-  }, [selectedTags, selectedTagsByGroup, activePresets]);
-
-  return { filteredPresets, selectedTags };
+  return { filteredPresets, selectedTags, showFavouritesOnly };
 }
 
 export default function PresetList() {

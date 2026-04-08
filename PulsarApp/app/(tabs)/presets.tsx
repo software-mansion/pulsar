@@ -23,7 +23,7 @@ const defaultEdges = {
 };
 
 export default function PresetsScreen() {
-  const { filteredPresets, selectedTags } = useFilteredPresets();
+  const { filteredPresets, selectedTags, showFavouritesOnly } = useFilteredPresets();
   const { compactLayout } = useFilters();
   const [searchQuery, setSearchQuery] = useState('');
   const deferredQuery = useDeferredValue(searchQuery);
@@ -95,6 +95,14 @@ export default function PresetsScreen() {
         </Card>
       );
     }
+    if (showFavouritesOnly) {
+      return (
+        <Card>
+          <ThemedText type='subtitle'>No favorite presets 😕</ThemedText>
+          <ThemedText>Tap the heart icon on a preset to add it to your favorites.</ThemedText>
+        </Card>
+      );
+    }
     if (selectedTags.length > 0) {
       return (
         <Card>
@@ -104,7 +112,7 @@ export default function PresetsScreen() {
       );
     }
     return null;
-  }, [selectedTags.length, deferredQuery]);
+  }, [selectedTags.length, deferredQuery, showFavouritesOnly]);
 
   return (
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>

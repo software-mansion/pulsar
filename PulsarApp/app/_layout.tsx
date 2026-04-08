@@ -11,6 +11,7 @@ import { PostHogProvider } from 'posthog-react-native';
 import { Theme } from '@/constants/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { FilterProvider } from '@/contexts/FilterContext';
+import { FavouritesProvider } from '@/contexts/FavouritesContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
 import { posthog } from '@/src/config/posthog';
@@ -76,6 +77,7 @@ function RootLayout() {
       >
         <StoreReviewProvider>
           <FilterProvider>
+            <FavouritesProvider>
             <OnboardingProvider>
               <ThemeProvider value={{...DefaultTheme, ...Theme}}>
                 <Stack>
@@ -87,6 +89,7 @@ function RootLayout() {
                 <StatusBar style="auto" />
               </ThemeProvider>
             </OnboardingProvider>
+            </FavouritesProvider>
           </FilterProvider>
         </StoreReviewProvider>
       </PostHogProvider>

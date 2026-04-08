@@ -31,7 +31,7 @@ const defaultEdges = {
 
 export default function FiltersModal() {
   const posthog = usePostHog();
-  const { selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags, compactLayout, setCompactLayout } = useFilters();
+  const { selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags, compactLayout, setCompactLayout, showFavouritesOnly, setShowFavouritesOnly } = useFilters();
 
   const SYSTEM_PRESET_TAG_OPTIONS = ['Effect', 'Primitive', 'Vendor', 'iOS Fallback'];
 
@@ -142,6 +142,15 @@ export default function FiltersModal() {
                 onValueChange={setCompactLayout}
                 trackColor={{ false: '#D8EEF7', true: '#87CCE8' }}
                 thumbColor={compactLayout ? '#2B85AB' : '#f0f0f0'}
+              />
+            </View>
+            <View style={[styles.soundToggleRow, styles.marginTop]}>
+              <Text style={styles.checkboxLabel}>Show favorites only</Text>
+              <Switch
+                value={showFavouritesOnly}
+                onValueChange={setShowFavouritesOnly}
+                trackColor={{ false: '#D8EEF7', true: '#87CCE8' }}
+                thumbColor={showFavouritesOnly ? '#2B85AB' : '#f0f0f0'}
               />
             </View>
           </View>
