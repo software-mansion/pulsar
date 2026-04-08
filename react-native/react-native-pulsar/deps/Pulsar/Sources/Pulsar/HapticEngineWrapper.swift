@@ -26,12 +26,19 @@ public class HapticEngineWrapper {
 
     do {
       engine = try CHHapticEngine()
+      setupEngineHandlers()
       startEngine()
 
       NotificationCenter.default.addObserver(
         self,
         selector: #selector(appDidBecomeInactive),
         name: UIApplication.didEnterBackgroundNotification,
+        object: nil
+      )
+      NotificationCenter.default.addObserver(
+        self,
+        selector: #selector(appWillEnterForeground),
+        name: UIApplication.willEnterForegroundNotification,
         object: nil
       )
     } catch {
@@ -72,18 +79,36 @@ public class HapticEngineWrapper {
   private func startEngine() {
     if initialized { return }
     do {
-      if (engine == nil) {
+      if engine == nil {
         engine = try CHHapticEngine()
+        setupEngineHandlers()
       }
       try engine?.start()
       initialized = true
     } catch {
-        print("Error starting engine: \(error.localizedDescription)")
+      print("Error starting engine: \(error.localizedDescription)")
+      engine = nil  // Force fresh creation on next attempt
+    }
+  }
+
+  private func setupEngineHandlers() {
+    engine?.stoppedHandler = { [weak self] reason in
+      guard let self else { return }
+      self.initialized = false
+      self.playerRegistry.removeAll()
+      self.playerCreationOrder.removeAll()
+      self.cachedRealtimePlayer = nil
+    }
+    engine?.resetHandler = { [weak self] in
+      guard let self else { return }
+      self.initialized = false
+      self.engine = nil
     }
   }
 
   @objc func appDidBecomeInactive() {
     initialized = false
+    engine?.stop()
     for entry in playerRegistry.values {
       try? entry.player.stop(atTime: 0)
     }
@@ -91,6 +116,11 @@ public class HapticEngineWrapper {
     playerCreationOrder.removeAll()
     try? cachedRealtimePlayer?.stop(atTime: 0)
     cachedRealtimePlayer = nil
+  }
+
+  @objc func appWillEnterForeground() {
+    engine = nil
+    startEngine()
   }
 
   public func createPlayer(pattern: CHHapticPattern?) -> Int? {

@@ -351,12 +351,20 @@ public class AudioSimulator: NSObject {
 	}
 
 	public func play(buffer: AVAudioPCMBuffer?) {
-    guard buffer != nil && playSound else { return }
+    guard let buffer = buffer, playSound else { return }
 		configureAudioContext()
 
 		if playerNode.isPlaying { playerNode.stop() }
+		audioContext.stop()
+		do {
+			try AVAudioSession.sharedInstance().setActive(true)
+			try audioContext.start()
+		} catch {
+			print("Failed to start audio engine: \(error)")
+			return
+		}
 
-		playerNode.scheduleBuffer(buffer!, at: nil, options: []) { [weak self] in
+		playerNode.scheduleBuffer(buffer, at: nil, options: []) { [weak self] in
 			DispatchQueue.main.async {
 				self?.stop()
 			}
