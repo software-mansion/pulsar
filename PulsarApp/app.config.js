@@ -2,7 +2,7 @@
 export default {
   name: "PulsarApp",
   slug: "PulsarApp",
-  version: "1.0.1",
+  version: "1.0.2",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "pulsarapp",
