@@ -185,22 +185,24 @@ export default function Connection() {
           </Accordion>
         )}
 
-        <div className={style.storeButtons}>
-          <a
-            href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img src={appleStoreBadge.src} alt="Download on the App Store" className={style.storeBadge} />
-          </a>
-          <a
-            href="https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img src={googlePlayBadge.src} alt="Get it on Google Play" className={style.storeBadge} />
-          </a>
-        </div>
+        {!paired && (
+          <div className={style.storeButtons}>
+            <a
+              href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src={appleStoreBadge.src} alt="Download on the App Store" className={style.storeBadge} />
+            </a>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src={googlePlayBadge.src} alt="Get it on Google Play" className={style.storeBadge} />
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
