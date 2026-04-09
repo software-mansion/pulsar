@@ -30,7 +30,7 @@ export function TopBar() {
           <a href={`${BASE_PATH}/getting-started`}>Getting started</a>
           <a href={`${BASE_PATH}/sdk/overview`}>Docs</a>
         </div>
-        <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
+        <a href="https://github.com/software-mansion/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
         </a>
         <button className={styles.hamburger} onClick={toggleMenu} aria-label="Toggle menu">
@@ -66,7 +66,7 @@ export function TopBar() {
               </a>
             </nav>
             <div className={styles.mobileMenuFooter}>
-              <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
+              <a href="https://github.com/software-mansion/pulsar" target="_blank">
                 <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
               </a>
             </div>
