@@ -4,7 +4,7 @@ import styles from './SoundBar.module.scss';
 export function SoundBar() {
   return (
     <div className={styles.soundBanner}>
-      <div className={styles.text}>🔊 Keep you sound on for the best experience</div>
+      <div className={styles.text}>🔊 Keep your sound on for the best experience</div>
       {/* <img className={styles.icon} src={volume.src} /> */}
     </div>
   );

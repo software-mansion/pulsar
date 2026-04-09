@@ -28,7 +28,7 @@ export default defineConfig({
         '@fontsource/bebas-neue/400.css',
       ],
       pagination: false,
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/swmansion/pulsar' }],
+      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/software-mansion/pulsar' }],
       sidebar: [
         {
           label: 'Getting started',
