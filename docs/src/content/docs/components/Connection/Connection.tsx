@@ -123,12 +123,9 @@ export default function Connection() {
 
         {!paired ? (
           <div className={style.codebox}>
-            <img
-              src={refreshIcon.src}
-              alt="Refresh"
-              className={`${style.icon}`}
-              onClick={handleReset}
-            />
+            <button className={style.iconButton} onClick={handleReset}>
+              <img src={refreshIcon.src} alt="Refresh" />
+            </button>
 
             {deepLinkUrl && (
               <div className={style.qrWrap}>
@@ -151,12 +148,9 @@ export default function Connection() {
           </div>
         ) : (
           <div className={style.codebox}>
-            <img
-              src={disconnectIcon.src}
-              alt="Disconnect"
-              className={`${style.icon}`}
-              onClick={handleReset}
-            />
+            <button className={style.iconButton} onClick={handleReset}>
+              <img src={disconnectIcon.src} alt="Disconnect" />
+            </button>
             <div className={style.promptSuccess}>Your phone is paired.</div>
             <div className={style.subPrompt}>Open PulsarApp to feel the presets.</div>
             <div className={style.status}>
@@ -171,7 +165,17 @@ export default function Connection() {
         {!paired && (
           <Accordion title="How to connect a device? 🤔">
             <Point index={1}>
-              <div>Download the Pulsar app from the <a href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104" target="_blank" rel="noopener noreferrer">App Store</a>.</div>
+              <div>
+                Download the Pulsar app from the{' '}
+                <a
+                  href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  App Store
+                </a>
+                .
+              </div>
             </Point>
             <Point index={2}>
               <div>Scan QRCode to open PulsarApp and connect your device.</div>
@@ -192,14 +196,22 @@ export default function Connection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img src={appleStoreBadge.src} alt="Download on the App Store" className={style.storeBadge} />
+              <img
+                src={appleStoreBadge.src}
+                alt="Download on the App Store"
+                className={style.storeBadge}
+              />
             </a>
             <a
               href="https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img src={googlePlayBadge.src} alt="Get it on Google Play" className={style.storeBadge} />
+              <img
+                src={googlePlayBadge.src}
+                alt="Get it on Google Play"
+                className={style.storeBadge}
+              />
             </a>
           </div>
         )}

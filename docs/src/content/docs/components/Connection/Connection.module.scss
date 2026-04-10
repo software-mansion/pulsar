@@ -21,13 +21,15 @@
       padding: 20px;
       margin: 25px 0;
       position: relative;
-      .icon {
+      .iconButton {
+        appearance: none;
         position: absolute;
         top: 15px;
         right: 15px;
         width: 34px;
         height: 34px;
         cursor: pointer;
+        border: 0;
         background-color: white;
         border-radius: 4px;
         padding: 5px;
