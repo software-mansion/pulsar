@@ -1,5 +1,9 @@
 #import "Haptics.h"
+#if __has_include(<Pulsar/Pulsar-Swift.h>)
+#import <Pulsar/Pulsar-Swift.h>
+#else
 #import "Pulsar-Swift.h"
+#endif
 
 @implementation RNPulsar {
   Pulsar *pulsar_;
