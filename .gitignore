@@ -4,5 +4,6 @@ archive
 .claude
 .vscode
 .md
+.idea
 scripts
 docs/server_copy
