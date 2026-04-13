@@ -1,5 +1,8 @@
 import { isHapticsEnabled } from './state';
-import { isVibrationSupported } from './utils';
+
+export function isVibrationSupported(): boolean {
+  return typeof navigator !== 'undefined' && 'vibrate' in navigator;
+}
 
 // Safari haptics trick: toggling a hidden switch-style checkbox triggers
 // haptic feedback on iOS Safari, which does not support navigator.vibrate.

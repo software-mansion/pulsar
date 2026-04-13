@@ -1,5 +1,5 @@
 import { HapticSupport, RealtimeComposerStrategy } from './types';
-import { isVibrationSupported } from './utils';
+import { isVibrationSupported } from './engine';
 import { setHapticsEnabled, setSoundEnabled } from './state';
 import { stopVibration } from './engine';
 

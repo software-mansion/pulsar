@@ -22,19 +22,4 @@ export type {
 
 export { HapticSupport, RealtimeComposerStrategy } from './types';
 
-// ---------------------------------------------------------------------------
-// Legacy / low-level API
-// ---------------------------------------------------------------------------
-
-export { haptics, HapticsManager, playHaptic, playPattern, stopHaptic } from './haptics';
-
-export type {
-  HapticIntensity,
-  HapticConfig,
-  HapticPattern,
-  HapticPatternInput,
-  HapticStatus,
-  HapticCapabilities,
-} from './types';
-
-export { isVibrationSupported, intensityToValue, mergeHapticConfig } from './utils';
+export { isVibrationSupported } from './engine';

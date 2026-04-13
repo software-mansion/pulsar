@@ -3,41 +3,7 @@
  */
 
 // ---------------------------------------------------------------------------
-// Legacy types (kept for backward compatibility)
-// ---------------------------------------------------------------------------
-
-export type HapticIntensity = 'light' | 'medium' | 'heavy'
-
-export interface HapticConfig {
-  duration?: number
-  intensity?: HapticIntensity
-  delay?: number
-  loop?: boolean
-  loopCount?: number
-}
-
-export interface HapticPattern {
-  name: string
-  description: string
-  effects: HapticConfig[]
-}
-
-export interface HapticPatternInput {
-  name: string
-  effects: HapticConfig[]
-}
-
-export type HapticStatus = 'idle' | 'playing' | 'paused' | 'stopped'
-
-export interface HapticCapabilities {
-  supported: boolean
-  maxDuration: number
-  supportedIntensities: HapticIntensity[]
-  supportsPatterns: boolean
-}
-
-// ---------------------------------------------------------------------------
-// New types — mirrors react-native-pulsar API
+// Types — mirrors react-native-pulsar API
 // ---------------------------------------------------------------------------
 
 /**

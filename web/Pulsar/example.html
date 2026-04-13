@@ -166,15 +166,6 @@
         margin-bottom: 20px;
       }
 
-      .unsupported {
-        background: #fed7d7;
-        border-left: 4px solid #f56565;
-        padding: 12px;
-        border-radius: 4px;
-        color: #c53030;
-        font-size: 13px;
-      }
-
       code {
         background: #f7fafc;
         padding: 2px 6px;
@@ -189,10 +180,6 @@
       <h1>🔔 Haptics Demo</h1>
       <p class="subtitle">Test the @pulsar/haptics library</p>
 
-      <div id="unsupported" class="unsupported" style="display: none">
-        ⚠️ This device does not support the Vibration API
-      </div>
-
       <div class="info">
         <strong>📱 Tip:</strong> Haptics work on mobile devices. If you're on
         desktop, visualize the patterns in the status below.
@@ -201,14 +188,14 @@
       <div class="section">
         <div class="section-title">Quick Tap</div>
         <div class="button-group full-width">
-          <button class="btn-primary full-width" onclick="playSimpleTap()">
-            Tap (50ms)
+          <button class="btn-primary full-width" onclick="play('impactLight')">
+            Light
           </button>
-          <button class="btn-primary full-width" onclick="playMediumHaptic()">
-            Medium (100ms)
+          <button class="btn-primary full-width" onclick="play('impactMedium')">
+            Medium
           </button>
-          <button class="btn-primary full-width" onclick="playHeavyHaptic()">
-            Heavy (200ms)
+          <button class="btn-primary full-width" onclick="play('impactHeavy')">
+            Heavy
           </button>
         </div>
       </div>
@@ -216,19 +203,19 @@
       <div class="section">
         <div class="section-title">Preset Patterns</div>
         <div class="pattern-grid">
-          <button class="btn-primary" onclick="playPatternByName('tap')">
-            Tap
+          <button class="btn-primary" onclick="play('selection')">
+            Selection
           </button>
-          <button class="btn-primary" onclick="playPatternByName('pulse')">
+          <button class="btn-primary" onclick="play('pulse')">
             Pulse
           </button>
-          <button class="btn-success" onclick="playPatternByName('success')">
+          <button class="btn-success" onclick="play('notificationSuccess')">
             ✓ Success
           </button>
-          <button class="btn-warning" onclick="playPatternByName('warning')">
+          <button class="btn-warning" onclick="play('notificationWarning')">
             ⚠ Warning
           </button>
-          <button class="btn-danger" onclick="playPatternByName('error')">
+          <button class="btn-danger" onclick="play('notificationError')">
             ✕ Error
           </button>
         </div>
@@ -237,7 +224,7 @@
       <div class="section">
         <div class="section-title">Control</div>
         <div class="button-group">
-          <button class="btn-secondary full-width" onclick="stopHaptic()">
+          <button class="btn-secondary full-width" onclick="stop()">
             Stop
           </button>
         </div>
@@ -245,10 +232,6 @@
 
       <div class="status">
         <div>
-          <span class="status-label">Status:</span>
-          <span class="status-value" id="haptic-status">idle</span>
-        </div>
-        <div style="margin-top: 8px">
           <span class="status-label">Last Action:</span>
           <span class="status-value" id="haptic-action">-</span>
         </div>
@@ -257,51 +240,20 @@
 
     <script src="dist/haptics.umd.js"></script>
     <script>
-      // Check vibration support
-      if (!window.Haptics) {
-        document.getElementById('unsupported').style.display = 'block'
-      }
+      const { Presets, Settings } = window.Haptics
 
-      // Helper functions
-      function updateStatus(action) {
-        const status = window.Haptics.haptics.getStatus()
-        document.getElementById('haptic-status').textContent = status
-        if (action) {
-          document.getElementById('haptic-action').textContent = action
+      function play(name) {
+        const preset = Presets.System[name] ?? Presets[name]
+        if (preset) {
+          preset()
+          document.getElementById('haptic-action').textContent = name
         }
       }
 
-      function playSimpleTap() {
-        window.Haptics.playHaptic({ duration: 50, intensity: 'light' })
-        updateStatus('Simple Tap')
+      function stop() {
+        Settings.stopHaptics()
+        document.getElementById('haptic-action').textContent = 'Stopped'
       }
-
-      function playMediumHaptic() {
-        window.Haptics.playHaptic({ duration: 100, intensity: 'medium' })
-        updateStatus('Medium Haptic')
-      }
-
-      function playHeavyHaptic() {
-        window.Haptics.playHaptic({ duration: 200, intensity: 'heavy' })
-        updateStatus('Heavy Haptic')
-      }
-
-      function playPatternByName(name) {
-        try {
-          window.Haptics.playPattern(name)
-          updateStatus(`Pattern: ${name}`)
-        } catch (error) {
-          console.error('Error playing pattern:', error)
-        }
-      }
-
-      function stopHaptic() {
-        window.Haptics.stopHaptic()
-        updateStatus('Stopped')
-      }
-
-      // Initial status update
-      updateStatus('Ready')
     </script>
   </body>
 </html>
