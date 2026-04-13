@@ -5,6 +5,8 @@ import { API_SERVER_URL, SOCKET_SERVER_URL } from '../config';
 import style from './Connection.module.scss';
 import refreshIcon from '../../assets/new_assets/refresh.svg';
 import disconnectIcon from '../../assets/new_assets/unplug.svg';
+import appleStoreBadge from '../../assets/interactive-playground/apple.svg';
+import googlePlayBadge from '../../assets/interactive-playground/google.png';
 import { Accordion } from '../Accordion/Accordion';
 import { Point } from '../Point/Point';
 
@@ -23,7 +25,7 @@ export default function Connection() {
   const [status, setStatus] = useState<boolean>(false);
   const ws = useRef<WebSocket | null>(null);
 
-  const deepLinkUrl = channel !== 'Loading...' ? `pulsarapp://connect?code=${channel}` : '';
+  const deepLinkUrl = channel !== 'Loading...' ? `pulsarapp:///?code=${channel}` : '';
 
   function createChannel() {
     setChannel('Loading...');
@@ -57,6 +59,12 @@ export default function Connection() {
       ws.current.close();
     }
     ws.current = new WebSocket(`${SOCKET_SERVER_URL}?type=sender${params}`);
+    const pingInterval = setInterval(() => {
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, 25_000);
+    ws.current.addEventListener('close', () => clearInterval(pingInterval));
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log(data);
@@ -115,12 +123,9 @@ export default function Connection() {
 
         {!paired ? (
           <div className={style.codebox}>
-            <img
-              src={refreshIcon.src}
-              alt="Refresh"
-              className={`${style.icon}`}
-              onClick={handleReset}
-            />
+            <button className={style.iconButton} onClick={handleReset}>
+              <img src={refreshIcon.src} alt="Refresh" />
+            </button>
 
             {deepLinkUrl && (
               <div className={style.qrWrap}>
@@ -143,12 +148,9 @@ export default function Connection() {
           </div>
         ) : (
           <div className={style.codebox}>
-            <img
-              src={disconnectIcon.src}
-              alt="Disconnect"
-              className={`${style.icon}`}
-              onClick={handleReset}
-            />
+            <button className={style.iconButton} onClick={handleReset}>
+              <img src={disconnectIcon.src} alt="Disconnect" />
+            </button>
             <div className={style.promptSuccess}>Your phone is paired.</div>
             <div className={style.subPrompt}>Open PulsarApp to feel the presets.</div>
             <div className={style.status}>
@@ -163,15 +165,55 @@ export default function Connection() {
         {!paired && (
           <Accordion title="How to connect a device? 🤔">
             <Point index={1}>
-              <div>Download PulsarApp from the App Store or Google Play.</div>
+              <div>
+                Download the Pulsar app from the{' '}
+                <a
+                  href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  App Store
+                </a>
+                .
+              </div>
             </Point>
             <Point index={2}>
-              <div>Open the app and go to the Device Connection section.</div>
+              <div>Scan QRCode to open PulsarApp and connect your device.</div>
             </Point>
             <Point index={3}>
-              <div>Scan the QR code above or type the pairing code into PulsarApp.</div>
+              <div>After you connect your device, you will feel the presets on your phone.</div>
+            </Point>
+            <Point index={4}>
+              <div>If you have any problem with QRCode just enter the code manually.</div>
             </Point>
           </Accordion>
+        )}
+
+        {!paired && (
+          <div className={style.storeButtons}>
+            <a
+              href="https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={appleStoreBadge.src}
+                alt="Download on the App Store"
+                className={style.storeBadge}
+              />
+            </a>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={googlePlayBadge.src}
+                alt="Get it on Google Play"
+                className={style.storeBadge}
+              />
+            </a>
+          </div>
         )}
       </div>
     </div>

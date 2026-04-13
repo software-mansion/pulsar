@@ -1,0 +1,61 @@
+{
+  "name": "Dewdrop",
+  "description": "A quiet confirmation of success, ideal for operations that completed without needing attention.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.4,
+      "frequency": 0.52
+    },
+    {
+      "time": 130,
+      "amplitude": 0.6,
+      "frequency": 0.65
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.4
+      },
+      {
+        "time": 65,
+        "value": 0
+      },
+      {
+        "time": 130,
+        "value": 0.6
+      },
+      {
+        "time": 210,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 130,
+        "value": 0.65
+      },
+      {
+        "time": 210,
+        "value": 0.62
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 210
+}

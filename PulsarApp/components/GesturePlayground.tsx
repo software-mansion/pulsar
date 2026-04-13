@@ -73,10 +73,10 @@ const GesturePlayground = forwardRef<GesturePlaygroundHandle, GesturePlaygroundP
     if (x === -100 && y === -100) {
       return { x, y };
     }
-    
+
     const clampedX = Math.max(15, Math.min(x, containerSize.value.width - 15));
     const clampedY = Math.max(15, Math.min(y, containerSize.value.height - 15));
-    
+
     return { x: clampedX, y: clampedY };
   };
 
@@ -114,7 +114,7 @@ const GesturePlayground = forwardRef<GesturePlaygroundHandle, GesturePlaygroundP
           <Image
             source={gridImage}
             style={styles.grid}
-            contentFit="contain"
+            contentFit="cover"
           />
         </Animated.View>
       </GestureDetector>
@@ -126,10 +126,7 @@ export default GesturePlayground;
 
 const styles = StyleSheet.create({
   gridContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
+    marginVertical: 25,
   },
   grid: {
     width: '100%',

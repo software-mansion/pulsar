@@ -1,0 +1,118 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.62
+      },
+      {
+        "time": 100,
+        "value": 0.35
+      },
+      {
+        "time": 200,
+        "value": 0
+      },
+      {
+        "time": 900,
+        "value": 0
+      },
+      {
+        "time": 905,
+        "value": 0.85
+      },
+      {
+        "time": 980,
+        "value": 0.5
+      },
+      {
+        "time": 1100,
+        "value": 0.35
+      },
+      {
+        "time": 1250,
+        "value": 0
+      },
+      {
+        "time": 1600,
+        "value": 0
+      },
+      {
+        "time": 1603,
+        "value": 1
+      },
+      {
+        "time": 1770,
+        "value": 1
+      },
+      {
+        "time": 1873,
+        "value": 0.334
+      },
+      {
+        "time": 2046,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.62
+      },
+      {
+        "time": 200,
+        "value": 0.6
+      },
+      {
+        "time": 900,
+        "value": 0.68
+      },
+      {
+        "time": 1250,
+        "value": 0.65
+      },
+      {
+        "time": 1600,
+        "value": 0.82
+      },
+      {
+        "time": 1680,
+        "value": 0.7
+      },
+      {
+        "time": 1860,
+        "value": 0.6
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.65,
+      "frequency": 0.62
+    },
+    {
+      "time": 900,
+      "amplitude": 0.85,
+      "frequency": 0.68
+    },
+    {
+      "time": 1600,
+      "amplitude": 1,
+      "frequency": 0.82
+    }
+  ],
+  "name": "Charge",
+  "description": "The electric buildup of a countdown, perfect for race starts or any go moment.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Pattern",
+    "Long"
+  ],
+  "duration": 2046
+}

@@ -9,6 +9,10 @@ export type ContinuousPattern = {
   frequency: { time: number, value: number }[],
 }
 export type PatternData = {
+  name: string;
+  description: string;
+  tags: string[];
+  duration: number;
   discretePattern: DiscretePoint[],
   continuousPattern: ContinuousPattern,
 }
@@ -17,12 +21,3 @@ export type PresetConfig = {
   image: ImageMetadata;
   data: PatternData;
 };
-
-export interface PresetProps {
-  name: string;
-  shortName: string;
-  description: string;
-  tags: Tag[];
-  duration?: number;
-  visualization: PresetConfig;
-}

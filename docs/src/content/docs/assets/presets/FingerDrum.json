@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.591,
+      "frequency": 0.591
+    },
+    {
+      "time": 100,
+      "amplitude": 0.588,
+      "frequency": 0.588
+    },
+    {
+      "time": 231,
+      "amplitude": 0.6,
+      "frequency": 0.328
+    }
+  ],
+  "name": "FingerDrum",
+  "description": "Three casual, even taps, ideal for low-key acknowledgements or non-urgent rhythm patterns.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 231
+}

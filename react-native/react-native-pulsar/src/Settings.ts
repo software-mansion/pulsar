@@ -1,4 +1,4 @@
-import Pulsar, { HapticSupport } from './NativeRNPulsar';
+import Pulsar, { HapticSupport, RealtimeComposerStrategy } from './NativeRNPulsar';
 
 // workaround for RN prototype caching issue 
 Pulsar.Pulsar_enableSound;
@@ -8,7 +8,9 @@ Pulsar.Pulsar_preloadPresets;
 Pulsar.Pulsar_stopHaptics;
 Pulsar.Pulsar_shutDownEngine;
 Pulsar.Pulsar_hapticSupport;
-Pulsar.Pulsar_forceHapticsSupportLevel
+Pulsar.Pulsar_forceHapticsSupportLevel;
+Pulsar.Pulsar_enableImpulseCompositionMode;
+Pulsar.Pulsar_setRealtimeComposerStrategy;
 
 const Settings = {
   enableHaptics: (state: boolean) => {
@@ -37,8 +39,14 @@ const Settings = {
   },
   forceHapticsSupportLevel: (level: HapticSupport) => {
     Pulsar.Pulsar_forceHapticsSupportLevel(level);
-  }
-  
+  },
+  enableImpulseCompositionMode: (state: boolean) => {
+    Pulsar.Pulsar_enableImpulseCompositionMode(state);
+  },
+  setRealtimeComposerStrategy: (strategy: RealtimeComposerStrategy) => {
+    Pulsar.Pulsar_setRealtimeComposerStrategy(strategy);
+  },
+
 } as const;
 
 export default Settings;

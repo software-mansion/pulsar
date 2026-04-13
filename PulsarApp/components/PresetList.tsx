@@ -1,18 +1,36 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { PresetsConfig } from '@/constants/PresetsConfig';
+import { AndroidPresetsConfig, IOSPresetsConfig } from '@/constants/SystemPresetsConfig';
 import { TagsInfo } from '@/constants/Tags';
 import { useFilters } from '@/contexts/FilterContext';
+import { useFavourites } from '@/contexts/FavouritesContext';
 import Preset from './Preset';
 import Card from './Card';
 import { ThemedText } from './themed-text';
 
-export default function PresetList() {
-  const { selectedTags } = useFilters();
+export function useFilteredPresets() {
+  const { selectedTags, showSystemPresets, selectedSystemPresetTags, showFavouritesOnly } = useFilters();
+  const { favouritePresets } = useFavourites();
+
+  const activePresets = useMemo(() => {
+    if (!showSystemPresets) {
+      return PresetsConfig;
+    }
+    if (Platform.OS === 'ios') {
+      return IOSPresetsConfig;
+    }
+    if (selectedSystemPresetTags.length === 0) {
+      return [];
+    }
+    return AndroidPresetsConfig.filter(preset =>
+      selectedSystemPresetTags.some(tag => preset.tags.includes(tag))
+    );
+  }, [showSystemPresets, selectedSystemPresetTags]);
 
   const selectedTagsByGroup = useMemo(() => {
     const grouped: Record<string, string[]> = {};
-    
+
     selectedTags.forEach(tagName => {
       TagsInfo.forEach(group => {
         const tagExists = group.tags.some(tag => tag.name === tagName);
@@ -24,31 +42,43 @@ export default function PresetList() {
         }
       });
     });
-    
+
     return grouped;
   }, [selectedTags]);
 
   const filteredPresets = useMemo(() => {
-    if (selectedTags.length === 0) {
-      return PresetsConfig;
-    }
-    
-    return PresetsConfig.filter(preset => {
-      const presetTagLabels = preset.tags.map(tag => tag.label);
-      
-      for (const groupName in selectedTagsByGroup) {
-        const selectedTagsInGroup = selectedTagsByGroup[groupName];
-        const hasTagFromGroup = selectedTagsInGroup.some(tagName => 
-          presetTagLabels.includes(tagName)
-        );
-        if (!hasTagFromGroup) {
-          return false;
+    let presets = activePresets;
+
+    if (selectedTags.length > 0) {
+      presets = presets.filter(preset => {
+        const presetTagLabels = preset.tags;
+
+        for (const groupName in selectedTagsByGroup) {
+          const selectedTagsInGroup = selectedTagsByGroup[groupName];
+          const hasTagFromGroup = selectedTagsInGroup.some(tagName =>
+            presetTagLabels.includes(tagName)
+          );
+          if (!hasTagFromGroup) {
+            return false;
+          }
         }
-      }
-      
-      return true;
-    });
-  }, [selectedTags, selectedTagsByGroup]);
+
+        return true;
+      });
+    }
+
+    if (showFavouritesOnly) {
+      presets = presets.filter(preset => favouritePresets.includes(preset.name));
+    }
+
+    return presets;
+  }, [selectedTags, selectedTagsByGroup, activePresets, showFavouritesOnly, favouritePresets]);
+
+  return { filteredPresets, selectedTags, showFavouritesOnly };
+}
+
+export default function PresetList() {
+  const { filteredPresets, selectedTags } = useFilteredPresets();
 
   return (
     <View style={styles.container}>
@@ -60,12 +90,10 @@ export default function PresetList() {
       ) : (
         filteredPresets.map((preset, index) => (
           <Preset
-            key={`${preset.shortName}-${index}`}
+            key={`${preset.name}-${index}`}
             title={preset.name}
             subtitle={preset.description}
-            tags={preset.tags.map((tag) => ({
-              label: tag.label,
-            }))}
+            tags={preset.tags}
             image={preset.image}
             onPress={preset.play}
             duration={preset.duration}

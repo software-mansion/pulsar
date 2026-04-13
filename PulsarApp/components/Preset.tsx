@@ -1,34 +1,51 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Pressable } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useAnimatedReaction, useAnimatedRef, scrollTo } from 'react-native-reanimated';
 import { usePostHog } from 'posthog-react-native';
+import { Image as ExpoImage } from 'expo-image';
 
 import Card from './Card';
 import { ThemedText } from './themed-text';
 import { Colors, Fonts } from '@/constants/theme';
 import Button from './Button';
+import { useFavourites } from '@/contexts/FavouritesContext';
+
+import heartIcon from '@/assets/images/heart.svg';
+import heartFillIcon from '@/assets/images/heart-fill.svg';
 
 const IMAGE_HEIGHT = 160;
-
-export type PresetTag = {
-	label: string;
-};
 
 export interface PresetProps {
 	title: string;
 	subtitle: string;
-	tags: PresetTag[];
+	tags: string[];
 	image: ImageSourcePropType;
 	onPress: () => void;
 	duration?: number;
+	compact?: boolean;
 }
 
-function Preset({ title, subtitle, tags = [], image, onPress, duration }: PresetProps) {
+function Preset({ title, subtitle, tags = [], image, onPress, duration, compact }: PresetProps) {
+	duration = duration ? duration : 20;
 	const posthog = usePostHog();
 	const imageMeta = Image.resolveAssetSource(image);
 	const imageAspectRatio =
 		imageMeta?.width && imageMeta?.height ? imageMeta.width / imageMeta.height : undefined;
 	const imageWidth = imageAspectRatio ? IMAGE_HEIGHT * imageAspectRatio : undefined;
+	const effectiveRatio = duration ? Math.min(1, duration / 1000) : 1;
+
+	const { isFavourite, toggleFavourite } = useFavourites();
+	const favourite = isFavourite(title);
+
+	const handleFavouritePress = () => {
+		const nowFavourite = !favourite;
+		toggleFavourite(title);
+		posthog.capture(nowFavourite ? 'preset_favourited' : 'preset_unfavourited', {
+			preset_name: title,
+			tags,
+		});
+	};
 
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [viewportWidth, setViewportWidth] = useState(0);
@@ -39,7 +56,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 		() => progress.value,
 		(currentProgress) => {
 			if (imageWidth && viewportWidth > 0 && currentProgress > 0) {
-				const indicatorPosition = currentProgress * imageWidth;
+				const indicatorPosition = currentProgress * effectiveRatio * imageWidth;
 				const scrollX = Math.max(0, indicatorPosition - viewportWidth / 2);
 				scrollTo(scrollViewRef, scrollX, 0, false);
 			}
@@ -53,14 +70,14 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 			scrollViewRef.current?.scrollTo({ x: 0, animated: true });
 			posthog.capture('preset_stopped', {
 				preset_name: title,
-				tags: tags.map((t) => t.label),
+				tags,
 			});
 		} else {
 			setIsPlaying(true);
 			onPress();
 			posthog.capture('preset_played', {
 				preset_name: title,
-				tags: tags.map((t) => t.label),
+				tags,
 				duration_ms: duration,
 			});
 
@@ -82,28 +99,58 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 
 	const animatedIndicatorStyle = useAnimatedStyle(() => {
 		return {
-			left: `${progress.value * 100}%`,
+			left: progress.value * effectiveRatio * (imageWidth ?? 1000),
 		};
 	});
+
+	if (compact) {
+		return (
+			<Pressable onPress={handlePress}>
+				<Card style={styles.cardCompact} enableAnimation={false}>
+					<View style={styles.compactContainer}>
+						<View style={styles.compactInfo}>
+							<View style={styles.tagsContainerCompact}>
+								{tags.map((tag, index) => (
+									<View key={`${tag}-${index}`} style={styles.tagCompact}>
+										<Text style={styles.tagTextCompact}>{tag}</Text>
+									</View>
+								))}
+							</View>
+							<ThemedText type="subtitle" style={styles.titleCompact}>{title}</ThemedText>
+						</View>
+						<Pressable onPress={handleFavouritePress} style={styles.compactHeartButton} hitSlop={8}>
+							<ExpoImage source={favourite ? heartFillIcon : heartIcon} style={styles.heartIcon} />
+						</Pressable>
+						<Text style={styles.compactPlayIcon}>{isPlaying ? '■' : '▶'}</Text>
+					</View>
+				</Card>
+			</Pressable>
+		);
+	}
 
 	return (
 		<Card style={styles.card} enableAnimation={false}>
 			<View style={styles.container}>
-				<View style={styles.tagsContainer}>
-					{tags.map((tag, index) => (
-						<View
-							key={`${tag.label}-${index}`}
-							style={styles.tag}
-						>
-							<Text style={styles.tagText}>{tag.label}</Text>
-						</View>
-					))}
+				<View style={styles.tagsRow}>
+					<View style={styles.tagsContainer}>
+						{tags.map((tag, index) => (
+							<View
+								key={`${tag}-${index}`}
+								style={styles.tag}
+							>
+								<Text style={styles.tagText}>{tag}</Text>
+							</View>
+						))}
+					</View>
+					<Pressable onPress={handleFavouritePress} hitSlop={8}>
+						<ExpoImage source={favourite ? heartFillIcon : heartIcon} style={styles.heartIcon} />
+					</Pressable>
 				</View>
 
 				<ThemedText type="subtitle" style={styles.title}>
 					{title}
 				</ThemedText>
-				<ThemedText>{subtitle}</ThemedText>
+				<ThemedText style={styles.description}>{subtitle}</ThemedText>
 
 				<View 
 					style={styles.border}
@@ -120,25 +167,27 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration }: Preset
 						style={styles.imagesScroll}
 						contentContainerStyle={styles.imagesContent}
 					>
-						<Image
-							source={image}
-							style={[
-								styles.image,
-								imageWidth ? { width: imageWidth } : undefined,
-							]}
-							resizeMode="contain"
-						/>
+						<View style={{ position: 'relative', height: IMAGE_HEIGHT, width: imageWidth }}>
+							<Image
+								source={image}
+								style={[
+									styles.image,
+									imageWidth ? { width: imageWidth } : undefined,
+								]}
+								resizeMode="contain"
+							/>
+							{isPlaying && (
+								<Animated.View style={[styles.playIndicator, animatedIndicatorStyle]} />
+							)}
+						</View>
 					</ScrollView>
-					
-					{isPlaying && (
-						<Animated.View style={[styles.playIndicator, animatedIndicatorStyle]} />
-					)}
 				</View>
 
 				<Button
 					label={isPlaying ? 'Stop' : 'Play'}
 					showIcon={isPlaying ? 'stop' : 'play'}
 					onClick={handlePress}
+					disableHaptics
 				/>
 
 			</View>
@@ -154,6 +203,7 @@ const styles = StyleSheet.create({
 		gap: 5,
 	},
 	tagsContainer: {
+		flex: 1,
 		flexDirection: 'row',
 		flexWrap: 'wrap',
 		gap: 8,
@@ -172,6 +222,9 @@ const styles = StyleSheet.create({
 	title: {
 		marginTop: 6,
 	},
+	description: {
+		fontSize: 14,
+	},
 	border: {
 		borderWidth: 1,
 		borderColor: '#E1F3FA',
@@ -183,18 +236,65 @@ const styles = StyleSheet.create({
 	imagesContent: {
 		height: IMAGE_HEIGHT + 20,
 		alignItems: 'center',
+		paddingHorizontal: 5,
 	},
 	image: {
 		height: IMAGE_HEIGHT,
-		alignSelf: 'center',
-		paddingTop: 5,
-		paddingBottom: 5,
 		paddingHorizontal: 5,
 	},
 	placeholderText: {
 		fontFamily: Fonts.sans,
 		fontSize: 12,
 		color: Colors.light.text,
+	},
+	tagsRow: {
+		flexDirection: 'row',
+		alignItems: 'flex-start',
+		gap: 8,
+	},
+	heartIcon: {
+		width: 22,
+		height: 22,
+	},
+	compactHeartButton: {
+		marginLeft: 10,
+	},
+	cardCompact: {
+		paddingVertical: 10,
+	},
+	compactContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+	},
+	compactInfo: {
+		flex: 1,
+		gap: 4,
+	},
+	tagsContainerCompact: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		gap: 5,
+	},
+	tagCompact: {
+		borderRadius: 999,
+		backgroundColor: '#B5E1F1',
+		paddingHorizontal: 8,
+		paddingVertical: 2,
+	},
+	tagTextCompact: {
+		fontSize: 12,
+		color: '#001A72',
+		fontWeight: '500',
+	},
+	titleCompact: {
+		marginTop: 2,
+	},
+	compactPlayIcon: {
+		fontSize: 18,
+		color: '#001A72',
+		marginLeft: 10,
+		width: 15,
 	},
 	playIndicator: {
 		position: 'absolute',

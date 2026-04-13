@@ -19,22 +19,14 @@ export class ConnectionManager {
 
   public getParingCode(): string {
     let code = Math.floor(1000 + Math.random() * 9000).toString();
-    const maxIterations = 100;
     let globalMaxIterations = 1000000;
-    let prefix = '';
 
-    while (this.strongConnections.has(code)) {
-      let iterations = 0;
-      while (this.weakConnections.has(code) && iterations < maxIterations) {
-        iterations++;
-        globalMaxIterations--;
-        if (globalMaxIterations <= 0) {
-          return '-1';
-        }
-        code = prefix + Math.floor(1000 + Math.random() * 9000).toString();
+    while (this.strongConnections.has(code) || this.weakConnections.has(code)) {
+      globalMaxIterations--;
+      if (globalMaxIterations <= 0) {
+        return '-1';
       }
-      prefix += Math.floor(Math.random() * 10).toString();
-      code = prefix + code;
+      code = Math.floor(1000 + Math.random() * 9000).toString();
     }
 
     this.registerWeakConnection(code);

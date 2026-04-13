@@ -1,7 +1,12 @@
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    `maven-publish`
+    signing
+    alias(libs.plugins.nmcp)
 }
 
 android {
@@ -47,4 +52,76 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.kotlinx.serialization.json)
+}
+
+group = "com.swmansion"
+version = System.getenv("LIB_VERSION") ?: "1.0.0"
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+
+                groupId = "com.swmansion"
+                artifactId = "pulsar"
+                version = version.toString()
+
+                pom {
+                    name.set("Pulsar Android Library")
+                    description.set("Pulsar audio visualization and manipulation library for Android")
+                    url.set("https://github.com/software-mansion/pulsar")
+                    
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("https://github.com/software-mansion/pulsar/blob/main/LICENSE")
+                        }
+                    }
+                    
+                    developers {
+                        developer {
+                            id.set("software-mansion")
+                            name.set("Software Mansion")
+                            email.set("project@swmansion.com")
+                        }
+                    }
+                    
+                    scm {
+                        connection.set("scm:git:https://github.com/software-mansion/pulsar.git")
+                        developerConnection.set("scm:git:https://github.com/software-mansion/pulsar.git")
+                        url.set("https://github.com/software-mansion/pulsar")
+                    }
+                }
+            }
+        }
+
+    }
+
+    nmcp {
+        publishAllPublicationsToCentralPortal {
+            username.set(System.getenv("MAVEN_USERNAME") ?: "")
+            password.set(System.getenv("MAVEN_PASSWORD") ?: "")
+            publishingType.set("AUTOMATIC")
+        }
+    }
+
+    signing {
+        val gpgPrivateKey = System.getenv("GPG_PRIVATE_KEY")?.let { key ->
+            if (key.contains("BEGIN PGP PRIVATE KEY BLOCK")) {
+                key
+            } else {
+                runCatching { String(Base64.getDecoder().decode(key)) }
+                    .getOrNull()
+                    ?.takeIf { it.contains("BEGIN PGP PRIVATE KEY BLOCK") }
+                    ?: key
+            }
+        }
+
+        useInMemoryPgpKeys(
+            gpgPrivateKey,
+            System.getenv("GPG_PASSPHRASE")
+        )
+        sign(publishing.publications["release"])
+    }
 }

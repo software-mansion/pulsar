@@ -1,0 +1,130 @@
+{
+  "name": "Triumph",
+  "description": "Pure triumph, conveys the overwhelming joy of a major win or achievement.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.4,
+      "frequency": 0.55
+    },
+    {
+      "time": 120,
+      "amplitude": 0.55,
+      "frequency": 0.6
+    },
+    {
+      "time": 260,
+      "amplitude": 0.7,
+      "frequency": 0.65
+    },
+    {
+      "time": 420,
+      "amplitude": 0.85,
+      "frequency": 0.7
+    },
+    {
+      "time": 600,
+      "amplitude": 1,
+      "frequency": 0.8
+    },
+    {
+      "time": 750,
+      "amplitude": 1,
+      "frequency": 0.8
+    },
+    {
+      "time": 900,
+      "amplitude": 1,
+      "frequency": 0.8
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.4
+      },
+      {
+        "time": 70,
+        "value": 0
+      },
+      {
+        "time": 120,
+        "value": 0.55
+      },
+      {
+        "time": 180,
+        "value": 0
+      },
+      {
+        "time": 260,
+        "value": 0.7
+      },
+      {
+        "time": 320,
+        "value": 0
+      },
+      {
+        "time": 420,
+        "value": 0.85
+      },
+      {
+        "time": 480,
+        "value": 0
+      },
+      {
+        "time": 600,
+        "value": 1
+      },
+      {
+        "time": 660,
+        "value": 0
+      },
+      {
+        "time": 750,
+        "value": 1
+      },
+      {
+        "time": 810,
+        "value": 0
+      },
+      {
+        "time": 900,
+        "value": 1
+      },
+      {
+        "time": 980,
+        "value": 0.4
+      },
+      {
+        "time": 1100,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 600,
+        "value": 0.75
+      },
+      {
+        "time": 1100,
+        "value": 0.85
+      }
+    ]
+  },
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Saw",
+    "Long"
+  ],
+  "duration": 1100
+}

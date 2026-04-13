@@ -9,9 +9,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
-class RealtimeEnvelopeComposer(
+open class RealtimeEnvelopeComposer(
     private val engine: HapticEngineWrapper
 ) : RealtimeComposable {
 
@@ -21,48 +23,42 @@ class RealtimeEnvelopeComposer(
         private const val SEGMENT_DURATION_MS = 100L
     }
 
-    private var isPlaying = false
-    private var isDiscreteScheduled = false
-    private var currentAmplitude = 0.0f
-    private var currentFrequency = 0.0f
+    private val isPlaying = AtomicBoolean(false)
+    @Volatile private var currentAmplitude = 0.0f
+    @Volatile private var currentFrequency = 0.0f
     private var schedulerJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    private fun start(amplitude: Float = 0.5f, frequency: Float = 0.5f) {
-        if (isPlaying) {
-            stop()
-        }
-
-        isPlaying = true
-        set(amplitude, frequency)
+    private fun start() {
+        isPlaying.set(true)
         scheduleSequentialHaptics()
     }
 
     override fun set(amplitude: Float, frequency: Float) {
-        if (isDiscreteScheduled) {
-            return
-        }
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
-        if (!isPlaying) {
-            start(currentAmplitude, currentFrequency)
+        if (!isPlaying.get()) {
+            start()
         }
     }
 
-    override fun playDiscrete(amplitude: Float, frequency: Float) {
-        set(amplitude, frequency)
-        isDiscreteScheduled = true
+    open override fun playDiscrete(amplitude: Float, frequency: Float) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
+        }
+        val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
+            ControlPoint(amplitude, frequency, SEGMENT_DURATION_MS)
+        ))
+        engine.vibrate(effect)
     }
 
     override fun stop() {
-        if (!isPlaying) return
-
+        if (!isPlaying.compareAndSet(true, false)) return
         schedulerJob?.cancel()
         engine.stop()
-        isPlaying = false
     }
 
-    override fun isActive(): Boolean = isPlaying
+    override fun isActive(): Boolean = isPlaying.get()
 
     private fun scheduleSequentialHaptics() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -70,15 +66,18 @@ class RealtimeEnvelopeComposer(
         }
         schedulerJob?.cancel()
         schedulerJob = scope.launch {
-            while (isPlaying) {
-                val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
-                    ControlPoint(currentAmplitude, currentFrequency, SEGMENT_DURATION_MS)
-                ))
-                if (isDiscreteScheduled) {
-                    isDiscreteScheduled = false
+            try {
+                while (isPlaying.get() && isActive) {
+                    val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
+                        ControlPoint(currentAmplitude, currentFrequency, SEGMENT_DURATION_MS)
+                    ))
+                    engine.vibrate(effect)
+                    delay(SEGMENT_DURATION_MS)
                 }
-                engine.vibrate(effect)
-                delay(SEGMENT_DURATION_MS)
+            } finally {
+                if (!isPlaying.get()) {
+                    engine.stop()
+                }
             }
         }
     }

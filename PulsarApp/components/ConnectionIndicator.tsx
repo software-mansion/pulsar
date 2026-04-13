@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   pulseAnimation: {
     animationDuration: 1500,
     animationTimingFunction: 'ease-in-out',
-    animationIterationCount: 'infinite',
+    animationIterationCount: 5,
     animationName: {
       '0%':   { boxShadow: '0px 0px 0px 0px rgba(87, 180, 149, 0.8)' },
       '100%': { boxShadow: '0px 0px 0px 5px rgba(87, 180, 149, 0)' },

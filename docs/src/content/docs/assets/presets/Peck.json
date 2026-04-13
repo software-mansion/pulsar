@@ -1,0 +1,44 @@
+{
+  "name": "Peck",
+  "description": "An ultra-short, precise tap, perfect for small icon buttons.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.58
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 4,
+        "value": 0.55
+      },
+      {
+        "time": 28,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.58
+      },
+      {
+        "time": 28,
+        "value": 0.56
+      }
+    ]
+  },
+  "tags": [
+    "Gentle",
+    "Flexible",
+    "Peak",
+    "Impulse"
+  ],
+  "duration": 28
+}

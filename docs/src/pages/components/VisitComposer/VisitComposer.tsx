@@ -1,5 +1,6 @@
 import styles from './VisitComposer.module.scss';
 
+import { BASE_PATH } from '../../../../config';
 import star from '../../../assets/landing-page/star.svg';
 import screenshot from '../../../assets/landing-page/screenshot.png';
 
@@ -22,10 +23,9 @@ export function VisitComposer({ className }: VisitComposerProps) {
             Choosing the right one isn't obvious. We know this, so we prepared a composer that will
             make your choice much easier.
           </div>
-          <a className={styles.link}>Visit our composer</a>
-        </div>
-        <div className={styles.rightBar}>
           <img src={screenshot.src} />
+          <br />
+          <a className={styles.link} href={`${BASE_PATH}/presets-playground`}>Visit our composer</a>
         </div>
       </div>
     </div>

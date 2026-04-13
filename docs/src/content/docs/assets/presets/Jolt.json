@@ -1,0 +1,22 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "Jolt",
+  "description": "The most intense hit possible, suited for critical alerts or any moment that demands absolute impact.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 0
+}

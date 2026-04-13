@@ -34,7 +34,7 @@ class ValueLineBuilder(initialList: List<ValuePoint>? = null) {
 
         val timeDiff = nextPoint.time - prevPoint.time
         val valueDiff = nextPoint.value - prevPoint.value
-        val progress = (x - prevPoint.time) / timeDiff
+        val progress = (x - prevPoint.time).toFloat() / timeDiff
 
         return prevPoint.value + valueDiff * progress
     }

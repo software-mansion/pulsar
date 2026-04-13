@@ -30,6 +30,10 @@ import UIKit
     getPresets().preloadPresetByNames(presetNames)
   }
   
+  @objc public var isHapticsEnabled: Bool {
+    return engine.isHapticsEnabled
+  }
+
   @objc public func enableHaptics(state: Bool) {
     engine.enableHaptics(state)
   }

@@ -1,0 +1,25 @@
+{
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.9,
+      "frequency": 0.45
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "name": "SystemEffectHeavyClickPreset",
+  "description": "VibrationEffect.EFFECT_HEAVY_CLICK",
+  "tags": [
+    "System",
+    "Android",
+    "Effect",
+    "Bold",
+    "Flexible",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 50
+}

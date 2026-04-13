@@ -1,0 +1,57 @@
+{
+  "name": "Nudge",
+  "description": "A polite, unobtrusive double tap that announces a notification without being intrusive.",
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.5
+    },
+    {
+      "time": 120,
+      "amplitude": 0.4,
+      "frequency": 0.5
+    }
+  ],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 10,
+        "value": 0.6
+      },
+      {
+        "time": 60,
+        "value": 0
+      },
+      {
+        "time": 120,
+        "value": 0.4
+      },
+      {
+        "time": 180,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 180,
+        "value": 0.5
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 180
+}

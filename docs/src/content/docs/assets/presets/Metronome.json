@@ -1,0 +1,61 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.45
+      },
+      {
+        "time": 80,
+        "value": 0
+      },
+      {
+        "time": 200,
+        "value": 0
+      },
+      {
+        "time": 208,
+        "value": 0.45
+      },
+      {
+        "time": 280,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.5
+      },
+      {
+        "time": 280,
+        "value": 0.5
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    },
+    {
+      "time": 200,
+      "amplitude": 0.5,
+      "frequency": 0.5
+    }
+  ],
+  "name": "Metronome",
+  "description": "Balanced and unemotional, ideal for neutral confirmations, pagination steps, or generic two-step feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 280
+}

@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.6,
+      "frequency": 0.303
+    },
+    {
+      "time": 80,
+      "amplitude": 0.6,
+      "frequency": 0.3
+    }
+  ],
+  "name": "Murmur",
+  "description": "Two soft, quiet taps, ideal for subtle double-step interactions or unobtrusive confirmations.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 80
+}

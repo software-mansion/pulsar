@@ -1,0 +1,43 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 5,
+        "value": 0.65
+      },
+      {
+        "time": 80,
+        "value": 0.5
+      },
+      {
+        "time": 180,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.82
+      },
+      {
+        "time": 180,
+        "value": 0.75
+      }
+    ]
+  },
+  "discretePattern": [],
+  "name": "Wobble",
+  "description": "A gentle correction without alarm, ideal for minor validation errors or soft negative feedback.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Peak",
+    "Ramp",
+    "Short"
+  ],
+  "duration": 180
+}

@@ -1,6 +1,7 @@
 import { Button } from '../Button/Button';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import styles from './SdkSection.module.scss';
+import { BASE_PATH } from '../../../../config';
 
 const platforms = [
   {
@@ -39,7 +40,7 @@ export function SdkSection({ className }: { className?: string }) {
         />
         <Button
           label="See all of them"
-          url="/sdk"
+          url={`${BASE_PATH}/sdk/overview`}
           onClick={() => window.posthog?.capture('sdk_section_viewed')}
         />
       </div>

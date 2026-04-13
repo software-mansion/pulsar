@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ViewProps, Dimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Presets } from 'react-native-pulsar';
 const loaderIcon = require('../assets/images/loader.svg');
 import { Image } from 'expo-image';
 
@@ -24,18 +25,20 @@ interface Props {
   largeIcon?: boolean;
   fullWidth?: boolean;
   enabled?: boolean;
+  disableHaptics?: boolean;
 }
 
-function Button({ 
-  label, 
-  style, 
-  onClick, 
-  onComplete, 
-  state = 'default', 
-  showIcon = 'none', 
-  largeIcon = false, 
+function Button({
+  label,
+  style,
+  onClick,
+  onComplete,
+  state = 'default',
+  showIcon = 'none',
+  largeIcon = false,
   fullWidth = false,
   enabled = true,
+  disableHaptics = false,
   ...props }: Props & ViewProps) {
   const [pressed, setPressed] = useState(false);
   const isLoading = state === 'loading';
@@ -44,6 +47,7 @@ function Button({
     .onBegin(() => {
       setPressed(true);
       if (!isLoading && enabled) {
+        if (!disableHaptics) Presets.chip();
         onClick?.();
       }
     }).runOnJS(true);

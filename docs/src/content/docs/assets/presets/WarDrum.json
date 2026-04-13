@@ -1,0 +1,32 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 10,
+      "amplitude": 1,
+      "frequency": 0.106
+    },
+    {
+      "time": 201,
+      "amplitude": 1,
+      "frequency": 0.109
+    },
+    {
+      "time": 398,
+      "amplitude": 0.997,
+      "frequency": 0.103
+    }
+  ],
+  "name": "WarDrum",
+  "description": "Three steady drum-like beats, ideal for grounded triple confirmations or structured repetitive feedback.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Extended"
+  ],
+  "duration": 398
+}

@@ -5,3 +5,6 @@ import PostHog from './posthog.astro';
 
 <Default {...Astro.props}><slot /></Default>
 <PostHog />
+<script is:inline>
+  localStorage.setItem('starlight-theme', 'light');
+</script>

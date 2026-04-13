@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
+  <img src="https://github.com/software-mansion/pulsar/blob/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
 </p>
 
 A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
@@ -24,7 +24,7 @@ npx expo install react-native-pulsar
 import { Presets, usePatternComposer, useRealtimeComposer } from 'react-native-pulsar';
 
 // Play a preset
-Presets.Success();
+Presets.dogBark();
 
 // Play a system haptic
 Presets.System.ImpactMedium();
@@ -36,7 +36,7 @@ Add Pulsar as a Swift Package dependency in Xcode, or add it to your `Package.sw
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/software-mansion/pulsar", from: "0.1.0")
+  .package(url: "https://github.com/software-mansion-labs/pulsar-ios")
 ]
 ```
 
@@ -53,7 +53,7 @@ Add Pulsar as a Gradle dependency:
 
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar:0.1.0")
+  implementation("com.swmansion:pulsar:1.0.0")
 }
 ```
 
@@ -76,18 +76,27 @@ pulsar/
 │   └── PulsarApp/      # Android native demo app
 ├── react-native/
 │   └── react-native-pulsar/  # React Native Turbo Module
+│   └── PulsarApp/            # React Native native demo app
 ├── PulsarApp/          # React Native Expo showcase app
 └── docs/               # Documentation site (Astro/Starlight)
 ```
 
+## Packages
+
+| Platform | Package |
+|----------|---------|
+| React Native | [![npm](https://img.shields.io/npm/v/react-native-pulsar)](https://www.npmjs.com/package/react-native-pulsar) |
+| iOS | [Swift Package](https://github.com/software-mansion-labs/pulsar-ios) |
+| Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
+
 ## Documentation
 
-Full API reference and guides are available at the [documentation site](https://pulsar.swmansion.com).
+Full API reference and guides are available at the [documentation site](https://docs.swmansion.com/pulsar).
 
-- [SDK Overview](https://pulsar.swmansion.com/sdk) - Core concepts: types of haptics, preloading, and caching
-- [iOS SDK](https://pulsar.swmansion.com/sdk/ios) - Swift API reference
-- [Android SDK](https://pulsar.swmansion.com/sdk/android) - Kotlin API reference
-- [React Native SDK](https://pulsar.swmansion.com/sdk/react-native) - TypeScript API reference
+- [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) - Core concepts: types of haptics, preloading, and caching
+- [iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios) - Swift API reference
+- [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) - Kotlin API reference
+- [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
 
 ## Contributing
 
@@ -96,6 +105,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 ## License
 
 Pulsar library is licensed under [The MIT License](LICENSE).
+
+## Try the Pulsar App
+
+Download the Pulsar companion app to feel haptic presets directly on your device:
+
+- [App Store](https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104)
+- [Google Play](https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app)
 
 ## Community Discord
 

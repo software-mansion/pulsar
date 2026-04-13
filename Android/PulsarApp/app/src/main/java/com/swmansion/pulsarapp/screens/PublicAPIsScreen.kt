@@ -63,7 +63,7 @@ fun PublicAPIsScreen(pulsar: Pulsar?) {
                     label = "Play Preset",
                     state = "Ready",
                     onButtonClick = {
-                        pulsar?.getPresets()?.earthquake()
+                        pulsar?.getPresets()?.bloom()
                     }
                 )
             }
@@ -154,6 +154,18 @@ fun PublicAPIsScreen(pulsar: Pulsar?) {
                     state = "Ready",
                     onButtonClick = {
                         pulsar?.forceHapticsSupportLevel(CompatibilityMode.ADVANCED_SUPPORT)
+                    }
+                )
+            }
+
+            item {
+                var impulseCompositionEnabled by remember { mutableStateOf(false) }
+                APITestRow(
+                    label = "enableImpulseCompositionMode",
+                    state = "Impulse composition: ${if (impulseCompositionEnabled) "ON" else "OFF"}",
+                    onButtonClick = {
+                        impulseCompositionEnabled = !impulseCompositionEnabled
+                        pulsar?.enableImpulseCompositionMode(impulseCompositionEnabled)
                     }
                 )
             }

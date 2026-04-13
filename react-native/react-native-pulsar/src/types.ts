@@ -12,3 +12,14 @@ export type PatternComposer = {
   parse: (pattern: Pattern) => void;
   isParsed: () => boolean;
 };
+
+export type AdaptivePresetConfig = (() => void) | Pattern;
+
+export type AdaptivePreset = {
+  ios: AdaptivePresetConfig;
+  android: AdaptivePresetConfig;
+};
+
+export type AdaptiveHaptics = {
+  play: () => void;
+};

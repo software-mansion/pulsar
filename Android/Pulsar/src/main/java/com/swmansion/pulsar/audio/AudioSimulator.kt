@@ -16,9 +16,12 @@ import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.types.ValuePoint
 import com.swmansion.pulsar.types.WaveformType
 import kotlin.math.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -41,6 +44,7 @@ class AudioSimulator(
     private var playSound: Boolean = BuildConfig.DEBUG
     private val audioScope = CoroutineScope(Dispatchers.IO)
     private val audioMutex = Mutex()
+    private var currentPlayJob: Job? = null
 
     fun parsePattern(data: PatternData): ByteArray? {
         if (!playSound) return null
@@ -60,7 +64,13 @@ class AudioSimulator(
     fun play(buffer: ByteArray?) {
         if (buffer == null || !playSound || buffer.isEmpty()) return
 
-        audioScope.launch {
+        // Cancel any in-progress or queued playback so the new request
+        // isn't queued behind it. The cancelled coroutine will flush the
+        // AudioTrack via its CancellationException handler before releasing
+        // the mutex, leaving it clean for this new job.
+        currentPlayJob?.cancel()
+
+        currentPlayJob = audioScope.launch {
             audioMutex.withLock {
                 try {
                     if (audioTrack == null) {
@@ -79,6 +89,7 @@ class AudioSimulator(
                         var lastWriteTime = System.currentTimeMillis()
 
                         while (totalBytesWritten < buffer.size) {
+                            ensureActive()
                             val bytesToWrite = buffer.size - totalBytesWritten
                             val bytesWritten = write(buffer, totalBytesWritten, bytesToWrite)
 
@@ -95,7 +106,33 @@ class AudioSimulator(
                                 lastWriteTime = System.currentTimeMillis()
                             }
                         }
+
+                        // Write trailing silence equal to the AudioTrack's internal buffer size.
+                        // In MODE_STREAM, write() returns as soon as data is queued in the internal
+                        // buffer — for short patterns the buffer drains to hardware AFTER the mutex
+                        // is released, so a subsequent stop()+flush() discards the audio before it
+                        // is ever heard. Writing silence here pushes the real audio all the way
+                        // through the internal buffer and out to hardware before we return.
+                        val silencePadding = ByteArray(bufferSizeInFrames * 2) // 16-bit PCM, mono
+                        var silenceWritten = 0
+                        while (silenceWritten < silencePadding.size) {
+                            ensureActive()
+                            val written = write(silencePadding, silenceWritten, silencePadding.size - silenceWritten)
+                            if (written <= 0) break
+                            silenceWritten += written
+                        }
                     }
+                } catch (e: CancellationException) {
+                    // A newer play() cancelled this job — flush so the next job starts clean.
+                    try {
+                        audioTrack?.apply {
+                            if (playState == AudioTrack.PLAYSTATE_PLAYING) {
+                                stop()
+                                flush()
+                            }
+                        }
+                    } catch (_: Exception) {}
+                    throw e
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -377,6 +414,7 @@ class AudioSimulator(
             // Continuous waves
             config.continuousData.forEachIndexed { waveIdx, waveConfig ->
                 if (waveConfig.data.amplitude.isNotEmpty() && waveConfig.data.frequency.isNotEmpty()) {
+                    if (tMs < waveConfig.data.amplitude[0].time) return@forEachIndexed
                     val amp = valueForTime(waveConfig.data.amplitude, tMs, continuousAmpCursors, waveIdx)
                     val freq = valueForTime(waveConfig.data.frequency, tMs, continuousFreqCursors, waveIdx)
                         .coerceIn(20f, sampleRateF / 2f)

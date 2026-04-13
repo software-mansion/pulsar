@@ -300,6 +300,7 @@ public class AudioSimulator: NSObject {
 			for waveIdx in 0..<continuousData.count {
 				let waveConfig = continuousData[waveIdx]
 				if !waveConfig.data.amplitude.isEmpty && !waveConfig.data.frequency.isEmpty {
+					if tMs < Float(waveConfig.data.amplitude[0].time) { continue }
 					let amp = valueForTime(waveConfig.data.amplitude, tMs, cursor: &continuousAmpCursors[waveIdx])
 					let freq = valueForTime(waveConfig.data.frequency, tMs, cursor: &continuousFreqCursors[waveIdx])
 
@@ -350,12 +351,21 @@ public class AudioSimulator: NSObject {
 	}
 
 	public func play(buffer: AVAudioPCMBuffer?) {
-    guard buffer != nil && playSound else { return }
+    guard let buffer = buffer, playSound else { return }
 		configureAudioContext()
 
 		if playerNode.isPlaying { playerNode.stop() }
+		if !audioContext.isRunning {
+			do {
+				try AVAudioSession.sharedInstance().setActive(true)
+				try audioContext.start()
+			} catch {
+				print("Failed to start audio engine: \(error)")
+				return
+			}
+		}
 
-		playerNode.scheduleBuffer(buffer!, at: nil, options: []) { [weak self] in
+		playerNode.scheduleBuffer(buffer, at: nil, options: []) { [weak self] in
 			DispatchQueue.main.async {
 				self?.stop()
 			}

@@ -5,6 +5,7 @@ import logo from '../../../assets/logo.svg';
 import logoGitHub from '../../../assets/landing-page/logo-github.png';
 import menuIcon from '../../../assets/landing-page/menu.svg';
 import closeIcon from '../../../assets/landing-page/x.svg';
+import { BASE_PATH } from '../../../../config';
 
 export function TopBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,11 +26,11 @@ export function TopBar() {
           <span>Pulsar</span>
         </div>
         <div className={styles.menuItems}>
-          {/* <a href="/presets-playground">Presets</a> */}
-          {/* <a href="#">Live Preview</a> */}
-          {/* <a href="#">Tutorials</a> */}
+          <a href={`${BASE_PATH}/presets-playground`}>Presets</a>
+          <a href={`${BASE_PATH}/getting-started`}>Getting started</a>
+          <a href={`${BASE_PATH}/sdk/overview`}>Docs</a>
         </div>
-        <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
+        <a href="https://github.com/software-mansion/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
         </a>
         <button className={styles.hamburger} onClick={toggleMenu} aria-label="Toggle menu">
@@ -54,18 +55,18 @@ export function TopBar() {
               />
             </div>
             <nav className={styles.mobileMenuItems}>
-              <a href="/presets-playground" onClick={closeMenu}>
+              <a href={`${BASE_PATH}/presets-playground`} onClick={closeMenu}>
                 Presets
               </a>
-              <a href="#" onClick={closeMenu}>
-                Live Preview
+              <a href={`${BASE_PATH}/getting-started`} onClick={closeMenu}>
+                Getting started
               </a>
-              <a href="#" onClick={closeMenu}>
-                Tutorials
+              <a href={`${BASE_PATH}/sdk/overview`} onClick={closeMenu}>
+                Docs
               </a>
             </nav>
             <div className={styles.mobileMenuFooter}>
-              <a href="https://github.com/software-mansion-labs/pulsar" target="_blank">
+              <a href="https://github.com/software-mansion/pulsar" target="_blank">
                 <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
               </a>
             </div>

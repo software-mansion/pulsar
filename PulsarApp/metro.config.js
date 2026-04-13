@@ -17,11 +17,13 @@ const config = {
     extraNodeModules: {
       'react-native': path.resolve(__dirname, './node_modules/react-native'),
       react: path.resolve(__dirname, './node_modules/react'),
+      'react-native-worklets': path.resolve(__dirname, './node_modules/react-native-worklets'),
     },
     blockList: [
       // Prevent Metro from using react-native from library's node_modules
       /react-native\/react-native-pulsar\/node_modules\/react-native\/.*/,
       /react-native\/react-native-pulsar\/node_modules\/react\/.*/,
+      /react-native\/react-native-pulsar\/node_modules\/react-native-worklets\/.*/,
     ],
   },
 };

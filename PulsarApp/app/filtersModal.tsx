@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Pressable, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, Pressable, ScrollView, Switch, Platform } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import Button from '@/components/Button';
 import { Colors } from '@/constants/theme';
@@ -9,6 +9,7 @@ import { TagsInfo } from '@/constants/Tags';
 import { useFilters } from '@/contexts/FilterContext';
 import { usePostHog } from 'posthog-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Settings } from 'react-native-pulsar';
 
 const closeIcon = require('@/assets/images/x.svg');
 const checkIcon = require('@/assets/images/check.svg');
@@ -21,9 +22,26 @@ type FiltersCollection = {
   [groupName: string]: FilterState;
 };
 
+const defaultEdges = {
+  top: 'additive',
+  left: 'additive',
+  bottom: 'off',
+  right: 'additive',
+};
+
 export default function FiltersModal() {
   const posthog = usePostHog();
-  const { selectedTags, setSelectedTags } = useFilters();
+  const { selectedTags, setSelectedTags, soundEnabled, setSoundEnabled, showSystemPresets, setShowSystemPresets, selectedSystemPresetTags, setSelectedSystemPresetTags, compactLayout, setCompactLayout, showFavouritesOnly, setShowFavouritesOnly } = useFilters();
+
+  const SYSTEM_PRESET_TAG_OPTIONS = ['Effect', 'Primitive', 'Vendor', 'iOS Fallback'];
+
+  const toggleSystemPresetTag = (tag: string) => {
+    setSelectedSystemPresetTags(
+      selectedSystemPresetTags.includes(tag)
+        ? selectedSystemPresetTags.filter(t => t !== tag)
+        : [...selectedSystemPresetTags, tag]
+    );
+  };
 
   const createInitialStates = (): FiltersCollection => {
     const states: FiltersCollection = {};
@@ -40,6 +58,11 @@ export default function FiltersModal() {
   };
 
   const [filters, setFilters] = useState<FiltersCollection>(createInitialStates);
+
+  const handleSoundToggle = (value: boolean) => {
+    setSoundEnabled(value);
+    Settings.enableSound(value);
+  };
 
   const toggleFilter = (groupName: string, tagName: string) => {
     setFilters(prev => ({
@@ -88,7 +111,7 @@ export default function FiltersModal() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.closeButton}>
@@ -101,6 +124,64 @@ export default function FiltersModal() {
         </View>
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={true}>
+          <View style={styles.soundToggleSection}>
+            <ThemedText style={styles.sectionTitle}>Settings</ThemedText>
+            <View style={styles.soundToggleRow}>
+              <Text style={styles.checkboxLabel}>Sound</Text>
+              <Switch
+                value={soundEnabled}
+                onValueChange={handleSoundToggle}
+                trackColor={{ false: '#D8EEF7', true: '#87CCE8' }}
+                thumbColor={soundEnabled ? '#2B85AB' : '#f0f0f0'}
+              />
+            </View>
+            <View style={[styles.soundToggleRow, styles.marginTop]}>
+              <Text style={styles.checkboxLabel}>Compact layout</Text>
+              <Switch
+                value={compactLayout}
+                onValueChange={setCompactLayout}
+                trackColor={{ false: '#D8EEF7', true: '#87CCE8' }}
+                thumbColor={compactLayout ? '#2B85AB' : '#f0f0f0'}
+              />
+            </View>
+            <View style={[styles.soundToggleRow, styles.marginTop]}>
+              <Text style={styles.checkboxLabel}>Show favorites only</Text>
+              <Switch
+                value={showFavouritesOnly}
+                onValueChange={setShowFavouritesOnly}
+                trackColor={{ false: '#D8EEF7', true: '#87CCE8' }}
+                thumbColor={showFavouritesOnly ? '#2B85AB' : '#f0f0f0'}
+              />
+            </View>
+          </View>
+
+          <View style={styles.soundToggleSection}>
+            <ThemedText style={styles.sectionTitle}>System Presets</ThemedText>
+            <View style={[styles.soundToggleRow, styles.marginTop]}>
+              <Text style={styles.checkboxLabel}>Enable system presets</Text>
+              <Switch
+                value={showSystemPresets}
+                onValueChange={setShowSystemPresets}
+                trackColor={{ false: '#D8EEF7', true: '#87CCE8' }}
+                thumbColor={showSystemPresets ? '#2B85AB' : '#f0f0f0'}
+              />
+            </View>
+            {showSystemPresets && Platform.OS === 'android' && (
+              <View style={styles.systemPresetTagsSection}>
+                <View style={styles.optionsGrid}>
+                  {SYSTEM_PRESET_TAG_OPTIONS.map(tag => (
+                    <CheckboxItem
+                      key={tag}
+                      label={tag}
+                      checked={selectedSystemPresetTags.includes(tag)}
+                      onToggle={() => toggleSystemPresetTag(tag)}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+
           {TagsInfo.map(group => (
             <FilterSection
               key={group.groupName}
@@ -261,5 +342,20 @@ const styles = StyleSheet.create({
   },
   showResultsButton: {
     width: '100%',
+  },
+  soundToggleSection: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  soundToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  marginTop: {
+    marginTop: 12,
+  },
+  systemPresetTagsSection: {
+    marginTop: 16,
   },
 });

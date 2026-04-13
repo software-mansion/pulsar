@@ -1,6 +1,7 @@
 import { Button } from '../Button/Button';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import styles from './VisitPlayground.module.scss';
+import { BASE_PATH } from '../../../../config';
 import commonStyles from './../../common.module.scss';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 
@@ -28,6 +29,7 @@ export function VisitPlayground({ className }: { className?: string }) {
         />
         <Button
           label="Connect your phone"
+          url={`${BASE_PATH}/presets-playground`}
           className={commonStyles.spaceTopSmall}
           onClick={() => window.posthog?.capture('connect_phone_cta_clicked')}
         />

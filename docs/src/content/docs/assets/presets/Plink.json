@@ -1,0 +1,57 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.55
+      },
+      {
+        "time": 65,
+        "value": 0
+      },
+      {
+        "time": 150,
+        "value": 0.55
+      },
+      {
+        "time": 215,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.52
+      },
+      {
+        "time": 215,
+        "value": 0.52
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.55,
+      "frequency": 0.52
+    },
+    {
+      "time": 150,
+      "amplitude": 0.55,
+      "frequency": 0.52
+    }
+  ],
+  "name": "Plink",
+  "description": "A neutral heads-up suited as a baseline for informational notifications.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Bumps",
+    "Short"
+  ],
+  "duration": 215
+}

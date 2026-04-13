@@ -1,0 +1,82 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 8,
+        "value": 0.65
+      },
+      {
+        "time": 70,
+        "value": 0.08
+      },
+      {
+        "time": 200,
+        "value": 0
+      },
+      {
+        "time": 280,
+        "value": 0.65
+      },
+      {
+        "time": 348,
+        "value": 0.08
+      },
+      {
+        "time": 480,
+        "value": 0
+      },
+      {
+        "time": 560,
+        "value": 0.65
+      },
+      {
+        "time": 628,
+        "value": 0.08
+      },
+      {
+        "time": 760,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.32
+      },
+      {
+        "time": 760,
+        "value": 0.32
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.65,
+      "frequency": 0.35
+    },
+    {
+      "time": 280,
+      "amplitude": 0.65,
+      "frequency": 0.35
+    },
+    {
+      "time": 560,
+      "amplitude": 0.65,
+      "frequency": 0.35
+    }
+  ],
+  "name": "Knock",
+  "description": "A polite knock announcing arrival, ideal for gentle attention requests or non-urgent presence alerts.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Bumps",
+    "Long"
+  ],
+  "duration": 760
+}

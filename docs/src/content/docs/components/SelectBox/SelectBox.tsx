@@ -13,6 +13,7 @@ interface SelectBoxProps {
   options: SelectOption[];
   onOptionChange: (options: SelectOption[]) => void;
   className?: string;
+  wide?: boolean;
 }
 
 export function SelectBox({
@@ -20,6 +21,7 @@ export function SelectBox({
   options: initialOptions,
   onOptionChange: onOptionChange,
   className = '',
+  wide = false,
 }: SelectBoxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState(initialOptions);
@@ -130,7 +132,7 @@ export function SelectBox({
 
       {isOpen && (
         <div
-          className={styles.dropdown}
+          className={`${styles.dropdown} ${wide ? styles.wideDropdown : ''}`}
           onClick={(e) => e.stopPropagation()}
           ref={dropdownRef}
           style={{

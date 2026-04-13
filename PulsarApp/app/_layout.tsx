@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { isRunningInExpoGo } from 'expo';
 import { Stack, useNavigationContainerRef, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -8,10 +8,10 @@ import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 import { PostHogProvider } from 'posthog-react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Theme } from '@/constants/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { FilterProvider } from '@/contexts/FilterContext';
+import { FavouritesProvider } from '@/contexts/FavouritesContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
 import { posthog } from '@/src/config/posthog';
@@ -37,7 +37,6 @@ export const unstable_settings = {
 };
 
 function RootLayout() {
-  const colorScheme = useColorScheme();
   const navigationRef = useNavigationContainerRef();
   const pathname = usePathname();
   const params = useGlobalSearchParams();
@@ -78,8 +77,9 @@ function RootLayout() {
       >
         <StoreReviewProvider>
           <FilterProvider>
+            <FavouritesProvider>
             <OnboardingProvider>
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : {...DefaultTheme, ...Theme}}>
+              <ThemeProvider value={{...DefaultTheme, ...Theme}}>
                 <Stack>
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
@@ -89,6 +89,7 @@ function RootLayout() {
                 <StatusBar style="auto" />
               </ThemeProvider>
             </OnboardingProvider>
+            </FavouritesProvider>
           </FilterProvider>
         </StoreReviewProvider>
       </PostHogProvider>

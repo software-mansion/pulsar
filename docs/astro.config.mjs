@@ -2,8 +2,11 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
+import { BASE_PATH } from './config.ts';
 
 export default defineConfig({
+  site: 'https://docs.swmansion.com/',
+  base: BASE_PATH,
   vite: {
     css: {
       modules: {
@@ -25,7 +28,9 @@ export default defineConfig({
         '@fontsource/bebas-neue/400.css',
       ],
       pagination: false,
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/swmansion/pulsar' }],
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/software-mansion/pulsar' },
+      ],
       sidebar: [
         {
           label: 'Getting started',
@@ -46,7 +51,7 @@ export default defineConfig({
         {
           label: 'SDK',
           items: [
-            { label: 'Overview', slug: 'sdk' },
+            { label: 'Overview', slug: 'sdk/overview' },
             { label: 'iOS', slug: 'sdk/ios' },
             { label: 'Android', slug: 'sdk/android' },
             { label: 'React Native', slug: 'sdk/react-native' },
@@ -67,7 +72,7 @@ export default defineConfig({
         alt: 'Pulsar Logo',
         replacesTitle: true,
       },
-      favicon: './src/assets/logo.svg',
+      favicon: '/logo.svg',
       components: {
         ThemeSelect: './src/components/ThemeSelect.astro',
         Head: './src/components/Head.astro',

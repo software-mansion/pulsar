@@ -148,7 +148,7 @@ export class AudioPatternUtility {
           },
           waveform: 'sine',
         },
-        timestamp: bar.time * 1000,
+        timestamp: bar.time,
         volume: alignVolume(bar.amplitude, sources),
       });
 
@@ -166,7 +166,7 @@ export class AudioPatternUtility {
           },
           waveform: 'sine',
         },
-        timestamp: bar.time * 1000,
+        timestamp: bar.time,
         volume: alignVolume(bar.amplitude, sources),
       });
 
@@ -184,7 +184,7 @@ export class AudioPatternUtility {
           },
           waveform: 'sine',
         },
-        timestamp: bar.time * 1000,
+        timestamp: bar.time,
         volume: alignVolume(bar.amplitude, sources),
       });
     }
@@ -212,13 +212,13 @@ export class AudioPatternUtility {
 
       for (const amplitudePoint of chartData.continuousPattern.amplitude) {
         line.data.amplitude.push({
-          time: amplitudePoint.time * 1000,
+          time: amplitudePoint.time,
           value: amplitudePoint.value * amplitudeModifier,
         });
       }
       for (const frequencyPoint of chartData.continuousPattern.frequency) {
         line.data.frequency.push({
-          time: frequencyPoint.time * 1000,
+          time: frequencyPoint.time,
           value: normalizeFrequency(frequencyPoint.value) * frequencyModifier,
         });
       }

@@ -1,0 +1,61 @@
+{
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 50,
+        "value": 0.38
+      },
+      {
+        "time": 300,
+        "value": 0.28
+      },
+      {
+        "time": 600,
+        "value": 0.2
+      },
+      {
+        "time": 900,
+        "value": 0.12
+      },
+      {
+        "time": 1200,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.38
+      },
+      {
+        "time": 1200,
+        "value": 0.18
+      }
+    ]
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 0.4,
+      "frequency": 0.4
+    },
+    {
+      "time": 400,
+      "amplitude": 0.25,
+      "frequency": 0.2
+    }
+  ],
+  "name": "Dissolve",
+  "description": "A gentle, soothing fade, ideal for calm relief after a mild challenge or successful low-stakes action.",
+  "tags": [
+    "Gentle",
+    "Soft",
+    "Ramp",
+    "Long"
+  ],
+  "duration": 1200
+}

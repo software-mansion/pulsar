@@ -1,5 +1,9 @@
 #import "Haptics.h"
+#if __has_include(<Pulsar/Pulsar-Swift.h>)
+#import <Pulsar/Pulsar-Swift.h>
+#else
 #import "Pulsar-Swift.h"
+#endif
 
 @implementation RNPulsar {
   Pulsar *pulsar_;
@@ -66,6 +70,14 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)Pulsar_forceHapticsSupportLevel:(double)level {
+  // do nothing on iOS
+}
+
+- (void)Pulsar_enableImpulseCompositionMode:(BOOL)state {
+  // do nothing on iOS
+}
+
+- (void)Pulsar_setRealtimeComposerStrategy:(double)strategy {
   // do nothing on iOS
 }
 

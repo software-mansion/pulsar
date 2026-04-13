@@ -1,0 +1,58 @@
+{
+  "name": "Wave",
+  "description": "Gentle and uninterrupting, communicates ongoing activity without breaking the user's focus.",
+  "discretePattern": [],
+  "continuousPattern": {
+    "amplitude": [
+      {
+        "time": 0,
+        "value": 0
+      },
+      {
+        "time": 400,
+        "value": 0.38
+      },
+      {
+        "time": 800,
+        "value": 0.05
+      },
+      {
+        "time": 1200,
+        "value": 0.4
+      },
+      {
+        "time": 1600,
+        "value": 0.05
+      },
+      {
+        "time": 2000,
+        "value": 0.38
+      },
+      {
+        "time": 2400,
+        "value": 0.05
+      },
+      {
+        "time": 2800,
+        "value": 0
+      }
+    ],
+    "frequency": [
+      {
+        "time": 0,
+        "value": 0.35
+      },
+      {
+        "time": 2800,
+        "value": 0.35
+      }
+    ]
+  },
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Bumps",
+    "Long"
+  ],
+  "duration": 2800
+}

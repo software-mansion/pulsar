@@ -120,6 +120,7 @@ export function usePatternRecorder({ onRecordingChange, onPlayingChange, onRecor
   }, [isPlaying, onPlayingChange]);
 
   const startRecording = () => {
+    stopPlaying();
     isNewRecording.current = true;
     setIsRecording(true);
     recordedPattern.value = [];

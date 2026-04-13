@@ -1,0 +1,27 @@
+{
+  "continuousPattern": {
+    "amplitude": [],
+    "frequency": []
+  },
+  "discretePattern": [
+    {
+      "time": 0,
+      "amplitude": 1,
+      "frequency": 1
+    },
+    {
+      "time": 75,
+      "amplitude": 1,
+      "frequency": 1
+    }
+  ],
+  "name": "Firecracker",
+  "description": "Two maximum-force strikes demanding immediate response, suited for urgent double-confirmations or critical alerts.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Impulse"
+  ],
+  "duration": 75
+}

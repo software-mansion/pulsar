@@ -7,6 +7,7 @@ import com.facebook.react.module.annotations.ReactModule
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.types.CompatibilityMode
+import com.swmansion.pulsar.types.RealtimeComposerStrategy
 import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ContinuousPattern
 import com.swmansion.pulsar.types.PatternData
@@ -16,8 +17,8 @@ import com.swmansion.pulsar.types.ValuePoint
 class PulsarModule(reactContext: ReactApplicationContext) :
   NativeRNPulsarSpec(reactContext) {
   
-  private val pulsar: Pulsar = Pulsar(reactContext)
-  private val realtimeComposer: RealtimeComposer = pulsar.getRealtimeComposer()
+  private val pulsar: PulsarReactNative = PulsarReactNative(reactContext)
+  private var realtimeComposer: RealtimeComposer = pulsar.getRealtimeComposer()
   private var nextId: Int = 1
   private val patternComposersRegistry: MutableMap<Int, PatternComposer> = mutableMapOf()
 
@@ -84,6 +85,21 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
   override fun Pulsar_shutDownEngine() {
     // do nothing on Android
+  }
+
+  override fun Pulsar_enableImpulseCompositionMode(state: Boolean) {
+    pulsar.enableImpulseCompositionMode(state)
+  }
+
+  override fun Pulsar_setRealtimeComposerStrategy(strategy: Double) {
+    val strategyEnum = when (strategy.toInt()) {
+      0 -> RealtimeComposerStrategy.ENVELOPE
+      1 -> RealtimeComposerStrategy.PRIMITIVE_TICK
+      2 -> RealtimeComposerStrategy.PRIMITIVE_COMPLEX
+      3 -> RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES
+      else -> return
+    }
+    realtimeComposer = pulsar.getRealtimeComposer(strategyEnum)
   }
 
   // PatternComposer -----------------------------------------------------------------

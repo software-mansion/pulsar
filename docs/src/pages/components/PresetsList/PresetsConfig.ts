@@ -1,49 +1,16 @@
-import FallingBricks from '../../../content/docs/assets/presets/FallingBricks';
-import type { PresetProps } from '../../../content/docs/components/Preset/types';
+import AlarmPreset from '../../../content/docs/assets/presets/Alarm.json';
+import AlarmImage from '../../../content/docs/assets/presets/Alarm.png';
+import FadeOutPreset from '../../../content/docs/assets/presets/FadeOut.json';
+import FadeOutImage from '../../../content/docs/assets/presets/FadeOut.png';
+import type { PresetConfig } from '../../../content/docs/components/Preset/types';
 
-export const PresetsConfig: Array<PresetProps> = [
+export const PresetsConfig: Array<PresetConfig> = [
   {
-    name: '🧱 Falling Bricks',
-    shortName: 'FallingBricks',
-    description: 'That feeling when some bricks fall onto your foot!',
-    tags: [
-      { label: 'Short', variant: 'blue' },
-      { label: 'Happiness', variant: 'blue' },
-    ],
-    duration: 1000,
-    visualization: FallingBricks,
+    data: AlarmPreset,
+    image: AlarmImage,
   },
   {
-    name: '🧱 Falling Bricks 2',
-    shortName: 'FallingBricks',
-    description: 'That feeling when some bricks fall onto your foot!',
-    tags: [
-      { label: 'Super short', variant: 'blue' },
-      { label: 'Sadness', variant: 'blue' },
-    ],
-    duration: 300,
-    visualization: FallingBricks,
-  },
-  {
-    name: '🧱 Falling Bricks 3',
-    shortName: 'FallingBricks',
-    description: 'That feeling when some bricks fall onto your foot!',
-    tags: [
-      { label: 'Super short', variant: 'blue' },
-      { label: 'Happiness', variant: 'blue' },
-    ],
-    duration: 1000,
-    visualization: FallingBricks,
-  },
-  {
-    name: '🧱 Falling Bricks 4',
-    shortName: 'FallingBricks',
-    description: 'That feeling when some bricks fall onto your foot!',
-    tags: [
-      { label: 'Super short', variant: 'blue' },
-      { label: 'Happiness', variant: 'blue' },
-    ],
-    duration: 2000,
-    visualization: FallingBricks,
+    data: FadeOutPreset,
+    image: FadeOutImage,
   },
 ];

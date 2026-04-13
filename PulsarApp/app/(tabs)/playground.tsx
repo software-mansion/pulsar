@@ -196,6 +196,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
+    height: 34,
   },
   howItWorksButton: {
     flexDirection: 'row',
@@ -234,6 +235,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     minWidth: 80,
+    padding: 0,
   },
   controlsContainer: {
     flexDirection: 'row',
