@@ -1,4 +1,4 @@
-import { HapticSupport, RealtimeComposerStrategy } from './types';
+import { RealtimeComposerStrategy } from './types';
 import { isVibrationSupported } from './engine';
 import { setHapticsEnabled, setSoundEnabled } from './state';
 import { stopVibration } from './engine';
@@ -19,10 +19,8 @@ const Settings = {
     stopVibration();
   },
 
-  getHapticsSupportLevel: (): HapticSupport => {
-    return isVibrationSupported()
-      ? HapticSupport.MINIMAL_SUPPORT
-      : HapticSupport.NO_SUPPORT;
+  isHapticsAvailable: (): boolean => {
+    return isVibrationSupported();
   },
 
   /** Not applicable on web. */

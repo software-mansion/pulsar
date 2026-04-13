@@ -14,12 +14,9 @@ export { createPatternComposer } from './pattern-composer';
 export type {
   Pattern,
   PatternComposer,
-  AdaptivePreset,
-  AdaptivePresetConfig,
-  AdaptiveHaptics,
   RealtimeComposer,
 } from './types';
 
-export { HapticSupport, RealtimeComposerStrategy } from './types';
+export { RealtimeComposerStrategy } from './types';
 
 export { isVibrationSupported } from './engine';

@@ -25,16 +25,6 @@ export type PatternComposer = {
   isParsed: () => boolean;
 };
 
-export type AdaptivePresetConfig = (() => void) | Pattern;
-
-export type AdaptivePreset = {
-  web: AdaptivePresetConfig;
-};
-
-export type AdaptiveHaptics = {
-  play: () => void;
-};
-
 export type RealtimeComposer = {
   /** Not supported on web — continuous amplitude/frequency control requires native APIs. */
   set: (amplitude: number, frequency: number) => void;
@@ -43,13 +33,6 @@ export type RealtimeComposer = {
   isActive: () => boolean;
 };
 
-export enum HapticSupport {
-  NO_SUPPORT = 0,
-  MINIMAL_SUPPORT = 1,
-  LIMITED_SUPPORT = 2,
-  STANDARD_SUPPORT = 3,
-  ADVANCED_SUPPORT = 4,
-}
 
 export enum RealtimeComposerStrategy {
   ENVELOPE = 0,
