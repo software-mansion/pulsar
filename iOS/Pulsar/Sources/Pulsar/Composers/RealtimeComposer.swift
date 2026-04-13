@@ -26,6 +26,7 @@ public class RealtimeComposer: NSObject {
   }
 
   @objc public func set(amplitude: Float, frequency: Float) {
+    guard engine.isHapticsEnabled else { return }
     if (!isPlaying) {
       start(amplitude: amplitude, frequency: frequency)
     }
@@ -57,6 +58,7 @@ public class RealtimeComposer: NSObject {
   }
 
   @objc public func playDiscrete(amplitude: Float = 1.0, frequency: Float = 0.5) {
+    guard engine.isHapticsEnabled else { return }
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
 
     let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: amplitude)

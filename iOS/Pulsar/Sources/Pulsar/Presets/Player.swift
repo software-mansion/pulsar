@@ -6,9 +6,15 @@ import AVFAudio
 @objc public class Player : NSObject {
   private var patternComposer: PatternComposer!
   private var audioOnly: Bool = false
+  private weak var pulsar: Pulsar?
+
+  public var isEnabled: Bool {
+    return pulsar?.isHapticsEnabled ?? true
+  }
 
   public init(_ haptics: Pulsar, audioOnly: Bool = false, rawContinuousPattern: [[[Double]]] = [], rawDiscretePattern: [[Double]] = []) {
     super.init()
+    self.pulsar = haptics
     self.audioOnly = audioOnly
     patternComposer = haptics.getPatternComposer()
 
@@ -20,6 +26,7 @@ import AVFAudio
   }
 
   @objc public func play() {
+    guard isEnabled else { return }
     if audioOnly {
       patternComposer.playAudioOnly()
     } else {
