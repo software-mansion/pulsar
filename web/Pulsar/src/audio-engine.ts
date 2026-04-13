@@ -215,8 +215,8 @@ export class AudioEngine {
   }
 
   private calculateTotalDuration(data: AudioPatternConfig): [number, number, number] {
-    const amplitude = data.continuousData[0].data.amplitude;
-    const continuousDuration = ((amplitude.length > 0 ? amplitude[amplitude.length - 1].time : 0) / 1000) + 0.01;
+    const amplitude = data.continuousData[0]!.data.amplitude;
+    const continuousDuration = ((amplitude.length > 0 ? amplitude[amplitude.length - 1]!.time : 0) / 1000) + 0.01;
 
     let discreteDuration = 0;
     data.discreteData.forEach((event) => {
@@ -308,14 +308,14 @@ export class AudioEngine {
 
     function valueForTime(data: { time: number; value: number }[], time: number) {
       const timeMs = time * 1000;
-      if (timeMs <= data[0].time) return data[0].value;
-      if (timeMs >= data[data.length - 1].time) return data[data.length - 1].value;
+      if (timeMs <= data[0]!.time) return data[0]!.value;
+      if (timeMs >= data[data.length - 1]!.time) return data[data.length - 1]!.value;
       for (let i = 1; i < data.length; i++) {
-        if (timeMs <= data[i].time) {
-          const t0 = data[i - 1].time;
-          const t1 = data[i].time;
+        if (timeMs <= data[i]!.time) {
+          const t0 = data[i - 1]!.time;
+          const t1 = data[i]!.time;
           const ratio = (timeMs - t0) / (t1 - t0);
-          return data[i - 1].value + (data[i].value - data[i - 1].value) * ratio;
+          return data[i - 1]!.value + (data[i]!.value - data[i - 1]!.value) * ratio;
         }
       }
       return 0;

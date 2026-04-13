@@ -4,243 +4,77 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@pulsar/haptics - Demo</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-          'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-
-      .container {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        padding: 40px;
-        max-width: 500px;
-        width: 100%;
-      }
-
-      h1 {
-        margin-bottom: 10px;
-        color: #333;
-        font-size: 28px;
-      }
-
-      .subtitle {
-        color: #666;
-        margin-bottom: 30px;
-        font-size: 14px;
-      }
-
-      .section {
-        margin-bottom: 30px;
-      }
-
-      .section-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #667eea;
-        text-transform: uppercase;
-        margin-bottom: 12px;
-      }
-
-      .button-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 15px;
-      }
-
-      button {
-        padding: 12px 16px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        transition: all 0.2s;
-        text-align: center;
-      }
-
-      button:active {
-        transform: scale(0.95);
-      }
-
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-primary {
-        background: #667eea;
-        color: white;
-      }
-
-      .btn-primary:hover {
-        background: #5568d3;
-      }
-
-      .btn-success {
-        background: #48bb78;
-        color: white;
-      }
-
-      .btn-success:hover {
-        background: #38a169;
-      }
-
-      .btn-warning {
-        background: #ed8936;
-        color: white;
-      }
-
-      .btn-warning:hover {
-        background: #dd6b20;
-      }
-
-      .btn-danger {
-        background: #f56565;
-        color: white;
-      }
-
-      .btn-danger:hover {
-        background: #e53e3e;
-      }
-
-      .btn-secondary {
-        background: #e2e8f0;
-        color: #333;
-      }
-
-      .btn-secondary:hover {
-        background: #cbd5e0;
-      }
-
-      .full-width {
-        grid-column: 1 / -1;
-      }
-
-      .status {
-        background: #f7fafc;
-        border-left: 4px solid #667eea;
-        padding: 12px;
-        border-radius: 4px;
-        margin-top: 20px;
-        font-size: 13px;
-        color: #333;
-      }
-
-      .status-label {
-        font-weight: 600;
-        color: #667eea;
-      }
-
-      .status-value {
-        color: #666;
-      }
-
-      .pattern-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-      }
-
-      .info {
-        background: #edf2f7;
-        border-radius: 8px;
-        padding: 12px;
-        font-size: 12px;
-        color: #553c9a;
-        line-height: 1.5;
-        margin-bottom: 20px;
-      }
-
-      code {
-        background: #f7fafc;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-family: 'Monaco', 'Menlo', monospace;
-        font-size: 12px;
-      }
-    </style>
+    <link rel="stylesheet" href="example.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>🔔 Haptics Demo</h1>
-      <p class="subtitle">Test the @pulsar/haptics library</p>
+    <h1>Haptics Demo</h1>
+    <p class="subtitle">@pulsar/haptics</p>
 
-      <div class="info">
-        <strong>📱 Tip:</strong> Haptics work on mobile devices. If you're on
-        desktop, visualize the patterns in the status below.
-      </div>
+    <div id="availability-badge" class="badge">checking...</div>
+    <p class="engine-label" id="engine-label"></p>
 
-      <div class="section">
-        <div class="section-title">Quick Tap</div>
-        <div class="button-group full-width">
-          <button class="btn-primary full-width" onclick="play('impactLight')">
-            Light
-          </button>
-          <button class="btn-primary full-width" onclick="play('impactMedium')">
-            Medium
-          </button>
-          <button class="btn-primary full-width" onclick="play('impactHeavy')">
-            Heavy
-          </button>
-        </div>
+    <div class="section">
+      <div class="section-title">Impact</div>
+      <div class="button-group">
+        <button class="btn-blue" onclick="play('impactLight')">Light</button>
+        <button class="btn-blue" onclick="play('impactMedium')">Medium</button>
+        <button class="btn-blue" onclick="play('impactHeavy')">Heavy</button>
+        <button class="btn-blue" onclick="play('impactSoft')">Soft</button>
+        <button class="btn-blue" onclick="play('impactRigid')">Rigid</button>
+        <button class="btn-blue" onclick="play('selection')">Selection</button>
       </div>
+    </div>
 
-      <div class="section">
-        <div class="section-title">Preset Patterns</div>
-        <div class="pattern-grid">
-          <button class="btn-primary" onclick="play('selection')">
-            Selection
-          </button>
-          <button class="btn-primary" onclick="play('pulse')">
-            Pulse
-          </button>
-          <button class="btn-success" onclick="play('notificationSuccess')">
-            ✓ Success
-          </button>
-          <button class="btn-warning" onclick="play('notificationWarning')">
-            ⚠ Warning
-          </button>
-          <button class="btn-danger" onclick="play('notificationError')">
-            ✕ Error
-          </button>
-        </div>
+    <div class="section">
+      <div class="section-title">Notification</div>
+      <div class="button-group cols-2">
+        <button class="btn-green"  onclick="play('notificationSuccess')">Success</button>
+        <button class="btn-orange" onclick="play('notificationWarning')">Warning</button>
+        <button class="btn-red"    onclick="play('notificationError')">Error</button>
+        <button class="btn-purple" onclick="play('pulse')">Pulse</button>
       </div>
+    </div>
 
-      <div class="section">
-        <div class="section-title">Control</div>
-        <div class="button-group">
-          <button class="btn-secondary full-width" onclick="stop()">
-            Stop
-          </button>
-        </div>
+    <div class="section">
+      <div class="section-title">Patterns</div>
+      <div class="button-group">
+        <button class="btn-gray" onclick="play('heartbeat')">Heartbeat</button>
+        <button class="btn-gray" onclick="play('rumble', true)">Rumble</button>
+        <button class="btn-gray" onclick="play('knock')">Knock</button>
+        <button class="btn-gray" onclick="play('typewriter')">Typewriter</button>
+        <button class="btn-gray" onclick="play('explosion')">Explosion</button>
+        <button class="btn-gray" onclick="play('tickTock')">Tick-Tock</button>
       </div>
+    </div>
 
-      <div class="status">
-        <div>
-          <span class="status-label">Last Action:</span>
-          <span class="status-value" id="haptic-action">-</span>
-        </div>
+    <div class="section">
+      <div class="section-title">Control</div>
+      <div class="button-group cols-1">
+        <button class="btn-gray" onclick="stop()">Stop</button>
       </div>
+    </div>
+
+    <div class="status">
+      <span class="status-label">Last action</span>
+      <span id="haptic-action">—</span>
     </div>
 
     <script src="dist/haptics.umd.js"></script>
     <script>
       const { Presets, Settings } = window.Haptics
+
+      // Show availability and engine info
+      const available = Settings.isHapticsAvailable()
+      const badge = document.getElementById('availability-badge')
+      badge.textContent = available ? 'Haptics available' : 'Haptics not supported'
+      badge.className = 'badge ' + (available ? 'available' : 'unavailable')
+
+      const engineLabel = document.getElementById('engine-label')
+      if ('vibrate' in navigator) {
+        engineLabel.textContent = 'Engine: Vibration API'
+      } else if (available) {
+        engineLabel.textContent = 'Engine: Safari switch trick'
+      }
 
       function play(name) {
         const preset = Presets.System[name] ?? Presets[name]

@@ -11,12 +11,12 @@ function patternToVibration(pattern: Pattern): number[] {
   const result: number[] = [];
 
   for (let i = 0; i < sorted.length; i++) {
-    const event = sorted[i];
+    const event = sorted[i]!;
     const vibrateDuration = Math.max(10, Math.round(event.amplitude * 50));
     result.push(vibrateDuration);
 
     if (i < sorted.length - 1) {
-      const pause = Math.max(1, sorted[i + 1].time - event.time - vibrateDuration);
+      const pause = Math.max(1, sorted[i + 1]!.time - event.time - vibrateDuration);
       result.push(pause);
     }
   }

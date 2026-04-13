@@ -20,7 +20,8 @@ const Settings = {
   },
 
   isHapticsAvailable: (): boolean => {
-    return isVibrationSupported();
+    // Vibration API (Android/Chrome) or Safari checkbox trick (iOS Safari)
+    return isVibrationSupported() || typeof document !== 'undefined';
   },
 
   /** Not applicable on web. */
