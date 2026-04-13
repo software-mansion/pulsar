@@ -11,7 +11,7 @@ public class HapticEngineWrapper {
 
   private var engine: CHHapticEngine?
   private var initialized: Bool = false
-  private var isHapticsEnabled: Bool = true
+  private(set) var isHapticsEnabled: Bool = true
   private var playerRegistry: [Int: PlayerEntry] = [:]
   private var playerCreationOrder: [Int] = []
   private let playerLimit = 20
@@ -77,7 +77,7 @@ public class HapticEngineWrapper {
   }
 
   private func startEngine() {
-    if initialized { return }
+    if initialized || !isHapticsEnabled { return }
     do {
       if engine == nil {
         engine = try CHHapticEngine()

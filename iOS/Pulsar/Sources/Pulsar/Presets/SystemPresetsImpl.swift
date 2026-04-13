@@ -16,13 +16,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
       await impactFeedbackGenerator.impactOccurred()
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemImpactLightPreset(haptics)
   }
@@ -43,13 +44,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
       await impactFeedbackGenerator.impactOccurred()
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemImpactMediumPreset(haptics)
   }
@@ -70,13 +72,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
       await impactFeedbackGenerator.impactOccurred()
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemImpactHeavyPreset(haptics)
   }
@@ -97,13 +100,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
       await impactFeedbackGenerator.impactOccurred()
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemImpactSoftPreset(haptics)
   }
@@ -124,13 +128,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
       await impactFeedbackGenerator.impactOccurred()
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemImpactRigidPreset(haptics)
   }
@@ -152,13 +157,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
       await feedbackGenerator.notificationOccurred(.success)
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemNotificationSuccessPreset(haptics)
   }
@@ -180,13 +186,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
       await feedbackGenerator.notificationOccurred(.warning)
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemNotificationWarningPreset(haptics)
   }
@@ -210,13 +217,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
       await feedbackGenerator.notificationOccurred(.error)
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemNotificationErrorPreset(haptics)
   }
@@ -237,13 +245,14 @@ import Foundation
   }
 
   @objc public override func play() {
+    guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
       await feedbackGenerator.selectionChanged()
     }
   }
-  
-  
+
+
   public static func getInstance(haptics: Pulsar) -> Preset {
     return SystemSelectionPreset(haptics)
   }
