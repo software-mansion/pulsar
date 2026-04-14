@@ -105,11 +105,11 @@ The full question bank. After reading the code, ask only the questions whose ans
 *Maps to: specific preset recommendations within a category*
 
 **Q8 — What is the physical or emotional quality of this interaction?**
-- Warm, organic, personal — wellness, breathing, meditation, calming, social connection → `Soft`
+- Warm, organic, personal — wellness, breathing, calming, social connection → `Soft`
 - Mechanical, precise, system-like — keyboard input, camera shutter, dial clicks, combination lock, data-entry ticks, sharp system confirmations → `Rigid`
 - General-purpose / neither extreme → `Flexible`
 
-*Maps to: Texture tag. Ask only when the code or app domain doesn't make this clear. Skip if the app clearly signals the answer (explicit wellness/meditation context → Soft; clearly mechanical or precision UI → Rigid). This is the most commonly missed dimension — Texture is the only tag that cannot be inferred from urgency or timing alone.*
+*Maps to: Texture tag. Ask only when the code or app domain doesn't make this clear. Skip if the app clearly signals the answer (explicit wellness context → Soft; clearly mechanical or precision UI → Rigid). This is the most commonly missed dimension — Texture is the only tag that cannot be inferred from urgency or timing alone.*
 
 ---
 
@@ -131,12 +131,12 @@ Default: `Substantial`. Reserve `Bold` for moments that must capture attention; 
 
 | Context | Tag |
 |---|---|
-| Wellness, breathing, calm, ambient, meditation | `Soft` |
+| Wellness, breathing, calm, ambient | `Soft` |
 | Most UI interactions, social moments, notifications, standard app events | `Flexible` |
 | Precision input (list selection, keyboard, camera shutter, data entry); sharp rejection; mechanical/system-like event | `Rigid` |
 
 Default: `Flexible`. Decision rule:
-- Use `Soft` if the surrounding design is warm, rounded, or personal — wellness apps, breathing exercises, meditation, intimate social moments, or any context where the word "gentle" fits naturally.
+- Use `Soft` if the surrounding design is warm, rounded, or personal — wellness apps, intimate social moments, or any context where the word "gentle" fits naturally.
 - Use `Rigid` if the interaction has a mechanical analogy or demands precision — keyboards, camera shutters, dial clicks, combination locks, data-entry scroll ticks, or system-level confirmations where crispness matters.
 - Use `Flexible` for everything else: general UI taps, standard notifications, social feeds, navigation, and any context where neither extreme applies.
 
@@ -382,7 +382,7 @@ How the haptic energy is shaped at the tactile level.
 
 | Tag | Meaning | Usage |
 |---|---|---|
-| `Soft` | Haptics with low frequency — a smooth, rounded vibration with a gentle, cushioned feel. | Perfect for calm, ambient feedback, wellness interactions, or any context where a soft touch is preferred. Common situations: meditation cue, breathing exercise, sleep reminder, gentle onboarding hint, ambient soundscape interaction. |
+| `Soft` | Haptics with low frequency — a smooth, rounded vibration with a gentle, cushioned feel. | Perfect for calm, ambient feedback, wellness interactions, or any context where a soft touch is preferred. Common situations: sleep reminder, gentle onboarding hint, ambient soundscape interaction. |
 | `Flexible` | Haptics with medium frequency — a balanced vibration that sits between soft and rigid. | Suitable for general-purpose UI feedback, notifications, and interactions that need a neutral tactile character. Common situations: incoming message, push notification, content scroll snap, date picker tick, standard in-app alert. |
 | `Rigid` | Haptics with high frequency — a crisp, precise vibration with a sharp, mechanical feel. | Great for snappy UI elements, keyboard-like taps, or any interaction that should feel precise and definitive. Common situations: virtual keyboard key press, numeric keypad tap, rotary dial click, picker wheel snap, PIN entry digit confirmation. |
 
