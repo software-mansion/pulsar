@@ -134,14 +134,14 @@
     },
     {
       "id": 12,
-      "prompt": "I'm building a guided breathing meditation feature. The screen shows an expanding/contracting circle and I want the phone to vibrate in sync with the breathing rhythm — inhale for 4 seconds, hold 1 second, exhale for 4 seconds. What haptic pattern approach and parameter values make sense?",
-      "expected_output": "Recommends a continuous pattern (not discrete taps) with low amplitude (subtle, 0.0-0.3 range) and low frequency (soft/round, 0.0-0.3) for a calming feel. Should explain the amplitude/frequency model.",
+      "prompt": "I'm building a sleep tracking app that plays ambient sound during the night. When the alarm gently wakes the user at the end of a sleep cycle, I want the haptic to feel soft and gradual — not jarring. The wake-up sequence lasts about 30 seconds and slowly increases in intensity. What haptic pattern approach and parameter values make sense?",
+      "expected_output": "Recommends a continuous pattern (not discrete taps) with low starting amplitude that gradually increases, and low frequency (soft/round) to avoid a harsh wake-up feel. Should explain the amplitude/frequency model.",
       "files": [],
       "expectations": [
-        "Recommends a continuous haptic pattern (not individual discrete taps/clicks) to match the sustained breathing rhythm",
-        "Recommends low or subtle amplitude values (described as gentle, subtle, or in the 0.0-0.3 range) for calm feel",
-        "Recommends low frequency / soft texture (round, not sharp/crisp) to match the meditative tone",
-        "Distinguishes between discrete and continuous pattern types OR recommends an appropriate ambient preset (breath, wave, pulse)"
+        "Recommends a continuous haptic pattern (not individual discrete taps/clicks) to match the gradual wake-up sequence",
+        "Recommends starting with low or subtle amplitude values and increasing over time for a gentle ramp-up",
+        "Recommends low frequency / soft texture (round, not sharp/crisp) to avoid a jarring alarm feel",
+        "Distinguishes between discrete and continuous pattern types OR recommends an appropriate ambient preset (wave, pulse, or similar)"
       ]
     },
     {
