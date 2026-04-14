@@ -1,0 +1,125 @@
+{
+  "skill_name": "pulsar-haptics",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm adding a haptic to a confirm button in my app. Here's the handler:\n\n```ts\nfunction handleConfirm() {\n  setStatus('confirmed');\n  onComplete();\n}\n```\n\nWhich preset should I use?",
+      "expected_output": "Claude should ask 1–2 clarifying questions (because there's no domain/emotional context in the code) before recommending. After clarification it should land on a confirmation preset like stamp(), strike(), snap(), or lock() with reasoning. It should mention 2–3 alternatives.",
+      "files": [],
+      "expectations": [
+        "Either asks at least one clarifying question before recommending, OR infers enough from context and explains the reasoning",
+        "The primary recommendation is a confirmation/completion preset (stamp, strike, snap, lock, ping, chip, or similar Substantial+Short)",
+        "2–3 alternative presets are mentioned with brief reasoning for when each would be a better choice",
+        "The response does NOT recommend a Bold+Extended celebration preset (fanfare, flourish, triumph) as primary for a generic confirm button"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have this callback in my fitness app:\n\n```ts\nfunction onSevenDayStreakReached() {\n  showStreakBadge();\n  // add haptic here\n}\n```\n\nWhat preset should I use?",
+      "expected_output": "Claude should recognize this as a CELEBRATION/milestone moment (7-day streak = achievement, not just a routine save). It should recommend a Bold+Extended celebration preset such as fanfare(), flourish(), triumph(), ramp(), or surge() — NOT a Substantial+Short confirmation preset like stamp() or lock(). Reasoning should mention the achievement/milestone nature.",
+      "files": [],
+      "expectations": [
+        "The primary recommendation is a Bold celebration preset (fanfare, flourish, triumph, ramp, surge, ascent, or coinDrop)",
+        "The reasoning explicitly acknowledges this is a milestone or achievement, not just a routine confirmation",
+        "The recommended preset is Extended or Long duration (not Impulse or Short)",
+        "The response does NOT recommend stamp(), lock(), snap(), or ping() as the primary preset"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need haptics for two different scenarios in my app:\n\n1. The user's free trial is expiring in 3 days — I want a haptic when this warning banner appears\n2. The user tapped a premium feature but their account is blocked — I want a haptic for the rejection\n\nWhat presets should I use for each?",
+      "expected_output": "Claude should recommend different presets for each scenario. The trial warning (escalating soft caution) should get something like throb(), peal(), swell(), rustle(), or knell() — Substantial intensity, building/escalating character. The blocked rejection should get something like buzz(), jolt(), pummel(), or wobble() — Bold/Rigid/Saw for hard rejection. The two presets should clearly differ in intensity and character.",
+      "files": [],
+      "expectations": [
+        "Two distinct presets are recommended — one for the warning, one for the rejection",
+        "The rejection/blocked preset is more intense (Bold or uses Saw shape) than the warning preset",
+        "The warning preset is escalating or building in character (throb, peal, swell, rustle, knell, hammer, or similar)",
+        "The rejection preset conveys hard stop or dissonance (buzz, jolt, pummel, alarm, wobble, or similar)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a date picker. Two haptic moments:\n\n1. Each scroll tick as the user spins through years/months/days\n2. Tapping the 'Done' button to confirm the selected date\n\nWhat presets should I use for each?",
+      "expected_output": "Scroll tick: Should recommend a Rigid/Impulse preset like ping() or chip() — precise, crisp, lightweight enough to repeat without fatigue. Confirmation: Should recommend a warm affirming preset like stamp(), snap(), or strike() — heavier and one-shot. The two should be clearly different in feel.",
+      "files": [],
+      "expectations": [
+        "Two distinct presets are recommended — one for tick, one for confirmation",
+        "The scroll tick preset is Rigid texture and Impulse duration (ping, chip, peck, or similar — crisp and minimal)",
+        "The scroll tick preset is NOT Bold intensity (would be too heavy for repeated per-tick feedback)",
+        "The confirmation preset is one-shot and warmer/heavier than the tick (stamp, snap, strike, lock, or similar)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I have two notification features to add haptics to:\n\n1. A friend just liked one of your photos — a one-time social notification\n2. The app is actively syncing data in the background — an ongoing loop while sync is in progress\n\nWhat presets should I use for each?",
+      "expected_output": "Like notification: Should recommend a one-shot Bumps-shape preset like chime(), nudge(), lilt(), poke(), or knock(). Background sync: Should recommend a loopable Pattern/Solid-shape preset like radar(), sweep(), pulse(), wave(), or drone(). The guidance should clarify that the sync preset should be looped.",
+      "files": [],
+      "expectations": [
+        "Two distinct presets are recommended — one for the notification, one for the sync indicator",
+        "The notification preset uses Bumps shape (chime, nudge, lilt, poke, knock, rap, or similar — one-shot attention)",
+        "The sync indicator preset uses Pattern or Solid shape (radar, sweep, pulse, wave, drone, or similar — metronomic/continuous)",
+        "The sync indicator guidance mentions looping or ongoing playback"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We have a delete account flow. The user goes through: Settings → Delete Account → confirmation modal → taps 'Yes, delete permanently'.\n\nWhat haptic should play when they tap 'Yes, delete permanently'?",
+      "expected_output": "Claude should immediately recognize this as an irreversible, high-stakes destructive action and recommend cleave(). No clarifying questions should be needed — the action is unambiguously destructive/irreversible. The reasoning should mention the irreversibility or destructive nature.",
+      "files": [],
+      "expectations": [
+        "cleave() is the primary recommended preset",
+        "The reasoning explicitly mentions irreversibility, destructive action, or 'cannot undo'",
+        "No unnecessary clarifying questions are asked (the code context is unambiguous)",
+        "The response does NOT recommend stamp(), buzz(), or jolt() as the primary preset for this action"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm building a guided breathing exercise screen. The flow is: breathe in for 4s → hold for 4s → breathe out for 4s → repeat. I want a gentle haptic cue at each phase transition.\n\nWhat preset should I use?",
+      "expected_output": "Claude should recognize the wellness/breathing/calm context and recommend a Soft-texture preset. The obvious primary choice is breath() itself. Alternatives: sway(), dissolve(), pulse(), wave(). The preset must NOT be Bold or Rigid.",
+      "files": [],
+      "expectations": [
+        "The primary recommended preset is breath() or another Soft-texture wellness preset (sway, dissolve, pulse, wave, murmur)",
+        "The reasoning mentions the calm, wellness, or organic nature of the interaction",
+        "The recommended preset is NOT Bold intensity",
+        "The recommended preset is NOT Rigid texture (no crisp/mechanical presets like ping, chip, buzz)"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm making a side-scrolling game. When the player's character takes damage from an enemy hit, I want a satisfying impact haptic.\n\nWhat preset should I use?",
+      "expected_output": "Claude should recognize this as a physical/game metaphor and recommend impact() as the primary preset. Alternatives: shockwave(), burst(), jolt(), or explosion() for bigger hits. The reasoning should mention the physical collision or game context.",
+      "files": [],
+      "expectations": [
+        "The primary recommended preset is impact() or a similarly physical game-metaphor preset (shockwave, burst, jolt, explosion, rebound)",
+        "The preset is Bold intensity",
+        "The reasoning explicitly mentions physical impact, collision, or game context",
+        "The response does NOT recommend a notification or ambient preset (chime, nudge, pulse, radar) as primary"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "My app has a live location sharing feature. While the user is actively sharing their location with friends, I want a subtle ambient haptic loop to remind them sharing is active — something that pulses gently in the background.\n\nWhat preset should I use?",
+      "expected_output": "Claude should recommend a loopable Gentle/Pattern or Gentle/Bumps preset like pulse(), wave(), rain(), or breath(). The preset must be Gentle or Substantial (NOT Bold — it's ambient background feedback). Duration should be Long or Extended. The guidance should mention looping.",
+      "files": [],
+      "expectations": [
+        "The recommended preset is loopable (pulse, wave, rain, breath, drone, or similar continuous/ambient preset)",
+        "The preset is Gentle or Substantial — NOT Bold (ambient feedback should not be commanding)",
+        "The response mentions that this should be played in a loop while sharing is active",
+        "The preset is Long or Extended duration (not Impulse or Short)"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I'm building a combination lock animation for a security screen. The user rotates a virtual dial, and each 'click' as the dial passes a number position should feel mechanical and precise — like a real combination lock.\n\nWhat preset should I use?",
+      "expected_output": "Claude should recognize the mechanical/precision context and recommend a Rigid-texture preset like ping() or chip(). The feel must be crisp (Rigid), brief (Impulse or Short), and repeatable at scroll frequency. It should NOT recommend Soft or Flexible presets.",
+      "files": [],
+      "expectations": [
+        "The primary recommended preset is a Rigid-texture preset (ping, chip, peck, snap, or similar)",
+        "The preset is Impulse or Short duration (brief enough to repeat at dial-spin frequency without feeling sluggish)",
+        "The reasoning mentions mechanical, crisp, or precise character",
+        "The recommended preset is NOT Soft texture (no breath, sway, murmur, stamp, or warm/rounded presets)"
+      ]
+    }
+  ]
+}
