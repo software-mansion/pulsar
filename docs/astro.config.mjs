@@ -40,6 +40,10 @@ export default defineConfig({
           label: 'Presets playground',
           slug: 'presets-playground',
         },
+        // {
+        //   label: 'AI Skills',
+        //   slug: 'skills',
+        // },
         {
           label: 'Pulsar Studio',
           slug: 'pulsar-studio',
@@ -76,6 +80,7 @@ export default defineConfig({
       components: {
         ThemeSelect: './src/components/ThemeSelect.astro',
         Head: './src/components/Head.astro',
+        PageFrame: './src/components/PageFrame.astro',
       },
     }),
     react(),

@@ -1,9 +1,11 @@
 ---
 import Default from '@astrojs/starlight/components/Head.astro';
+import GTMHead from './gtm-head.astro';
 import PostHog from './posthog.astro';
 ---
 
 <Default {...Astro.props}><slot /></Default>
+<GTMHead />
 <PostHog />
 <script is:inline>
   localStorage.setItem('starlight-theme', 'light');

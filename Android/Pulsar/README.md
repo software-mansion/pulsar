@@ -93,6 +93,22 @@ Full API reference and guides are available at the [documentation site](https://
 - [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) - Core concepts: types of haptics, preloading, and caching
 - [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) - Kotlin API reference
 
+## AI Skills
+
+Install the `pulsar-haptics` skill from the [software-mansion-labs/skills](https://github.com/software-mansion-labs/skills) repository:
+
+```text
+/plugin marketplace add software-mansion-labs/skills
+/plugin install skills@swmansion
+/reload-plugins
+```
+
+Or with `npx`:
+
+```bash
+npx skills add software-mansion-labs/skills
+```
+
 ## License
 
 Pulsar library is licensed under [The MIT License](../../LICENSE).

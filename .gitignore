@@ -7,3 +7,6 @@ archive
 .idea
 scripts
 docs/server_copy
+.agents
+pulsar-haptics-workspace
+skills-lock.json

@@ -1,10 +1,8 @@
 import PostHog from 'posthog-react-native'
-import Constants from 'expo-constants'
+import { POSTHOG_CONFIG } from './public'
 
-// Configuration loaded from app.config.js extras via expo-constants
-// Environment variables are read at build time in app.config.js
-const apiKey = Constants.expoConfig?.extra?.posthogApiKey as string | undefined
-const host = (Constants.expoConfig?.extra?.posthogHost as string) || 'https://us.i.posthog.com'
+const apiKey = POSTHOG_CONFIG.apiKey
+const host = POSTHOG_CONFIG.host
 const isPostHogConfigured = Boolean(apiKey && apiKey !== 'phc_your_api_key_here')
 
 if (__DEV__) {
@@ -18,14 +16,14 @@ if (__DEV__) {
 if (!isPostHogConfigured) {
   console.warn(
     'PostHog API key not configured. Analytics will be disabled. ' +
-      'Set POSTHOG_API_KEY in your .env file to enable analytics.'
+      'Set POSTHOG_CONFIG in src/config/public.ts to enable analytics.'
   )
 }
 
 /**
  * PostHog client instance for Expo
  *
- * Configuration loaded from app.config.js extras via expo-constants.
+ * Configuration loaded from src/config/public.ts.
  * Required peer dependencies: expo-file-system, expo-application,
  * expo-device, expo-localization
  *

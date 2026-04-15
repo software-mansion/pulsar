@@ -25,7 +25,7 @@ export const TagsInfo = [
       {
         name: 'Soft',
         description: 'Haptics with low frequency — a smooth, rounded vibration with a gentle, cushioned feel.',
-        usage: 'Perfect for calm, ambient feedback, wellness interactions, or any context where a soft touch is preferred. Common situations: meditation cue, breathing exercise, sleep reminder, gentle onboarding hint, ambient soundscape interaction.',
+        usage: 'Perfect for calm, ambient feedback, wellness interactions, or any context where a soft touch is preferred. Common situations: sleep reminder, gentle onboarding hint, ambient soundscape interaction.',
       },
       {
         name: 'Flexible',

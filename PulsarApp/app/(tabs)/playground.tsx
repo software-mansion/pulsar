@@ -22,8 +22,6 @@ const defaultEdges = {
   right: 'additive',
 };
 
-
-
 export default function PlaygroundScreen() {
   const posthog = usePostHog();
   const playgroundRef = useRef<GesturePlaygroundHandle | null>(null);

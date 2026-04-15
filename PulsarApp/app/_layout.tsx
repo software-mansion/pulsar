@@ -15,6 +15,7 @@ import { FavouritesProvider } from '@/contexts/FavouritesContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
 import { posthog } from '@/src/config/posthog';
+import { SENTRY_CONFIG } from '@/src/config/public';
 
 SplashScreen.setOptions({
   duration: 300,
@@ -26,7 +27,7 @@ const navigationIntegration = Sentry.reactNavigationIntegration({
 });
 
 Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || undefined,
+  dsn: SENTRY_CONFIG.dsn,
   tracesSampleRate: 1.0,
   integrations: [navigationIntegration],
   enableNativeFramesTracking: !isRunningInExpoGo(),
