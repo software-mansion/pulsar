@@ -29,3 +29,9 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+includeBuild("../Pulsar") {
+    dependencySubstitution {
+        substitute(module("com.swmansion:pulsar"))
+            .using(project(":library"))
+    }
+}

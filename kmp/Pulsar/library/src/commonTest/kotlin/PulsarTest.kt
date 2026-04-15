@@ -9,4 +9,9 @@ class PulsarTest {
     fun `platform name is available`() {
         assertTrue(Pulsar.platform.isNotBlank())
     }
+
+    @Test
+    fun `system version is available`() {
+        assertTrue(Pulsar.systemVersion.isNotBlank())
+    }
 }
