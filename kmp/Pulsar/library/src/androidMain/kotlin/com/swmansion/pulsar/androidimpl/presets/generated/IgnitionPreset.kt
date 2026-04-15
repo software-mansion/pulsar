@@ -1,0 +1,25 @@
+package com.swmansion.pulsar.androidimpl.presets.generated
+
+import com.swmansion.pulsar.androidimpl.Pulsar
+import com.swmansion.pulsar.androidimpl.presets.Player
+import com.swmansion.pulsar.androidimpl.types.PatternData
+import com.swmansion.pulsar.androidimpl.types.Preset
+import com.swmansion.pulsar.androidimpl.types.PresetWithName
+
+class IgnitionPreset(haptics: Pulsar) :
+    Preset,
+    Player(haptics, PatternData(
+        rawContinuousPattern = listOf(
+            listOf(),
+            listOf(),
+        ),
+        rawDiscretePattern = listOf(
+            listOf(1.0f, 1.0f, 0.203f),
+            listOf(77.0f, 0.697f, 0.5f),
+            listOf(173.0f, 1.0f, 0.703f),
+        )
+    )) {
+    companion object: PresetWithName {
+        override val name = "Ignition"
+    }
+}
