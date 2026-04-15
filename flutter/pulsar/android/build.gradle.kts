@@ -1,4 +1,4 @@
-group = "com.example.pulsar"
+group = "com.swmansion.pulsar"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -28,9 +28,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.pulsar"
+    namespace = "com.swmansion.pulsar"
 
     compileSdk = 36
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

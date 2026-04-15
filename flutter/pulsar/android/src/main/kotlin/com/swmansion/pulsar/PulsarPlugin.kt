@@ -1,4 +1,4 @@
-package com.example.pulsar
+package com.swmansion.pulsar
 
 import android.app.Activity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -8,7 +8,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.ConfigPoint
@@ -25,10 +24,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private var pulsar: Pulsar? = null
     private var patternComposer: PatternComposer? = null
 
-    // ---------------------------------------------------------------------------
-    // FlutterPlugin
-    // ---------------------------------------------------------------------------
-
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(binding.binaryMessenger, "pulsar")
         channel.setMethodCallHandler(this)
@@ -37,10 +32,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
-
-    // ---------------------------------------------------------------------------
-    // ActivityAware
-    // ---------------------------------------------------------------------------
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
@@ -62,10 +53,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         pulsar = null
     }
 
-    // ---------------------------------------------------------------------------
-    // MethodCallHandler
-    // ---------------------------------------------------------------------------
-
     override fun onMethodCall(call: MethodCall, result: Result) {
         val p = pulsar
         if (p == null) {
@@ -74,9 +61,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         }
 
         when (call.method) {
-
-            // ── Pulsar ─────────────────────────────────────────────────────────
-
             "Pulsar_play" -> {
                 val name = call.argument<String>("name")
                     ?: return result.error("INVALID_ARGS", "name required", null)
@@ -123,7 +107,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
 
             "Pulsar_shutDownEngine" -> {
-                // No-op on Android.
                 result.success(null)
             }
 
@@ -156,8 +139,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(null)
             }
 
-            // ── RealtimeComposer ───────────────────────────────────────────────
-
             "RealtimeComposer_set" -> {
                 val amplitude = call.argument<Double>("amplitude")?.toFloat()
                     ?: return result.error("INVALID_ARGS", "amplitude required", null)
@@ -185,8 +166,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(null)
             }
 
-            // ── PatternComposer ────────────────────────────────────────────────
-
             "PatternComposer_parsePattern" -> {
                 val data = call.argument<Map<String, Any>>("data")
                     ?: return result.error("INVALID_ARGS", "data required", null)
@@ -211,10 +190,6 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             else -> result.notImplemented()
         }
     }
-
-    // ---------------------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------------------
 
     @Suppress("UNCHECKED_CAST")
     private fun parsePatternData(data: Map<String, Any>): PatternData? {
