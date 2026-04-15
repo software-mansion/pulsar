@@ -36,10 +36,10 @@ fun App() {
             Button(
                 onClick = {
                     integrationMessage =
-                        "Pulsar integration works on ${Pulsar.platform}. System version: ${Pulsar.systemVersion}."
+                        "${Pulsar.runSwiftSmokeTest()}\nPlatform: ${Pulsar.platform}\nSystem version: ${Pulsar.systemVersion}"
                 }
             ) {
-                Text("Run Pulsar smoke test")
+                Text("Run Swift interop smoke test")
             }
             Text(
                 text = integrationMessage,
