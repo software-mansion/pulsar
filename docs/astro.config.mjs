@@ -41,6 +41,10 @@ export default defineConfig({
           slug: 'presets-playground',
         },
         {
+          label: 'AI Skills',
+          slug: 'skills',
+        },
+        {
           label: 'Pulsar Studio',
           slug: 'pulsar-studio',
           badge: {
