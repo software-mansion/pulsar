@@ -1,29 +1,70 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'pulsar_method_channel.dart';
+import 'pulsar_types.dart';
 
 abstract class PulsarPlatform extends PlatformInterface {
-  /// Constructs a PulsarPlatform.
   PulsarPlatform() : super(token: _token);
 
   static final Object _token = Object();
 
   static PulsarPlatform _instance = MethodChannelPulsar();
 
-  /// The default instance of [PulsarPlatform] to use.
-  ///
-  /// Defaults to [MethodChannelPulsar].
   static PulsarPlatform get instance => _instance;
 
-  /// Platform-specific implementations should set this with their own
-  /// platform-specific class that extends [PulsarPlatform] when
-  /// they register themselves.
   static set instance(PulsarPlatform instance) {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
-  }
+  // ── Pulsar ──────────────────────────────────────────────────────────────────
+
+  Future<void> play(String name) => throw UnimplementedError('play() not implemented');
+
+  Future<void> enableHaptics(bool state) => throw UnimplementedError('enableHaptics() not implemented');
+
+  Future<void> enableSound(bool state) => throw UnimplementedError('enableSound() not implemented');
+
+  Future<void> enableCache(bool state) => throw UnimplementedError('enableCache() not implemented');
+
+  Future<void> clearCache() => throw UnimplementedError('clearCache() not implemented');
+
+  Future<void> preloadPresets(List<String> presetNames) =>
+      throw UnimplementedError('preloadPresets() not implemented');
+
+  Future<void> stopHaptics() => throw UnimplementedError('stopHaptics() not implemented');
+
+  Future<void> shutDownEngine() => throw UnimplementedError('shutDownEngine() not implemented');
+
+  Future<HapticSupport> hapticSupport() => throw UnimplementedError('hapticSupport() not implemented');
+
+  Future<void> forceHapticsSupportLevel(HapticSupport level) =>
+      throw UnimplementedError('forceHapticsSupportLevel() not implemented');
+
+  Future<void> enableImpulseCompositionMode(bool state) =>
+      throw UnimplementedError('enableImpulseCompositionMode() not implemented');
+
+  Future<void> setRealtimeComposerStrategy(RealtimeComposerStrategy strategy) =>
+      throw UnimplementedError('setRealtimeComposerStrategy() not implemented');
+
+  // ── RealtimeComposer ────────────────────────────────────────────────────────
+
+  Future<void> realtimeSet(double amplitude, double frequency) =>
+      throw UnimplementedError('realtimeSet() not implemented');
+
+  Future<void> realtimeStop() => throw UnimplementedError('realtimeStop() not implemented');
+
+  Future<bool> realtimeIsActive() => throw UnimplementedError('realtimeIsActive() not implemented');
+
+  Future<void> realtimePlayDiscrete(double amplitude, double frequency) =>
+      throw UnimplementedError('realtimePlayDiscrete() not implemented');
+
+  // ── PatternComposer ─────────────────────────────────────────────────────────
+
+  Future<void> patternParsePattern(PatternData data) =>
+      throw UnimplementedError('patternParsePattern() not implemented');
+
+  Future<void> patternPlay() => throw UnimplementedError('patternPlay() not implemented');
+
+  Future<void> patternStop() => throw UnimplementedError('patternStop() not implemented');
 }
