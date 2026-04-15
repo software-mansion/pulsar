@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulsar Simple Haptics Demo</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #f7f7f2 0%, #e8efe4 100%);
+        color: #163020;
+      }
+
+      .card {
+        width: min(100%, 420px);
+        padding: 32px 24px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 18px 50px rgba(22, 48, 32, 0.12);
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+      }
+
+      p {
+        margin: 0 0 18px;
+        line-height: 1.5;
+        color: #496155;
+      }
+
+      .button-group {
+        display: grid;
+        gap: 12px;
+      }
+
+      .hidden-switch {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .hidden-label {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      button {
+        width: 100%;
+        border: 0;
+        border-radius: 14px;
+        padding: 16px 18px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        color: #ffffff;
+        background: #2f7d4c;
+        transition: transform 0.12s ease, opacity 0.12s ease;
+      }
+
+      button:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+      }
+
+      .status {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #2f4f3b;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Simple Haptics</h1>
+      <p>Press a button to trigger a vibration preset in supported browsers.</p>
+      <div class="button-group">
+        <button id="play-haptics" type="button" data-pattern="[300,100,300]">Play Haptic</button>
+        <button type="button" data-pattern="20">Soft Tap</button>
+        <button type="button" data-pattern="[15,50,15]">Soft Double</button>
+        <button type="button" data-pattern="60">Medium Tap</button>
+        <button id="ios-switch-haptic" type="button">Try iOS Switch Click</button>
+        <button id="ios-switch-haptic-multi" type="button">Try iOS Multi Click</button>
+      </div>
+      <label
+        id="ios-hidden-switch-label"
+        class="hidden-label"
+        for="ios-hidden-switch"
+        aria-hidden="true"
+      >
+        Hidden iOS switch label
+      </label>
+      <input
+        id="ios-hidden-switch"
+        class="hidden-switch"
+        type="checkbox"
+        role="switch"
+        switch
+      />
+      <div id="status" class="status">Checking haptics support...</div>
+    </main>
+
+    <script>
+      const buttons = document.querySelectorAll("[data-pattern]");
+      const iosSwitchButton = document.getElementById("ios-switch-haptic");
+      const iosSwitchMultiButton = document.getElementById("ios-switch-haptic-multi");
+      const iosHiddenSwitchLabel = document.getElementById("ios-hidden-switch-label");
+      const iosHiddenSwitch = document.getElementById("ios-hidden-switch");
+      const status = document.getElementById("status");
+      const supported = typeof navigator !== "undefined" && "vibrate" in navigator;
+
+      status.textContent = supported
+        ? "Vibration API is available on this device."
+        : "Vibration API is not supported here. Try a supported mobile browser/device.";
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (!supported) {
+            status.textContent = "No vibration support detected on this browser/device.";
+            return;
+          }
+
+          const rawPattern = button.getAttribute("data-pattern");
+          const pattern = rawPattern.startsWith("[")
+            ? JSON.parse(rawPattern)
+            : Number(rawPattern);
+
+          navigator.vibrate(pattern);
+          status.textContent = "Played preset: " + button.textContent;
+        });
+      });
+
+      iosSwitchButton.addEventListener("click", () => {
+        const before = iosHiddenSwitch.checked;
+
+        iosHiddenSwitchLabel.click();
+
+        requestAnimationFrame(() => {
+          const after = iosHiddenSwitch.checked;
+          status.textContent = "Tried iOS label click: " + before + " -> " + after;
+        });
+      });
+
+      iosSwitchMultiButton.addEventListener("click", () => {
+        const totalClicks = 4;
+        const delayMs = 120;
+        let clicksDone = 0;
+
+        status.textContent = "Running iOS multi-click test...";
+
+        function runNextClick() {
+          iosHiddenSwitchLabel.click();
+          clicksDone += 1;
+
+          if (clicksDone >= totalClicks) {
+            requestAnimationFrame(() => {
+              status.textContent =
+                "Finished iOS multi-click test. Final switch state: " + iosHiddenSwitch.checked;
+            });
+            return;
+          }
+
+          setTimeout(runNextClick, delayMs);
+        }
+
+        runNextClick();
+      });
+    </script>
+  </body>
+</html>
