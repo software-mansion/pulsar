@@ -45,6 +45,60 @@
         gap: 12px;
       }
 
+      .section {
+        margin-top: 24px;
+        text-align: left;
+      }
+
+      .section h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+
+      .native-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .native-row {
+        padding: 12px;
+        border-radius: 14px;
+        background: #f2f5f1;
+      }
+
+      .native-row strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .control {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .small-button {
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+
+      .selectable-box {
+        margin-bottom: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid #d7e2d5;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
       .hidden-switch {
         position: absolute;
         opacity: 0;
@@ -110,10 +164,138 @@
         switch
       />
       <div id="status" class="status">Checking haptics support...</div>
+
+      <section class="section">
+        <h2>iOS Native Controls Lab</h2>
+        <div class="native-grid">
+          <div class="native-row">
+            <strong>Checkbox</strong>
+            <label class="inline" id="native-checkbox-label">
+              <input id="native-checkbox" class="control" type="checkbox" />
+              Native checkbox
+            </label>
+            <button class="small-button" type="button" data-action="click-label" data-target="native-checkbox-label">JS Click Checkbox Label</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Radio</strong>
+            <label class="inline" id="native-radio-label">
+              <input id="native-radio" class="control" type="radio" name="native-radio-group" />
+              Native radio
+            </label>
+            <button class="small-button" type="button" data-action="click-label" data-target="native-radio-label">JS Click Radio Label</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Select</strong>
+            <select id="native-select" class="control">
+              <option value="one">Option One</option>
+              <option value="two">Option Two</option>
+              <option value="three">Option Three</option>
+            </select>
+            <button class="small-button" type="button" data-action="click-element" data-target="native-select">JS Click Select</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Range</strong>
+            <input id="native-range" class="control" type="range" min="0" max="100" value="25" />
+            <button class="small-button" type="button" data-action="step-range" data-target="native-range">JS Step Range</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Date</strong>
+            <input id="native-date" class="control" type="date" value="2026-04-15" />
+            <button class="small-button" type="button" data-action="show-picker" data-target="native-date">JS Open Date Picker</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Color</strong>
+            <input id="native-color" class="control" type="color" value="#2f7d4c" />
+            <button class="small-button" type="button" data-action="show-picker" data-target="native-color">JS Open Color Picker</button>
+          </div>
+
+          <div class="native-row">
+            <strong>File</strong>
+            <input id="native-file" class="control" type="file" />
+            <button class="small-button" type="button" data-action="click-element" data-target="native-file">JS Click File Input</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Text Selection Lab</h2>
+        <div class="native-grid">
+          <div class="native-row">
+            <strong>Selectable Text</strong>
+            <div id="selection-text" class="selectable-box">
+              Safari text selection test. Try selecting this text manually, then compare it with the JS selection button below.
+            </div>
+            <button class="small-button" type="button" data-action="select-node-text" data-target="selection-text">JS Select Text Node</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Input Selection</strong>
+            <input
+              id="selection-input"
+              class="control"
+              type="text"
+              value="Tap here or let JavaScript try selecting this whole field."
+            />
+            <button class="small-button" type="button" data-action="select-input-text" data-target="selection-input">JS Select Input Text</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Contenteditable</strong>
+            <div id="selection-editable" class="selectable-box" contenteditable="true">
+              Editable Safari selection test. Move the caret here manually, or let JS try selecting all of this text.
+            </div>
+            <button class="small-button" type="button" data-action="select-editable-text" data-target="selection-editable">JS Select Editable Text</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Picker Wheels Lab</h2>
+        <div class="native-grid">
+          <div class="native-row">
+            <strong>Date Wheel</strong>
+            <input id="wheel-date" class="control" type="date" value="2026-04-15" />
+            <button class="small-button" type="button" data-action="show-picker" data-target="wheel-date">JS Open Date Wheel</button>
+            <button class="small-button" type="button" data-action="bump-date" data-target="wheel-date">JS Change Date Value</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Time Wheel</strong>
+            <input id="wheel-time" class="control" type="time" value="12:30" />
+            <button class="small-button" type="button" data-action="show-picker" data-target="wheel-time">JS Open Time Wheel</button>
+            <button class="small-button" type="button" data-action="bump-time" data-target="wheel-time">JS Change Time Value</button>
+          </div>
+
+          <div class="native-row">
+            <strong>DateTime Wheel</strong>
+            <input id="wheel-datetime" class="control" type="datetime-local" value="2026-04-15T12:30" />
+            <button class="small-button" type="button" data-action="show-picker" data-target="wheel-datetime">JS Open DateTime Wheel</button>
+            <button class="small-button" type="button" data-action="bump-datetime" data-target="wheel-datetime">JS Change DateTime Value</button>
+          </div>
+
+          <div class="native-row">
+            <strong>Select Picker</strong>
+            <select id="wheel-select" class="control">
+              <option value="spring">Spring</option>
+              <option value="summer">Summer</option>
+              <option value="autumn">Autumn</option>
+              <option value="winter">Winter</option>
+            </select>
+            <button class="small-button" type="button" data-action="click-element" data-target="wheel-select">JS Open Select Picker</button>
+            <button class="small-button" type="button" data-action="advance-select" data-target="wheel-select">JS Advance Select Value</button>
+          </div>
+        </div>
+      </section>
     </main>
 
     <script>
       const buttons = document.querySelectorAll("[data-pattern]");
+      const actionButtons = document.querySelectorAll("[data-action]");
       const iosSwitchButton = document.getElementById("ios-switch-haptic");
       const iosSwitchMultiButton = document.getElementById("ios-switch-haptic-multi");
       const iosHiddenSwitchLabel = document.getElementById("ios-hidden-switch-label");
@@ -176,6 +358,122 @@
         }
 
         runNextClick();
+      });
+
+      actionButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.getAttribute("data-action");
+          const targetId = button.getAttribute("data-target");
+          const target = document.getElementById(targetId);
+
+          if (!target) {
+            status.textContent = "Missing target: " + targetId;
+            return;
+          }
+
+          try {
+            if (action === "click-label" || action === "click-element") {
+              target.click();
+              status.textContent = "Ran " + action + " on " + targetId;
+              return;
+            }
+
+            if (action === "step-range") {
+              const nextValue = Math.min(Number(target.value) + 15, Number(target.max || 100));
+              target.value = String(nextValue === Number(target.value) ? 0 : nextValue);
+              target.dispatchEvent(new Event("input", { bubbles: true }));
+              target.dispatchEvent(new Event("change", { bubbles: true }));
+              status.textContent = "Stepped range to " + target.value;
+              return;
+            }
+
+            if (action === "show-picker") {
+              if (typeof target.showPicker === "function") {
+                target.showPicker();
+                status.textContent = "Called showPicker() on " + targetId;
+              } else {
+                target.focus();
+                target.click();
+                status.textContent = "showPicker() unavailable, tried focus+click on " + targetId;
+              }
+              return;
+            }
+
+            if (action === "bump-date") {
+              const current = target.value ? new Date(target.value + "T00:00:00") : new Date("2026-04-15T00:00:00");
+              current.setDate(current.getDate() + 1);
+              target.value = current.toISOString().slice(0, 10);
+              target.dispatchEvent(new Event("input", { bubbles: true }));
+              target.dispatchEvent(new Event("change", { bubbles: true }));
+              status.textContent = "JS changed date to " + target.value;
+              return;
+            }
+
+            if (action === "bump-time") {
+              const [hours, minutes] = (target.value || "12:30").split(":").map(Number);
+              const totalMinutes = ((hours * 60 + minutes + 15) % (24 * 60));
+              const nextHours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+              const nextMinutes = String(totalMinutes % 60).padStart(2, "0");
+              target.value = nextHours + ":" + nextMinutes;
+              target.dispatchEvent(new Event("input", { bubbles: true }));
+              target.dispatchEvent(new Event("change", { bubbles: true }));
+              status.textContent = "JS changed time to " + target.value;
+              return;
+            }
+
+            if (action === "bump-datetime") {
+              const current = target.value ? new Date(target.value) : new Date("2026-04-15T12:30");
+              current.setMinutes(current.getMinutes() + 30);
+              const localValue = new Date(current.getTime() - current.getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 16);
+              target.value = localValue;
+              target.dispatchEvent(new Event("input", { bubbles: true }));
+              target.dispatchEvent(new Event("change", { bubbles: true }));
+              status.textContent = "JS changed datetime to " + target.value;
+              return;
+            }
+
+            if (action === "advance-select") {
+              const nextIndex = (target.selectedIndex + 1) % target.options.length;
+              target.selectedIndex = nextIndex;
+              target.dispatchEvent(new Event("input", { bubbles: true }));
+              target.dispatchEvent(new Event("change", { bubbles: true }));
+              status.textContent = "JS changed select to " + target.value;
+              return;
+            }
+
+            if (action === "select-node-text") {
+              const selection = window.getSelection();
+              const range = document.createRange();
+              range.selectNodeContents(target);
+              selection.removeAllRanges();
+              selection.addRange(range);
+              status.textContent = "JS selected text node in " + targetId;
+              return;
+            }
+
+            if (action === "select-input-text") {
+              target.focus();
+              target.select();
+              status.textContent = "JS selected input text in " + targetId;
+              return;
+            }
+
+            if (action === "select-editable-text") {
+              target.focus();
+              const selection = window.getSelection();
+              const range = document.createRange();
+              range.selectNodeContents(target);
+              selection.removeAllRanges();
+              selection.addRange(range);
+              status.textContent = "JS selected editable text in " + targetId;
+              return;
+            }
+          } catch (error) {
+            status.textContent = "Action failed on " + targetId + ": " + error.message;
+          }
+        });
       });
     </script>
   </body>
