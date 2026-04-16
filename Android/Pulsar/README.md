@@ -25,6 +25,20 @@ dependencies {
 }
 ```
 
+Declare the vibration permission in your app's `AndroidManifest.xml`:
+
+```xml
+<manifest ...>
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application ...>
+    ...
+  </application>
+</manifest>
+```
+
+Without `android.permission.VIBRATE`, Android will block vibration playback. Pulsar will log a warning and skip the vibration instead of crashing.
+
 ### Preset example
 
 ```kotlin

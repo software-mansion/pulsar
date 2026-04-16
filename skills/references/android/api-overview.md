@@ -20,6 +20,20 @@ dependencies {
 
 **Requirements:** Android API 24+ (Android 7.0), Kotlin 1.9+.
 
+Pulsar also requires the vibration permission in your app manifest:
+
+```xml
+<manifest ...>
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application ...>
+    ...
+  </application>
+</manifest>
+```
+
+Without `android.permission.VIBRATE`, Android will refuse vibration calls. Pulsar logs a warning and skips playback instead of crashing.
+
 ---
 
 ## Setup
