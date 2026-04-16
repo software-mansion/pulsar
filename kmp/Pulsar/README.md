@@ -9,3 +9,8 @@ Useful commands:
 - `./gradlew :library:check`
 - `./gradlew :library:publishToMavenLocal`
 - `./gradlew :library:publishToMavenCentral`
+
+GitHub Actions publishing:
+- Workflow: `.github/workflows/publish-kmp-library.yml`
+- Required repository secrets: `MAVEN_USERNAME`, `MAVEN_PASSWORD`, `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE`
+- Published version is taken from the workflow `version` input via `LIB_VERSION`

@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.swmansion"
-version = "1.0.0"
+version = System.getenv("LIB_VERSION") ?: "1.0.0"
 
 kotlin {
     androidLibrary {
