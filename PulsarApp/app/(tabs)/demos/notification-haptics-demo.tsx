@@ -2,14 +2,14 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Presets } from 'react-native-pulsar';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
 
 import BasicLayout from '@/components/BasicLayout';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
 import HapticDemoButton from '@/components/demo/HapticDemoButton';
 
-type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 interface Notification {
   id: string;
