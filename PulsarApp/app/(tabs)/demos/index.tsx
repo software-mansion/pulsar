@@ -1,48 +1,48 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
-import { usePostHog } from 'posthog-react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Link } from "expo-router";
+import { usePostHog } from "posthog-react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-import BasicLayout from '@/components/BasicLayout';
-import { ThemedText } from '@/components/themed-text';
-import { Margins } from '@/constants/theme';
+import BasicLayout from "@/components/BasicLayout";
+import { ThemedText } from "@/components/themed-text";
+import { Margins } from "@/constants/theme";
 
 const defaultEdges = {
-  top: 'additive',
-  left: 'additive',
-  bottom: 'off',
-  right: 'additive',
+  top: "additive",
+  left: "additive",
+  bottom: "off",
+  right: "additive",
 };
 
 const demos = [
   {
-    slug: 'slider-demo',
-    title: 'Slider',
+    slug: "slider-demo",
+    title: "Slider",
   },
   {
-    slug: 'buttons-demo',
-    title: 'Buttons',
+    slug: "buttons-demo",
+    title: "Buttons",
   },
   {
-    slug: 'countdown-timer-demo',
-    title: 'Countdown timer',
+    slug: "countdown-timer-demo",
+    title: "Countdown timer",
   },
   {
-    slug: 'balloon-demo',
-    title: 'Balloon',
+    slug: "balloon-demo",
+    title: "Balloon",
   },
   {
-    slug: 'dot-loader-demo',
-    title: 'Dot Loader',
+    slug: "dot-loader-demo",
+    title: "Dot Loader",
   },
   {
-    slug: 'notification-haptics-demo',
-    title: 'Notification',
+    slug: "notification-haptics-demo",
+    title: "Notification",
   },
   {
-    slug: 'sensor-haptics-demo',
-    title: 'Accelerometer',
+    slug: "sensor-haptics-demo",
+    title: "Accelerometer",
   },
 ];
 
@@ -66,7 +66,7 @@ export default function DemosScreen() {
                 key={demo.slug}
                 href={`/demos/${demo.slug}` as any}
                 onPress={() => {
-                  posthog.capture('demo_opened', {
+                  posthog.capture("demo_opened", {
                     demo_slug: demo.slug,
                     demo_title: demo.title,
                   });
@@ -77,7 +77,12 @@ export default function DemosScreen() {
                     <ThemedText type="subtitle" style={styles.cardTitle}>
                       {demo.title}
                     </ThemedText>
-                    <Ionicons name="chevron-forward" size={20} color="#38ACDD" style={styles.cardArrow} />
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color="#38ACDD"
+                      style={styles.cardArrow}
+                    />
                   </View>
                 </Link.Trigger>
               </Link>
@@ -101,20 +106,20 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    backgroundColor: 'white',
-    boxShadow: '-3px 3px 0px #38ACDD',
+    backgroundColor: "white",
+    boxShadow: "-3px 3px 0px #38ACDD",
     borderRadius: 4,
-    borderColor: '#38ACDD',
+    borderColor: "#38ACDD",
     borderWidth: 2,
     padding: 15,
     paddingVertical: 18,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   cardTitle: {
     fontSize: 20,
-    lineHeight: 26,
+    lineHeight: 28,
     flex: 1,
   },
   cardArrow: {

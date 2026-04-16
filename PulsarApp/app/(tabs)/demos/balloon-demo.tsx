@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useRealtimeComposer } from 'react-native-pulsar';
 import Animated, {
   Easing,
@@ -216,13 +217,23 @@ function BalloonCell({ index }: { index: number }) {
     });
   };
 
+  const gesture = Gesture.LongPress()
+    .minDuration(140)
+    .maxDistance(10000)
+    .shouldCancelWhenOutside(false)
+    .onStart(startCharge)
+    .onFinalize(stopCharge)
+    .runOnJS(true);
+
   return (
-    <Pressable style={styles.cell} delayLongPress={140} onLongPress={startCharge} onPressOut={stopCharge}>
-      <View style={styles.dotSlot}>
-        <Animated.View style={[styles.dot, balloonStyle]} />
-        <Animated.View style={[styles.poppedDot, styles.poppedOverlay, poppedStyle]} />
+    <GestureDetector gesture={gesture}>
+      <View style={styles.cell}>
+        <View style={styles.dotSlot}>
+          <Animated.View style={[styles.dot, balloonStyle]} />
+          <Animated.View style={[styles.poppedDot, styles.poppedOverlay, poppedStyle]} />
+        </View>
       </View>
-    </Pressable>
+    </GestureDetector>
   );
 }
 
