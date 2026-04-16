@@ -8,11 +8,21 @@ class MethodChannelPulsar extends PulsarPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('pulsar');
 
+  String _normalizePresetName(String name) {
+    if (name.isEmpty) {
+      return name;
+    }
+    return '${name[0].toUpperCase()}${name.substring(1)}';
+  }
+
   // ── Pulsar ──────────────────────────────────────────────────────────────────
 
   @override
   Future<void> play(String name) =>
-      methodChannel.invokeMethod('Pulsar_play', {'name': name});
+      methodChannel.invokeMethod(
+        'Pulsar_play',
+        {'name': _normalizePresetName(name)},
+      );
 
   @override
   Future<void> enableHaptics(bool state) =>
@@ -32,7 +42,12 @@ class MethodChannelPulsar extends PulsarPlatform {
 
   @override
   Future<void> preloadPresets(List<String> presetNames) =>
-      methodChannel.invokeMethod('Pulsar_preloadPresets', {'presetNames': presetNames});
+      methodChannel.invokeMethod(
+        'Pulsar_preloadPresets',
+        {
+          'presetNames': presetNames.map(_normalizePresetName).toList(),
+        },
+      );
 
   @override
   Future<void> stopHaptics() =>

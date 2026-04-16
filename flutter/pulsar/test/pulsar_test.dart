@@ -1,28 +1,89 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pulsar/pulsar.dart';
-import 'package:pulsar/pulsar_platform_interface.dart';
-import 'package:pulsar/pulsar_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:pulsar/pulsar.dart';
+import 'package:pulsar/pulsar_method_channel.dart';
+import 'package:pulsar/pulsar_platform_interface.dart';
+import 'package:pulsar/pulsar_types.dart';
 
-class MockPulsarPlatform
-    with MockPlatformInterfaceMixin
-    implements PulsarPlatform {
+class MockPulsarPlatform with MockPlatformInterfaceMixin implements PulsarPlatform {
+  String? lastPlayedPreset;
+
   @override
-  Future<String?> getPlatformVersion() => Future.value('42');
+  Future<void> play(String name) async {
+    lastPlayedPreset = name;
+  }
+
+  @override
+  Future<void> clearCache() async {}
+
+  @override
+  Future<void> enableCache(bool state) async {}
+
+  @override
+  Future<void> enableHaptics(bool state) async {}
+
+  @override
+  Future<void> enableImpulseCompositionMode(bool state) async {}
+
+  @override
+  Future<void> enableSound(bool state) async {}
+
+  @override
+  Future<void> forceHapticsSupportLevel(HapticSupport level) async {}
+
+  @override
+  Future<HapticSupport> hapticSupport() async => HapticSupport.standardSupport;
+
+  @override
+  Future<void> patternParsePattern(PatternData data) async {}
+
+  @override
+  Future<void> patternPlay() async {}
+
+  @override
+  Future<void> patternStop() async {}
+
+  @override
+  Future<void> preloadPresets(List<String> presetNames) async {}
+
+  @override
+  Future<bool> realtimeIsActive() async => false;
+
+  @override
+  Future<void> realtimePlayDiscrete(double amplitude, double frequency) async {}
+
+  @override
+  Future<void> realtimeSet(double amplitude, double frequency) async {}
+
+  @override
+  Future<void> realtimeStop() async {}
+
+  @override
+  Future<void> setRealtimeComposerStrategy(RealtimeComposerStrategy strategy) async {}
+
+  @override
+  Future<void> shutDownEngine() async {}
+
+  @override
+  Future<void> stopHaptics() async {}
 }
 
 void main() {
-  final PulsarPlatform initialPlatform = PulsarPlatform.instance;
+  final initialPlatform = PulsarPlatform.instance;
 
   test('$MethodChannelPulsar is the default instance', () {
     expect(initialPlatform, isInstanceOf<MethodChannelPulsar>());
   });
 
-  test('getPlatformVersion', () async {
-    Pulsar pulsarPlugin = Pulsar();
-    MockPulsarPlatform fakePlatform = MockPulsarPlatform();
+  test('Pulsar presets delegate to the platform interface', () async {
+    final pulsar = Pulsar();
+    final fakePlatform = MockPulsarPlatform();
     PulsarPlatform.instance = fakePlatform;
 
-    expect(await pulsarPlugin.getPlatformVersion(), '42');
+    await pulsar.presets.balloonPop();
+
+    expect(fakePlatform.lastPlayedPreset, 'balloonPop');
+
+    PulsarPlatform.instance = initialPlatform;
   });
 }
