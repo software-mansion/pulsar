@@ -7,7 +7,7 @@ A haptic feedback SDK for Android, written in Kotlin. Pulsar provides ready-to-u
 
 ## Features
 
-- **Presets** - Library of built-in haptic patterns (earthquake, success, fail, tap) and system feedback styles (impacts, notifications, selection)
+- **Presets** - Library of built-in haptic patterns (hammer, dogBark, buzz, pulse) and system feedback styles (impacts, notifications, selection)
 - **Pattern Composer** - Define custom haptic patterns using discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** - Live amplitude and frequency control for gesture-driven haptics
 - **Android-native** - Built on Android haptics APIs with graceful compatibility fallbacks
