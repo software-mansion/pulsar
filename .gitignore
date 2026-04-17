@@ -10,3 +10,5 @@ docs/server_copy
 .agents
 pulsar-haptics-workspace
 skills-lock.json
+.mcp.json
+config.toml
