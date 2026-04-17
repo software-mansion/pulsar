@@ -18,6 +18,10 @@ A haptic feedback SDK for iOS, written in Swift. Pulsar provides ready-to-use ha
 
 ### Installation
 
+<!-- GENERATED:IOS_VERSION_START -->
+Latest available version: `1.0.0`
+<!-- GENERATED:IOS_VERSION_END -->
+
 In Xcode, go to **File > Add Package Dependencies...** and use:
 
 ```text
@@ -26,11 +30,13 @@ https://github.com/software-mansion-labs/pulsar-ios
 
 Or add Pulsar to your `Package.swift`:
 
+<!-- GENERATED:IOS_INSTALL_SNIPPET_START -->
 ```swift
 dependencies: [
-  .package(url: "https://github.com/software-mansion-labs/pulsar-ios")
+  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.0.0")
 ]
 ```
+<!-- GENERATED:IOS_INSTALL_SNIPPET_END -->
 
 Then add `"Pulsar"` to your target dependencies.
 

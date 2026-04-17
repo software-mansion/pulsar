@@ -32,13 +32,19 @@ Presets.System.impactMedium();
 
 ### iOS
 
+<!-- GENERATED:IOS_VERSION_START -->
+Latest available version: `1.0.0`
+<!-- GENERATED:IOS_VERSION_END -->
+
 Add Pulsar as a Swift Package dependency in Xcode, or add it to your `Package.swift`:
 
+<!-- GENERATED:IOS_INSTALL_SNIPPET_START -->
 ```swift
 dependencies: [
-  .package(url: "https://github.com/software-mansion-labs/pulsar-ios")
+  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.0.0")
 ]
 ```
+<!-- GENERATED:IOS_INSTALL_SNIPPET_END -->
 
 ```swift
 import Pulsar
@@ -49,13 +55,19 @@ pulsar.getPresets().hammer()
 
 ### Android
 
+<!-- GENERATED:ANDROID_VERSION_START -->
+Latest available version: `1.0.0`
+<!-- GENERATED:ANDROID_VERSION_END -->
+
 Add Pulsar as a Gradle dependency:
 
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
   implementation("com.swmansion:pulsar:1.0.0")
 }
 ```
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_END -->
 
 ```kotlin
 import com.swmansion.pulsar.Pulsar
