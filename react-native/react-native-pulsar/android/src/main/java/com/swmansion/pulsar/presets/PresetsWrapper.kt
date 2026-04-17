@@ -221,7 +221,7 @@ class PresetsWrapper(
         WoodpeckerPreset.name to { haptics -> WoodpeckerPreset(haptics) },
         ZipperPreset.name to { haptics -> ZipperPreset(haptics) },
 // CODEGEN_END_{mappers}
-    )
+    ).mapKeys { normalizeName(it.key) }
 
     fun enableCache(state: Boolean) {
         this.useCache = state
@@ -252,14 +252,17 @@ class PresetsWrapper(
     }
 
     private fun getCacheablePreset(name: String): Preset? {
+        val normalizedName = normalizeName(name)
         return if (useCache) {
-            cache.getOrPut(name) {
-                mapper[name]?.invoke(haptics) ?: return null
+            cache.getOrPut(normalizedName) {
+                mapper[normalizedName]?.invoke(haptics) ?: return null
             }
         } else {
-            mapper[name]?.invoke(haptics) ?: return null
+            mapper[normalizedName]?.invoke(haptics) ?: return null
         }
     }
+
+    private fun normalizeName(name: String): String = name.lowercase()
 
     fun systemImpactLight() {
         getCacheablePreset(SystemImpactLightPreset.name)!!.play()
