@@ -54,8 +54,8 @@ class PulsarModule(reactContext: ReactApplicationContext) :
   override fun Pulsar_forceHapticsSupportLevel(level: Double) {
     val mode = when (level.toInt()) {
       0 -> CompatibilityMode.NO_SUPPORT
-      1 -> CompatibilityMode.LIMITED_SUPPORT
-      2 -> CompatibilityMode.MINIMAL_SUPPORT
+      1 -> CompatibilityMode.MINIMAL_SUPPORT
+      2 -> CompatibilityMode.LIMITED_SUPPORT
       3 -> CompatibilityMode.STANDARD_SUPPORT
       4 -> CompatibilityMode.ADVANCED_SUPPORT
       else -> CompatibilityMode.NO_SUPPORT

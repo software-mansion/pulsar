@@ -7,7 +7,13 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
 
     fun getStepsPoints(): ArrayList<ControlPoint> {
         val points = ArrayList<ControlPoint>()
-        val stepsPerSecond = 200L
+        /*
+            This variable is determined empirically. If the transition time is too wide,
+            the transition will be nearly imperceptible. Conversely, if the transition is too short,
+            the internal LRA cannot keep up due to its own minimum transition time; as a result,
+            the haptic effect lasts longer than intended.
+        */
+        val stepsPerSecond = 13L
 
         val stepDurationMs = 1000L / stepsPerSecond
 

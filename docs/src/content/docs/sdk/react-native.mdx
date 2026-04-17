@@ -567,7 +567,7 @@ import { Settings } from 'react-native-pulsar';
 | `Settings.stopHaptics()`                         | Stop all currently playing haptics          |
 | `Settings.shutDownEngine()`                      | Shut down the haptic engine                 |
 | `Settings.getHapticsSupportLevel()`              | Returns the device's `HapticSupport` level  |
-| `Settings.forceHapticsSupportLevel(level)`       | (Android only) Override the detected support level         |
+| `Settings.forceHapticsSupportLevel(level)`       | (Android only) Override the detected support level. Intended for testing/debugging fallback behavior.         |
 | `Settings.enableImpulseCompositionMode(state: boolean)`       | (Android only) Enable or disable impulse composition mode         |
 | `Settings.setRealtimeComposerStrategy(strategy)`              | (Android only) Set the strategy used by the realtime composer     |
 
@@ -605,6 +605,8 @@ enum HapticSupport {
   ADVANCED_SUPPORT = 4,
 }
 ```
+
+On Android, `Settings.forceHapticsSupportLevel(level)` uses these exact numeric enum values when selecting the fallback path. If you force a mode while validating custom patterns, make sure you pass the exported `HapticSupport` enum rather than app-local aliases.
 
 ### Example
 
