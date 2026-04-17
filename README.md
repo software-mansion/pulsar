@@ -56,7 +56,7 @@ pulsar.getPresets().hammer()
 ### Android
 
 <!-- GENERATED:ANDROID_VERSION_START -->
-Latest available version: `1.0.0`
+Latest available version: `1.1.0`
 <!-- GENERATED:ANDROID_VERSION_END -->
 
 Add Pulsar as a Gradle dependency:
@@ -64,7 +64,7 @@ Add Pulsar as a Gradle dependency:
 <!-- GENERATED:ANDROID_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar:1.0.0")
+  implementation("com.swmansion:pulsar:1.1.0")
 }
 ```
 <!-- GENERATED:ANDROID_INSTALL_SNIPPET_END -->
