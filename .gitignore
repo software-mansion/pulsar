@@ -5,7 +5,7 @@ archive
 .vscode
 .md
 .idea
-scripts
+mlekoscripts
 docs/server_copy
 .agents
 pulsar-haptics-workspace
