@@ -18,7 +18,7 @@ class PresetsWrapper(
     private val systemPrimitivePresets = SystemPrimitivePresets(engine)
     private val systemViewBasedPresets = SystemViewBasedPresets(activity)
 
-    private val mapper: Map<String, (Pulsar) -> Preset> = mapOf(
+    private val mapper: Map<String, (Pulsar) -> Preset> = mapOf<String, (Pulsar) -> Preset>(
         SystemImpactLightPreset.name to { haptics -> SystemImpactLightPreset(haptics) },
         SystemImpactMediumPreset.name to { haptics -> SystemImpactMediumPreset(haptics) },
         SystemImpactHeavyPreset.name to { haptics -> SystemImpactHeavyPreset(haptics) },
