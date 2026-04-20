@@ -41,7 +41,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build lib",
     "build": "bob build",
-    "prepare": "bob build",
+    "prepare": "npm install --ignore-scripts --no-audit --no-fund && bob build",
     "release": "release-it --only-version"
   },
   "keywords": [
