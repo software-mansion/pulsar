@@ -34,6 +34,23 @@ When you change native SDK code in `iOS/` or `Android/`, mirror those changes in
 
 ## Development
 
+### Setup
+
+From the repo root, install all JS/TS dependencies (PulsarApp, React Native lib, docs):
+
+```bash
+npm run install:all
+```
+
+Other root scripts:
+
+```bash
+npm run lint         # Run JS, Kotlin, and Swift linters
+npm run lint:js      # ESLint in PulsarApp + RN lib
+npm run lint:kotlin  # ktlint (requires: brew install ktlint)
+npm run lint:swift   # swiftlint (requires: brew install swiftlint)
+```
+
 ### iOS Swift SDK
 
 Open `iOS/Pulsar/` as a Swift Package in Xcode to work on the library, or open `iOS/PulsarApp/PulsarApp.xcodeproj` to run the native demo app.
@@ -52,7 +69,6 @@ cd Android
 
 ```bash
 cd react-native/react-native-pulsar
-npm install
 npm run prepare    # Build TypeScript output to lib/
 npm run typecheck  # TypeScript check
 npm run lint       # ESLint
@@ -63,7 +79,6 @@ Run the example app:
 
 ```bash
 cd react-native/example
-npm install
 npm run ios      # iOS simulator
 npm run android  # Android emulator
 ```
@@ -74,7 +89,6 @@ For native changes (Swift/Kotlin), rebuild the app after running the above. For 
 
 ```bash
 cd PulsarApp
-npm install
 npm run ios      # Build and run on iOS
 npm run android  # Build and run on Android
 npm run start    # Start Metro bundler
@@ -86,7 +100,6 @@ The app references the RN library locally via `"react-native-pulsar": "file:../r
 
 ```bash
 cd docs
-npm install
 npm run dev    # Start dev server
 npm run build  # Production build
 ```

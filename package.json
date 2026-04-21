@@ -1,0 +1,12 @@
+{
+  "name": "pulsar-monorepo",
+  "private": true,
+  "description": "Root orchestrator for Pulsar — no runtime deps, dev scripts only.",
+  "scripts": {
+    "install:all": "scripts/install.sh",
+    "lint": "scripts/lint.sh",
+    "lint:js": "scripts/lint-js.sh",
+    "lint:kotlin": "scripts/lint-kotlin.sh",
+    "lint:swift": "scripts/lint-swift.sh"
+  }
+}
