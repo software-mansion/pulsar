@@ -1,4 +1,4 @@
-import { StyleSheet, View, Share, TextInput } from 'react-native';
+import { StyleSheet, View, Share, TextInput, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Image } from 'expo-image';
@@ -14,6 +14,7 @@ import { MAX_RECORDING_DURATION_MS } from '@/hooks/usePatternRecorder';
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const infoIcon = require('@/assets/images/info.svg');
+const slidersIcon = require('@/assets/images/sliders.svg');
 
 const defaultEdges = {
   top: 'additive',
@@ -121,6 +122,19 @@ export default function PlaygroundScreen() {
           </Link>
         </View>
 
+        {Platform.OS === 'android' && (
+          <Link href="/playgroundSettingsModal">
+            <Link.Trigger>
+              <View style={styles.settingsRow}>
+                <ThemedText style={[styles.settingsLabel, { color: textColor }]}>
+                  Realtime composer settings
+                </ThemedText>
+                <Image source={slidersIcon} style={styles.settingsIcon} />
+              </View>
+            </Link.Trigger>
+          </Link>
+        )}
+
         <View style={styles.playgroundWrapper}>
           <GesturePlayground
             ref={playgroundRef}
@@ -204,10 +218,23 @@ const styles = StyleSheet.create({
   infoIcon: {
     width: 18,
     height: 18,
+    marginRight: 14,
   },
-  infoIconText: {
-    fontSize: 12,
-    fontWeight: 'bold',
+  settingsRow: {
+    paddingTop: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  settingsIcon: {
+    width: 20,
+    height: 20,
+  },
+  settingsLabel: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '600',
   },
   handPointer: {
     width: 80,

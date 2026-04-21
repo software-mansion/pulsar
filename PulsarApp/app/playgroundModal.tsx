@@ -32,7 +32,7 @@ export default function PlaygroundModal() {
           </ThemedText>
 
           <View style={styles.infoBox}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>How to Use:</ThemedText>
+            <ThemedText type="subtitle" style={styles.sectionTitle}>How to use</ThemedText>
             
             <ThemedText style={styles.instruction}>
               <ThemedText style={styles.instructionLabel}>Tap the Grid: </ThemedText>
