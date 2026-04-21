@@ -32,6 +32,7 @@ Sentry.init({
   tracesSampleRate: 1.0,
   integrations: [navigationIntegration],
   enableNativeFramesTracking: !isRunningInExpoGo(),
+  enableTombstone: true,
 });
 
 export const unstable_settings = {

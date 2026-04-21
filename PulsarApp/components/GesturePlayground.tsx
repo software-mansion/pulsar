@@ -9,7 +9,7 @@ import { useComposedGesture } from '@/hooks/useComposedGesture';
 import { useHapticsScreenActivity } from '@/hooks/useHapticsScreenActivity';
 import { useOnboardingComposedGesture } from '@/hooks/useOnboardingComposedGesture';
 import { usePatternRecorder } from '@/hooks/usePatternRecorder';
-import { useImperativeHandle, forwardRef, useEffect } from 'react';
+import { useImperativeHandle, forwardRef } from 'react';
 
 const gridImage = require('@/assets/images/grid.svg');
 
