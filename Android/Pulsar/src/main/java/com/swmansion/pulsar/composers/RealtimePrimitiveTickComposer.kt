@@ -12,6 +12,6 @@ class RealtimePrimitiveTickComposer(
 
     @RequiresApi(android.os.Build.VERSION_CODES.TIRAMISU)
     override fun selectPrimitive(value: Float): Int {
-        return VibrationEffect.Composition.PRIMITIVE_TICK
+        return VibrationEffect.Composition.PRIMITIVE_CLICK
     }
 }
