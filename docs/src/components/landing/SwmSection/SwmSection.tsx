@@ -1,5 +1,5 @@
 import styles from './SwmSection.module.scss';
-import commonStyle from '../../common.module.scss';
+import commonStyle from '../common.module.scss';
 import { BasicLayout } from '../Layouts/BasicLayout';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { Button } from '../Button/Button';

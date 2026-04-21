@@ -1,5 +1,5 @@
 import styles from './Tutorials.module.scss';
-import commonStyle from '../../common.module.scss';
+import commonStyle from '../common.module.scss';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { Button } from '../Button/Button';
 

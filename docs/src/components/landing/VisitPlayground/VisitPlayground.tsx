@@ -2,7 +2,7 @@ import { Button } from '../Button/Button';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import styles from './VisitPlayground.module.scss';
 import { BASE_PATH } from '../../../../config';
-import commonStyles from './../../common.module.scss';
+import commonStyles from '../common.module.scss';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 
 declare global {
