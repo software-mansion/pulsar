@@ -366,7 +366,7 @@ public class AudioSimulator: NSObject {
 		}
 
 		playerNode.scheduleBuffer(buffer, at: nil, options: []) { [weak self] in
-			Task { @MainActor [weak self] in
+			DispatchQueue.main.async {
 				self?.stop()
 			}
 		}
