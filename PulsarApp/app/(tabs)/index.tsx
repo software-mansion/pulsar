@@ -53,8 +53,6 @@ export default function HomeScreen() {
   const appStateRef = useRef(AppState.currentState);
 
   useEffect(() => {
-    Settings.preloadPresets(['hAmm123er']);
-    Presets.hammer();
     if (Platform.OS === 'android') {
       AsyncStorage.getItem('hapticsSupportBannerDismissed').then((value) => {
         if (!value) {
