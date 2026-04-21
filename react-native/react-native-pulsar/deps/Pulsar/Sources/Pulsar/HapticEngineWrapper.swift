@@ -79,7 +79,7 @@ public class HapticEngineWrapper {
   }
 
   public func stopHaptics() {
-    if !initialized { return }
+    clearPlayerState(stopPlayers: true)
     engine?.stop()
     initialized = false
   }
@@ -116,9 +116,7 @@ public class HapticEngineWrapper {
     engine?.stoppedHandler = { [weak self] reason in
       guard let self else { return }
       self.initialized = false
-      self.playerRegistry.removeAll()
-      self.playerCreationOrder.removeAll()
-      self.cachedRealtimePlayer = nil
+      self.clearPlayerState(stopPlayers: false)
     }
     engine?.resetHandler = { [weak self] in
       guard let self else { return }
@@ -127,16 +125,20 @@ public class HapticEngineWrapper {
     }
   }
 
-  private func clearPlayersForSuspension() {
-    initialized = false
-    engine?.stop()
-    for entry in playerRegistry.values {
-      try? entry.player.stop(atTime: 0)
+  private func clearPlayerState(stopPlayers: Bool) {
+    if stopPlayers {
+      for entry in playerRegistry.values {
+        try? entry.player.stop(atTime: 0)
+      }
+      try? cachedRealtimePlayer?.stop(atTime: 0)
     }
     playerRegistry.removeAll()
     playerCreationOrder.removeAll()
-    try? cachedRealtimePlayer?.stop(atTime: 0)
     cachedRealtimePlayer = nil
+  }
+
+  private func clearPlayersForSuspension() {
+    stopHaptics()
   }
 
   @objc func appDidEnterBackground() {
