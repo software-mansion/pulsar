@@ -221,7 +221,7 @@ class PresetsWrapper(
         WoodpeckerPreset.name to { haptics -> WoodpeckerPreset(haptics) },
         ZipperPreset.name to { haptics -> ZipperPreset(haptics) },
 // CODEGEN_END_{mappers}
-    ).mapKeys { normalizeName(it.key) }
+    ).mapKeys { entry: Map.Entry<String, (Pulsar) -> Preset> -> normalizeName(entry.key) }
 
     fun enableCache(state: Boolean) {
         this.useCache = state
