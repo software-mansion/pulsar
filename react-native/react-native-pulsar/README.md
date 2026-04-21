@@ -17,7 +17,7 @@ A haptic feedback SDK for React Native. Pulsar provides ready-to-use haptic pres
 ### Installation
 
 <!-- GENERATED:REACT_NATIVE_VERSION_START -->
-Latest available version: `1.3.0`
+Latest available version: `1.4.0`
 <!-- GENERATED:REACT_NATIVE_VERSION_END -->
 
 ```bash
