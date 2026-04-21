@@ -12,6 +12,7 @@ import { ChartModal } from '../ChartModal/ChartModal';
 
 const COMPACT_LAYOUT_KEY = 'presets_compact_layout';
 const FAVOURITES_KEY = 'presets_favourites';
+const SOUND_ENABLED_KEY = 'presets_sound_enabled';
 
 declare global {
   interface Window {
@@ -28,6 +29,9 @@ export function PresetsList() {
   const [compactLayout, setCompactLayout] = useState<boolean>(
     () => typeof window !== 'undefined' && localStorage.getItem(COMPACT_LAYOUT_KEY) === 'true'
   );
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(
+    () => typeof window === 'undefined' || localStorage.getItem(SOUND_ENABLED_KEY) !== 'false'
+  );
   const [favourites, setFavourites] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -42,6 +46,13 @@ export function PresetsList() {
     const value = e.target.checked;
     setCompactLayout(value);
     localStorage.setItem(COMPACT_LAYOUT_KEY, String(value));
+  }
+
+  function handleSoundToggle(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.checked;
+    setSoundEnabled(value);
+    localStorage.setItem(SOUND_ENABLED_KEY, String(value));
+    window.posthog?.capture(value ? 'preset_sound_enabled' : 'preset_sound_disabled');
   }
 
   function handleToggleFavourite(presetName: string) {
@@ -169,6 +180,10 @@ export function PresetsList() {
           Compact list
         </label>
         <label className={style.compactToggle}>
+          <input type="checkbox" checked={soundEnabled} onChange={handleSoundToggle} />
+          Enable sound
+        </label>
+        <label className={style.compactToggle}>
           <input type="checkbox" checked={showFavouritesOnly} onChange={(e) => setShowFavouritesOnly(e.target.checked)} />
           Show favourites only
         </label>
@@ -185,6 +200,7 @@ export function PresetsList() {
           key={preset.data.name}
           {...preset}
           compact={compactLayout}
+          soundEnabled={soundEnabled}
           isFavourite={favourites.has(preset.data.name)}
           onToggleFavourite={() => handleToggleFavourite(preset.data.name)}
         />

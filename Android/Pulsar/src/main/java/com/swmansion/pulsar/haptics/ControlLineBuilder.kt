@@ -24,7 +24,7 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
             val nextTime = minOf(currentTime + stepDurationMs, maxTime)
             val duration = maxOf(1L, (nextTime - currentTime))
 
-            val configPoint = interpolateConfigPoint(currentTime, configLine)
+            val configPoint = averageConfigPoint(currentTime, nextTime, configLine)
             points.add(ControlPoint(configPoint.amplitude, configPoint.frequency, duration))
             currentTime = nextTime
         }
@@ -64,5 +64,48 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
         val interpolatedFrequency = prevPoint.frequency + frequencyDiff * progress
 
         return ConfigPoint(time = time, amplitude = interpolatedAmplitude, frequency = interpolatedFrequency)
+    }
+
+    private fun averageConfigPoint(startTime: Long, endTime: Long, configLine: ConfigLineBuilder): ConfigPoint {
+        if (endTime <= startTime) {
+            return interpolateConfigPoint(startTime, configLine)
+        }
+
+        val boundaryTimes = ArrayList<Long>()
+        boundaryTimes.add(startTime)
+        configLine.points.forEach { point ->
+            if (point.time > startTime && point.time < endTime) {
+                boundaryTimes.add(point.time)
+            }
+        }
+        boundaryTimes.add(endTime)
+
+        var weightedAmplitudeSum = 0f
+        var weightedFrequencySum = 0f
+        var totalDuration = 0L
+
+        for (i in 0 until boundaryTimes.lastIndex) {
+            val segmentStart = boundaryTimes[i]
+            val segmentEnd = boundaryTimes[i + 1]
+            val segmentDuration = segmentEnd - segmentStart
+            if (segmentDuration <= 0L) continue
+
+            val startPoint = interpolateConfigPoint(segmentStart, configLine)
+            val endPoint = interpolateConfigPoint(segmentEnd, configLine)
+
+            weightedAmplitudeSum += ((startPoint.amplitude + endPoint.amplitude) / 2f) * segmentDuration
+            weightedFrequencySum += ((startPoint.frequency + endPoint.frequency) / 2f) * segmentDuration
+            totalDuration += segmentDuration
+        }
+
+        if (totalDuration <= 0L) {
+            return interpolateConfigPoint(startTime, configLine)
+        }
+
+        return ConfigPoint(
+            time = startTime,
+            amplitude = weightedAmplitudeSum / totalDuration,
+            frequency = weightedFrequencySum / totalDuration,
+        )
     }
 }
