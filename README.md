@@ -17,7 +17,7 @@ A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-
 ### React Native
 
 ```bash
-npx expo install react-native-pulsar
+npx expo install react-native-pulsar react-native-worklets
 ```
 
 ```ts
