@@ -16,16 +16,68 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
         val stepsPerSecond = 13L
 
         val stepDurationMs = 1000L / stepsPerSecond
+        val configPoints = configLine.points
 
-        val maxTime = if (configLine.points.isEmpty()) { 0L } else configLine.points.maxOf { it.time }
+        val maxTime = if (configPoints.isEmpty()) { 0L } else configPoints.last().time
 
         var currentTime = 0L
+        var segmentIndex = -1
         while (currentTime < maxTime) {
             val nextTime = minOf(currentTime + stepDurationMs, maxTime)
             val duration = maxOf(1L, (nextTime - currentTime))
 
-            val configPoint = averageConfigPoint(currentTime, nextTime, configLine)
-            points.add(ControlPoint(configPoint.amplitude, configPoint.frequency, duration))
+            var bucketTime = currentTime
+            var amplitudeArea = 0f
+            var frequencyArea = 0f
+
+            while (bucketTime < nextTime) {
+                while (
+                    segmentIndex + 1 < configPoints.size &&
+                    configPoints[segmentIndex + 1].time <= bucketTime
+                ) {
+                    segmentIndex++
+                }
+
+                val segmentEnd = when {
+                    segmentIndex < 0 -> minOf(nextTime, configPoints.first().time)
+                    segmentIndex >= configPoints.lastIndex -> nextTime
+                    else -> minOf(nextTime, configPoints[segmentIndex + 1].time)
+                }
+
+                val segmentDuration = segmentEnd - bucketTime
+                if (segmentDuration <= 0L) {
+                    bucketTime = segmentEnd
+                    continue
+                }
+
+                val (averageAmplitude, averageFrequency) = when {
+                    segmentIndex < 0 -> {
+                        val point = configPoints.first()
+                        point.amplitude to point.frequency
+                    }
+                    segmentIndex >= configPoints.lastIndex -> {
+                        val point = configPoints.last()
+                        point.amplitude to point.frequency
+                    }
+                    else -> {
+                        val startPoint = configPoints[segmentIndex]
+                        val endPoint = configPoints[segmentIndex + 1]
+                        averageValuesInSegment(bucketTime, segmentEnd, startPoint, endPoint)
+                    }
+                }
+
+                amplitudeArea += averageAmplitude * segmentDuration
+                frequencyArea += averageFrequency * segmentDuration
+                bucketTime = segmentEnd
+            }
+
+            points.add(
+                ControlPoint(
+                    intensity = amplitudeArea / duration,
+                    sharpness = frequencyArea / duration,
+                    duration = duration,
+                )
+            )
             currentTime = nextTime
         }
         return points
@@ -44,68 +96,29 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
         return points
     }
 
-    private fun interpolateConfigPoint(time: Long, configLine: ConfigLineBuilder): ConfigPoint {
-        if (configLine.points.isEmpty()) return ConfigPoint(time, 0f, 0f)
-        if (configLine.points.any { it.time == time }) return configLine.points.first { it.time == time }
-        if (configLine.points.size == 1) return configLine.points[0]
-        if (time <= configLine.points.first().time) return configLine.points.first()
-        if (time >= configLine.points.last().time) return configLine.points.last()
-
-        val nextPointIndex = configLine.points.indexOfFirst { it.time > time }
-        val prevPoint = configLine.points[nextPointIndex - 1]
-        val nextPoint = configLine.points[nextPointIndex]
-
-        val timeDiff = nextPoint.time - prevPoint.time
-        val amplitudeDiff = nextPoint.amplitude - prevPoint.amplitude
-        val frequencyDiff = nextPoint.frequency - prevPoint.frequency
-        val progress = (time - prevPoint.time).toFloat() / timeDiff
-
-        val interpolatedAmplitude = prevPoint.amplitude + amplitudeDiff * progress
-        val interpolatedFrequency = prevPoint.frequency + frequencyDiff * progress
-
-        return ConfigPoint(time = time, amplitude = interpolatedAmplitude, frequency = interpolatedFrequency)
-    }
-
-    private fun averageConfigPoint(startTime: Long, endTime: Long, configLine: ConfigLineBuilder): ConfigPoint {
-        if (endTime <= startTime) {
-            return interpolateConfigPoint(startTime, configLine)
+    private fun averageValuesInSegment(
+        startTime: Long,
+        endTime: Long,
+        startPoint: ConfigPoint,
+        endPoint: ConfigPoint,
+    ): Pair<Float, Float> {
+        val timeDiff = endPoint.time - startPoint.time
+        if (timeDiff <= 0L) {
+            return startPoint.amplitude to startPoint.frequency
         }
 
-        val boundaryTimes = ArrayList<Long>()
-        boundaryTimes.add(startTime)
-        configLine.points.forEach { point ->
-            if (point.time > startTime && point.time < endTime) {
-                boundaryTimes.add(point.time)
-            }
-        }
-        boundaryTimes.add(endTime)
+        val startProgress = (startTime - startPoint.time).toFloat() / timeDiff
+        val endProgress = (endTime - startPoint.time).toFloat() / timeDiff
 
-        var weightedAmplitudeSum = 0f
-        var weightedFrequencySum = 0f
-        var totalDuration = 0L
+        val startAmplitude =
+            startPoint.amplitude + (endPoint.amplitude - startPoint.amplitude) * startProgress
+        val endAmplitude =
+            startPoint.amplitude + (endPoint.amplitude - startPoint.amplitude) * endProgress
+        val startFrequency =
+            startPoint.frequency + (endPoint.frequency - startPoint.frequency) * startProgress
+        val endFrequency =
+            startPoint.frequency + (endPoint.frequency - startPoint.frequency) * endProgress
 
-        for (i in 0 until boundaryTimes.lastIndex) {
-            val segmentStart = boundaryTimes[i]
-            val segmentEnd = boundaryTimes[i + 1]
-            val segmentDuration = segmentEnd - segmentStart
-            if (segmentDuration <= 0L) continue
-
-            val startPoint = interpolateConfigPoint(segmentStart, configLine)
-            val endPoint = interpolateConfigPoint(segmentEnd, configLine)
-
-            weightedAmplitudeSum += ((startPoint.amplitude + endPoint.amplitude) / 2f) * segmentDuration
-            weightedFrequencySum += ((startPoint.frequency + endPoint.frequency) / 2f) * segmentDuration
-            totalDuration += segmentDuration
-        }
-
-        if (totalDuration <= 0L) {
-            return interpolateConfigPoint(startTime, configLine)
-        }
-
-        return ConfigPoint(
-            time = startTime,
-            amplitude = weightedAmplitudeSum / totalDuration,
-            frequency = weightedFrequencySum / totalDuration,
-        )
+        return ((startAmplitude + endAmplitude) / 2f) to ((startFrequency + endFrequency) / 2f)
     }
 }
