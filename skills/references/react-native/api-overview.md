@@ -361,10 +361,9 @@ import { HapticSupport, Settings } from 'react-native-pulsar';
 
 enum HapticSupport {
   NO_SUPPORT       = 0,
-  MINIMAL_SUPPORT  = 1,
-  LIMITED_SUPPORT  = 2,
-  STANDARD_SUPPORT = 3,
-  ADVANCED_SUPPORT = 4,
+  LIMITED_SUPPORT  = 1,
+  STANDARD_SUPPORT = 2,
+  ADVANCED_SUPPORT = 3,
 }
 
 const level = Settings.getHapticsSupportLevel();
@@ -376,7 +375,7 @@ if (level >= HapticSupport.ADVANCED_SUPPORT) {
 } else if (level >= HapticSupport.LIMITED_SUPPORT) {
   Presets.System.impactMedium();
 }
-// Skip entirely on NO_SUPPORT or MINIMAL_SUPPORT
+// Skip entirely on NO_SUPPORT
 ```
 
 ---

@@ -811,9 +811,8 @@ The haptic capability level of the current device, returned by `pulsar.hapticSup
 ```kotlin
 enum class CompatibilityMode {
   NO_SUPPORT,        // No haptic support
-  MINIMAL_SUPPORT,   // Timing-only vibration (API 26+)
-  LIMITED_SUPPORT,   // Amplitude control (API 26+)
-  STANDARD_SUPPORT,  // Envelope API (API 36+)
+  LIMITED_SUPPORT,   // Timing-based waveform vibration (API 26+)
+  STANDARD_SUPPORT,  // Amplitude + timing control
   ADVANCED_SUPPORT,  // Envelope + frequency profile (API 36+)
 }
 ```

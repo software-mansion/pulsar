@@ -463,7 +463,7 @@ Overrides the automatically detected `CompatibilityMode`. Use during development
 ```kotlin
 import com.swmansion.pulsar.types.CompatibilityMode
 
-// Simulate a device with only amplitude control (no composition primitives)
+// Simulate a device with timing-based vibration only
 pulsar.forceHapticsSupportLevel(CompatibilityMode.LIMITED_SUPPORT)
 
 // Simulate a device with no haptic support
@@ -496,10 +496,9 @@ import com.swmansion.pulsar.types.CompatibilityMode
 
 enum class CompatibilityMode {
     NO_SUPPORT,        // No meaningful haptic support (very old or non-haptic devices)
-    MINIMAL_SUPPORT,   // Timing-only vibration — on/off patterns, no amplitude control (API 24–25)
-    LIMITED_SUPPORT,   // Amplitude control via VibrationEffect waveforms (API 26–32)
-    STANDARD_SUPPORT,  // VibrationEffect.Composition primitives available (API 33–35)
-    ADVANCED_SUPPORT,  // Full Envelope API — amplitude and frequency envelopes (API 36+)
+    LIMITED_SUPPORT,   // Timing-based waveform vibration (API 26+)
+    STANDARD_SUPPORT,  // Amplitude and timing control
+    ADVANCED_SUPPORT,  // Envelope API with frequency profile (API 36+)
 }
 ```
 
@@ -515,18 +514,12 @@ when {
         pulsar.getPresets().explosion()
     }
     support >= CompatibilityMode.STANDARD_SUPPORT -> {
-        // Composition primitives — most named presets feel good
-        // RealtimeComposer with PRIMITIVE_COMPLEX or ENVELOPE_WITH_DISCRETE_PRIMITIVES
+        // Amplitude control available — most presets translate well
+        // RealtimeComposer can shape stronger, clearer pulses
         pulsar.getPresets().fanfare()
     }
     support >= CompatibilityMode.LIMITED_SUPPORT -> {
-        // Amplitude control — simpler presets work, subtle ones may be indistinct
-        // Fall back to system presets or high-amplitude named presets
-        pulsar.getPresets().systemNotificationSuccess()
-    }
-    support >= CompatibilityMode.MINIMAL_SUPPORT -> {
-        // Timing-only — only on/off patterns; intensity is not controllable
-        // Only high-contrast presets are meaningful
+        // Timing-based vibration only — use simpler, high-contrast presets
         pulsar.getPresets().jolt()
     }
     else -> {
@@ -540,12 +533,11 @@ when {
 | `CompatibilityMode` | Typical API level | Available Android APIs |
 |---|---|---|
 | `NO_SUPPORT` | Any (device-specific) | None — device lacks a haptic actuator |
-| `MINIMAL_SUPPORT` | API 24–25 | `Vibrator.vibrate(long)` — timing only |
-| `LIMITED_SUPPORT` | API 26–32 | `VibrationEffect.createWaveform()` — amplitude control |
-| `STANDARD_SUPPORT` | API 33–35 | `VibrationEffect.Composition` — named primitives (CLICK, TICK, THUD, etc.) |
-| `ADVANCED_SUPPORT` | API 36+ | Envelope API — continuous amplitude and frequency curves |
+| `LIMITED_SUPPORT` | API 26+ | `VibrationEffect.createWaveform()` or `createOneShot()` — timing-based vibration |
+| `STANDARD_SUPPORT` | API 26+ | Waveform effects with amplitude control when hardware supports it |
+| `ADVANCED_SUPPORT` | API 36+ | Envelope API with frequency profile — continuous amplitude and frequency curves |
 
-Note: `CompatibilityMode` is device-capability-based, not purely API-level-based. A device running API 33 may still report `LIMITED_SUPPORT` if the manufacturer has not implemented the composition primitives. Pulsar detects actual capability, not just OS version.
+Note: `CompatibilityMode` is device-capability-based, not purely API-level-based. A device running API 36 may still report `STANDARD_SUPPORT` or `LIMITED_SUPPORT` if the available hardware features are constrained. Pulsar detects actual capability, not just OS version.
 
 ---
 
@@ -612,7 +604,6 @@ All built-in preset objects implement `Preset`. `presets.getByName(name)` return
 ```kotlin
 enum class CompatibilityMode {
     NO_SUPPORT,
-    MINIMAL_SUPPORT,
     LIMITED_SUPPORT,
     STANDARD_SUPPORT,
     ADVANCED_SUPPORT,

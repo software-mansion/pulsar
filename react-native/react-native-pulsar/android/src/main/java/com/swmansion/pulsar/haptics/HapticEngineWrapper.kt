@@ -121,14 +121,16 @@ class HapticEngineWrapper(private val context: Context) {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             if (isFrequencyProfileSupported()) {
                 CompatibilityMode.ADVANCED_SUPPORT
-            } else {
+            } else if (isAmplitudeSupported()) {
                 CompatibilityMode.STANDARD_SUPPORT
+            } else {
+                CompatibilityMode.LIMITED_SUPPORT
             }
         } else {
             if (isAmplitudeSupported()) {
-                CompatibilityMode.LIMITED_SUPPORT
+                CompatibilityMode.STANDARD_SUPPORT
             } else {
-                CompatibilityMode.MINIMAL_SUPPORT
+                CompatibilityMode.LIMITED_SUPPORT
             }
         }
     }

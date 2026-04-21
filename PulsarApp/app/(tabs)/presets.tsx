@@ -32,7 +32,6 @@ function getHapticsSupportName(level: HapticSupport): string {
     case HapticSupport.ADVANCED_SUPPORT: return 'Advanced';
     case HapticSupport.STANDARD_SUPPORT: return 'Standard';
     case HapticSupport.LIMITED_SUPPORT: return 'Limited';
-    case HapticSupport.MINIMAL_SUPPORT: return 'Minimal';
     default: return 'None';
   }
 }

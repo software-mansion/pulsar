@@ -29,4 +29,4 @@ MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
 }
 ```
 
-On devices with `CompatibilityMode.MINIMAL_SUPPORT` or `NO_SUPPORT`, `RealtimeComposer` calls are silent no-ops — no crash, no feedback. Check `pulsar.hapticSupport()` if you need to adapt your UI.
+On devices with `CompatibilityMode.LIMITED_SUPPORT` or `NO_SUPPORT`, `RealtimeComposer` fidelity is reduced and some patterns may collapse to simpler pulses. Check `pulsar.hapticSupport()` if you need to adapt your UI.
