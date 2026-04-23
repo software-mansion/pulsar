@@ -112,7 +112,7 @@ export default function PlaygroundScreen() {
 
         <View style={styles.header}>
           <ThemedText type="title" style={styles.title}>Playground</ThemedText>
-          <Link href="/playgroundModal">
+          <Link href="/playgroundModal" style={styles.playgroundLink}>
             <Link.Trigger>
               <View style={styles.howItWorksButton}>
                 <ThemedText>How does it work?</ThemedText>
@@ -208,7 +208,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    height: 34,
+  },
+  playgroundLink: {
+    marginBottom: -5,
   },
   howItWorksButton: {
     flexDirection: 'row',
@@ -218,7 +220,6 @@ const styles = StyleSheet.create({
   infoIcon: {
     width: 18,
     height: 18,
-    marginRight: 14,
   },
   settingsRow: {
     paddingTop: 14,
