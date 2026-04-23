@@ -12,24 +12,29 @@ interface ButtonProps {
 
 export function Button({
   label,
-  url = '#',
+  url,
   variant = 'unfilled',
   className = '',
   onClick,
 }: ButtonProps) {
+  const classes = [
+    styles.innerHolder,
+    variant === 'filled' ? styles.filled : styles.unfilled,
+  ].join(' ');
+
   return (
     <div className={`${styles.background} ${className}`}>
-      <a
-        className={[
-          styles.innerHolder,
-          variant === 'filled' ? styles.filled : styles.unfilled,
-        ].join(' ')}
-        href={url}
-        onClick={onClick}
-      >
-        {label}
-        <img src={arrowIcon.src} alt="arrow" />
-      </a>
+      {url ? (
+        <a className={classes} href={url} onClick={onClick}>
+          {label}
+          <img src={arrowIcon.src} alt="arrow" />
+        </a>
+      ) : (
+        <button className={classes} type="button" onClick={onClick}>
+          {label}
+          <img src={arrowIcon.src} alt="arrow" />
+        </button>
+      )}
     </div>
   );
 }

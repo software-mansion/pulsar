@@ -9,7 +9,7 @@ import '../styles/index.css';
 import commonStyle from '../components/landing/common.module.scss';
 import { VisitPlayground } from '../components/landing/VisitPlayground/VisitPlayground';
 import { SdkSection } from '../components/landing/SdkSection/SdkSection';
-// import { Tutorials } from '../components/landing/Tutorials/Tutorials';
+import { Articles } from '../components/landing/Articles/Articles';
 import { SwmSection } from '../components/landing/SwmSection/SwmSection';
 import { PresetsList } from '../components/landing/PresetsList/PresetsList';
 import GTMBody from '../components/gtm-body.astro';
@@ -79,9 +79,9 @@ Presets that you can hear and feel with Live Preview." />
       <SdkSection />
     </BasicLayout>
 
-    <!-- <BasicLayout className={commonStyle.spaceTopLarge}>
-      <Tutorials />
-    </BasicLayout> -->
+    <BasicLayout className={commonStyle.spaceTopLarge}>
+      <Articles />
+    </BasicLayout>
 
     <SwmSection className={commonStyle.spaceTopLarge} />
   </body>
