@@ -8,7 +8,7 @@ const sentryPluginConfig = {
 export default {
   name: "PulsarApp",
   slug: "PulsarApp",
-  version: "1.0.4",
+  version: "1.0.5",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "pulsarapp",
@@ -29,7 +29,7 @@ export default {
     },
     predictiveBackGestureEnabled: false,
     package: "com.swmansion.pulsar.app",
-    versionCode: 4,
+    versionCode: 5,
     intentFilters: [
       {
         action: "VIEW",
