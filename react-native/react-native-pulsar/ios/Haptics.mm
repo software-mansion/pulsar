@@ -90,7 +90,7 @@ RCT_EXPORT_MODULE()
 }
 
 - (nonnull NSNumber *)Pulsar_hapticSupport {
-  return [pulsar_ isHapticsSupported] ? @(4) : @(0);
+  return [pulsar_ isHapticsSupported] ? @(3) : @(0);
 }
 
 - (void)Pulsar_forceHapticsSupportLevel:(double)level {
