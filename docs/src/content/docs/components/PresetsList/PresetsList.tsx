@@ -1,8 +1,10 @@
 import style from './PresetsList.module.scss';
+import arrowIcon from '../../assets/new_assets/arrow.svg';
 import infoIcon from '../../assets/new_assets/info.svg';
 import { Filters } from '../Filters/Filters';
 import { Preset } from '../Preset/Preset';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { TagsModal } from '../TagsModal/TagsModal';
 import { TagsInfo } from './Tags';
 import { PresetsConfig } from '../../assets/presets/PresetsConfig';
@@ -23,9 +25,12 @@ declare global {
 }
 
 export function PresetsList() {
+  const headerRef = useRef<HTMLDivElement>(null);
   const [showModal, setShowModal] = useState<'no' | 'tags' | 'chart'>('no');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedSystemPresets, setSelectedSystemPresets] = useState<string[]>([]);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const [compactLayout, setCompactLayout] = useState<boolean>(
     () => typeof window !== 'undefined' && localStorage.getItem(COMPACT_LAYOUT_KEY) === 'true'
   );
@@ -40,6 +45,21 @@ export function PresetsList() {
       if (stored) setFavourites(new Set(JSON.parse(stored)));
     } catch {}
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollToTop(window.scrollY > 500);
+    };
+
+    setPortalRoot(document.body);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   const [showFavouritesOnly, setShowFavouritesOnly] = useState(false);
 
   function handleCompactToggle(e: React.ChangeEvent<HTMLInputElement>) {
@@ -68,6 +88,10 @@ export function PresetsList() {
       localStorage.setItem(FAVOURITES_KEY, JSON.stringify(Array.from(next)));
       return next;
     });
+  }
+
+  function handleScrollToTop() {
+    headerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   const androidSystemPresetTagMap: Record<string, string> = {
@@ -153,7 +177,7 @@ export function PresetsList() {
 
   return (
     <div className={['not-content', style.presets].join(' ')}>
-      <div className={style.header}>
+      <div ref={headerRef} className={style.header}>
         <div className={style.title}>Presets</div>
         <div className={style.info}>
           <div className={style.inner} onClick={() => setShowModal('tags')}>
@@ -208,6 +232,17 @@ export function PresetsList() {
 
       {showModal === 'tags' && <TagsModal onClose={() => setShowModal('no')} />}
       {showModal === 'chart' && <ChartModal onClose={() => setShowModal('no')} />}
+
+      {portalRoot && showScrollToTop && createPortal((
+        <button
+          type="button"
+          className={style.scrollToTopButton}
+          onClick={handleScrollToTop}
+          aria-label="Scroll to top"
+        >
+          <img src={arrowIcon.src} alt="" aria-hidden="true" />
+        </button>
+      ), portalRoot)}
     </div>
   );
 }
