@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import { BASE_PATH } from './config.ts';
+import { articles } from './src/data/articles.ts';
 
 export default defineConfig({
   site: 'https://docs.swmansion.com/',
@@ -22,7 +23,7 @@ export default defineConfig({
     starlight({
       title: 'Pulsar',
       customCss: [
-        './src/pages/index.css',
+        './src/styles/index.css',
         './src/content/docs/custom.css',
         // './src/content/docs/legacy-style.css',
         '@fontsource/bebas-neue/400.css',
@@ -40,10 +41,10 @@ export default defineConfig({
           label: 'Presets playground',
           slug: 'presets-playground',
         },
-        {
-          label: 'AI Skills',
-          slug: 'skills',
-        },
+        // {
+        //   label: 'AI Skills',
+        //   slug: 'skills',
+        // },
         {
           label: 'Pulsar Studio',
           slug: 'pulsar-studio',
@@ -61,14 +62,20 @@ export default defineConfig({
             { label: 'React Native', slug: 'sdk/react-native' },
           ],
         },
-        // {
-        //   label: 'Blog',
-        //   items: [
-        //     { label: 'Table of content', slug: 'blog/table-of-content' },
-        //     { label: 'Do I need haptics?', slug: 'blog/why-haptics' },
-        //     { label: 'How does haptics works', slug: 'blog/how-does-haptics-works' },
-        //   ],
-        // },
+        {
+          label: 'Articles',
+          items: [
+            { label: 'Overview', slug: 'articles' },
+            ...articles.map((article) => ({
+              label: article.shortTitle,
+              link: article.url,
+              attrs: {
+                target: '_blank',
+                rel: 'noreferrer',
+              },
+            })),
+          ],
+        },
       ],
       logo: {
         light: './src/assets/logo_label.svg',

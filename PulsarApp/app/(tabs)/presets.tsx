@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Settings, HapticSupport } from 'react-native-pulsar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,12 +10,15 @@ import { useFilteredPresets } from '@/components/PresetList';
 import Preset from '@/components/Preset';
 import Card from '@/components/Card';
 import SelectedTags from '@/components/SelectedTags';
-import { useDeferredValue, useMemo, useState } from 'react';
+import Button from '@/components/Button';
+import { useDeferredValue, useMemo, useRef, useState } from 'react';
 import { useFilters } from '@/contexts/FilterContext';
+import Animated, { runOnJS, useAnimatedScrollHandler } from 'react-native-reanimated';
 
 const infoIcon = require('@/assets/images/info.svg');
 const slidersIcon = require('@/assets/images/sliders.svg');
 const xIcon = require('@/assets/images/x.svg');
+type PresetListItem = ReturnType<typeof useFilteredPresets>['filteredPresets'][number];
 
 const defaultEdges = {
   top: 'additive',
@@ -28,7 +32,6 @@ function getHapticsSupportName(level: HapticSupport): string {
     case HapticSupport.ADVANCED_SUPPORT: return 'Advanced';
     case HapticSupport.STANDARD_SUPPORT: return 'Standard';
     case HapticSupport.LIMITED_SUPPORT: return 'Limited';
-    case HapticSupport.MINIMAL_SUPPORT: return 'Minimal';
     default: return 'None';
   }
 }
@@ -37,8 +40,20 @@ export default function PresetsScreen() {
   const { filteredPresets, selectedTags, showFavouritesOnly } = useFilteredPresets();
   const { compactLayout } = useFilters();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const deferredQuery = useDeferredValue(searchQuery);
+  const listRef = useRef<FlatList<PresetListItem>>(null);
+  const tabBarHeight = useBottomTabBarHeight();
   const hapticsSupportName = getHapticsSupportName(Settings.getHapticsSupportLevel());
+  const scrollHandler = useAnimatedScrollHandler<{ isVisible: boolean }>({
+    onScroll: (event, context) => {
+      const shouldShow = event.contentOffset.y > 500;
+      if (context.isVisible !== shouldShow) {
+        context.isVisible = shouldShow;
+        runOnJS(setShowScrollToTop)(shouldShow);
+      }
+    },
+  });
 
   const displayedPresets = useMemo(() => {
     if (!deferredQuery.trim()) return filteredPresets;
@@ -56,7 +71,7 @@ export default function PresetsScreen() {
         Get to know Pulsar presets
       </ThemedText>
       <ThemedText style={Margins.marginTop2X}>
-        Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets.
+        Do not spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets.
       </ThemedText>
 
       <ThemedText style={[Margins.marginTop2X, styles.hapticsSupportInfo]}>
@@ -100,7 +115,7 @@ export default function PresetsScreen() {
 
       <SelectedTags />
     </>
-  ), [searchQuery]);
+  ), [hapticsSupportName, searchQuery]);
 
   const listEmpty = useMemo(() => {
     if (deferredQuery.trim()) {
@@ -130,33 +145,55 @@ export default function PresetsScreen() {
     return null;
   }, [selectedTags.length, deferredQuery, showFavouritesOnly]);
 
+  const handleScrollToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
+
   return (
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
-      <FlatList
-        data={displayedPresets}
-        keyExtractor={(item, index) => `${item.name}-${index}`}
-        contentContainerStyle={styles.contentContainer}
-        ListHeaderComponent={listHeader}
-        ListEmptyComponent={listEmpty}
-        renderItem={({ item }) => (
-          <Preset
-            title={item.name}
-            subtitle={item.description}
-            tags={item.tags}
-            image={item.image}
-            onPress={item.play}
-            duration={item.duration}
-            compact={compactLayout}
+      <View style={styles.container}>
+        <Animated.FlatList<PresetListItem>
+          ref={listRef}
+          data={displayedPresets}
+          keyExtractor={(item, index) => `${item.name}-${index}`}
+          contentContainerStyle={styles.contentContainer}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={listEmpty}
+          renderItem={({ item }) => (
+            <Preset
+              title={item.name}
+              subtitle={item.description}
+              tags={item.tags}
+              image={item.image}
+              onPress={item.play}
+              duration={item.duration}
+              compact={compactLayout}
+            />
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: compactLayout ? 12 : 30 }} />}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+        />
+        {showScrollToTop && (
+          <Button
+            onClick={handleScrollToTop}
+            showIcon="arrow"
+            largeIcon
+            disableHaptics
+            style={styles.scrollToTopButton}
+            iconStyle={styles.scrollToTopIcon}
           />
         )}
-        ItemSeparatorComponent={() => <View style={{ height: compactLayout ? 12 : 30 }} />}
-      />
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  container: {
     flex: 1,
   },
   contentContainer: {
@@ -213,5 +250,20 @@ const styles = StyleSheet.create({
   hapticsSupportInfo: {
     fontSize: 13,
     color: '#2B85AB',
+  },
+  scrollToTopButton: {
+    position: 'absolute',
+    width: 52,
+    height: 52,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    bottom: 20,
+    right: 20,
+  },
+  scrollToTopIcon: {
+    width: 18,
+    height: 18,
+    marginLeft: 0,
+    transform: [{ rotate: '-90deg' }],
   },
 });

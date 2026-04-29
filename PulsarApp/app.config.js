@@ -1,8 +1,14 @@
 // app.config.js - dynamic config with environment variables (e.g., PostHog keys from .env)
+const sentryPluginConfig = {
+  ...(process.env.SENTRY_ORG ? { organization: process.env.SENTRY_ORG } : {}),
+  ...(process.env.SENTRY_PROJECT ? { project: process.env.SENTRY_PROJECT } : {}),
+  ...(process.env.SENTRY_URL ? { url: process.env.SENTRY_URL } : { url: "https://sentry.io/" }),
+};
+
 export default {
   name: "PulsarApp",
   slug: "PulsarApp",
-  version: "1.0.2",
+  version: "1.0.5",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "pulsarapp",
@@ -23,7 +29,7 @@ export default {
     },
     predictiveBackGestureEnabled: false,
     package: "com.swmansion.pulsar.app",
-    versionCode: 2,
+    versionCode: 5,
     intentFilters: [
       {
         action: "VIEW",
@@ -51,6 +57,7 @@ export default {
     policy: "appVersion",
   },
   plugins: [
+    ["@sentry/react-native/expo", sentryPluginConfig],
     "expo-updates",
     "expo-router",
     [

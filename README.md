@@ -6,7 +6,7 @@ A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-
 
 ## Features
 
-- **Presets** - Library of built-in haptic patterns (earthquake, success, fail, tap) and system feedback styles (impacts, notifications, selection)
+- **Presets** - Library of built-in haptic patterns (hammer, dogBark, buzz, pulse) and system feedback styles (impacts, notifications, selection)
 - **Pattern Composer** - Define custom haptic patterns using discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** - Live amplitude and frequency control for gesture-driven haptics
 - **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), and React Native (TypeScript)
@@ -17,7 +17,7 @@ A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-
 ### React Native
 
 ```bash
-npx expo install react-native-pulsar
+npx expo install react-native-pulsar react-native-worklets
 ```
 
 ```ts
@@ -27,41 +27,53 @@ import { Presets, usePatternComposer, useRealtimeComposer } from 'react-native-p
 Presets.dogBark();
 
 // Play a system haptic
-Presets.System.ImpactMedium();
+Presets.System.impactMedium();
 ```
 
 ### iOS
 
+<!-- GENERATED:IOS_VERSION_START -->
+Latest available version: `1.0.0`
+<!-- GENERATED:IOS_VERSION_END -->
+
 Add Pulsar as a Swift Package dependency in Xcode, or add it to your `Package.swift`:
 
+<!-- GENERATED:IOS_INSTALL_SNIPPET_START -->
 ```swift
 dependencies: [
-  .package(url: "https://github.com/software-mansion-labs/pulsar-ios")
+  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.0.0")
 ]
 ```
+<!-- GENERATED:IOS_INSTALL_SNIPPET_END -->
 
 ```swift
 import Pulsar
 
 let pulsar = Pulsar()
-pulsar.getPresets().success()
+pulsar.getPresets().hammer()
 ```
 
 ### Android
 
+<!-- GENERATED:ANDROID_VERSION_START -->
+Latest available version: `1.1.0`
+<!-- GENERATED:ANDROID_VERSION_END -->
+
 Add Pulsar as a Gradle dependency:
 
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar:1.0.0")
+  implementation("com.swmansion:pulsar:1.1.0")
 }
 ```
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_END -->
 
 ```kotlin
 import com.swmansion.pulsar.Pulsar
 
 val pulsar = Pulsar(context)
-pulsar.getPresets().success()
+pulsar.getPresets().hammer()
 ```
 
 ## Repository structure
@@ -98,7 +110,7 @@ Full API reference and guides are available at the [documentation site](https://
 - [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) - Kotlin API reference
 - [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
 
-## AI Skills
+<!-- ## AI Skills
 
 Install the `pulsar-haptics` skill from the [software-mansion-labs/skills](https://github.com/software-mansion-labs/skills) repository:
 
@@ -112,7 +124,7 @@ Or with `npx`:
 
 ```bash
 npx skills add software-mansion-labs/skills
-```
+``` -->
 
 ## Contributing
 

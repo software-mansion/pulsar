@@ -1,8 +1,8 @@
 import PostHog from 'posthog-react-native'
 import { POSTHOG_CONFIG } from './public'
 
-const apiKey = POSTHOG_CONFIG.apiKey
-const host = POSTHOG_CONFIG.host
+const apiKey: string | undefined = POSTHOG_CONFIG.apiKey
+const host: string | undefined = POSTHOG_CONFIG.host
 const isPostHogConfigured = Boolean(apiKey && apiKey !== 'phc_your_api_key_here')
 
 if (__DEV__) {
@@ -40,9 +40,6 @@ export const posthog = new PostHog(apiKey || 'placeholder_key', {
   // - Application Installed, Application Updated
   // - Application Opened, Application Became Active, Application Backgrounded
   captureAppLifecycleEvents: true,
-
-  // Enable debug mode in development for verbose logging
-  debug: __DEV__,
 
   // Batching: queue events and flush periodically to optimize battery usage
   flushAt: 20,

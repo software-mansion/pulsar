@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useRealtimeComposer } from 'react-native-pulsar';
 import Animated, {
   Easing,
@@ -18,6 +19,7 @@ import Animated, {
 import BasicLayout from '@/components/BasicLayout';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Margins } from '@/constants/theme';
+import { useHapticsScreenActivity } from '@/hooks/useHapticsScreenActivity';
 
 const BALLOON_COUNT = 4;
 const RELEASE_RESET_MS = 180;
@@ -76,6 +78,7 @@ const BALLOON_PARAMS: BalloonParams[] = [
 
 function BalloonCell({ index }: { index: number }) {
   const composer = useRealtimeComposer();
+  const isScreenActive = useHapticsScreenActivity(composer);
   const params = BALLOON_PARAMS[index % BALLOON_PARAMS.length]!;
 
   const progress = useSharedValue(0);
@@ -120,10 +123,18 @@ function BalloonCell({ index }: { index: number }) {
   const { ampMin, ampMid, ampMax, freqHigh, freqLow, shakeImpulseFreq, shakeAmt, shakeDur, shakeThreshold } = params;
 
   useAnimatedReaction(
-    () => progress.value,
-    (current, previous) => {
+    () => ({
+      isScreenActive: isScreenActive.value,
+      progress: progress.value,
+    }),
+    ({ isScreenActive, progress: current }, previous) => {
       'worklet';
-      const prev = previous ?? 0;
+      const prev = previous?.progress ?? 0;
+
+      if (!isScreenActive) {
+        composer.stop();
+        return;
+      }
 
       // Pop
       if (current >= 1 && prev < 1) {
@@ -164,10 +175,17 @@ function BalloonCell({ index }: { index: number }) {
 
   // Shake-synced impulses: fire on each direction reversal (zero-crossing of shakeOffset)
   useAnimatedReaction(
-    () => shakeOffset.value,
-    (current, previous) => {
+    () => ({
+      isScreenActive: isScreenActive.value,
+      shakeOffset: shakeOffset.value,
+    }),
+    ({ isScreenActive, shakeOffset: current }, previous) => {
       'worklet';
-      const prev = previous ?? 0;
+      const prev = previous?.shakeOffset ?? 0;
+      if (!isScreenActive) {
+        composer.stop();
+        return;
+      }
       if (progress.value < shakeThreshold) return;
 
       const crossed = (prev > 0.5 && current < -0.5) || (prev < -0.5 && current > 0.5);
@@ -216,13 +234,23 @@ function BalloonCell({ index }: { index: number }) {
     });
   };
 
+  const gesture = Gesture.LongPress()
+    .minDuration(140)
+    .maxDistance(10000)
+    .shouldCancelWhenOutside(false)
+    .onStart(startCharge)
+    .onFinalize(stopCharge)
+    .runOnJS(true);
+
   return (
-    <Pressable style={styles.cell} delayLongPress={140} onLongPress={startCharge} onPressOut={stopCharge}>
-      <View style={styles.dotSlot}>
-        <Animated.View style={[styles.dot, balloonStyle]} />
-        <Animated.View style={[styles.poppedDot, styles.poppedOverlay, poppedStyle]} />
+    <GestureDetector gesture={gesture}>
+      <View style={styles.cell}>
+        <View style={styles.dotSlot}>
+          <Animated.View style={[styles.dot, balloonStyle]} />
+          <Animated.View style={[styles.poppedDot, styles.poppedOverlay, poppedStyle]} />
+        </View>
       </View>
-    </Pressable>
+    </GestureDetector>
   );
 }
 

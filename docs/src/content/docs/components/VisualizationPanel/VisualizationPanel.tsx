@@ -16,12 +16,14 @@ interface VisualizationPanelProps {
   className?: string;
   playOnDevice?: () => void;
   presetName?: string;
+  soundEnabled?: boolean;
 }
 
 export function VisualizationPanel({
   visualization,
   className = '',
   presetName,
+  soundEnabled = true,
 }: VisualizationPanelProps) {
   const normalizedPresetName = presetName
     ? `${presetName.charAt(0).toLowerCase()}${presetName.slice(1)}`
@@ -124,7 +126,9 @@ export function VisualizationPanel({
           await audioPlayer.parsePattern(visualization.data);
           isParsed.current = true;
         }
-        audioPlayer.play();
+        if (soundEnabled) {
+          audioPlayer.play();
+        }
       } catch (error) {
         console.error('Error playing audio:', error);
         (window.posthog as PosthogWithException | undefined)?.captureException?.(error as Error);

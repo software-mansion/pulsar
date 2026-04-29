@@ -5,7 +5,7 @@ archive
 .vscode
 .md
 .idea
-scripts
+mlekoscripts
 docs/server_copy
 .agents
 pulsar-haptics-workspace
@@ -20,3 +20,6 @@ kmp/**/.gradle-user/
 kmp/**/.cxx/
 kmp/**/.externalNativeBuild/
 kmp/**/captures/
+.mcp.json
+config.toml
+.codex

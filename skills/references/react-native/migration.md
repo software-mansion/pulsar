@@ -9,8 +9,8 @@
 npx expo install react-native-pulsar
 npx expo prebuild
 
-# Yarn / npm / pnpm / Bun
-yarn add react-native-pulsar react-native-worklets
+# npm
+npm install react-native-pulsar react-native-worklets
 ```
 
 **Requirements:** React Native 0.71+, New Architecture enabled.

@@ -51,6 +51,10 @@ The Pulsar React Native SDK (`react-native-pulsar`) exposes haptic feedback thro
 
 ## Installation
 
+{/* GENERATED:REACT_NATIVE_VERSION_START */}
+Latest available version: `1.4.0`
+{/* GENERATED:REACT_NATIVE_VERSION_END */}
+
 <Tabs>
   <TabItem label="Expo">
     <Code
@@ -65,30 +69,9 @@ The Pulsar React Native SDK (`react-native-pulsar`) exposes haptic feedback thro
       frame="terminal"
     />
   </TabItem>
-  <TabItem label="Yarn" icon="seti:yarn">
-    <Code
-      code="yarn add react-native-pulsar react-native-worklets"
-      lang="bash"
-      frame="terminal"
-    />
-  </TabItem>
   <TabItem label="npm" icon="npm">
     <Code
       code="npm install react-native-pulsar react-native-worklets"
-      lang="bash"
-      frame="terminal"
-    />
-  </TabItem>
-  <TabItem label="pnpm" icon="pnpm">
-    <Code
-      code="pnpm install react-native-pulsar react-native-worklets"
-      lang="bash"
-      frame="terminal"
-    />
-  </TabItem>
-  <TabItem label="Bun" icon="bun">
-    <Code
-      code="bun install react-native-pulsar react-native-worklets"
       lang="bash"
       frame="terminal"
     />
@@ -567,7 +550,7 @@ import { Settings } from 'react-native-pulsar';
 | `Settings.stopHaptics()`                         | Stop all currently playing haptics          |
 | `Settings.shutDownEngine()`                      | Shut down the haptic engine                 |
 | `Settings.getHapticsSupportLevel()`              | Returns the device's `HapticSupport` level  |
-| `Settings.forceHapticsSupportLevel(level)`       | (Android only) Override the detected support level         |
+| `Settings.forceHapticsSupportLevel(level)`       | (Android only) Override the detected support level. Intended for testing/debugging fallback behavior.         |
 | `Settings.enableImpulseCompositionMode(state: boolean)`       | (Android only) Enable or disable impulse composition mode         |
 | `Settings.setRealtimeComposerStrategy(strategy)`              | (Android only) Set the strategy used by the realtime composer     |
 
@@ -599,12 +582,13 @@ import { HapticSupport } from 'react-native-pulsar';
 ```ts
 enum HapticSupport {
   NO_SUPPORT = 0,
-  MINIMAL_SUPPORT = 1,
-  LIMITED_SUPPORT = 2,
-  STANDARD_SUPPORT = 3,
-  ADVANCED_SUPPORT = 4,
+  LIMITED_SUPPORT = 1,
+  STANDARD_SUPPORT = 2,
+  ADVANCED_SUPPORT = 3,
 }
 ```
+
+On Android, `Settings.forceHapticsSupportLevel(level)` uses these exact numeric enum values when selecting the fallback path. If you force a mode while validating custom patterns, make sure you pass the exported `HapticSupport` enum rather than app-local aliases.
 
 ### Example
 
@@ -653,10 +637,9 @@ Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` env
 ```ts
 enum HapticSupport {
   NO_SUPPORT = 0,
-  MINIMAL_SUPPORT = 1,
-  LIMITED_SUPPORT = 2,
-  STANDARD_SUPPORT = 3,
-  ADVANCED_SUPPORT = 4,
+  LIMITED_SUPPORT = 1,
+  STANDARD_SUPPORT = 2,
+  ADVANCED_SUPPORT = 3,
 }
 ```
 

@@ -6,7 +6,7 @@ A haptic feedback SDK for React Native. Pulsar provides ready-to-use haptic pres
 
 ## Features
 
-- **Presets** - Library of built-in haptic patterns (earthquake, success, fail, tap) and system feedback styles (impacts, notifications, selection)
+- **Presets** - Library of built-in haptic patterns (hammer, dogBark, buzz, pulse) and system feedback styles (impacts, notifications, selection)
 - **Pattern Composer** - Define custom haptic patterns using discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** - Live amplitude and frequency control for gesture-driven haptics
 - **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), and React Native (TypeScript)
@@ -15,6 +15,10 @@ A haptic feedback SDK for React Native. Pulsar provides ready-to-use haptic pres
 ## Quick start
 
 ### Installation
+
+<!-- GENERATED:REACT_NATIVE_VERSION_START -->
+Latest available version: `1.4.0`
+<!-- GENERATED:REACT_NATIVE_VERSION_END -->
 
 ```bash
 npx expo install react-native-pulsar react-native-worklets

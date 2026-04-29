@@ -17,6 +17,12 @@
   align-items: center;
   white-space: nowrap;
   user-select: none;
+  color: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  text-decoration: none;
+  appearance: none;
+  border-width: 2px;
 
   @media (max-width: 768px) {
     padding: 12px 20px;

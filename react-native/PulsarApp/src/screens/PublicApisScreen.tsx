@@ -16,7 +16,6 @@ const PulsarNative = TurboModuleRegistry.getEnforcing('RNPulsar') as any;
 
 const HAPTIC_SUPPORT_LABELS = {
   [HapticSupport.NO_SUPPORT]: 'No Support',
-  [HapticSupport.MINIMAL_SUPPORT]: 'Minimal Support',
   [HapticSupport.LIMITED_SUPPORT]: 'Limited Support',
   [HapticSupport.STANDARD_SUPPORT]: 'Standard Support',
   [HapticSupport.ADVANCED_SUPPORT]: 'Advanced Support',

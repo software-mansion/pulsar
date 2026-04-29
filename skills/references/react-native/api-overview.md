@@ -7,8 +7,8 @@
 npx expo install react-native-pulsar
 npx expo prebuild
 
-# Yarn / npm / pnpm / Bun
-yarn add react-native-pulsar react-native-worklets
+# npm
+npm install react-native-pulsar react-native-worklets
 ```
 
 **Requirements:** React Native 0.71+, New Architecture enabled, `react-native-worklets` for gesture/Reanimated integration.
@@ -361,10 +361,9 @@ import { HapticSupport, Settings } from 'react-native-pulsar';
 
 enum HapticSupport {
   NO_SUPPORT       = 0,
-  MINIMAL_SUPPORT  = 1,
-  LIMITED_SUPPORT  = 2,
-  STANDARD_SUPPORT = 3,
-  ADVANCED_SUPPORT = 4,
+  LIMITED_SUPPORT  = 1,
+  STANDARD_SUPPORT = 2,
+  ADVANCED_SUPPORT = 3,
 }
 
 const level = Settings.getHapticsSupportLevel();
@@ -376,7 +375,7 @@ if (level >= HapticSupport.ADVANCED_SUPPORT) {
 } else if (level >= HapticSupport.LIMITED_SUPPORT) {
   Presets.System.impactMedium();
 }
-// Skip entirely on NO_SUPPORT or MINIMAL_SUPPORT
+// Skip entirely on NO_SUPPORT
 ```
 
 ---
@@ -432,4 +431,3 @@ For anything not covered here, refer to the official Pulsar documentation:
 
 - [Pulsar SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview/)
 - [Pulsar React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native/)
-
