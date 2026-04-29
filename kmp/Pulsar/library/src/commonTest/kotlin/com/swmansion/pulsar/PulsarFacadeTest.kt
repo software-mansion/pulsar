@@ -32,6 +32,7 @@ class PulsarFacadeTest {
             ),
         )
         composer.play()
+        composer.playPattern(PatternData())
         composer.playAudioOnly()
         composer.stop()
         realtime.set(0.6f, 0.4f)
@@ -50,7 +51,11 @@ class PulsarFacadeTest {
         assertEquals(0.6f to 0.4f, factory.handle.lastRealtimeSet)
         assertEquals(1f to 0.5f, factory.handle.lastRealtimeDiscrete)
         assertTrue(factory.handle.realtimeStopped)
+        assertTrue(pulsar.isHapticsEnabled())
         assertTrue(pulsar.isHapticsSupported())
+        assertTrue(pulsar.canPlayHaptics())
+        pulsar.shutDownEngine()
+        assertTrue(factory.handle.engineShutDown)
     }
 }
 
@@ -70,6 +75,7 @@ private class FakeHandle : PulsarPlatformHandle {
     var soundEnabled = true
     var cacheEnabled = true
     var cacheCleared = false
+    var engineShutDown = false
 
     override fun presets(): PulsarPresetsHandle = presetsHandle
 
@@ -99,7 +105,15 @@ private class FakeHandle : PulsarPlatformHandle {
 
     override fun stopHaptics() = Unit
 
+    override fun shutDownEngine() {
+        engineShutDown = true
+    }
+
+    override fun isHapticsEnabled(): Boolean = true
+
     override fun isHapticsSupported(): Boolean = true
+
+    override fun canPlayHaptics(): Boolean = true
 
     val patternParsed get() = patternHandle.parsed
     val patternPlayed get() = patternHandle.played
@@ -131,6 +145,11 @@ private class FakePatternHandle : PatternComposerHandle {
 
     override fun parsePattern(pattern: PatternData) {
         parsed = true
+    }
+
+    override fun playPattern(pattern: PatternData) {
+        parsed = true
+        played = true
     }
 
     override fun play() {

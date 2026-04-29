@@ -36,7 +36,10 @@ interface PulsarPlatformHandle {
     fun enableCache(state: Boolean)
     fun clearCache()
     fun stopHaptics()
+    fun shutDownEngine()
+    fun isHapticsEnabled(): Boolean
     fun isHapticsSupported(): Boolean
+    fun canPlayHaptics(): Boolean
 }
 
 interface PulsarPresetsHandle {
@@ -54,6 +57,7 @@ interface PulsarPresetsHandle {
 
 interface PatternComposerHandle {
     fun parsePattern(pattern: PatternData)
+    fun playPattern(pattern: PatternData)
     fun play()
     fun playAudioOnly()
     fun stop()

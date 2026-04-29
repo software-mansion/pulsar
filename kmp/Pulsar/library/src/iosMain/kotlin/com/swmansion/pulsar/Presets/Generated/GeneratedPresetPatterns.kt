@@ -1,11 +1,11 @@
 package com.swmansion.pulsar
 
-private data class IOSPresetPattern(
+internal data class IOSPresetPattern(
     val continuous: List<List<List<Float>>>,
     val discrete: List<List<Float>>,
 )
 
-private val iosGeneratedPresetPatterns: Map<String, IOSPresetPattern> = mapOf(
+internal val iosGeneratedPresetPatterns: Map<String, IOSPresetPattern> = mapOf(
     "Afterglow" to IOSPresetPattern(
         continuous = listOf(listOf(), listOf()),
         discrete = listOf(listOf(0f, 1.0f, 0.3f), listOf(75f, 0.703f, 0.203f), listOf(150f, 0.5f, 0.1f)),
@@ -611,101 +611,3 @@ private val iosGeneratedPresetPatterns: Map<String, IOSPresetPattern> = mapOf(
         discrete = listOf(listOf(0f, 0.35f, 0.8f), listOf(40f, 0.35f, 0.8f), listOf(80f, 0.35f, 0.8f), listOf(120f, 0.35f, 0.8f), listOf(160f, 0.35f, 0.8f), listOf(200f, 0.35f, 0.8f), listOf(240f, 0.35f, 0.8f), listOf(280f, 0.35f, 0.8f), listOf(320f, 0.35f, 0.8f), listOf(360f, 0.35f, 0.8f), listOf(400f, 0.35f, 0.8f), listOf(430f, 0.6f, 0.75f)),
     ),
 )
-
-internal class IOSPulsarPresetsHandle(
-    private val engine: IOSHapticEngine,
-) : PulsarPresetsHandle {
-    private var cacheEnabled = true
-    private val cache = mutableMapOf<String, PatternData>()
-    private val patternComposer = IOSPatternComposerHandle(engine)
-
-    fun preload(name: String) {
-        cacheEnabled = true
-        getPattern(name)
-    }
-
-    fun enableCache(state: Boolean) {
-        cacheEnabled = state
-        if (!state) clearCache()
-    }
-
-    fun clearCache() {
-        cache.clear()
-    }
-
-    override fun play(name: String): Boolean {
-        val pattern = getPattern(name) ?: return false
-        patternComposer.parsePattern(pattern)
-        patternComposer.play()
-        return true
-    }
-
-    override fun systemImpactLight() {
-        playSystemImpact(0.35f, 0.35f)
-    }
-
-    override fun systemImpactMedium() {
-        playSystemImpact(0.6f, 0.45f)
-    }
-
-    override fun systemImpactHeavy() {
-        playSystemImpact(0.9f, 0.55f)
-    }
-
-    override fun systemImpactSoft() {
-        playSystemImpact(0.45f, 0.15f)
-    }
-
-    override fun systemImpactRigid() {
-        playSystemImpact(0.8f, 0.9f)
-    }
-
-    override fun systemNotificationSuccess() {
-        playSystemPattern(listOf(
-            ConfigPoint(0, 0.45f, 0.45f),
-            ConfigPoint(90, 0.75f, 0.55f),
-        ))
-    }
-
-    override fun systemNotificationWarning() {
-        playSystemPattern(listOf(
-            ConfigPoint(0, 0.75f, 0.55f),
-            ConfigPoint(110, 0.75f, 0.55f),
-        ))
-    }
-
-    override fun systemNotificationError() {
-        playSystemPattern(listOf(
-            ConfigPoint(0, 0.8f, 0.35f),
-            ConfigPoint(90, 0.7f, 0.35f),
-            ConfigPoint(180, 0.85f, 0.4f),
-        ))
-    }
-
-    override fun systemSelection() {
-        playSystemImpact(0.25f, 0.5f)
-    }
-
-    private fun playSystemImpact(amplitude: Float, frequency: Float) {
-        IOSRealtimeComposerHandle(engine).playDiscrete(amplitude, frequency)
-    }
-
-    private fun playSystemPattern(points: List<ConfigPoint>) {
-        val pattern = PatternData(ContinuousPattern(emptyList(), emptyList()), points)
-        patternComposer.parsePattern(pattern)
-        patternComposer.play()
-    }
-
-    private fun getPattern(name: String): PatternData? {
-        if (cacheEnabled) {
-            cache[name]?.let { return it }
-        }
-        val preset = iosGeneratedPresetPatterns[name] ?: return null
-        return PatternData(
-            rawContinuousPattern = preset.continuous,
-            rawDiscretePattern = preset.discrete,
-        ).also {
-            if (cacheEnabled) cache[name] = it
-        }
-    }
-}

@@ -57,7 +57,15 @@ private class AndroidPulsarHandle(
         nativePulsar.stopHaptics()
     }
 
+    override fun shutDownEngine() {
+        nativePulsar.stopHaptics()
+    }
+
+    override fun isHapticsEnabled(): Boolean = true
+
     override fun isHapticsSupported(): Boolean = nativePulsar.hapticSupport().name != "NO_SUPPORT"
+
+    override fun canPlayHaptics(): Boolean = isHapticsSupported()
 }
 
 private class AndroidPresetsHandle(
@@ -93,6 +101,11 @@ private class AndroidPatternComposerHandle(
 ) : PatternComposerHandle {
     override fun parsePattern(pattern: PatternData) {
         composer.parsePattern(pattern.toAndroidPatternData())
+    }
+
+    override fun playPattern(pattern: PatternData) {
+        composer.parsePattern(pattern.toAndroidPatternData())
+        composer.play()
     }
 
     override fun play() = composer.play()

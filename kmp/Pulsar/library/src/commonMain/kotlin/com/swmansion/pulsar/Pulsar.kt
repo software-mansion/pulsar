@@ -37,7 +37,15 @@ class Pulsar private constructor(
         handle.stopHaptics()
     }
 
+    fun shutDownEngine() {
+        handle.shutDownEngine()
+    }
+
+    fun isHapticsEnabled(): Boolean = handle.isHapticsEnabled()
+
     fun isHapticsSupported(): Boolean = handle.isHapticsSupported()
+
+    fun canPlayHaptics(): Boolean = handle.canPlayHaptics()
 
     companion object {
         fun registerFactory(factory: PulsarPlatformFactory) {

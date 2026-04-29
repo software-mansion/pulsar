@@ -49,6 +49,10 @@ class PatternComposer internal constructor(
         handle.parsePattern(pattern)
     }
 
+    fun playPattern(pattern: PatternData) {
+        handle.playPattern(pattern)
+    }
+
     fun play() {
         handle.play()
     }
