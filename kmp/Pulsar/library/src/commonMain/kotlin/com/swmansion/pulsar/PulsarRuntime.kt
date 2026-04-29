@@ -11,11 +11,16 @@ internal object PulsarRuntime {
     }
 
     fun createHandle(): PulsarPlatformHandle {
-        return requireNotNull(factory) {
-            "Pulsar factory is not registered. Register a platform factory before calling Pulsar.create()."
+        val platformFactory = factory ?: defaultPulsarPlatformFactory()?.also {
+            factory = it
+        }
+        return requireNotNull(platformFactory) {
+            "Pulsar platform factory is unavailable on this target."
         }.createPulsar()
     }
 }
+
+internal expect fun defaultPulsarPlatformFactory(): PulsarPlatformFactory?
 
 interface PulsarPlatformFactory {
     fun createPulsar(): PulsarPlatformHandle

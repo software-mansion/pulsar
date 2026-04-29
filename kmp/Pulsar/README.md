@@ -2,8 +2,9 @@
 
 This module exports Pulsar as a Kotlin Multiplatform wrapper library.
 
-- Android uses the native Pulsar implementation copied into `androidMain`.
-- iOS keeps its native Swift implementation separate and connects to the KMP facade through a factory bridge.
+- Android uses the native Pulsar implementation copied into `androidMain` and registers it automatically through the library manifest.
+- iOS uses a Kotlin/Native CoreHaptics implementation in `iosMain`, including generated preset pattern data.
+- Consumers can call `Pulsar.create()` from common code without adding a platform bridge.
 
 Useful commands:
 - `./gradlew :library:check`
