@@ -2,7 +2,17 @@ package com.swmansion.pulsar
 
 internal class BreakingWavePreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "BreakingWave",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 0.497f, 0.497f),
+        listOf(89f, 0.497f, 0.497f),
+        listOf(202f, 1.0f, 0.1f)
+      ),
+) {
+    override val name: String = "BreakingWave"
+}

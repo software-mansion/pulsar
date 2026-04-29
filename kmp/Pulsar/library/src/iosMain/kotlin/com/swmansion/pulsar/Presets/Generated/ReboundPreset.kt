@@ -2,7 +2,16 @@ package com.swmansion.pulsar
 
 internal class ReboundPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Rebound",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 1.0f, 1.0f),
+        listOf(80f, 1.0f, 0.3f)
+      ),
+) {
+    override val name: String = "Rebound"
+}

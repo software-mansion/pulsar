@@ -2,7 +2,15 @@ package com.swmansion.pulsar
 
 internal class PeckPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Peck",
-)
+    rawContinuousPattern = listOf(
+        listOf(listOf(0f, 0.0f), listOf(4f, 0.55f), listOf(28f, 0.0f)),
+        listOf(listOf(0f, 0.58f), listOf(28f, 0.56f)),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 0.55f, 0.58f)
+      ),
+) {
+    override val name: String = "Peck"
+}

@@ -2,7 +2,16 @@ package com.swmansion.pulsar
 
 internal class FirecrackerPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Firecracker",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 1.0f, 1.0f),
+        listOf(75f, 1.0f, 1.0f)
+      ),
+) {
+    override val name: String = "Firecracker"
+}

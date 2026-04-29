@@ -2,7 +2,17 @@ package com.swmansion.pulsar
 
 internal class RivetPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Rivet",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 1.0f, 1.0f),
+        listOf(75f, 1.0f, 1.0f),
+        listOf(150f, 1.0f, 1.0f)
+      ),
+) {
+    override val name: String = "Rivet"
+}

@@ -2,7 +2,15 @@ package com.swmansion.pulsar
 
 internal class JoltPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Jolt",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 1.0f, 1.0f)
+      ),
+) {
+    override val name: String = "Jolt"
+}

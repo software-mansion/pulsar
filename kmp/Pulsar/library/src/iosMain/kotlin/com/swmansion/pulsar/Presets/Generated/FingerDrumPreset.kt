@@ -2,7 +2,17 @@ package com.swmansion.pulsar
 
 internal class FingerDrumPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "FingerDrum",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 0.591f, 0.591f),
+        listOf(100f, 0.588f, 0.588f),
+        listOf(231f, 0.6f, 0.328f)
+      ),
+) {
+    override val name: String = "FingerDrum"
+}

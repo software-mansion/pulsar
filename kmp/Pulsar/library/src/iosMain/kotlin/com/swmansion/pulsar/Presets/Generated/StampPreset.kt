@@ -2,7 +2,16 @@ package com.swmansion.pulsar
 
 internal class StampPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Stamp",
-)
+    rawContinuousPattern = listOf(
+        listOf(listOf(0f, 0.0f), listOf(8f, 0.55f), listOf(55f, 0.0f), listOf(150f, 0.55f), listOf(205f, 0.0f)),
+        listOf(listOf(0f, 0.5f), listOf(205f, 0.5f)),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 0.55f, 0.5f),
+        listOf(150f, 0.55f, 0.5f)
+      ),
+) {
+    override val name: String = "Stamp"
+}

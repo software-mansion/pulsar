@@ -2,7 +2,17 @@ package com.swmansion.pulsar
 
 internal class WarDrumPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "WarDrum",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(10f, 1.0f, 0.106f),
+        listOf(201f, 1.0f, 0.109f),
+        listOf(398f, 0.997f, 0.103f)
+      ),
+) {
+    override val name: String = "WarDrum"
+}

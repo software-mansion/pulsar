@@ -2,7 +2,15 @@ package com.swmansion.pulsar
 
 internal class TremorPreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Tremor",
-)
+    rawContinuousPattern = listOf(
+        listOf(),
+        listOf(),
+      ),
+    rawDiscretePattern = listOf(
+        listOf(0f, 1.0f, 0.0f)
+      ),
+) {
+    override val name: String = "Tremor"
+}

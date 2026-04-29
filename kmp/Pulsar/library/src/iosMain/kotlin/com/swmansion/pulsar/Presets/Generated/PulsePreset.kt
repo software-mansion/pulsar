@@ -2,7 +2,15 @@ package com.swmansion.pulsar
 
 internal class PulsePreset(
     haptics: IOSPulsarHandle,
-) : IOSGeneratedPreset(
+) : IOSPlayer(
     haptics = haptics,
-    presetName = "Pulse",
-)
+    rawContinuousPattern = listOf(
+        listOf(listOf(0f, 0.0f), listOf(300f, 0.3f), listOf(700f, 0.3f), listOf(1000f, 0.0f), listOf(1300f, 0.3f), listOf(1700f, 0.3f), listOf(2000f, 0.0f)),
+        listOf(listOf(0f, 0.4f), listOf(2000f, 0.4f)),
+      ),
+    rawDiscretePattern = listOf(
+
+      ),
+) {
+    override val name: String = "Pulse"
+}
