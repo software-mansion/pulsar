@@ -27,7 +27,7 @@ internal class IOSHapticEngineWrapper {
     private var initialized = false
     var isHapticsEnabled: Boolean = true
         private set
-    private var isAppActive = true
+    private var isAppActive = UIApplication.sharedApplication.isActiveState()
     private val playerRegistry = mutableMapOf<Int, CHHapticPatternPlayerProtocol>()
     private val playerCreationOrder = mutableListOf<Int>()
     private var nextPlayerId = 0
@@ -143,7 +143,7 @@ internal class IOSHapticEngineWrapper {
     }
 
     fun appWillEnterForeground() {
-        updatePlaybackAvailability(UIApplication.sharedApplication.applicationState.name == "UIApplicationStateActive")
+        updatePlaybackAvailability(UIApplication.sharedApplication.isActiveState())
     }
 
     fun appDidBecomeActive() {
@@ -177,6 +177,18 @@ internal class IOSHapticEngineWrapper {
     private fun createEngineIfNeeded() {
         if (engine != null) return
         engine = CHHapticEngine(andReturnError = null)
+        setupEngineHandlers()
+    }
+
+    private fun setupEngineHandlers() {
+        engine?.stoppedHandler = {
+            initialized = false
+            clearPlayerState(stopPlayers = false)
+        }
+        engine?.resetHandler = {
+            initialized = false
+            engine = null
+        }
     }
 
     private fun buildPatternPlayer(pattern: CHHapticPattern?): CHHapticPatternPlayerProtocol? {
@@ -245,6 +257,9 @@ internal class IOSHapticEngineWrapper {
             .onFailure { log("$errorPrefix: ${it.message}") }
     }
 }
+
+private fun UIApplication.isActiveState(): Boolean =
+    applicationState.name == "UIApplicationStateActive"
 
 internal class IOSAppLifecycleObserver(
     private val engine: IOSHapticEngineWrapper,

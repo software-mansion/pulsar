@@ -2,17 +2,15 @@ package com.swmansion.pulsar
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.get
 import kotlinx.cinterop.usePinned
 import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioFormat
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioPlayerNode
-import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionCategoryOptionMixWithOthers
-import platform.AVFAudio.AVAudioSessionCategoryPlayback
-import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.AVAudioUnitEQ
 import platform.AVFAudio.AVAudioUnitEQFilterTypeLowPass
+import platform.AVFAudio.AVAudioUnitEQFilterParameters
 import platform.posix.memcpy
 import kotlin.math.PI
 import kotlin.math.ceil
@@ -56,7 +54,6 @@ internal class IOSAudioSimulator {
         }
         if (!audioContext.running) {
             runCatching {
-                AVAudioSession.sharedInstance().setActive(true, error = null)
                 audioContext.startAndReturnError(null)
             }.onFailure {
                 log("Failed to start audio engine: ${it.message}")
@@ -78,21 +75,9 @@ internal class IOSAudioSimulator {
 
     private fun configureAudioContext() {
         if (isEngineConfigured) return
-        runCatching {
-            val session = AVAudioSession.sharedInstance()
-            session.setCategory(
-                category = AVAudioSessionCategoryPlayback,
-                mode = AVAudioSessionModeDefault,
-                options = AVAudioSessionCategoryOptionMixWithOthers,
-                error = null,
-            )
-            session.setActive(true, error = null)
-        }.onFailure {
-            log("AudioSession error: ${it.message}")
-        }
 
         audioContext.attachNode(playerNode)
-        filterNode.bands.firstOrNull()?.let { band ->
+        (filterNode.bands.firstOrNull() as? AVAudioUnitEQFilterParameters)?.let { band ->
             band.filterType = AVAudioUnitEQFilterTypeLowPass
             band.frequency = 700f
             band.bandwidth = 1.0f
@@ -101,7 +86,7 @@ internal class IOSAudioSimulator {
         }
         audioContext.attachNode(filterNode)
 
-        val format = AVAudioFormat(standardFormatWithSampleRate = sampleRate, channels = 1u) ?: return
+        val format = AVAudioFormat(standardFormatWithSampleRate = sampleRate, channels = 1u)
         audioContext.connect(playerNode, to = filterNode, format = format)
         audioContext.connect(filterNode, to = audioContext.mainMixerNode, format = format)
 
@@ -336,11 +321,11 @@ internal class IOSAudioSimulator {
     }
 
     private fun IOSAudioBuffer.toPcmBuffer(sampleRate: Double): AVAudioPCMBuffer? {
-        val format = AVAudioFormat(standardFormatWithSampleRate = sampleRate, channels = 1u) ?: return null
+        val format = AVAudioFormat(standardFormatWithSampleRate = sampleRate, channels = 1u)
         val frameCount = samples.size.toUInt()
-        val buffer = AVAudioPCMBuffer(PCMFormat = format, frameCapacity = frameCount) ?: return null
+        val buffer = AVAudioPCMBuffer(pCMFormat = format, frameCapacity = frameCount)
         buffer.frameLength = frameCount
-        val out = buffer.floatChannelData?.get(0) ?: return null
+        val out = buffer.floatChannelData?.let { it[0] } ?: return null
         samples.usePinned {
             memcpy(out, it.addressOf(0), samples.size.toULong() * Float.SIZE_BYTES.toULong())
         }
