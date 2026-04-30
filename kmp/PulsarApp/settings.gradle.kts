@@ -31,7 +31,7 @@ dependencyResolutionManagement {
 include(":composeApp")
 includeBuild("../Pulsar") {
     dependencySubstitution {
-        substitute(module("com.swmansion:pulsar"))
+        substitute(module("com.swmansion:pulsar-kmp"))
             .using(project(":library"))
     }
 }

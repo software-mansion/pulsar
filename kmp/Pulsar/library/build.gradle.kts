@@ -40,11 +40,11 @@ kotlin {
 }
 
 mavenPublishing {
-    publishToMavenCentral()
+    publishToMavenCentral(automaticRelease = true)
 
     signAllPublications()
 
-    coordinates(group.toString(), "pulsar", version.toString())
+    coordinates(group.toString(), "pulsar-kmp", version.toString())
 
     pom {
         name = "Pulsar"

@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code
@@ -32,7 +32,7 @@ jobs:
         working-directory: kmp/Pulsar
         env:
           LIB_VERSION: ${{ inputs.version }}
-        run: ./gradlew :library:check
+        run: ./gradlew :library:build
 
       - name: Publish KMP library to Maven Central
         working-directory: kmp/Pulsar

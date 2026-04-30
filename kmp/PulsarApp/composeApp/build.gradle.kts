@@ -22,7 +22,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export("com.swmansion:pulsar:1.0.0")
+            export("com.swmansion:pulsar-kmp:1.0.0")
         }
     }
     
@@ -32,7 +32,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
-            api("com.swmansion:pulsar:1.0.0")
+            api("com.swmansion:pulsar-kmp:1.0.0")
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
