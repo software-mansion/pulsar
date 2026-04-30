@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 // Swift's Pulsar.swift facade lives in commonMain for KMP; iosMain only wires the
 // shared API to iOS-specific CoreHaptics, UIKit, and AVAudio implementations.

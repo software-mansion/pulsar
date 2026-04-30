@@ -1,11 +1,11 @@
-package com.swmansion.pulsar.androidimpl.presets
+package com.swmansion.pulsar.kmp.androidimpl.presets
 
 import android.app.Activity
 import android.content.Context
-import com.swmansion.pulsar.androidimpl.Pulsar
-import com.swmansion.pulsar.androidimpl.haptics.HapticEngineWrapper
-import com.swmansion.pulsar.androidimpl.types.Preset
-import com.swmansion.pulsar.androidimpl.presets.generated.*
+import com.swmansion.pulsar.kmp.androidimpl.Pulsar
+import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.kmp.androidimpl.types.Preset
+import com.swmansion.pulsar.kmp.androidimpl.presets.generated.*
 
 class PresetsWrapper(
     private val haptics: Pulsar,

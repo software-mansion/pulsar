@@ -1,8 +1,8 @@
-package com.swmansion.pulsar.androidimpl.presets
+package com.swmansion.pulsar.kmp.androidimpl.presets
 
-import com.swmansion.pulsar.androidimpl.Pulsar
-import com.swmansion.pulsar.androidimpl.types.PatternData
-import com.swmansion.pulsar.androidimpl.composers.PatternComposer
+import com.swmansion.pulsar.kmp.androidimpl.Pulsar
+import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
+import com.swmansion.pulsar.kmp.androidimpl.composers.PatternComposer
 
 open class Player(
     haptics: Pulsar,

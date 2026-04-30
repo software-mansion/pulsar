@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 class Pulsar private constructor(
     private val handle: PulsarPlatformHandle,

@@ -1,4 +1,4 @@
-package com.swmansion.pulsar.androidimpl.types
+package com.swmansion.pulsar.kmp.androidimpl.types
 
 interface Preset {
     fun play()

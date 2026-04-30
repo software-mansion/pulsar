@@ -1,7 +1,7 @@
-package com.swmansion.pulsar.androidimpl.haptics
+package com.swmansion.pulsar.kmp.androidimpl.haptics
 
-import com.swmansion.pulsar.androidimpl.types.ConfigPoint
-import com.swmansion.pulsar.androidimpl.types.ValuePoint
+import com.swmansion.pulsar.kmp.androidimpl.types.ConfigPoint
+import com.swmansion.pulsar.kmp.androidimpl.types.ValuePoint
 
 class PeakLineBuilder(private val minTransitionDuration: Long = 15L) {
     fun convertToContinuousPatternOfAmplitude(

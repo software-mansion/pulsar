@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 internal open class IOSPlayer(
     private val haptics: IOSPulsarHandle,

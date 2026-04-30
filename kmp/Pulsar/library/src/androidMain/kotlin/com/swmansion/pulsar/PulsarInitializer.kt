@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 import android.content.ContentProvider
 import android.content.ContentValues

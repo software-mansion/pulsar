@@ -1,9 +1,9 @@
-package com.swmansion.pulsar.androidimpl.composers
+package com.swmansion.pulsar.kmp.androidimpl.composers
 
-import com.swmansion.pulsar.androidimpl.haptics.HapticEngineWrapper
-import com.swmansion.pulsar.androidimpl.types.CompatibilityMode
-import com.swmansion.pulsar.androidimpl.types.RealtimeComposable
-import com.swmansion.pulsar.androidimpl.types.RealtimeComposerStrategy
+import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.kmp.androidimpl.types.CompatibilityMode
+import com.swmansion.pulsar.kmp.androidimpl.types.RealtimeComposable
+import com.swmansion.pulsar.kmp.androidimpl.types.RealtimeComposerStrategy
 
 class RealtimeComposer(
     engine: HapticEngineWrapper,

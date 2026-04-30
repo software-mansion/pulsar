@@ -1,6 +1,6 @@
-package com.swmansion.pulsar.androidimpl.haptics
+package com.swmansion.pulsar.kmp.androidimpl.haptics
 
-import com.swmansion.pulsar.androidimpl.types.ConfigPoint
+import com.swmansion.pulsar.kmp.androidimpl.types.ConfigPoint
 
 class ConfigLineBuilder(amplitudeLine: ValueLineBuilder, frequencyLine: ValueLineBuilder) {
     val points = ArrayList<ConfigPoint>()

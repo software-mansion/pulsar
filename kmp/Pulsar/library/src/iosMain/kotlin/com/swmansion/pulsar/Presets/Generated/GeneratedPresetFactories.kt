@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 // Swift keeps generated preset registration inline in PresetsWrapper.swift. KMP
 // keeps the generated classes one-to-one, but extracts the mapper to this file.

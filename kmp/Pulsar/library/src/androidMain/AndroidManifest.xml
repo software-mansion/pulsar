@@ -5,7 +5,7 @@
 
     <application>
         <provider
-            android:name="com.swmansion.pulsar.PulsarInitializer"
+            android:name="com.swmansion.pulsar.kmp.PulsarInitializer"
             android:authorities="${applicationId}.pulsar-initializer"
             android:exported="false"
             android:initOrder="100" />

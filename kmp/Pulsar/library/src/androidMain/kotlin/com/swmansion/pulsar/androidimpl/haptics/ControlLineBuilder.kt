@@ -1,7 +1,7 @@
-package com.swmansion.pulsar.androidimpl.haptics
+package com.swmansion.pulsar.kmp.androidimpl.haptics
 
-import com.swmansion.pulsar.androidimpl.types.ControlPoint
-import com.swmansion.pulsar.androidimpl.types.ConfigPoint
+import com.swmansion.pulsar.kmp.androidimpl.types.ControlPoint
+import com.swmansion.pulsar.kmp.androidimpl.types.ConfigPoint
 
 class ControlLineBuilder(val configLine: ConfigLineBuilder) {
 

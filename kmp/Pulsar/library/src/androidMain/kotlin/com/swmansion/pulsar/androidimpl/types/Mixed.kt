@@ -1,4 +1,4 @@
-package com.swmansion.pulsar.androidimpl.types
+package com.swmansion.pulsar.kmp.androidimpl.types
 
 /**
  * @param ADVANCED_SUPPORT - Supports for advance envelope API, full control over frequency, amplitude and timing, required Android API 36

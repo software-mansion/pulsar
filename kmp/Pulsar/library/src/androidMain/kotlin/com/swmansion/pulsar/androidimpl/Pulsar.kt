@@ -1,14 +1,14 @@
-package com.swmansion.pulsar.androidimpl
+package com.swmansion.pulsar.kmp.androidimpl
 
 import android.app.Activity
 import android.content.Context
-import com.swmansion.pulsar.androidimpl.audio.AudioSimulator
-import com.swmansion.pulsar.androidimpl.composers.PatternComposer
-import com.swmansion.pulsar.androidimpl.composers.RealtimeComposer
-import com.swmansion.pulsar.androidimpl.haptics.HapticEngineWrapper
-import com.swmansion.pulsar.androidimpl.presets.PresetsWrapper
-import com.swmansion.pulsar.androidimpl.types.CompatibilityMode
-import com.swmansion.pulsar.androidimpl.types.RealtimeComposerStrategy
+import com.swmansion.pulsar.kmp.androidimpl.audio.AudioSimulator
+import com.swmansion.pulsar.kmp.androidimpl.composers.PatternComposer
+import com.swmansion.pulsar.kmp.androidimpl.composers.RealtimeComposer
+import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.kmp.androidimpl.presets.PresetsWrapper
+import com.swmansion.pulsar.kmp.androidimpl.types.CompatibilityMode
+import com.swmansion.pulsar.kmp.androidimpl.types.RealtimeComposerStrategy
 
 open class Pulsar(protected var context: Context) {
     protected val engine = HapticEngineWrapper(context)

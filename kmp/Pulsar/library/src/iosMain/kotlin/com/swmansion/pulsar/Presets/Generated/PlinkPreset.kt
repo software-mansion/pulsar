@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 internal class PlinkPreset(
     haptics: IOSPulsarHandle,

@@ -1,10 +1,10 @@
-package com.swmansion.pulsar.androidimpl.composers
+package com.swmansion.pulsar.kmp.androidimpl.composers
 
 import android.os.Build
-import com.swmansion.pulsar.androidimpl.haptics.HapticEngineWrapper
-import com.swmansion.pulsar.androidimpl.haptics.VibrationEffectsGenerator
-import com.swmansion.pulsar.androidimpl.types.ControlPoint
-import com.swmansion.pulsar.androidimpl.types.RealtimeComposable
+import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.kmp.androidimpl.haptics.VibrationEffectsGenerator
+import com.swmansion.pulsar.kmp.androidimpl.types.ControlPoint
+import com.swmansion.pulsar.kmp.androidimpl.types.RealtimeComposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

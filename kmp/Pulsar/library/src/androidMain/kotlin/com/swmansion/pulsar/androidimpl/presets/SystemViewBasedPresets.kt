@@ -1,13 +1,13 @@
-package com.swmansion.pulsar.androidimpl.presets
+package com.swmansion.pulsar.kmp.androidimpl.presets
 
 import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.view.HapticFeedbackConstants
-import com.swmansion.pulsar.androidimpl.Pulsar
-import com.swmansion.pulsar.androidimpl.types.PatternData
-import com.swmansion.pulsar.androidimpl.types.Preset
-import com.swmansion.pulsar.androidimpl.types.PresetWithName
+import com.swmansion.pulsar.kmp.androidimpl.Pulsar
+import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
+import com.swmansion.pulsar.kmp.androidimpl.types.Preset
+import com.swmansion.pulsar.kmp.androidimpl.types.PresetWithName
 
 class SystemViewBasedPresets(private var activity: Activity?) {
     fun longPress() { playHaptic(HapticFeedbackConstants.LONG_PRESS) }

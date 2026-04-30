@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreHaptics.CHHapticEvent

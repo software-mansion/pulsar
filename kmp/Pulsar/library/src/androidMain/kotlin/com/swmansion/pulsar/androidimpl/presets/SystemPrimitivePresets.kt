@@ -1,13 +1,13 @@
-package com.swmansion.pulsar.androidimpl.presets
+package com.swmansion.pulsar.kmp.androidimpl.presets
 
 import android.os.Build
 import android.os.VibrationEffect
 import android.util.Log
-import com.swmansion.pulsar.androidimpl.Pulsar
-import com.swmansion.pulsar.androidimpl.haptics.HapticEngineWrapper
-import com.swmansion.pulsar.androidimpl.types.PatternData
-import com.swmansion.pulsar.androidimpl.types.Preset
-import com.swmansion.pulsar.androidimpl.types.PresetWithName
+import com.swmansion.pulsar.kmp.androidimpl.Pulsar
+import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
+import com.swmansion.pulsar.kmp.androidimpl.types.Preset
+import com.swmansion.pulsar.kmp.androidimpl.types.PresetWithName
 
 class SystemPrimitivePresets(private val engine: HapticEngineWrapper) {
     fun primitiveClick() {

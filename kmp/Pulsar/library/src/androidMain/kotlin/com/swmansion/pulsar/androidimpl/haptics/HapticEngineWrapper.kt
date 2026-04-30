@@ -1,4 +1,4 @@
-package com.swmansion.pulsar.androidimpl.haptics
+package com.swmansion.pulsar.kmp.androidimpl.haptics
 
 import android.content.Context
 import android.os.Build
@@ -7,7 +7,7 @@ import android.os.Vibrator
 import android.os.vibrator.VibratorFrequencyProfile
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.swmansion.pulsar.androidimpl.types.CompatibilityMode
+import com.swmansion.pulsar.kmp.androidimpl.types.CompatibilityMode
 
 class HapticEngineWrapper(context: Context) {
 

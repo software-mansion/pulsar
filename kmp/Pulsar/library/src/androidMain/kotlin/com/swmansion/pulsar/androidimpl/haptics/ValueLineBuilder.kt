@@ -1,6 +1,6 @@
-package com.swmansion.pulsar.androidimpl.haptics
+package com.swmansion.pulsar.kmp.androidimpl.haptics
 
-import com.swmansion.pulsar.androidimpl.types.ValuePoint
+import com.swmansion.pulsar.kmp.androidimpl.types.ValuePoint
 
 class ValueLineBuilder(initialList: List<ValuePoint>? = null) {
     var points = ArrayList<ValuePoint>()

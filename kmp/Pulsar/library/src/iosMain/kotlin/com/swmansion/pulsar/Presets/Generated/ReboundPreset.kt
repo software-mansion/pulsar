@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 internal class ReboundPreset(
     haptics: IOSPulsarHandle,

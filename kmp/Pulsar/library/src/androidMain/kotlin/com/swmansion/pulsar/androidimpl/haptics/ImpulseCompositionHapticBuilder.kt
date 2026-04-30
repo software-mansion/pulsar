@@ -1,9 +1,9 @@
-package com.swmansion.pulsar.androidimpl.haptics
+package com.swmansion.pulsar.kmp.androidimpl.haptics
 
 import android.os.Build
 import android.os.VibrationEffect
 import androidx.annotation.RequiresApi
-import com.swmansion.pulsar.androidimpl.types.PatternData
+import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
 
 class ImpulseCompositionHapticBuilder {
 

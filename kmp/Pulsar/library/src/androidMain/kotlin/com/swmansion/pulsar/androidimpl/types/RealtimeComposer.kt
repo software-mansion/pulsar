@@ -1,4 +1,4 @@
-package com.swmansion.pulsar.androidimpl.types
+package com.swmansion.pulsar.kmp.androidimpl.types
 
 /**
  * Since Android doesn't support a true continuous mode, it must be simulated. There are a couple

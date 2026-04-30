@@ -1,4 +1,4 @@
-package com.swmansion.pulsar.androidimpl.types
+package com.swmansion.pulsar.kmp.androidimpl.types
 
 enum class WaveformType(val value: String) {
     SINE("sine"),

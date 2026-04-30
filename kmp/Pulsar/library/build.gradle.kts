@@ -10,7 +10,7 @@ version = System.getenv("LIB_VERSION") ?: "1.0.0"
 
 kotlin {
     androidLibrary {
-        namespace = "com.swmansion.pulsar.androidimpl"
+        namespace = "com.swmansion.pulsar.kmp.androidimpl"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 

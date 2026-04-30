@@ -1,10 +1,10 @@
-package com.swmansion.pulsar.androidimpl.composers
+package com.swmansion.pulsar.kmp.androidimpl.composers
 
 import android.os.Build
 import android.os.VibrationEffect
-import com.swmansion.pulsar.androidimpl.audio.AudioSimulator
-import com.swmansion.pulsar.androidimpl.haptics.HapticEngineWrapper
-import com.swmansion.pulsar.androidimpl.types.PatternData
+import com.swmansion.pulsar.kmp.androidimpl.audio.AudioSimulator
+import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
 
 class PatternComposer(
     private val engine: HapticEngineWrapper,

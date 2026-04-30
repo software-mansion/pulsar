@@ -1,10 +1,10 @@
-package com.swmansion.pulsar.androidimpl.presets.generated
+package com.swmansion.pulsar.kmp.androidimpl.presets.generated
 
-import com.swmansion.pulsar.androidimpl.Pulsar
-import com.swmansion.pulsar.androidimpl.presets.Player
-import com.swmansion.pulsar.androidimpl.types.PatternData
-import com.swmansion.pulsar.androidimpl.types.Preset
-import com.swmansion.pulsar.androidimpl.types.PresetWithName
+import com.swmansion.pulsar.kmp.androidimpl.Pulsar
+import com.swmansion.pulsar.kmp.androidimpl.presets.Player
+import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
+import com.swmansion.pulsar.kmp.androidimpl.types.Preset
+import com.swmansion.pulsar.kmp.androidimpl.types.PresetWithName
 
 class FlarePreset(haptics: Pulsar) :
     Preset,

@@ -1,11 +1,11 @@
-package com.swmansion.pulsar.androidimpl.haptics
+package com.swmansion.pulsar.kmp.androidimpl.haptics
 
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.vibrator.VibratorFrequencyProfile
 import androidx.annotation.RequiresApi
-import com.swmansion.pulsar.androidimpl.types.CompatibilityMode
-import com.swmansion.pulsar.androidimpl.types.ControlPoint
+import com.swmansion.pulsar.kmp.androidimpl.types.CompatibilityMode
+import com.swmansion.pulsar.kmp.androidimpl.types.ControlPoint
 import kotlin.collections.plus
 import kotlin.math.roundToInt
 

@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.kmp
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
