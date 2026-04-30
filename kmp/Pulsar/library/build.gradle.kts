@@ -1,8 +1,11 @@
 import com.android.build.api.dsl.androidLibrary
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.vanniktech.mavenPublish)
+    signing
 }
 
 group = "com.swmansion"
@@ -70,5 +73,21 @@ mavenPublishing {
             connection = "scm:git:https://github.com/software-mansion/pulsar.git"
             developerConnection = "scm:git:ssh://git@github.com/software-mansion/pulsar.git"
         }
+    }
+}
+
+signing {
+    val rawKey = System.getenv("GPG_PRIVATE_KEY")
+    val passphrase = System.getenv("GPG_PASSPHRASE")
+    if (!rawKey.isNullOrBlank() && !passphrase.isNullOrBlank()) {
+        val armoredKey = if (rawKey.contains("BEGIN PGP PRIVATE KEY BLOCK")) {
+            rawKey
+        } else {
+            runCatching { String(Base64.getDecoder().decode(rawKey.trim())) }
+                .getOrNull()
+                ?.takeIf { it.contains("BEGIN PGP PRIVATE KEY BLOCK") }
+                ?: error("GPG_PRIVATE_KEY is neither ASCII-armored PGP nor base64-encoded armored PGP")
+        }
+        useInMemoryPgpKeys(armoredKey, passphrase)
     }
 }
