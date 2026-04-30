@@ -14,7 +14,7 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
     private var forcedCompatibilityMode = CompatibilityMode.ADVANCED_SUPPORT
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun convertToVibrationEffect(controlLine: ControlLineBuilder) : VibrationEffect {
+    fun convertToVibrationEffect(controlLine: ControlLineBuilder) : VibrationEffect? {
         return if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
             && engine.isEnvelopeSupported()
@@ -37,7 +37,7 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun convertToVibrationEffect(points: List<ControlPoint>) : VibrationEffect {
+    fun convertToVibrationEffect(points: List<ControlPoint>) : VibrationEffect? {
         return if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
             && engine.isEnvelopeSupported()
@@ -111,7 +111,7 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun convertToAmplitudeWaveform(controlPoints: List<ControlPoint>): VibrationEffect {
+    private fun convertToAmplitudeWaveform(controlPoints: List<ControlPoint>): VibrationEffect? {
         var timings = longArrayOf()
         var amplitudes = intArrayOf()
         val maxAmplitude = 255
@@ -120,11 +120,15 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
             amplitudes += (it.intensity * maxAmplitude).roundToInt()
         }
 
+        if (!hasPlayableWaveform(timings)) {
+            return null
+        }
+
         return VibrationEffect.createWaveform(timings, amplitudes, -1)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun convertToTimingWaveform(controlPoints: List<ControlPoint>): VibrationEffect {
+    private fun convertToTimingWaveform(controlPoints: List<ControlPoint>): VibrationEffect? {
         var timings = longArrayOf(0)
         var isVibrating = false
 
@@ -140,7 +144,15 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
             }
         }
 
+        if (!hasPlayableWaveform(timings)) {
+            return null
+        }
+
         return VibrationEffect.createWaveform(timings, -1)
+    }
+
+    private fun hasPlayableWaveform(timings: LongArray): Boolean {
+        return timings.isNotEmpty() && timings.any { it > 0L }
     }
 
     fun simulateCompatibilityMode(mode: CompatibilityMode) {

@@ -18,7 +18,7 @@ class HapticBuilder(private val engine: HapticEngineWrapper) {
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
-  fun createVibrationEffect(preset: PatternData): VibrationEffect {
+  fun createVibrationEffect(preset: PatternData): VibrationEffect? {
     if (impulseCompositionEnabled && ImpulseCompositionHapticBuilder.isImpulsesOnly(preset)) {
       val effect = impulseCompositionBuilder.createCompositionEffect(preset)
       if (effect != null) return effect
