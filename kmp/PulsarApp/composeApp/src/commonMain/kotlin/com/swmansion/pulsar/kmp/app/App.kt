@@ -17,11 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import com.swmansion.pulsar.ConfigPoint
-import com.swmansion.pulsar.ContinuousPattern
-import com.swmansion.pulsar.PatternData
-import com.swmansion.pulsar.Pulsar
-import com.swmansion.pulsar.ValuePoint
+import com.swmansion.pulsar.kmp.ConfigPoint
+import com.swmansion.pulsar.kmp.ContinuousPattern
+import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.Pulsar
+import com.swmansion.pulsar.kmp.ValuePoint
 
 @Composable
 @Preview
