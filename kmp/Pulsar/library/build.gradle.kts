@@ -6,11 +6,11 @@ plugins {
 }
 
 group = "com.swmansion"
-version = System.getenv("LIB_VERSION") ?: "1.0.0"
+version = System.getenv("LIB_VERSION") ?: "0.0.1"
 
 kotlin {
     androidLibrary {
-        namespace = "com.swmansion.pulsar.kmp.androidimpl"
+        namespace = "com.swmansion.pulsar.kmp"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
