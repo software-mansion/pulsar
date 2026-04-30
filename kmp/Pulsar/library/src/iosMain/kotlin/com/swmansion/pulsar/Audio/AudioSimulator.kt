@@ -8,9 +8,15 @@ import platform.AVFAudio.AVAudioEngine
 import platform.AVFAudio.AVAudioFormat
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioPlayerNode
+import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryOptionMixWithOthers
+import platform.AVFAudio.AVAudioSessionCategoryPlayback
+import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.AVAudioUnitEQ
 import platform.AVFAudio.AVAudioUnitEQFilterTypeLowPass
 import platform.AVFAudio.AVAudioUnitEQFilterParameters
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.posix.memcpy
 import kotlin.math.PI
 import kotlin.math.ceil
@@ -62,7 +68,11 @@ internal class IOSAudioSimulator {
         }
 
         val pcmBuffer = buffer.toPcmBuffer(sampleRate) ?: return
-        playerNode.scheduleBuffer(pcmBuffer, completionHandler = null)
+        playerNode.scheduleBuffer(pcmBuffer) {
+            dispatch_async(dispatch_get_main_queue()) {
+                stop()
+            }
+        }
         playerNode.play()
     }
 
@@ -75,6 +85,18 @@ internal class IOSAudioSimulator {
 
     private fun configureAudioContext() {
         if (isEngineConfigured) return
+
+        val session = AVAudioSession.sharedInstance()
+        runCatching {
+            session.setCategory(
+                AVAudioSessionCategoryPlayback,
+                mode = AVAudioSessionModeDefault,
+                options = AVAudioSessionCategoryOptionMixWithOthers,
+                error = null,
+            )
+        }.onFailure {
+            log("AudioSession error: ${it.message}")
+        }
 
         audioContext.attachNode(playerNode)
         (filterNode.bands.firstOrNull() as? AVAudioUnitEQFilterParameters)?.let { band ->

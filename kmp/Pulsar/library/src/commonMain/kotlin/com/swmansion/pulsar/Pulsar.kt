@@ -4,12 +4,11 @@ class Pulsar private constructor(
     private val handle: PulsarPlatformHandle,
 ) {
     private val presetsController by lazy { PulsarPresets(handle.presets()) }
-    private val patternComposerController by lazy { PatternComposer(handle.patternComposer()) }
     private val realtimeComposerController by lazy { RealtimeComposer(handle.realtimeComposer()) }
 
     fun getPresets(): PulsarPresets = presetsController
 
-    fun getPatternComposer(): PatternComposer = patternComposerController
+    fun getPatternComposer(): PatternComposer = PatternComposer(handle.patternComposer())
 
     fun getRealtimeComposer(): RealtimeComposer = realtimeComposerController
 

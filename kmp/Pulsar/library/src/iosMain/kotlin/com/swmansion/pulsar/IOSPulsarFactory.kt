@@ -1,5 +1,7 @@
 package com.swmansion.pulsar
 
+// Swift's Pulsar.swift facade lives in commonMain for KMP; iosMain only wires the
+// shared API to iOS-specific CoreHaptics, UIKit, and AVAudio implementations.
 internal actual fun defaultPulsarPlatformFactory(): PulsarPlatformFactory? = IOSPulsarFactory()
 
 private class IOSPulsarFactory : PulsarPlatformFactory {
