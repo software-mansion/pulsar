@@ -2,6 +2,7 @@ package com.swmansion.pulsar.kmp.iosimpl.haptics
 
 import com.swmansion.pulsar.kmp.Pulsar
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCAction
 import platform.CoreHaptics.CHHapticAdvancedPatternPlayerProtocol
 import platform.CoreHaptics.CHHapticEngine
 import platform.CoreHaptics.CHHapticEvent
@@ -262,24 +263,29 @@ internal class IOSHapticEngineWrapper {
 private fun UIApplication.isActiveState(): Boolean =
     applicationState.name == "UIApplicationStateActive"
 
+@OptIn(kotlinx.cinterop.BetaInteropApi::class)
 internal class IOSAppLifecycleObserver(
     private val engine: IOSHapticEngineWrapper,
 ) : NSObject() {
+    @ObjCAction
     @Suppress("UNUSED_PARAMETER")
     fun appDidEnterBackground(notification: NSNotification) {
         engine.appDidEnterBackground()
     }
 
+    @ObjCAction
     @Suppress("UNUSED_PARAMETER")
     fun appWillEnterForeground(notification: NSNotification) {
         engine.appWillEnterForeground()
     }
 
+    @ObjCAction
     @Suppress("UNUSED_PARAMETER")
     fun appDidBecomeActive(notification: NSNotification) {
         engine.appDidBecomeActive()
     }
 
+    @ObjCAction
     @Suppress("UNUSED_PARAMETER")
     fun appWillResignActive(notification: NSNotification) {
         engine.appWillResignActive()
