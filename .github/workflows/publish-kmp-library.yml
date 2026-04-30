@@ -1,0 +1,45 @@
+name: Publish KMP to Maven
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Display version
+        run: echo "Publishing version ${{ inputs.version }}"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Validate KMP library build
+        working-directory: kmp/Pulsar
+        env:
+          LIB_VERSION: ${{ inputs.version }}
+        run: ./gradlew :library:build
+
+      - name: Publish KMP library to Maven Central
+        working-directory: kmp/Pulsar
+        env:
+          LIB_VERSION: ${{ inputs.version }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./gradlew :library:publishToMavenCentral
