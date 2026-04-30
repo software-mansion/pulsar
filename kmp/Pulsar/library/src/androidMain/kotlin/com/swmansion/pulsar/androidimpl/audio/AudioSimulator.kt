@@ -3,7 +3,6 @@ package com.swmansion.pulsar.kmp.androidimpl.audio
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import com.swmansion.pulsar.kmp.androidimpl.BuildConfig
 import com.swmansion.pulsar.kmp.androidimpl.types.AudioDataConfig
 import com.swmansion.pulsar.kmp.androidimpl.types.AudioPatternConfig
 import com.swmansion.pulsar.kmp.androidimpl.types.CompatibilityMode
@@ -27,7 +26,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class AudioSimulator(
-    private var compatibilityMode: CompatibilityMode
+    private var compatibilityMode: CompatibilityMode,
+    isDebugBuild: Boolean,
 ) {
     companion object {
         private const val MAX_FREQUENCY = 440.0
@@ -41,7 +41,7 @@ class AudioSimulator(
     private val sampleRateF: Float = sampleRate.toFloat()
     private var audioTrack: AudioTrack? = null
     private var isInitialized = false
-    private var playSound: Boolean = BuildConfig.DEBUG
+    private var playSound: Boolean = isDebugBuild
     private val audioScope = CoroutineScope(Dispatchers.IO)
     private val audioMutex = Mutex()
     private var currentPlayJob: Job? = null

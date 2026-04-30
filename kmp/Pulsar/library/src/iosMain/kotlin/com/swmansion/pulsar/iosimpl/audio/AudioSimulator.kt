@@ -28,15 +28,16 @@ import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+import kotlin.native.Platform
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, kotlin.experimental.ExperimentalNativeApi::class)
 internal class IOSAudioSimulator {
     private val sampleRate = 22_050.0
     private val audioContext = AVAudioEngine()
     private val playerNode = AVAudioPlayerNode()
     private val filterNode = AVAudioUnitEQ(numberOfBands = 1u)
     private var isEngineConfigured = false
-    private var playSound = false
+    private var playSound = Platform.isDebugBinary
 
     fun parsePattern(data: PatternData): IOSAudioBuffer? {
         if (!playSound) return null
