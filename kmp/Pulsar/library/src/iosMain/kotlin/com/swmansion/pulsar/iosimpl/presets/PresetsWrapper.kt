@@ -1,5 +1,8 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.presets
 
+import com.swmansion.pulsar.kmp.IOSPulsarHandle
+import com.swmansion.pulsar.kmp.PulsarPresetsHandle
+import com.swmansion.pulsar.kmp.iosimpl.presets.generated.iosGeneratedPresetFactories
 internal class IOSPulsarPresetsHandle(
     private val haptics: IOSPulsarHandle,
 ) : PulsarPresetsHandle {

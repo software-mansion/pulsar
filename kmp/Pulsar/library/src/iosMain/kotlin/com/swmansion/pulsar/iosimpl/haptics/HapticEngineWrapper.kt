@@ -1,5 +1,6 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.haptics
 
+import com.swmansion.pulsar.kmp.Pulsar
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreHaptics.CHHapticAdvancedPatternPlayerProtocol
 import platform.CoreHaptics.CHHapticEngine

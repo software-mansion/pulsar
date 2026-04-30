@@ -1,5 +1,7 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.presets.generated
 
+import com.swmansion.pulsar.kmp.IOSPulsarHandle
+import com.swmansion.pulsar.kmp.iosimpl.presets.IOSPlayer
 internal class ZipperPreset(
     haptics: IOSPulsarHandle,
 ) : IOSPlayer(

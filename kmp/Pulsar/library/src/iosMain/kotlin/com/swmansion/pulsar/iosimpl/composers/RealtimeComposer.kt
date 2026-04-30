@@ -1,5 +1,8 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.composers
 
+import com.swmansion.pulsar.kmp.RealtimeComposerHandle
+import com.swmansion.pulsar.kmp.iosimpl.haptics.IOSHapticEngineWrapper
+import com.swmansion.pulsar.kmp.iosimpl.haptics.log
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreHaptics.CHHapticDynamicParameter
 import platform.CoreHaptics.CHHapticDynamicParameterIDHapticIntensityControl

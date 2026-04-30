@@ -1,5 +1,6 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.presets
 
+import com.swmansion.pulsar.kmp.IOSPulsarHandle
 import platform.UIKit.UIImpactFeedbackGenerator
 import platform.UIKit.UIImpactFeedbackStyle
 import platform.UIKit.UINotificationFeedbackGenerator

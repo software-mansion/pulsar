@@ -1,5 +1,13 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.composers
 
+import com.swmansion.pulsar.kmp.PatternComposerHandle
+import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.iosimpl.audio.IOSAudioBuffer
+import com.swmansion.pulsar.kmp.iosimpl.audio.IOSAudioSimulator
+import com.swmansion.pulsar.kmp.iosimpl.haptics.IOSContinuousLine
+import com.swmansion.pulsar.kmp.iosimpl.haptics.IOSDiscreteLine
+import com.swmansion.pulsar.kmp.iosimpl.haptics.IOSHapticEngineWrapper
+import com.swmansion.pulsar.kmp.iosimpl.haptics.log
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreHaptics.CHHapticEvent
 import platform.CoreHaptics.CHHapticEventParameter

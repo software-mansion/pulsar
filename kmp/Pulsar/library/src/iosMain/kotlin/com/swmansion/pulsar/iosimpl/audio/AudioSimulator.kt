@@ -1,5 +1,8 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.audio
 
+import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.ValuePoint
+import com.swmansion.pulsar.kmp.iosimpl.haptics.log
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.get

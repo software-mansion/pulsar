@@ -1,5 +1,6 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.presets.generated
 
+import com.swmansion.pulsar.kmp.iosimpl.presets.IOSPresetFactory
 // Swift keeps generated preset registration inline in PresetsWrapper.swift. KMP
 // keeps the generated classes one-to-one, but extracts the mapper to this file.
 internal val iosGeneratedPresetFactories: Map<String, IOSPresetFactory> = mapOf(

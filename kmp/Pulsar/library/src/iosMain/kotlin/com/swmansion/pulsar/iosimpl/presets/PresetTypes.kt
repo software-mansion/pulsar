@@ -1,5 +1,6 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.presets
 
+import com.swmansion.pulsar.kmp.IOSPulsarHandle
 internal interface IOSPreset {
     fun play()
 

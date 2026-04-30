@@ -1,5 +1,10 @@
 package com.swmansion.pulsar.kmp
 
+import com.swmansion.pulsar.kmp.iosimpl.audio.IOSAudioSimulator
+import com.swmansion.pulsar.kmp.iosimpl.composers.IOSPatternComposerHandle
+import com.swmansion.pulsar.kmp.iosimpl.composers.IOSRealtimeComposerHandle
+import com.swmansion.pulsar.kmp.iosimpl.haptics.IOSHapticEngineWrapper
+import com.swmansion.pulsar.kmp.iosimpl.presets.IOSPulsarPresetsHandle
 // Swift's Pulsar.swift facade lives in commonMain for KMP; iosMain only wires the
 // shared API to iOS-specific CoreHaptics, UIKit, and AVAudio implementations.
 internal actual fun defaultPulsarPlatformFactory(): PulsarPlatformFactory? = IOSPulsarFactory()

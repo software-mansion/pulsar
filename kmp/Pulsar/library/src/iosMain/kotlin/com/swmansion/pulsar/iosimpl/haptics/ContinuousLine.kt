@@ -1,4 +1,4 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.haptics
 
 internal class IOSContinuousLine {
     val intensityCurveLine = IOSIntensityCurveLineModifier()

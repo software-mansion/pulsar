@@ -1,5 +1,7 @@
-package com.swmansion.pulsar.kmp
+package com.swmansion.pulsar.kmp.iosimpl.presets
 
+import com.swmansion.pulsar.kmp.IOSPulsarHandle
+import com.swmansion.pulsar.kmp.PatternData
 internal open class IOSPlayer(
     private val haptics: IOSPulsarHandle,
     private val audioOnly: Boolean = false,
