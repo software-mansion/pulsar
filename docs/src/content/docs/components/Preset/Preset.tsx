@@ -51,6 +51,11 @@ function getKotlinPresetImport(shortName: string) {
   return `import com.swmansion.pulsar\n\nlet pulsar = Pulsar()\npulsar.getPresets().${normalizedName}()`;
 }
 
+function getKmpPresetImport(shortName: string) {
+  const normalizedName = shortName.charAt(0).toLowerCase() + shortName.slice(1);
+  return `import com.swmansion.pulsar.kmp.Pulsar\n\nval pulsar = Pulsar.create()\npulsar.getPresets().${normalizedName}()`;
+}
+
 function toAnchorId(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
@@ -230,6 +235,7 @@ export function Preset(preset: PresetProps) {
           <CodeTabs
             swift={getSwiftPresetImport(data.name)}
             kotlin={getKotlinPresetImport(data.name)}
+            kmp={getKmpPresetImport(data.name)}
             reactNative={getReactNativePresetImport(data.name)}
           />
         </Accordion>

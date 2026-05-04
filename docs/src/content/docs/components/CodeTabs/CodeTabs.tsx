@@ -4,16 +4,18 @@ import styles from './CodeTabs.module.scss';
 interface CodeTabsProps {
   swift: string;
   kotlin: string;
+  kmp: string;
   reactNative: string;
   className?: string;
 }
 
-export function CodeTabs({ swift, reactNative, kotlin, className = '' }: CodeTabsProps) {
-  const [activeTab, setActiveTab] = useState<'swift' | 'kotlin' | 'reactNative'>('swift');
+export function CodeTabs({ swift, reactNative, kotlin, kmp, className = '' }: CodeTabsProps) {
+  const [activeTab, setActiveTab] = useState<'swift' | 'kotlin' | 'kmp' | 'reactNative'>('swift');
 
   const content = {
     swift,
     kotlin,
+    kmp,
     reactNative,
   };
 
@@ -31,6 +33,12 @@ export function CodeTabs({ swift, reactNative, kotlin, className = '' }: CodeTab
           onClick={() => setActiveTab('kotlin')}
         >
           Kotlin
+        </div>
+        <div
+          className={`${styles.tab} ${activeTab === 'kmp' ? styles.active : ''}`}
+          onClick={() => setActiveTab('kmp')}
+        >
+          KMP
         </div>
         <div
           className={`${styles.tab} ${activeTab === 'reactNative' ? styles.active : ''}`}
