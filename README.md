@@ -79,7 +79,7 @@ pulsar.getPresets().hammer()
 ### Kotlin Multiplatform
 
 <!-- GENERATED:KMP_VERSION_START -->
-Latest available version: `1.0.0`
+Latest available version: `0.0.2`
 <!-- GENERATED:KMP_VERSION_END -->
 
 Add Pulsar KMP as a Gradle dependency in your shared module (works on Android and iOS targets):
@@ -87,7 +87,7 @@ Add Pulsar KMP as a Gradle dependency in your shared module (works on Android an
 <!-- GENERATED:KMP_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar-kmp:1.0.0")
+  implementation("com.swmansion:pulsar-kmp:0.0.2")
 }
 ```
 <!-- GENERATED:KMP_INSTALL_SNIPPET_END -->
