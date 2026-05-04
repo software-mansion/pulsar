@@ -60,6 +60,7 @@ export default defineConfig({
             { label: 'iOS', slug: 'sdk/ios' },
             { label: 'Android', slug: 'sdk/android' },
             { label: 'React Native', slug: 'sdk/react-native' },
+            { label: 'Kotlin Multiplatform', slug: 'sdk/kmp' },
           ],
         },
         {

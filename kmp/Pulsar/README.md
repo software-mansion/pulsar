@@ -1,5 +1,17 @@
 # Pulsar KMP
 
+<!-- GENERATED:KMP_VERSION_START -->
+Latest available version: `1.0.0`
+<!-- GENERATED:KMP_VERSION_END -->
+
+<!-- GENERATED:KMP_INSTALL_SNIPPET_START -->
+```kotlin
+dependencies {
+  implementation("com.swmansion:pulsar-kmp:1.0.0")
+}
+```
+<!-- GENERATED:KMP_INSTALL_SNIPPET_END -->
+
 This module exports Pulsar as a Kotlin Multiplatform wrapper library.
 
 - Android uses the native Pulsar implementation copied into `androidMain` and registers it automatically through the library manifest.

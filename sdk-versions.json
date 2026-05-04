@@ -10,5 +10,9 @@
   "reactNative": {
     "version": "1.4.0",
     "packageName": "react-native-pulsar"
+  },
+  "kmp": {
+    "version": "1.0.0",
+    "mavenCoordinate": "com.swmansion:pulsar-kmp"
   }
 }

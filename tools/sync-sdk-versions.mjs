@@ -16,9 +16,11 @@ const files = [
   'docs/src/content/docs/sdk/ios.mdx',
   'docs/src/content/docs/sdk/android.mdx',
   'docs/src/content/docs/sdk/react-native.mdx',
+  'docs/src/content/docs/sdk/kmp.mdx',
   'iOS/Pulsar/README.md',
   'Android/Pulsar/README.md',
   'react-native/react-native-pulsar/README.md',
+  'kmp/Pulsar/README.md',
 ];
 
 function replaceGeneratedSection(content, key, replacement) {
@@ -58,7 +60,8 @@ function getOverviewBlock() {
 
 - iOS: Swift Package tag \`${versions.ios.version}\`
 - Android: Maven artifact \`${versions.android.mavenCoordinate}:${versions.android.version}\`
-- React Native: npm package \`${versions.reactNative.packageName}@${versions.reactNative.version}\``;
+- React Native: npm package \`${versions.reactNative.packageName}@${versions.reactNative.version}\`
+- Kotlin Multiplatform: Maven artifact \`${versions.kmp.mavenCoordinate}:${versions.kmp.version}\``;
 }
 
 function getIosVersionLine() {
@@ -87,6 +90,18 @@ dependencies {
 
 function getReactNativeVersionLine() {
   return `Latest available version: \`${versions.reactNative.version}\``;
+}
+
+function getKmpVersionLine() {
+  return `Latest available version: \`${versions.kmp.version}\``;
+}
+
+function getKmpSnippet() {
+  return `\`\`\`kotlin
+dependencies {
+  implementation("${versions.kmp.mavenCoordinate}:${versions.kmp.version}")
+}
+\`\`\``;
 }
 
 for (const relativeFile of files) {
@@ -120,6 +135,15 @@ for (const relativeFile of files) {
     relativeFile === 'react-native/react-native-pulsar/README.md'
   ) {
     content = replaceGeneratedSection(content, 'REACT_NATIVE_VERSION', getReactNativeVersionLine());
+  }
+
+  if (
+    relativeFile === 'docs/src/content/docs/sdk/kmp.mdx' ||
+    relativeFile === 'kmp/Pulsar/README.md' ||
+    relativeFile === 'README.md'
+  ) {
+    content = replaceGeneratedSection(content, 'KMP_VERSION', getKmpVersionLine());
+    content = replaceGeneratedSection(content, 'KMP_INSTALL_SNIPPET', getKmpSnippet());
   }
 
   await fs.writeFile(absoluteFile, content);

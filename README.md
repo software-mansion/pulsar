@@ -2,14 +2,14 @@
   <img src="https://github.com/software-mansion/pulsar/blob/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
 </p>
 
-A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
+A haptic feedback SDK for iOS, Android, React Native, and Kotlin Multiplatform. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
 
 ## Features
 
 - **Presets** - Library of built-in haptic patterns (hammer, dogBark, buzz, pulse) and system feedback styles (impacts, notifications, selection)
 - **Pattern Composer** - Define custom haptic patterns using discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** - Live amplitude and frequency control for gesture-driven haptics
-- **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), and React Native (TypeScript)
+- **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), React Native (TypeScript), and Kotlin Multiplatform
 - **Worklet-compatible** - All React Native preset functions and hook methods work inside Reanimated worklets
 
 ## Quick start
@@ -76,6 +76,29 @@ val pulsar = Pulsar(context)
 pulsar.getPresets().hammer()
 ```
 
+### Kotlin Multiplatform
+
+<!-- GENERATED:KMP_VERSION_START -->
+Latest available version: `1.0.0`
+<!-- GENERATED:KMP_VERSION_END -->
+
+Add Pulsar KMP as a Gradle dependency in your shared module (works on Android and iOS targets):
+
+<!-- GENERATED:KMP_INSTALL_SNIPPET_START -->
+```kotlin
+dependencies {
+  implementation("com.swmansion:pulsar-kmp:1.0.0")
+}
+```
+<!-- GENERATED:KMP_INSTALL_SNIPPET_END -->
+
+```kotlin
+import com.swmansion.pulsar.kmp.Pulsar
+
+val pulsar = Pulsar.create()
+pulsar.getPresets().play("Hammer")
+```
+
 ## Repository structure
 
 ```
@@ -89,6 +112,9 @@ pulsar/
 ├── react-native/
 │   └── react-native-pulsar/  # React Native Turbo Module
 │   └── PulsarApp/            # React Native native demo app
+├── kmp/
+│   ├── Pulsar/         # Kotlin Multiplatform SDK (Android + iOS targets)
+│   └── PulsarApp/      # Compose Multiplatform demo app
 ├── PulsarApp/          # React Native Expo showcase app
 └── docs/               # Documentation site (Astro/Starlight)
 ```
@@ -100,6 +126,7 @@ pulsar/
 | React Native | [![npm](https://img.shields.io/npm/v/react-native-pulsar)](https://www.npmjs.com/package/react-native-pulsar) |
 | iOS | [Swift Package](https://github.com/software-mansion-labs/pulsar-ios) |
 | Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
+| Kotlin Multiplatform | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) |
 
 ## Documentation
 
@@ -109,6 +136,7 @@ Full API reference and guides are available at the [documentation site](https://
 - [iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios) - Swift API reference
 - [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) - Kotlin API reference
 - [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
+- [Kotlin Multiplatform SDK](https://docs.swmansion.com/pulsar/sdk/kmp) - Kotlin Multiplatform API reference
 
 <!-- ## AI Skills
 
