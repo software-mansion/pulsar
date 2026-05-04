@@ -112,12 +112,30 @@ A collection of ready-to-use haptic patterns accessed through `pulsar.getPresets
 val presets = pulsar.getPresets()
 ```
 
+### Playing by direct method
+
+Each built-in preset is exposed as a direct method on the `PulsarPresets` instance, mirroring the React Native API.
+
+```kotlin
+val presets = pulsar.getPresets()
+
+presets.hammer()
+presets.dogBark()
+presets.fanfare()
+```
+
 ### Playing by name
 
-Built-in presets are played by passing their name to `play()`. The method returns `true` if the preset was found and dispatched, or `false` otherwise.
+Built-in presets can also be played by passing their name to `play()`. The method returns `true` if the preset was found and dispatched, or `false` otherwise.
 
 ```kotlin
 fun play(name: String): Boolean
+```
+
+`getByName(name)` returns a lightweight `PulsarPreset` handle that can be played later, or `null` if the name is unknown:
+
+```kotlin
+fun getByName(name: String): PulsarPreset?
 ```
 
 Available names:
@@ -293,6 +311,18 @@ presets.play("DogBark")
 
 For per-preset descriptions, see the [iOS](/sdk/ios) and [Android](/sdk/android) reference pages — the underlying patterns are shared.
 
+### Preloading and caching
+
+`PulsarPresets` exposes its own preload/cache controls in addition to the equivalents on the `Pulsar` instance.
+
+| Method                                              | Description                                         |
+| --------------------------------------------------- | --------------------------------------------------- |
+| `preloadPresetByName(name: String)`                 | Preload a single preset by name                     |
+| `preloadPresetByNames(names: List<String>)`         | Preload multiple presets in a batch                 |
+| `enableCache(state: Boolean)`                       | Enable or disable preset caching                    |
+| `isCacheEnabled(): Boolean`                         | Returns `true` if caching is currently enabled      |
+| `resetCache()`                                      | Drop all cached preset data                         |
+
 ### System presets
 
 Cross-platform system feedback styles are exposed as direct methods so you can call them from common code without name lookup.
@@ -322,7 +352,53 @@ presets.systemImpactMedium()
 presets.systemNotificationSuccess()
 ```
 
-Platform-specific system presets (for example Android's `HapticFeedbackConstants` set) are not exposed on the common API surface. To use them, drop into the [Android SDK](/sdk/android) directly from `androidMain`.
+#### Android-specific system presets
+
+Android's `HapticFeedbackConstants` and `VibrationEffect` system styles are also surfaced on the common API. They are no-ops on iOS, so you can call them from common code — but they only produce feedback on Android.
+
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0, 1]}
+  rows={[
+    ["systemEffectClick()", "VibrationEffect.EFFECT_CLICK"],
+    ["systemEffectDoubleClick()", "VibrationEffect.EFFECT_DOUBLE_CLICK"],
+    ["systemEffectTick()", "VibrationEffect.EFFECT_TICK"],
+    ["systemEffectHeavyClick()", "VibrationEffect.EFFECT_HEAVY_CLICK"],
+    ["systemLongPress()", "HapticFeedbackConstants.LONG_PRESS"],
+    ["systemVirtualKey()", "HapticFeedbackConstants.VIRTUAL_KEY"],
+    ["systemVirtualKeyRelease()", "HapticFeedbackConstants.VIRTUAL_KEY_RELEASE"],
+    ["systemKeyboardTap()", "HapticFeedbackConstants.KEYBOARD_TAP"],
+    ["systemKeyboardPress()", "HapticFeedbackConstants.KEYBOARD_PRESS"],
+    ["systemKeyboardRelease()", "HapticFeedbackConstants.KEYBOARD_RELEASE"],
+    ["systemClockTick()", "HapticFeedbackConstants.CLOCK_TICK"],
+    ["systemCalendarDate()", "HapticFeedbackConstants.CALENDAR_DATE"],
+    ["systemContextClick()", "HapticFeedbackConstants.CONTEXT_CLICK"],
+    ["systemTextHandleMove()", "HapticFeedbackConstants.TEXT_HANDLE_MOVE"],
+    ["systemDragCrossing()", "HapticFeedbackConstants.DRAG_CROSSING"],
+    ["systemDragStart()", "HapticFeedbackConstants.DRAG_START"],
+    ["systemGestureStart()", "HapticFeedbackConstants.GESTURE_START"],
+    ["systemGestureEnd()", "HapticFeedbackConstants.GESTURE_END"],
+    ["systemEdgeSqueeze()", "HapticFeedbackConstants.EDGE_SQUEEZE"],
+    ["systemEdgeRelease()", "HapticFeedbackConstants.EDGE_RELEASE"],
+    ["systemConfirm()", "HapticFeedbackConstants.CONFIRM"],
+    ["systemRelease()", "HapticFeedbackConstants.REJECT"],
+    ["systemScrollTick()", "HapticFeedbackConstants.SCROLL_TICK"],
+    ["systemScrollItemFocus()", "HapticFeedbackConstants.SCROLL_ITEM_FOCUS"],
+    ["systemScrollLimit()", "HapticFeedbackConstants.SCROLL_LIMIT"],
+    ["systemToggleOn()", "HapticFeedbackConstants.TOGGLE_ON"],
+    ["systemToggleOff()", "HapticFeedbackConstants.TOGGLE_OFF"],
+    ["systemSegmentTick()", "HapticFeedbackConstants.SEGMENT_TICK"],
+    ["systemSegmentFrequentTick()", "HapticFeedbackConstants.SEGMENT_FREQUENT_TICK"],
+    ["systemPrimitiveClick()", "VibrationEffect.Composition.PRIMITIVE_CLICK"],
+    ["systemPrimitiveThud()", "VibrationEffect.Composition.PRIMITIVE_THUD"],
+    ["systemPrimitiveSpin()", "VibrationEffect.Composition.PRIMITIVE_SPIN"],
+    ["systemPrimitiveQuickRise()", "VibrationEffect.Composition.PRIMITIVE_QUICK_RISE"],
+    ["systemPrimitiveSlowRise()", "VibrationEffect.Composition.PRIMITIVE_SLOW_RISE"],
+    ["systemPrimitiveQuickFall()", "VibrationEffect.Composition.PRIMITIVE_QUICK_FALL"],
+    ["systemPrimitiveTick()", "VibrationEffect.Composition.PRIMITIVE_TICK"],
+    ["systemPrimitiveLowTick()", "VibrationEffect.Composition.PRIMITIVE_LOW_TICK"],
+  ]}
+/>
 
 ---
 
@@ -406,10 +482,18 @@ composer.playPattern(pattern)
 
 ## RealtimeComposer
 
-Provides real-time haptic control with live amplitude and frequency modulation. Useful for gesture-driven or continuously evolving haptic experiences. Get the shared instance from `pulsar.getRealtimeComposer()`.
+Provides real-time haptic control with live amplitude and frequency modulation. Useful for gesture-driven or continuously evolving haptic experiences. Get a composer from `pulsar.getRealtimeComposer()`.
 
 ```kotlin
 val realtime = pulsar.getRealtimeComposer()
+```
+
+On Android, you can also request a composer that uses a specific strategy, or read/write the global default via the `realtimeComposerStrategy` property on `Pulsar`. See [`RealtimeComposerStrategy`](#realtimecomposerstrategy) for available strategies.
+
+```kotlin
+val realtime = pulsar.getRealtimeComposer(RealtimeComposerStrategy.PRIMITIVE_COMPLEX)
+
+pulsar.realtimeComposerStrategy = RealtimeComposerStrategy.ENVELOPE
 ```
 
 ### Methods
@@ -465,18 +549,23 @@ realtime.stop()
 
 Configuration methods available directly on the `Pulsar` instance.
 
-| Method                                       | Description                                            |
-| -------------------------------------------- | ------------------------------------------------------ |
-| `enableHaptics(state: Boolean)`              | Enable or disable all haptic feedback                  |
-| `enableSound(state: Boolean)`                | Enable or disable audio simulation                     |
-| `enableCache(state: Boolean)`                | Enable or disable preset caching                       |
-| `clearCache()`                               | Clear the preset cache                                 |
-| `preloadPresets(presetNames: List<String>)`  | Preload presets by name for faster playback            |
-| `stopHaptics()`                              | Stop all currently playing haptics                     |
-| `shutDownEngine()`                           | Tear down the underlying haptic engine                 |
-| `isHapticsEnabled()`                         | Returns `true` if haptics are currently enabled        |
-| `isHapticsSupported()`                       | Returns `true` if the device supports haptics          |
-| `canPlayHaptics()`                           | Returns `true` when haptics can play right now         |
+| Method                                                          | Description                                                                                  |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `enableHaptics(state: Boolean)`                                 | Enable or disable all haptic feedback                                                        |
+| `enableSound(state: Boolean)`                                   | Enable or disable audio simulation                                                           |
+| `enableCache(state: Boolean)`                                   | Enable or disable preset caching                                                             |
+| `isCacheEnabled()`                                              | Returns `true` if preset caching is enabled                                                  |
+| `clearCache()`                                                  | Clear the preset cache                                                                       |
+| `preloadPresets(presetNames: List<String>)`                     | Preload presets by name for faster playback                                                  |
+| `stopHaptics()`                                                 | Stop all currently playing haptics                                                           |
+| `shutDownEngine()`                                              | Tear down the underlying haptic engine                                                       |
+| `isHapticsEnabled()`                                            | Returns `true` if haptics are currently enabled                                              |
+| `isHapticsSupported()`                                          | Returns `true` if the device supports haptics                                                |
+| `canPlayHaptics()`                                              | Returns `true` when haptics can play right now                                               |
+| `hapticSupport(): CompatibilityMode`                            | Returns the device's [`CompatibilityMode`](#compatibilitymode)                               |
+| `forceHapticsSupportLevel(mode: CompatibilityMode)`             | (Android only) Override the detected support level. Intended for testing fallback behavior.  |
+| `enableImpulseCompositionMode(state: Boolean)`                  | (Android only) Enable or disable impulse composition mode                                    |
+| `realtimeComposerStrategy` (property)                           | (Android only) Get or set the default [`RealtimeComposerStrategy`](#realtimecomposerstrategy) |
 
 ### Example
 
@@ -546,6 +635,51 @@ data class ConfigPoint(
 ```
 
 Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+
+### CompatibilityMode
+
+The haptic capability level of the current device, returned by `pulsar.hapticSupport()`.
+
+```kotlin
+enum class CompatibilityMode {
+  NO_SUPPORT,
+  LIMITED_SUPPORT,
+  STANDARD_SUPPORT,
+  ADVANCED_SUPPORT,
+}
+```
+
+On Android, `pulsar.forceHapticsSupportLevel(mode)` accepts these values to override the detected fallback path.
+
+**Example**
+
+```kotlin
+val pulsar = Pulsar.create()
+
+if (pulsar.hapticSupport() >= CompatibilityMode.STANDARD_SUPPORT) {
+  pulsar.getPresets().dogBark()
+}
+```
+
+### RealtimeComposerStrategy
+
+Android-only. Controls how `RealtimeComposer` simulates continuous haptics, since Android has no native continuous haptic API. Pass one of these values to `pulsar.getRealtimeComposer(strategy)` or assign to `pulsar.realtimeComposerStrategy`.
+
+```kotlin
+enum class RealtimeComposerStrategy {
+  ENVELOPE,
+  PRIMITIVE_TICK,
+  PRIMITIVE_COMPLEX,
+  ENVELOPE_WITH_DISCRETE_PRIMITIVES,
+}
+```
+
+| Value                                 | Description |
+| ------------------------------------- | ----------- |
+| `ENVELOPE`                            | Approximation based on the Envelope API. Allows control over amplitude and frequency, but the signal oscillates and can be unstable. Available on Android API 36+. |
+| `PRIMITIVE_TICK`                      | Approximation using the Composition API TICK primitive at varying intervals. Amplitude is controllable; frequency is simulated by the timing between ticks. Signal is discrete rather than continuous. |
+| `PRIMITIVE_COMPLEX`                   | Similar to `PRIMITIVE_TICK`, but uses multiple primitives depending on the requested frequency. |
+| `ENVELOPE_WITH_DISCRETE_PRIMITIVES`   | **Default.** Hybrid strategy. Uses the Envelope API for continuous events (API 36+) and composition primitives for discrete events (API 33+). Best of both worlds when both event types are used. |
 
 ### ControlPoint
 
