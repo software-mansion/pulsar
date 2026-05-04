@@ -18,6 +18,7 @@ internal class IOSPulsarHandle : PulsarPlatformHandle {
     private val audioSimulator = IOSAudioSimulator()
     private var presetsHandle: IOSPulsarPresetsHandle? = null
     private val realtimeComposerHandle by lazy { IOSRealtimeComposerHandle(engine) }
+    private var realtimeComposerStrategy = RealtimeComposerStrategy.ENVELOPE
 
     override fun presets(): PulsarPresetsHandle {
         return presetsHandle ?: IOSPulsarPresetsHandle(this).also {
@@ -47,6 +48,8 @@ internal class IOSPulsarHandle : PulsarPlatformHandle {
         presets().let { it as IOSPulsarPresetsHandle }.enableCache(state)
     }
 
+    override fun isCacheEnabled(): Boolean = presets().let { it as IOSPulsarPresetsHandle }.isCacheEnabled()
+
     override fun clearCache() {
         presets().let { it as IOSPulsarPresetsHandle }.resetCache()
     }
@@ -64,6 +67,15 @@ internal class IOSPulsarHandle : PulsarPlatformHandle {
     override fun isHapticsSupported(): Boolean = engine.isHapticsSupported()
 
     override fun canPlayHaptics(): Boolean = engine.canPlayHaptics()
+
+    override fun hapticSupport(): CompatibilityMode =
+        if (engine.isHapticsSupported()) CompatibilityMode.ADVANCED_SUPPORT else CompatibilityMode.NO_SUPPORT
+
+    override fun getRealtimeComposerStrategy(): RealtimeComposerStrategy = realtimeComposerStrategy
+
+    override fun setRealtimeComposerStrategy(strategy: RealtimeComposerStrategy) {
+        realtimeComposerStrategy = strategy
+    }
 
     fun getPatternComposer(): IOSPatternComposerHandle {
         return IOSPatternComposerHandle(engine, audioSimulator)

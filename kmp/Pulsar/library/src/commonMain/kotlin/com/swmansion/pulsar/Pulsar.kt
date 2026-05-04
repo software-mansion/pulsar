@@ -4,13 +4,21 @@ class Pulsar private constructor(
     private val handle: PulsarPlatformHandle,
 ) {
     private val presetsController by lazy { PulsarPresets(handle.presets()) }
-    private val realtimeComposerController by lazy { RealtimeComposer(handle.realtimeComposer()) }
 
     fun getPresets(): PulsarPresets = presetsController
 
     fun getPatternComposer(): PatternComposer = PatternComposer(handle.patternComposer())
 
-    fun getRealtimeComposer(): RealtimeComposer = realtimeComposerController
+    fun getRealtimeComposer(): RealtimeComposer = RealtimeComposer(handle.realtimeComposer())
+
+    fun getRealtimeComposer(strategy: RealtimeComposerStrategy): RealtimeComposer =
+        RealtimeComposer(handle.realtimeComposer(strategy))
+
+    var realtimeComposerStrategy: RealtimeComposerStrategy
+        get() = handle.getRealtimeComposerStrategy()
+        set(value) {
+            handle.setRealtimeComposerStrategy(value)
+        }
 
     fun preloadPresets(presetNames: List<String>) {
         presetNames.forEach(handle::preloadPreset)
@@ -27,6 +35,8 @@ class Pulsar private constructor(
     fun enableCache(state: Boolean) {
         handle.enableCache(state)
     }
+
+    fun isCacheEnabled(): Boolean = handle.isCacheEnabled()
 
     fun clearCache() {
         handle.clearCache()
@@ -45,6 +55,16 @@ class Pulsar private constructor(
     fun isHapticsSupported(): Boolean = handle.isHapticsSupported()
 
     fun canPlayHaptics(): Boolean = handle.canPlayHaptics()
+
+    fun hapticSupport(): CompatibilityMode = handle.hapticSupport()
+
+    fun forceHapticsSupportLevel(mode: CompatibilityMode) {
+        handle.forceHapticsSupportLevel(mode)
+    }
+
+    fun enableImpulseCompositionMode(state: Boolean) {
+        handle.enableImpulseCompositionMode(state)
+    }
 
     companion object {
         fun registerFactory(factory: PulsarPlatformFactory) {

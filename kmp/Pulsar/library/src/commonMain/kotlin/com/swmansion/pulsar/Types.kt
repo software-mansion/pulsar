@@ -6,6 +6,20 @@ data class ControlPoint(
     val duration: Long,
 )
 
+enum class CompatibilityMode {
+    NO_SUPPORT,
+    LIMITED_SUPPORT,
+    STANDARD_SUPPORT,
+    ADVANCED_SUPPORT,
+}
+
+enum class RealtimeComposerStrategy {
+    ENVELOPE,
+    PRIMITIVE_TICK,
+    PRIMITIVE_COMPLEX,
+    ENVELOPE_WITH_DISCRETE_PRIMITIVES,
+}
+
 data class ValuePoint(
     val time: Long,
     val value: Float,
