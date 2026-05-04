@@ -66,6 +66,14 @@ class Pulsar private constructor(
         handle.enableImpulseCompositionMode(state)
     }
 
+    fun createAdaptiveHaptics(preset: AdaptivePreset): AdaptiveHaptics {
+        val config = when (currentPulsarPlatform()) {
+            PulsarPlatform.IOS -> preset.ios
+            PulsarPlatform.ANDROID -> preset.android
+        }
+        return AdaptiveHaptics(getPresets(), getPatternComposer(), config)
+    }
+
     companion object {
         fun registerFactory(factory: PulsarPlatformFactory) {
             PulsarRuntime.registerFactory(factory)

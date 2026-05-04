@@ -545,6 +545,79 @@ realtime.stop()
 
 ---
 
+## AdaptiveHaptics
+
+Plays haptics from a cross-platform `AdaptivePreset`. The correct configuration is selected for the current platform automatically. Each platform can provide either a custom `PatternData` or a callback that triggers a built-in or system preset directly.
+
+```kotlin
+val haptics = pulsar.createAdaptiveHaptics(preset)
+```
+
+### AdaptivePresetConfig
+
+```kotlin
+sealed class AdaptivePresetConfig {
+  class Function(val play: (PulsarPresets) -> Unit) : AdaptivePresetConfig()
+  class Pattern(val pattern: PatternData) : AdaptivePresetConfig()
+}
+```
+
+- `Function` — a callback that receives the `PulsarPresets` instance and triggers a native or built-in preset directly.
+- `Pattern` — a custom `PatternData` parsed once on creation and replayed on each `play()`.
+
+### AdaptivePreset
+
+```kotlin
+data class AdaptivePreset(
+  val ios: AdaptivePresetConfig,
+  val android: AdaptivePresetConfig,
+)
+```
+
+### Returns
+
+#### `play()`
+
+Plays the configuration for the current platform. If the platform config is a `Function`, it is invoked. If it is a `Pattern`, it is played via the underlying pattern composer.
+
+#### `stop()`
+
+Stops the active pattern. No-op when the platform config is a `Function`.
+
+### Example
+
+```kotlin
+import com.swmansion.pulsar.kmp.AdaptiveHaptics
+import com.swmansion.pulsar.kmp.AdaptivePreset
+import com.swmansion.pulsar.kmp.AdaptivePresetConfig
+import com.swmansion.pulsar.kmp.ConfigPoint
+import com.swmansion.pulsar.kmp.ContinuousPattern
+import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.Pulsar
+
+val pulsar = Pulsar.create()
+
+val adaptivePreset = AdaptivePreset(
+  ios = AdaptivePresetConfig.Function { presets ->
+    presets.systemNotificationSuccess()
+  },
+  android = AdaptivePresetConfig.Pattern(
+    PatternData(
+      continuousPattern = ContinuousPattern(amplitude = emptyList(), frequency = emptyList()),
+      discretePattern = listOf(
+        ConfigPoint(time = 0, amplitude = 1f, frequency = 0.5f),
+        ConfigPoint(time = 150, amplitude = 0.6f, frequency = 0.4f),
+      ),
+    ),
+  ),
+)
+
+val haptics = pulsar.createAdaptiveHaptics(adaptivePreset)
+haptics.play()
+```
+
+---
+
 ## Settings
 
 Configuration methods available directly on the `Pulsar` instance.
