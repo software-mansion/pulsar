@@ -30,7 +30,7 @@ open class Pulsar(protected var context: Context) {
 
     open fun getPresets(): PresetsWrapper {
         if (_presets == null) {
-            _presets = PresetsWrapper(this, context as? Activity, engine)
+            _presets = PresetsWrapper(this, ActivityProvider(context as? Activity), engine)
         }
         return _presets!!
     }

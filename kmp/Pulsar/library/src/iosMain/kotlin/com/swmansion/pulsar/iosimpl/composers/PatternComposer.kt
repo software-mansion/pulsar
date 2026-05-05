@@ -109,4 +109,15 @@ internal class IOSPatternComposerHandle(
         continuousPlayerId?.let(engine::stopPlayer)
         discretePlayerId?.let(engine::stopPlayer)
     }
+
+    override fun dispose() {
+        stop()
+        continuousPlayerId?.let(engine::removePlayer)
+        discretePlayerId?.let(engine::removePlayer)
+        continuousPlayerId = null
+        discretePlayerId = null
+        continuousPattern = null
+        discretePattern = null
+        audioBuffer = null
+    }
 }

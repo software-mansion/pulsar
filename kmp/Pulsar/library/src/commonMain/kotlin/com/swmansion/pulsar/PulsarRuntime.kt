@@ -265,6 +265,7 @@ interface PatternComposerHandle {
     fun play()
     fun playAudioOnly()
     fun stop()
+    fun dispose() {}
 }
 
 interface RealtimeComposerHandle {

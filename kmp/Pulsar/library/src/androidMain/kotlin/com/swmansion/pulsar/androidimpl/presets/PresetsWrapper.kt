@@ -1,7 +1,6 @@
 package com.swmansion.pulsar.kmp.androidimpl.presets
 
-import android.app.Activity
-import android.content.Context
+import com.swmansion.pulsar.kmp.androidimpl.ActivityProvider
 import com.swmansion.pulsar.kmp.androidimpl.Pulsar
 import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.kmp.androidimpl.types.Preset
@@ -9,14 +8,14 @@ import com.swmansion.pulsar.kmp.androidimpl.presets.generated.*
 
 class PresetsWrapper(
     private val haptics: Pulsar,
-    activity: Activity?,
+    activityProvider: ActivityProvider,
     engine: HapticEngineWrapper,
 ) {
     private var useCache: Boolean = true
     private val cache = mutableMapOf<String, Preset>()
     private val systemEffectPresets = SystemEffectPresets(engine)
     private val systemPrimitivePresets = SystemPrimitivePresets(engine)
-    private val systemViewBasedPresets = SystemViewBasedPresets(activity)
+    private val systemViewBasedPresets = SystemViewBasedPresets(activityProvider)
 
     private val mapper: Map<String, (Pulsar) -> Preset> = mapOf<String, (Pulsar) -> Preset>(
         SystemImpactLightPreset.name to { haptics -> SystemImpactLightPreset(haptics) },

@@ -844,6 +844,10 @@ class PatternComposer internal constructor(
     fun stop() {
         handle.stop()
     }
+
+    fun dispose() {
+        handle.dispose()
+    }
 }
 
 class RealtimeComposer internal constructor(

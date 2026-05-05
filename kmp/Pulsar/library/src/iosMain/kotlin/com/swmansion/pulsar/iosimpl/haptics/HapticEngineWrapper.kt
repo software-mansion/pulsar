@@ -189,6 +189,7 @@ internal class IOSHapticEngineWrapper {
         }
         engine?.resetHandler = {
             initialized = false
+            clearPlayerState(stopPlayers = false)
             engine = null
         }
     }
