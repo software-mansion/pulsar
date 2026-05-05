@@ -108,6 +108,12 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(null)
             }
 
+            "Pulsar_presetExists" -> {
+                val name = call.argument<String>("name")
+                    ?: return result.error("INVALID_ARGS", "name required", null)
+                result.success(p.getPresets().getByName(name) != null)
+            }
+
             "Pulsar_preloadPresets" -> {
                 val names = call.argument<List<String>>("presetNames")
                     ?: return result.error("INVALID_ARGS", "presetNames required", null)

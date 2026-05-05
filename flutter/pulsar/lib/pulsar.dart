@@ -14,46 +14,44 @@ import 'pulsar_types.dart';
 /// pulsar.getRealtimeComposer().set(0.8, 0.5);
 /// ```
 class Pulsar {
-  Pulsar()
-    : presets = PulsarPresets._(),
-      realtimeComposer = PulsarRealtimeComposer._();
+  Pulsar();
+
+  PulsarPresets? _presets;
+  PulsarRealtimeComposer? _realtimeComposer;
+  RealtimeComposerStrategy? _realtimeComposerStrategy;
 
   /// Access to the 200+ built-in haptic presets.
-  final PulsarPresets presets;
-
-  /// Real-time continuous haptic feedback (e.g. for gestures/sliders).
-  @Deprecated('Use getRealtimeComposer() to match the native Pulsar API.')
-  final PulsarRealtimeComposer realtimeComposer;
-
-  PulsarPatternComposer? _legacyPatternComposer;
-  final Map<RealtimeComposerStrategy, PulsarRealtimeComposer>
-  _realtimeComposersByStrategy = {};
+  ///
+  /// Lazily created on first access; subsequent calls return the same instance,
+  /// matching native iOS/Android semantics.
+  PulsarPresets get presets => getPresets();
 
   /// Native-style accessor for built-in haptic presets.
-  PulsarPresets getPresets() => presets;
+  PulsarPresets getPresets() => _presets ??= PulsarPresets._();
 
   /// Native-style accessor for the realtime composer.
+  ///
+  /// Mirrors Android semantics: a single composer instance is held; passing a
+  /// new [strategy] rebuilds it and updates the active strategy. iOS ignores
+  /// [strategy] (handled in the native bridge).
   PulsarRealtimeComposer getRealtimeComposer({
     RealtimeComposerStrategy? strategy,
   }) {
-    if (strategy == null) {
-      return realtimeComposer;
+    if (_realtimeComposer == null ||
+        (strategy != null && strategy != _realtimeComposerStrategy)) {
+      _realtimeComposerStrategy = strategy ?? _realtimeComposerStrategy;
+      _realtimeComposer = PulsarRealtimeComposer._(
+        strategy: _realtimeComposerStrategy,
+      );
     }
-    return _realtimeComposersByStrategy.putIfAbsent(
-      strategy,
-      () => PulsarRealtimeComposer._(strategy: strategy),
-    );
+    return _realtimeComposer!;
   }
 
   /// Native-style accessor for a fresh pattern composer.
+  ///
+  /// Returns a new [PulsarPatternComposer] instance every call, matching native
+  /// iOS/Android semantics.
   PulsarPatternComposer getPatternComposer() => PulsarPatternComposer._();
-
-  /// Pattern-based haptic feedback for pre-defined sequences.
-  @Deprecated(
-    'Use getPatternComposer() to match the native Pulsar API and receive a fresh composer instance.',
-  )
-  PulsarPatternComposer get patternComposer =>
-      _legacyPatternComposer ??= getPatternComposer();
 
   // ── Configuration ──────────────────────────────────────────────────────────
 
@@ -116,6 +114,37 @@ class PulsarPresets {
   PulsarPresets._();
 
   Future<void> play(String name) => PulsarPlatform.instance.play(name);
+
+  /// Returns a lightweight handle to the preset with [name], or `null` if no
+  /// preset matches. Mirrors the native `getByName` API.
+  ///
+  /// The handle does not hold a native reference; calling [PulsarPreset.play]
+  /// re-resolves the preset by name on the native side.
+  Future<PulsarPreset?> getByName(String name) async {
+    final exists = await PulsarPlatform.instance.presetExists(name);
+    if (!exists) {
+      return null;
+    }
+    return PulsarPreset._(name);
+  }
+
+  /// Enable or disable preset caching. Mirrors `PresetsWrapper.enableCache`.
+  Future<void> enableCache(bool state) =>
+      PulsarPlatform.instance.enableCache(state);
+
+  /// Whether preset caching is enabled. Mirrors `PresetsWrapper.isCacheEnabled`.
+  Future<bool> isCacheEnabled() => PulsarPlatform.instance.isCacheEnabled();
+
+  /// Clear any cached preset data. Mirrors `PresetsWrapper.resetCache`.
+  Future<void> resetCache() => PulsarPlatform.instance.clearCache();
+
+  /// Preload a single preset by name. Mirrors `PresetsWrapper.preloadPresetByName`.
+  Future<void> preloadPresetByName(String name) =>
+      PulsarPlatform.instance.preloadPreset(name);
+
+  /// Preload many presets by name. Mirrors `PresetsWrapper.preloadPresetByNames`.
+  Future<void> preloadPresetByNames(List<String> names) =>
+      PulsarPlatform.instance.preloadPresets(names);
 
   // System
   Future<void> systemImpactLight() => play('systemImpactLight');
@@ -351,12 +380,30 @@ class PulsarRealtimeComposer {
 
   /// Fire a single discrete haptic event.
   /// [amplitude] and [frequency] are in the range 0.0–1.0.
-  Future<void> playDiscrete(double amplitude, double frequency) =>
-      PulsarPlatform.instance.realtimePlayDiscrete(
-        amplitude,
-        frequency,
-        strategy: strategy,
-      );
+  ///
+  /// Defaults match iOS native (`amplitude = 1.0`, `frequency = 0.5`).
+  Future<void> playDiscrete([
+    double amplitude = 1.0,
+    double frequency = 0.5,
+  ]) => PulsarPlatform.instance.realtimePlayDiscrete(
+    amplitude,
+    frequency,
+    strategy: strategy,
+  );
+}
+
+// ── PulsarPreset ──────────────────────────────────────────────────────────────
+
+/// Lightweight handle to a named preset, returned by [PulsarPresets.getByName].
+///
+/// Each call to [play] re-resolves the preset by name on the native side, so
+/// the handle is safe to store but does not hold a native object reference.
+class PulsarPreset {
+  PulsarPreset._(this.name);
+
+  final String name;
+
+  Future<void> play() => PulsarPlatform.instance.play(name);
 }
 
 // ── PulsarPatternComposer ─────────────────────────────────────────────────────

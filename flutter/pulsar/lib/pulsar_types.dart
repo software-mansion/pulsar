@@ -67,6 +67,41 @@ class PatternData {
     required this.discretePattern,
   });
 
+  /// Raw array constructor matching the native iOS/Android shorthand:
+  ///
+  /// ```dart
+  /// PatternData.fromArrays(
+  ///   amplitude: [[0, 0.5], [500, 1.0]],
+  ///   frequency: [[0, 0.3]],
+  ///   discrete: [[100, 1.0, 0.8]],
+  /// );
+  /// ```
+  ///
+  /// Each `amplitude`/`frequency` entry is `[time, value]`; each `discrete`
+  /// entry is `[time, amplitude, frequency]`.
+  factory PatternData.fromArrays({
+    required List<List<double>> amplitude,
+    required List<List<double>> frequency,
+    required List<List<double>> discrete,
+  }) {
+    return PatternData(
+      continuousPattern: ContinuousPattern(
+        amplitude: amplitude
+            .map((p) => ValuePoint(time: p[0], value: p[1]))
+            .toList(),
+        frequency: frequency
+            .map((p) => ValuePoint(time: p[0], value: p[1]))
+            .toList(),
+      ),
+      discretePattern: discrete
+          .map(
+            (p) =>
+                DiscretePoint(time: p[0], amplitude: p[1], frequency: p[2]),
+          )
+          .toList(),
+    );
+  }
+
   final ContinuousPattern continuousPattern;
   final List<DiscretePoint> discretePattern;
 

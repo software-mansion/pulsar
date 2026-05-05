@@ -65,6 +65,13 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       pulsar.getPresets().preloadPresetByName(name)
       result(nil)
 
+    case "Pulsar_presetExists":
+      guard let name = args?["name"] as? String else {
+        result(FlutterError(code: "INVALID_ARGS", message: "name required", details: nil))
+        return
+      }
+      result(pulsar.getPresets().getByName(name) != nil)
+
     case "Pulsar_preloadPresets":
       guard let names = args?["presetNames"] as? [String] else {
         result(FlutterError(code: "INVALID_ARGS", message: "presetNames required", details: nil))

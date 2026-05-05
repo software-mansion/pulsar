@@ -40,6 +40,9 @@ abstract class PulsarPlatform extends PlatformInterface {
   Future<void> preloadPreset(String presetName) =>
       throw UnimplementedError('preloadPreset() not implemented');
 
+  Future<bool> presetExists(String presetName) =>
+      throw UnimplementedError('presetExists() not implemented');
+
   Future<void> preloadPresets(List<String> presetNames) =>
       throw UnimplementedError('preloadPresets() not implemented');
 

@@ -52,6 +52,15 @@ class MethodChannelPulsar extends PulsarPlatform {
   );
 
   @override
+  Future<bool> presetExists(String presetName) async {
+    final result = await methodChannel.invokeMethod<bool>(
+      'Pulsar_presetExists',
+      {'name': _normalizePresetName(presetName)},
+    );
+    return result ?? false;
+  }
+
+  @override
   Future<void> preloadPresets(List<String> presetNames) =>
       methodChannel.invokeMethod('Pulsar_preloadPresets', {
         'presetNames': presetNames.map(_normalizePresetName).toList(),

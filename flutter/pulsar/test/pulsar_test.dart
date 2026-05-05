@@ -77,6 +77,9 @@ class MockPulsarPlatform
   Future<void> preloadPresets(List<String> presetNames) async {}
 
   @override
+  Future<bool> presetExists(String presetName) async => true;
+
+  @override
   Future<bool> realtimeIsActive({RealtimeComposerStrategy? strategy}) async =>
       false;
 
