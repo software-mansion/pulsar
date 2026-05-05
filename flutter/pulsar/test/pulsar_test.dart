@@ -6,6 +6,8 @@ class MockPulsarPlatform
     with MockPlatformInterfaceMixin
     implements PulsarPlatform {
   String? lastPlayedPreset;
+  int nextComposerId = 1;
+  final List<int> parsedComposerIds = [];
 
   @override
   Future<void> play(String name) async {
@@ -43,19 +45,30 @@ class MockPulsarPlatform
   Future<HapticSupport> hapticSupport() async => HapticSupport.standardSupport;
 
   @override
-  Future<void> patternParsePattern(PatternData data) async {}
+  Future<int> patternParsePattern(PatternData data, {int? composerId}) async {
+    final resolvedComposerId = composerId ?? nextComposerId++;
+    parsedComposerIds.add(resolvedComposerId);
+    return resolvedComposerId;
+  }
 
   @override
-  Future<void> patternPlayPattern(PatternData data) async {}
+  Future<int> patternPlayPattern(PatternData data, {int? composerId}) async {
+    final resolvedComposerId = composerId ?? nextComposerId++;
+    parsedComposerIds.add(resolvedComposerId);
+    return resolvedComposerId;
+  }
 
   @override
-  Future<void> patternPlay() async {}
+  Future<void> patternPlay(int composerId) async {}
 
   @override
-  Future<void> patternPlayAudioOnly() async {}
+  Future<void> patternPlayAudioOnly(int composerId) async {}
 
   @override
-  Future<void> patternStop() async {}
+  Future<void> patternRelease(int composerId) async {}
+
+  @override
+  Future<void> patternStop(int composerId) async {}
 
   @override
   Future<void> preloadPreset(String presetName) async {}
@@ -64,16 +77,25 @@ class MockPulsarPlatform
   Future<void> preloadPresets(List<String> presetNames) async {}
 
   @override
-  Future<bool> realtimeIsActive() async => false;
+  Future<bool> realtimeIsActive({RealtimeComposerStrategy? strategy}) async =>
+      false;
 
   @override
-  Future<void> realtimePlayDiscrete(double amplitude, double frequency) async {}
+  Future<void> realtimePlayDiscrete(
+    double amplitude,
+    double frequency, {
+    RealtimeComposerStrategy? strategy,
+  }) async {}
 
   @override
-  Future<void> realtimeSet(double amplitude, double frequency) async {}
+  Future<void> realtimeSet(
+    double amplitude,
+    double frequency, {
+    RealtimeComposerStrategy? strategy,
+  }) async {}
 
   @override
-  Future<void> realtimeStop() async {}
+  Future<void> realtimeStop({RealtimeComposerStrategy? strategy}) async {}
 
   @override
   Future<void> setRealtimeComposerStrategy(
@@ -102,6 +124,29 @@ void main() {
     await pulsar.presets.balloonPop();
 
     expect(fakePlatform.lastPlayedPreset, 'balloonPop');
+
+    PulsarPlatform.instance = initialPlatform;
+  });
+
+  test('getPatternComposer returns a fresh composer instance', () async {
+    final pulsar = Pulsar();
+    final fakePlatform = MockPulsarPlatform();
+    PulsarPlatform.instance = fakePlatform;
+
+    final pattern = PatternData(
+      continuousPattern: const ContinuousPattern(amplitude: [], frequency: []),
+      discretePattern: const [],
+    );
+
+    final firstComposer = pulsar.getPatternComposer();
+    final secondComposer = pulsar.getPatternComposer();
+
+    expect(identical(firstComposer, secondComposer), isFalse);
+
+    await firstComposer.parsePattern(pattern);
+    await secondComposer.parsePattern(pattern);
+
+    expect(fakePlatform.parsedComposerIds, [1, 2]);
 
     PulsarPlatform.instance = initialPlatform;
   });

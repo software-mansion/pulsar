@@ -10,23 +10,50 @@ import 'pulsar_types.dart';
 /// Create one instance and reuse it throughout your app:
 /// ```dart
 /// final pulsar = Pulsar();
-/// pulsar.presets.systemImpactMedium();
-/// pulsar.realtimeComposer.set(0.8, 0.5);
+/// pulsar.getPresets().systemImpactMedium();
+/// pulsar.getRealtimeComposer().set(0.8, 0.5);
 /// ```
 class Pulsar {
   Pulsar()
     : presets = PulsarPresets._(),
-      realtimeComposer = PulsarRealtimeComposer._(),
-      patternComposer = PulsarPatternComposer._();
+      realtimeComposer = PulsarRealtimeComposer._();
 
   /// Access to the 200+ built-in haptic presets.
   final PulsarPresets presets;
 
   /// Real-time continuous haptic feedback (e.g. for gestures/sliders).
+  @Deprecated('Use getRealtimeComposer() to match the native Pulsar API.')
   final PulsarRealtimeComposer realtimeComposer;
 
+  PulsarPatternComposer? _legacyPatternComposer;
+  final Map<RealtimeComposerStrategy, PulsarRealtimeComposer>
+  _realtimeComposersByStrategy = {};
+
+  /// Native-style accessor for built-in haptic presets.
+  PulsarPresets getPresets() => presets;
+
+  /// Native-style accessor for the realtime composer.
+  PulsarRealtimeComposer getRealtimeComposer({
+    RealtimeComposerStrategy? strategy,
+  }) {
+    if (strategy == null) {
+      return realtimeComposer;
+    }
+    return _realtimeComposersByStrategy.putIfAbsent(
+      strategy,
+      () => PulsarRealtimeComposer._(strategy: strategy),
+    );
+  }
+
+  /// Native-style accessor for a fresh pattern composer.
+  PulsarPatternComposer getPatternComposer() => PulsarPatternComposer._();
+
   /// Pattern-based haptic feedback for pre-defined sequences.
-  final PulsarPatternComposer patternComposer;
+  @Deprecated(
+    'Use getPatternComposer() to match the native Pulsar API and receive a fresh composer instance.',
+  )
+  PulsarPatternComposer get patternComposer =>
+      _legacyPatternComposer ??= getPatternComposer();
 
   // ── Configuration ──────────────────────────────────────────────────────────
 
@@ -61,6 +88,10 @@ class Pulsar {
   /// Returns the device's haptic support level.
   Future<HapticSupport> hapticSupport() =>
       PulsarPlatform.instance.hapticSupport();
+
+  /// Returns whether the current device supports haptics at all.
+  Future<bool> isHapticsSupported() async =>
+      (await hapticSupport()) != HapticSupport.noSupport;
 
   /// Override haptic support level (useful for testing). Android only.
   Future<void> forceHapticsSupportLevel(HapticSupport level) =>
@@ -295,28 +326,37 @@ class PulsarPresets {
 /// Ideal for gesture-driven feedback (e.g. sliders, drag gestures).
 /// ```dart
 /// // Start/update haptic as the user drags
-/// await pulsar.realtimeComposer.set(amplitude: 0.8, frequency: 0.5);
+/// await pulsar.getRealtimeComposer().set(0.8, 0.5);
 /// // Stop when the gesture ends
-/// await pulsar.realtimeComposer.stop();
+/// await pulsar.getRealtimeComposer().stop();
 /// ```
 class PulsarRealtimeComposer {
-  PulsarRealtimeComposer._();
+  PulsarRealtimeComposer._({this.strategy});
+
+  final RealtimeComposerStrategy? strategy;
 
   /// Set continuous haptic parameters. Starts automatically if not already active.
   /// [amplitude] and [frequency] are in the range 0.0–1.0.
-  Future<void> set(double amplitude, double frequency) =>
-      PulsarPlatform.instance.realtimeSet(amplitude, frequency);
+  Future<void> set(double amplitude, double frequency) => PulsarPlatform
+      .instance
+      .realtimeSet(amplitude, frequency, strategy: strategy);
 
   /// Stop the continuous haptic.
-  Future<void> stop() => PulsarPlatform.instance.realtimeStop();
+  Future<void> stop() =>
+      PulsarPlatform.instance.realtimeStop(strategy: strategy);
 
   /// Returns true if the realtime composer is currently active.
-  Future<bool> isActive() => PulsarPlatform.instance.realtimeIsActive();
+  Future<bool> isActive() =>
+      PulsarPlatform.instance.realtimeIsActive(strategy: strategy);
 
   /// Fire a single discrete haptic event.
   /// [amplitude] and [frequency] are in the range 0.0–1.0.
   Future<void> playDiscrete(double amplitude, double frequency) =>
-      PulsarPlatform.instance.realtimePlayDiscrete(amplitude, frequency);
+      PulsarPlatform.instance.realtimePlayDiscrete(
+        amplitude,
+        frequency,
+        strategy: strategy,
+      );
 }
 
 // ── PulsarPatternComposer ─────────────────────────────────────────────────────
@@ -331,27 +371,60 @@ class PulsarRealtimeComposer {
 ///   ),
 ///   discretePattern: [DiscretePoint(time: 100, amplitude: 1.0, frequency: 0.8)],
 /// );
-/// await pulsar.patternComposer.parsePattern(pattern);
-/// await pulsar.patternComposer.play();
+/// final composer = pulsar.getPatternComposer();
+/// await composer.parsePattern(pattern);
+/// await composer.play();
 /// ```
 class PulsarPatternComposer {
   PulsarPatternComposer._();
 
+  int? _composerId;
+
+  Future<int> _requireComposerId() async {
+    final composerId = _composerId;
+    if (composerId != null) {
+      return composerId;
+    }
+    throw StateError(
+      'PatternComposer has no parsed pattern yet. Call parsePattern() or playPattern() first.',
+    );
+  }
+
   /// Parse and store a pattern for playback. Call [play] afterwards.
-  Future<void> parsePattern(PatternData data) =>
-      PulsarPlatform.instance.patternParsePattern(data);
+  Future<void> parsePattern(PatternData data) async {
+    _composerId = await PulsarPlatform.instance.patternParsePattern(
+      data,
+      composerId: _composerId,
+    );
+  }
 
   /// Parse and play a pattern in one step.
-  Future<void> playPattern(PatternData data) =>
-      PulsarPlatform.instance.patternPlayPattern(data);
+  Future<void> playPattern(PatternData data) async {
+    _composerId = await PulsarPlatform.instance.patternPlayPattern(
+      data,
+      composerId: _composerId,
+    );
+  }
 
   /// Play the last parsed pattern.
-  Future<void> play() => PulsarPlatform.instance.patternPlay();
+  Future<void> play() async =>
+      PulsarPlatform.instance.patternPlay(await _requireComposerId());
 
   /// Play only the audio simulation for the last parsed pattern.
-  Future<void> playAudioOnly() =>
-      PulsarPlatform.instance.patternPlayAudioOnly();
+  Future<void> playAudioOnly() async =>
+      PulsarPlatform.instance.patternPlayAudioOnly(await _requireComposerId());
 
   /// Stop pattern playback.
-  Future<void> stop() => PulsarPlatform.instance.patternStop();
+  Future<void> stop() async =>
+      PulsarPlatform.instance.patternStop(await _requireComposerId());
+
+  /// Release the native composer handle held by this instance.
+  Future<void> dispose() async {
+    final composerId = _composerId;
+    if (composerId == null) {
+      return;
+    }
+    _composerId = null;
+    await PulsarPlatform.instance.patternRelease(composerId);
+  }
 }

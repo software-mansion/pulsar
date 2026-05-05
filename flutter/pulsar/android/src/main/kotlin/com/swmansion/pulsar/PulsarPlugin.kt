@@ -22,7 +22,8 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
     private var activity: Activity? = null
     private var pulsar: Pulsar? = null
-    private var patternComposer: PatternComposer? = null
+    private val patternComposers = mutableMapOf<Int, PatternComposer>()
+    private var nextPatternComposerId = 1
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(binding.binaryMessenger, "pulsar")
@@ -41,6 +42,7 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onDetachedFromActivityForConfigChanges() {
         activity = null
         pulsar = null
+        patternComposers.clear()
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -51,6 +53,7 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onDetachedFromActivity() {
         activity = null
         pulsar = null
+        patternComposers.clear()
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -163,17 +166,38 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     ?: return result.error("INVALID_ARGS", "amplitude required", null)
                 val frequency = call.argument<Double>("frequency")?.toFloat()
                     ?: return result.error("INVALID_ARGS", "frequency required", null)
-                p.getRealtimeComposer().set(amplitude, frequency)
+                val strategyIndex = call.argument<Int>("strategy")
+                val strategy = if (strategyIndex != null) {
+                    RealtimeComposerStrategy.entries.getOrNull(strategyIndex)
+                        ?: return result.error("INVALID_ARGS", "invalid strategy", null)
+                } else {
+                    null
+                }
+                p.getRealtimeComposer(strategy).set(amplitude, frequency)
                 result.success(null)
             }
 
             "RealtimeComposer_stop" -> {
-                p.getRealtimeComposer().stop()
+                val strategyIndex = call.argument<Int>("strategy")
+                val strategy = if (strategyIndex != null) {
+                    RealtimeComposerStrategy.entries.getOrNull(strategyIndex)
+                        ?: return result.error("INVALID_ARGS", "invalid strategy", null)
+                } else {
+                    null
+                }
+                p.getRealtimeComposer(strategy).stop()
                 result.success(null)
             }
 
             "RealtimeComposer_isActive" -> {
-                result.success(p.getRealtimeComposer().isActive())
+                val strategyIndex = call.argument<Int>("strategy")
+                val strategy = if (strategyIndex != null) {
+                    RealtimeComposerStrategy.entries.getOrNull(strategyIndex)
+                        ?: return result.error("INVALID_ARGS", "invalid strategy", null)
+                } else {
+                    null
+                }
+                result.success(p.getRealtimeComposer(strategy).isActive())
             }
 
             "RealtimeComposer_playDiscrete" -> {
@@ -181,7 +205,14 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     ?: return result.error("INVALID_ARGS", "amplitude required", null)
                 val frequency = call.argument<Double>("frequency")?.toFloat()
                     ?: return result.error("INVALID_ARGS", "frequency required", null)
-                p.getRealtimeComposer().playDiscrete(amplitude, frequency)
+                val strategyIndex = call.argument<Int>("strategy")
+                val strategy = if (strategyIndex != null) {
+                    RealtimeComposerStrategy.entries.getOrNull(strategyIndex)
+                        ?: return result.error("INVALID_ARGS", "invalid strategy", null)
+                } else {
+                    null
+                }
+                p.getRealtimeComposer(strategy).playDiscrete(amplitude, frequency)
                 result.success(null)
             }
 
@@ -190,10 +221,13 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     ?: return result.error("INVALID_ARGS", "data required", null)
                 val patternData = parsePatternData(data)
                     ?: return result.error("INVALID_ARGS", "invalid pattern data", null)
-                val composer = p.getPatternComposer()
+                val composerId = call.argument<Int>("composerId")
+                val resolvedComposerId = composerId ?: nextPatternComposerId++
+                val composer = patternComposers[resolvedComposerId] ?: p.getPatternComposer().also {
+                    patternComposers[resolvedComposerId] = it
+                }
                 composer.parsePattern(patternData)
-                patternComposer = composer
-                result.success(null)
+                result.success(resolvedComposerId)
             }
 
             "PatternComposer_playPattern" -> {
@@ -201,25 +235,41 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     ?: return result.error("INVALID_ARGS", "data required", null)
                 val patternData = parsePatternData(data)
                     ?: return result.error("INVALID_ARGS", "invalid pattern data", null)
-                val composer = p.getPatternComposer()
+                val composerId = call.argument<Int>("composerId")
+                val resolvedComposerId = composerId ?: nextPatternComposerId++
+                val composer = patternComposers[resolvedComposerId] ?: p.getPatternComposer().also {
+                    patternComposers[resolvedComposerId] = it
+                }
                 composer.parsePattern(patternData)
-                patternComposer = composer
                 composer.play()
-                result.success(null)
+                result.success(resolvedComposerId)
             }
 
             "PatternComposer_play" -> {
-                patternComposer?.play()
+                val composerId = call.argument<Int>("composerId")
+                    ?: return result.error("INVALID_ARGS", "composerId required", null)
+                patternComposers[composerId]?.play()
                 result.success(null)
             }
 
             "PatternComposer_playAudioOnly" -> {
-                patternComposer?.playAudioOnly()
+                val composerId = call.argument<Int>("composerId")
+                    ?: return result.error("INVALID_ARGS", "composerId required", null)
+                patternComposers[composerId]?.playAudioOnly()
                 result.success(null)
             }
 
             "PatternComposer_stop" -> {
-                patternComposer?.stop()
+                val composerId = call.argument<Int>("composerId")
+                    ?: return result.error("INVALID_ARGS", "composerId required", null)
+                patternComposers[composerId]?.stop()
+                result.success(null)
+            }
+
+            "PatternComposer_release" -> {
+                val composerId = call.argument<Int>("composerId")
+                    ?: return result.error("INVALID_ARGS", "composerId required", null)
+                patternComposers.remove(composerId)?.stop()
                 result.success(null)
             }
 

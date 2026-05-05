@@ -71,32 +71,41 @@ abstract class PulsarPlatform extends PlatformInterface {
 
   // ── RealtimeComposer ────────────────────────────────────────────────────────
 
-  Future<void> realtimeSet(double amplitude, double frequency) =>
-      throw UnimplementedError('realtimeSet() not implemented');
+  Future<void> realtimeSet(
+    double amplitude,
+    double frequency, {
+    RealtimeComposerStrategy? strategy,
+  }) => throw UnimplementedError('realtimeSet() not implemented');
 
-  Future<void> realtimeStop() =>
+  Future<void> realtimeStop({RealtimeComposerStrategy? strategy}) =>
       throw UnimplementedError('realtimeStop() not implemented');
 
-  Future<bool> realtimeIsActive() =>
+  Future<bool> realtimeIsActive({RealtimeComposerStrategy? strategy}) =>
       throw UnimplementedError('realtimeIsActive() not implemented');
 
-  Future<void> realtimePlayDiscrete(double amplitude, double frequency) =>
-      throw UnimplementedError('realtimePlayDiscrete() not implemented');
+  Future<void> realtimePlayDiscrete(
+    double amplitude,
+    double frequency, {
+    RealtimeComposerStrategy? strategy,
+  }) => throw UnimplementedError('realtimePlayDiscrete() not implemented');
 
   // ── PatternComposer ─────────────────────────────────────────────────────────
 
-  Future<void> patternParsePattern(PatternData data) =>
+  Future<int> patternParsePattern(PatternData data, {int? composerId}) =>
       throw UnimplementedError('patternParsePattern() not implemented');
 
-  Future<void> patternPlayPattern(PatternData data) =>
+  Future<int> patternPlayPattern(PatternData data, {int? composerId}) =>
       throw UnimplementedError('patternPlayPattern() not implemented');
 
-  Future<void> patternPlay() =>
+  Future<void> patternPlay(int composerId) =>
       throw UnimplementedError('patternPlay() not implemented');
 
-  Future<void> patternPlayAudioOnly() =>
+  Future<void> patternPlayAudioOnly(int composerId) =>
       throw UnimplementedError('patternPlayAudioOnly() not implemented');
 
-  Future<void> patternStop() =>
+  Future<void> patternStop(int composerId) =>
       throw UnimplementedError('patternStop() not implemented');
+
+  Future<void> patternRelease(int composerId) =>
+      throw UnimplementedError('patternRelease() not implemented');
 }

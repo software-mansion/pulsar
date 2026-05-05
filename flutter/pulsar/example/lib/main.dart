@@ -27,11 +27,13 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     final support = await _pulsarPlugin.hapticSupport();
     final canPlay = await _pulsarPlugin.canPlayHaptics();
+    final supported = await _pulsarPlugin.isHapticsSupported();
 
     if (!mounted) return;
 
     setState(() {
-      _status = 'Support: $support\nCan play now: $canPlay';
+      _status =
+          'Support: $support\nSupported: $supported\nCan play now: $canPlay';
     });
   }
 

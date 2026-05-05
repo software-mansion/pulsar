@@ -104,50 +104,83 @@ class MethodChannelPulsar extends PulsarPlatform {
   // ── RealtimeComposer ────────────────────────────────────────────────────────
 
   @override
-  Future<void> realtimeSet(double amplitude, double frequency) =>
-      methodChannel.invokeMethod('RealtimeComposer_set', {
-        'amplitude': amplitude,
-        'frequency': frequency,
+  Future<void> realtimeSet(
+    double amplitude,
+    double frequency, {
+    RealtimeComposerStrategy? strategy,
+  }) => methodChannel.invokeMethod('RealtimeComposer_set', {
+    'amplitude': amplitude,
+    'frequency': frequency,
+    if (strategy != null) 'strategy': strategy.index,
+  });
+
+  @override
+  Future<void> realtimeStop({RealtimeComposerStrategy? strategy}) =>
+      methodChannel.invokeMethod('RealtimeComposer_stop', {
+        if (strategy != null) 'strategy': strategy.index,
       });
 
   @override
-  Future<void> realtimeStop() =>
-      methodChannel.invokeMethod('RealtimeComposer_stop');
-
-  @override
-  Future<bool> realtimeIsActive() async {
+  Future<bool> realtimeIsActive({RealtimeComposerStrategy? strategy}) async {
     final result = await methodChannel.invokeMethod<bool>(
       'RealtimeComposer_isActive',
+      {if (strategy != null) 'strategy': strategy.index},
     );
     return result ?? false;
   }
 
   @override
-  Future<void> realtimePlayDiscrete(double amplitude, double frequency) =>
-      methodChannel.invokeMethod('RealtimeComposer_playDiscrete', {
-        'amplitude': amplitude,
-        'frequency': frequency,
-      });
+  Future<void> realtimePlayDiscrete(
+    double amplitude,
+    double frequency, {
+    RealtimeComposerStrategy? strategy,
+  }) => methodChannel.invokeMethod('RealtimeComposer_playDiscrete', {
+    'amplitude': amplitude,
+    'frequency': frequency,
+    if (strategy != null) 'strategy': strategy.index,
+  });
 
   // ── PatternComposer ─────────────────────────────────────────────────────────
 
   @override
-  Future<void> patternParsePattern(PatternData data) => methodChannel
-      .invokeMethod('PatternComposer_parsePattern', {'data': data.toMap()});
+  Future<int> patternParsePattern(PatternData data, {int? composerId}) async {
+    final result = await methodChannel.invokeMethod<int>(
+      'PatternComposer_parsePattern',
+      {'data': data.toMap(), if (composerId != null) 'composerId': composerId},
+    );
+    return result ?? composerId ?? 0;
+  }
 
   @override
-  Future<void> patternPlayPattern(PatternData data) => methodChannel
-      .invokeMethod('PatternComposer_playPattern', {'data': data.toMap()});
+  Future<int> patternPlayPattern(PatternData data, {int? composerId}) async {
+    final result = await methodChannel.invokeMethod<int>(
+      'PatternComposer_playPattern',
+      {'data': data.toMap(), if (composerId != null) 'composerId': composerId},
+    );
+    return result ?? composerId ?? 0;
+  }
 
   @override
-  Future<void> patternPlay() =>
-      methodChannel.invokeMethod('PatternComposer_play');
+  Future<void> patternPlay(int composerId) => methodChannel.invokeMethod(
+    'PatternComposer_play',
+    {'composerId': composerId},
+  );
 
   @override
-  Future<void> patternPlayAudioOnly() =>
-      methodChannel.invokeMethod('PatternComposer_playAudioOnly');
+  Future<void> patternPlayAudioOnly(int composerId) =>
+      methodChannel.invokeMethod('PatternComposer_playAudioOnly', {
+        'composerId': composerId,
+      });
 
   @override
-  Future<void> patternStop() =>
-      methodChannel.invokeMethod('PatternComposer_stop');
+  Future<void> patternStop(int composerId) => methodChannel.invokeMethod(
+    'PatternComposer_stop',
+    {'composerId': composerId},
+  );
+
+  @override
+  Future<void> patternRelease(int composerId) => methodChannel.invokeMethod(
+    'PatternComposer_release',
+    {'composerId': composerId},
+  );
 }

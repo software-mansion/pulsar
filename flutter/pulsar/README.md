@@ -24,10 +24,10 @@ import 'package:pulsar/pulsar.dart';
 
 final pulsar = Pulsar();
 
-await pulsar.presets.systemImpactMedium();
-await pulsar.presets.systemNotificationSuccess();
-await pulsar.realtimeComposer.set(0.8, 0.5);
-await pulsar.realtimeComposer.stop();
+await pulsar.getPresets().systemImpactMedium();
+await pulsar.getPresets().systemNotificationSuccess();
+await pulsar.getRealtimeComposer().set(0.8, 0.5);
+await pulsar.getRealtimeComposer().stop();
 ```
 
 ## Documentation

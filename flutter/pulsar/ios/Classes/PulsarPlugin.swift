@@ -3,8 +3,9 @@ import UIKit
 
 public class PulsarPlugin: NSObject, FlutterPlugin {
   private let pulsar = Pulsar()
-  private lazy var patternComposer = pulsar.getPatternComposer()
   private lazy var realtimeComposer = pulsar.getRealtimeComposer()
+  private var patternComposers: [Int: PatternComposer] = [:]
+  private var nextPatternComposerId = 1
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "pulsar", binaryMessenger: registrar.messenger())
@@ -110,20 +111,36 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         result(FlutterError(code: "INVALID_ARGS", message: "amplitude and frequency required", details: nil))
         return
       }
+      if let strategyError = applyRealtimeStrategy(args) {
+        result(strategyError)
+        return
+      }
       realtimeComposer.set(amplitude: Float(amplitude), frequency: Float(frequency))
       result(nil)
 
     case "RealtimeComposer_stop":
+      if let strategyError = applyRealtimeStrategy(args) {
+        result(strategyError)
+        return
+      }
       realtimeComposer.stop()
       result(nil)
 
     case "RealtimeComposer_isActive":
+      if let strategyError = applyRealtimeStrategy(args) {
+        result(strategyError)
+        return
+      }
       result(realtimeComposer.isActive)
 
     case "RealtimeComposer_playDiscrete":
       guard let amplitude = args?["amplitude"] as? Double,
             let frequency = args?["frequency"] as? Double else {
         result(FlutterError(code: "INVALID_ARGS", message: "amplitude and frequency required", details: nil))
+        return
+      }
+      if let strategyError = applyRealtimeStrategy(args) {
+        result(strategyError)
         return
       }
       realtimeComposer.playDiscrete(amplitude: Float(amplitude), frequency: Float(frequency))
@@ -136,9 +153,18 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         result(FlutterError(code: "INVALID_ARGS", message: "valid pattern data required", details: nil))
         return
       }
-      patternComposer = pulsar.getPatternComposer()
+      let composerId = args?["composerId"] as? Int
+      let resolvedComposerId = composerId ?? nextPatternComposerId
+      if composerId == nil {
+        nextPatternComposerId += 1
+      }
+      let patternComposer = patternComposers[resolvedComposerId] ?? {
+        let composer = pulsar.getPatternComposer()
+        patternComposers[resolvedComposerId] = composer
+        return composer
+      }()
       patternComposer.parsePattern(hapticsData: patternData)
-      result(nil)
+      result(resolvedComposerId)
 
     case "PatternComposer_playPattern":
       guard let data = args?["data"] as? [String: Any],
@@ -146,20 +172,49 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         result(FlutterError(code: "INVALID_ARGS", message: "valid pattern data required", details: nil))
         return
       }
-      patternComposer = pulsar.getPatternComposer()
+      let composerId = args?["composerId"] as? Int
+      let resolvedComposerId = composerId ?? nextPatternComposerId
+      if composerId == nil {
+        nextPatternComposerId += 1
+      }
+      let patternComposer = patternComposers[resolvedComposerId] ?? {
+        let composer = pulsar.getPatternComposer()
+        patternComposers[resolvedComposerId] = composer
+        return composer
+      }()
       patternComposer.playPattern(hapticsData: patternData)
-      result(nil)
+      result(resolvedComposerId)
 
     case "PatternComposer_play":
-      patternComposer.play()
+      guard let composerId = args?["composerId"] as? Int else {
+        result(FlutterError(code: "INVALID_ARGS", message: "composerId required", details: nil))
+        return
+      }
+      patternComposers[composerId]?.play()
       result(nil)
 
     case "PatternComposer_playAudioOnly":
-      patternComposer.playAudioOnly()
+      guard let composerId = args?["composerId"] as? Int else {
+        result(FlutterError(code: "INVALID_ARGS", message: "composerId required", details: nil))
+        return
+      }
+      patternComposers[composerId]?.playAudioOnly()
       result(nil)
 
     case "PatternComposer_stop":
-      patternComposer.stop()
+      guard let composerId = args?["composerId"] as? Int else {
+        result(FlutterError(code: "INVALID_ARGS", message: "composerId required", details: nil))
+        return
+      }
+      patternComposers[composerId]?.stop()
+      result(nil)
+
+    case "PatternComposer_release":
+      guard let composerId = args?["composerId"] as? Int else {
+        result(FlutterError(code: "INVALID_ARGS", message: "composerId required", details: nil))
+        return
+      }
+      patternComposers.removeValue(forKey: composerId)?.stop()
       result(nil)
 
     default:
@@ -196,5 +251,15 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       continuousPattern: ContinuousPattern(amplitude: amplitude, frequency: frequency),
       discretePattern: discrete
     )
+  }
+
+  private func applyRealtimeStrategy(_ args: [String: Any]?) -> FlutterError? {
+    guard let strategy = args?["strategy"] else {
+      return nil
+    }
+    guard strategy is Int else {
+      return FlutterError(code: "INVALID_ARGS", message: "invalid strategy", details: nil)
+    }
+    return nil
   }
 }
