@@ -1,9 +1,7 @@
 name: Publish Flutter package to pub.dev
 
 on:
-  push:
-    tags:
-      - 'pulsar-v[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
 
 permissions:
   contents: read
