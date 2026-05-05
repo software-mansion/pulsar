@@ -2,6 +2,8 @@ export 'pulsar_types.dart';
 export 'pulsar_platform_interface.dart';
 export 'pulsar_method_channel.dart';
 
+import 'dart:io' show Platform;
+
 import 'pulsar_platform_interface.dart';
 import 'pulsar_types.dart';
 
@@ -102,6 +104,22 @@ class Pulsar {
   /// Android only — sets the realtime composer strategy.
   Future<void> setRealtimeComposerStrategy(RealtimeComposerStrategy strategy) =>
       PulsarPlatform.instance.setRealtimeComposerStrategy(strategy);
+
+  /// Creates an [AdaptiveHaptics] instance for the given [preset].
+  ///
+  /// Selects [AdaptivePreset.ios] or [AdaptivePreset.android] at runtime and,
+  /// for pattern-based configs, pre-parses the pattern so [AdaptiveHaptics.play]
+  /// is ready immediately.
+  ///
+  /// Call [AdaptiveHaptics.dispose] when the instance is no longer needed.
+  Future<AdaptiveHaptics> createAdaptiveHaptics(AdaptivePreset preset) async {
+    final config = Platform.isIOS ? preset.ios : preset.android;
+    final composer = getPatternComposer();
+    if (config is AdaptivePresetPattern) {
+      await composer.parsePattern(config.pattern);
+    }
+    return AdaptiveHaptics._(composer: composer, config: config);
+  }
 }
 
 // ── PulsarPresets ─────────────────────────────────────────────────────────────
@@ -474,4 +492,51 @@ class PulsarPatternComposer {
     _composerId = null;
     await PulsarPlatform.instance.patternRelease(composerId);
   }
+}
+
+// ── AdaptiveHaptics ───────────────────────────────────────────────────────────
+
+/// Plays platform-adaptive haptic feedback.
+///
+/// Created via [Pulsar.createAdaptiveHaptics]. Example:
+/// ```dart
+/// final pulsar = Pulsar();
+/// final adaptive = await pulsar.createAdaptiveHaptics(AdaptivePreset(
+///   ios: AdaptivePresetCallback(() => pulsar.presets.systemImpactMedium()),
+///   android: AdaptivePresetPattern(myPattern),
+/// ));
+///
+/// await adaptive.play();
+/// // …
+/// await adaptive.dispose();
+/// ```
+class AdaptiveHaptics {
+  AdaptiveHaptics._({
+    required PulsarPatternComposer composer,
+    required AdaptivePresetConfig config,
+  }) : _composer = composer,
+       _config = config;
+
+  final PulsarPatternComposer _composer;
+  final AdaptivePresetConfig _config;
+
+  /// Trigger the platform-appropriate haptic feedback.
+  Future<void> play() async {
+    switch (_config) {
+      case AdaptivePresetCallback():
+        await _config.play();
+      case AdaptivePresetPattern():
+        await _composer.play();
+    }
+  }
+
+  /// Stop an in-progress pattern-based haptic. No-op for callback configs.
+  Future<void> stop() async {
+    if (_config is AdaptivePresetPattern) {
+      await _composer.stop();
+    }
+  }
+
+  /// Release the underlying native resources.
+  Future<void> dispose() async => _composer.dispose();
 }

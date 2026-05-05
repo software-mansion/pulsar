@@ -1,3 +1,35 @@
+/// Platform-specific haptic configuration for [AdaptiveHaptics].
+///
+/// Use [AdaptivePresetCallback] for a custom callback or
+/// [AdaptivePresetPattern] for a [PatternData]-based pattern.
+sealed class AdaptivePresetConfig {
+  const AdaptivePresetConfig();
+}
+
+/// An [AdaptivePresetConfig] that invokes a callback when played.
+final class AdaptivePresetCallback extends AdaptivePresetConfig {
+  const AdaptivePresetCallback(this.play);
+
+  final Future<void> Function() play;
+}
+
+/// An [AdaptivePresetConfig] that plays a [PatternData] pattern.
+final class AdaptivePresetPattern extends AdaptivePresetConfig {
+  const AdaptivePresetPattern(this.pattern);
+
+  final PatternData pattern;
+}
+
+/// Platform-adaptive haptic preset supplying separate [ios] and [android] configs.
+///
+/// Pass to [Pulsar.createAdaptiveHaptics]; the correct config is selected at runtime.
+class AdaptivePreset {
+  const AdaptivePreset({required this.ios, required this.android});
+
+  final AdaptivePresetConfig ios;
+  final AdaptivePresetConfig android;
+}
+
 /// Maps to CompatibilityMode on Android and Pulsar's support model on iOS.
 /// Ordinal values match the native CompatibilityMode enum order.
 enum HapticSupport {
