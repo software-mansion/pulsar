@@ -21,7 +21,7 @@ public class PatternComposer: NSObject {
   }
 
   deinit {
-    stop()
+    dispose()
   }
 
   @objc public func parsePattern(hapticsData: PatternData) {
@@ -99,5 +99,16 @@ public class PatternComposer: NSObject {
     audioSimulator.stop()
     if let id = continuousPlayerId { engine.stopPlayer(id: id) }
     if let id = discretePlayerId { engine.stopPlayer(id: id) }
+  }
+
+  @objc public func dispose() {
+    stop()
+    if let id = continuousPlayerId { engine.removePlayer(id: id) }
+    if let id = discretePlayerId { engine.removePlayer(id: id) }
+    continuousPlayerId = nil
+    discretePlayerId = nil
+    continuousPattern = nil
+    discretePattern = nil
+    audioBuffer = nil
   }
 }

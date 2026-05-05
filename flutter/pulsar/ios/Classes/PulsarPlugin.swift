@@ -221,7 +221,7 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         result(FlutterError(code: "INVALID_ARGS", message: "composerId required", details: nil))
         return
       }
-      patternComposers.removeValue(forKey: composerId)?.stop()
+      patternComposers.removeValue(forKey: composerId)?.dispose()
       result(nil)
 
     default:

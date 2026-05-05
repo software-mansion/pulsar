@@ -26,7 +26,7 @@ open class Pulsar(protected var context: Context) {
 
     open fun getPresets(): PresetsWrapper {
         if (_presets == null) {
-            _presets = PresetsWrapper(this, context as Activity, engine)
+            _presets = PresetsWrapper(this, ActivityProvider(context as Activity), engine)
         }
         return _presets!!
     }
@@ -61,16 +61,8 @@ open class Pulsar(protected var context: Context) {
         this.getPresets().preloadPresetByNames(presetNames)
     }
 
-    fun preloadPreset(presetName: String) {
-        this.getPresets().preloadPresetByName(presetName)
-    }
-
     fun enableHaptics(state: Boolean) {
         engine.enableHaptics(state)
-    }
-
-    fun isHapticsEnabled(): Boolean {
-        return engine.isHapticsEnabled()
     }
 
     fun enableSound(state: Boolean) {
@@ -81,20 +73,12 @@ open class Pulsar(protected var context: Context) {
         this.getPresets().enableCache(state)
     }
 
-    fun isCacheEnabled(): Boolean {
-        return this.getPresets().isCacheEnabled()
-    }
-
     fun clearCache() {
         this.getPresets().resetCache()
     }
 
     fun stopHaptics() {
         engine.stop()
-    }
-
-    fun canPlayHaptics(): Boolean {
-        return hapticSupport() != CompatibilityMode.NO_SUPPORT && isHapticsEnabled()
     }
 
     fun enableImpulseCompositionMode(state: Boolean) {
