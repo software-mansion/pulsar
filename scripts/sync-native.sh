@@ -28,7 +28,7 @@ IOS_RN="$REPO_ROOT/react-native/react-native-pulsar/deps/Pulsar/Sources/Pulsar"
 IOS_FLUTTER="$REPO_ROOT/flutter/Pulsar/ios/Classes"
 
 # rsync --exclude flags for Android RN bridge files (never synced)
-ANDROID_EXCLUDES="--exclude=PulsarModule.kt --exclude=PulsarPackage.kt --exclude=PulsarReactNative.kt"
+ANDROID_EXCLUDES="--exclude=PulsarModule.kt --exclude=PulsarPackage.kt --exclude=PulsarReactNative.kt --exclude=ReactNativeActivityProvider.kt"
 ANDROID_FLUTTER_EXCLUDES="--exclude=PulsarPlugin.kt"
 IOS_FLUTTER_EXCLUDES="--exclude=PulsarPlugin.swift"
 
