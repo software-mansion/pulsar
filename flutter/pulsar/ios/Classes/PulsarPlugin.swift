@@ -49,8 +49,19 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       pulsar.enableCache(state: state)
       result(nil)
 
+    case "Pulsar_isCacheEnabled":
+      result(pulsar.getPresets().isCacheEnabled())
+
     case "Pulsar_clearCache":
       pulsar.clearCache()
+      result(nil)
+
+    case "Pulsar_preloadPreset":
+      guard let name = args?["presetName"] as? String else {
+        result(FlutterError(code: "INVALID_ARGS", message: "presetName required", details: nil))
+        return
+      }
+      pulsar.getPresets().preloadPresetByName(name)
       result(nil)
 
     case "Pulsar_preloadPresets":
@@ -69,10 +80,16 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       pulsar.shutDownEngine()
       result(nil)
 
+    case "Pulsar_isHapticsEnabled":
+      result(pulsar.isHapticsEnabled)
+
+    case "Pulsar_canPlayHaptics":
+      result(pulsar.canPlayHaptics())
+
     case "Pulsar_hapticSupport":
-      // iOS: map to HapticSupport int (0–4). Use 3 (standardSupport) when supported, 0 otherwise.
+      // iOS currently models support as binary for Flutter: standard support or none.
       let supported = pulsar.isHapticsSupported()
-      result(supported ? 3 : 0)
+      result(supported ? 2 : 0)
 
     case "Pulsar_forceHapticsSupportLevel":
       // No-op on iOS — CoreHaptics support level is hardware-determined.
@@ -123,8 +140,22 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       patternComposer.parsePattern(hapticsData: patternData)
       result(nil)
 
+    case "PatternComposer_playPattern":
+      guard let data = args?["data"] as? [String: Any],
+            let patternData = parsePatternData(data) else {
+        result(FlutterError(code: "INVALID_ARGS", message: "valid pattern data required", details: nil))
+        return
+      }
+      patternComposer = pulsar.getPatternComposer()
+      patternComposer.playPattern(hapticsData: patternData)
+      result(nil)
+
     case "PatternComposer_play":
       patternComposer.play()
+      result(nil)
+
+    case "PatternComposer_playAudioOnly":
+      patternComposer.playAudioOnly()
       result(nil)
 
     case "PatternComposer_stop":

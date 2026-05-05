@@ -89,8 +89,19 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(null)
             }
 
+            "Pulsar_isCacheEnabled" -> {
+                result.success(p.isCacheEnabled())
+            }
+
             "Pulsar_clearCache" -> {
                 p.clearCache()
+                result.success(null)
+            }
+
+            "Pulsar_preloadPreset" -> {
+                val name = call.argument<String>("presetName")
+                    ?: return result.error("INVALID_ARGS", "presetName required", null)
+                p.preloadPreset(name)
                 result.success(null)
             }
 
@@ -108,6 +119,14 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             "Pulsar_shutDownEngine" -> {
                 result.success(null)
+            }
+
+            "Pulsar_isHapticsEnabled" -> {
+                result.success(p.isHapticsEnabled())
+            }
+
+            "Pulsar_canPlayHaptics" -> {
+                result.success(p.canPlayHaptics())
             }
 
             "Pulsar_hapticSupport" -> {
@@ -177,8 +196,25 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(null)
             }
 
+            "PatternComposer_playPattern" -> {
+                val data = call.argument<Map<String, Any>>("data")
+                    ?: return result.error("INVALID_ARGS", "data required", null)
+                val patternData = parsePatternData(data)
+                    ?: return result.error("INVALID_ARGS", "invalid pattern data", null)
+                val composer = p.getPatternComposer()
+                composer.parsePattern(patternData)
+                patternComposer = composer
+                composer.play()
+                result.success(null)
+            }
+
             "PatternComposer_play" -> {
                 patternComposer?.play()
+                result.success(null)
+            }
+
+            "PatternComposer_playAudioOnly" -> {
+                patternComposer?.playAudioOnly()
                 result.success(null)
             }
 

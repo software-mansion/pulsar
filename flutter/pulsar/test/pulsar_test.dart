@@ -1,11 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pulsar/pulsar.dart';
-import 'package:pulsar/pulsar_method_channel.dart';
-import 'package:pulsar/pulsar_platform_interface.dart';
-import 'package:pulsar/pulsar_types.dart';
 
-class MockPulsarPlatform with MockPlatformInterfaceMixin implements PulsarPlatform {
+class MockPulsarPlatform
+    with MockPlatformInterfaceMixin
+    implements PulsarPlatform {
   String? lastPlayedPreset;
 
   @override
@@ -20,6 +19,9 @@ class MockPulsarPlatform with MockPlatformInterfaceMixin implements PulsarPlatfo
   Future<void> enableCache(bool state) async {}
 
   @override
+  Future<bool> isCacheEnabled() async => true;
+
+  @override
   Future<void> enableHaptics(bool state) async {}
 
   @override
@@ -27,6 +29,12 @@ class MockPulsarPlatform with MockPlatformInterfaceMixin implements PulsarPlatfo
 
   @override
   Future<void> enableSound(bool state) async {}
+
+  @override
+  Future<bool> isHapticsEnabled() async => true;
+
+  @override
+  Future<bool> canPlayHaptics() async => true;
 
   @override
   Future<void> forceHapticsSupportLevel(HapticSupport level) async {}
@@ -38,10 +46,19 @@ class MockPulsarPlatform with MockPlatformInterfaceMixin implements PulsarPlatfo
   Future<void> patternParsePattern(PatternData data) async {}
 
   @override
+  Future<void> patternPlayPattern(PatternData data) async {}
+
+  @override
   Future<void> patternPlay() async {}
 
   @override
+  Future<void> patternPlayAudioOnly() async {}
+
+  @override
   Future<void> patternStop() async {}
+
+  @override
+  Future<void> preloadPreset(String presetName) async {}
 
   @override
   Future<void> preloadPresets(List<String> presetNames) async {}
@@ -59,7 +76,9 @@ class MockPulsarPlatform with MockPlatformInterfaceMixin implements PulsarPlatfo
   Future<void> realtimeStop() async {}
 
   @override
-  Future<void> setRealtimeComposerStrategy(RealtimeComposerStrategy strategy) async {}
+  Future<void> setRealtimeComposerStrategy(
+    RealtimeComposerStrategy strategy,
+  ) async {}
 
   @override
   Future<void> shutDownEngine() async {}

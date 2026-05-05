@@ -68,6 +68,10 @@ class HapticEngineWrapper(private val context: Context) {
         }
     }
 
+    fun isHapticsEnabled(): Boolean {
+        return isHapticsEnabled
+    }
+
     fun stop() {
         if (!initialized) {
             return

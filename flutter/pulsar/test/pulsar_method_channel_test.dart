@@ -13,12 +13,12 @@ void main() {
     loggedCalls.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (methodCall) async {
-      loggedCalls.add(methodCall);
-      if (methodCall.method == 'Pulsar_hapticSupport') {
-        return 3;
-      }
-      return null;
-    });
+          loggedCalls.add(methodCall);
+          if (methodCall.method == 'Pulsar_hapticSupport') {
+            return 3;
+          }
+          return null;
+        });
   });
 
   tearDown(() {

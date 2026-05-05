@@ -19,30 +19,52 @@ abstract class PulsarPlatform extends PlatformInterface {
 
   // ── Pulsar ──────────────────────────────────────────────────────────────────
 
-  Future<void> play(String name) => throw UnimplementedError('play() not implemented');
+  Future<void> play(String name) =>
+      throw UnimplementedError('play() not implemented');
 
-  Future<void> enableHaptics(bool state) => throw UnimplementedError('enableHaptics() not implemented');
+  Future<void> enableHaptics(bool state) =>
+      throw UnimplementedError('enableHaptics() not implemented');
 
-  Future<void> enableSound(bool state) => throw UnimplementedError('enableSound() not implemented');
+  Future<void> enableSound(bool state) =>
+      throw UnimplementedError('enableSound() not implemented');
 
-  Future<void> enableCache(bool state) => throw UnimplementedError('enableCache() not implemented');
+  Future<void> enableCache(bool state) =>
+      throw UnimplementedError('enableCache() not implemented');
 
-  Future<void> clearCache() => throw UnimplementedError('clearCache() not implemented');
+  Future<bool> isCacheEnabled() =>
+      throw UnimplementedError('isCacheEnabled() not implemented');
+
+  Future<void> clearCache() =>
+      throw UnimplementedError('clearCache() not implemented');
+
+  Future<void> preloadPreset(String presetName) =>
+      throw UnimplementedError('preloadPreset() not implemented');
 
   Future<void> preloadPresets(List<String> presetNames) =>
       throw UnimplementedError('preloadPresets() not implemented');
 
-  Future<void> stopHaptics() => throw UnimplementedError('stopHaptics() not implemented');
+  Future<void> stopHaptics() =>
+      throw UnimplementedError('stopHaptics() not implemented');
 
-  Future<void> shutDownEngine() => throw UnimplementedError('shutDownEngine() not implemented');
+  Future<void> shutDownEngine() =>
+      throw UnimplementedError('shutDownEngine() not implemented');
 
-  Future<HapticSupport> hapticSupport() => throw UnimplementedError('hapticSupport() not implemented');
+  Future<bool> isHapticsEnabled() =>
+      throw UnimplementedError('isHapticsEnabled() not implemented');
+
+  Future<bool> canPlayHaptics() =>
+      throw UnimplementedError('canPlayHaptics() not implemented');
+
+  Future<HapticSupport> hapticSupport() =>
+      throw UnimplementedError('hapticSupport() not implemented');
 
   Future<void> forceHapticsSupportLevel(HapticSupport level) =>
       throw UnimplementedError('forceHapticsSupportLevel() not implemented');
 
   Future<void> enableImpulseCompositionMode(bool state) =>
-      throw UnimplementedError('enableImpulseCompositionMode() not implemented');
+      throw UnimplementedError(
+        'enableImpulseCompositionMode() not implemented',
+      );
 
   Future<void> setRealtimeComposerStrategy(RealtimeComposerStrategy strategy) =>
       throw UnimplementedError('setRealtimeComposerStrategy() not implemented');
@@ -52,9 +74,11 @@ abstract class PulsarPlatform extends PlatformInterface {
   Future<void> realtimeSet(double amplitude, double frequency) =>
       throw UnimplementedError('realtimeSet() not implemented');
 
-  Future<void> realtimeStop() => throw UnimplementedError('realtimeStop() not implemented');
+  Future<void> realtimeStop() =>
+      throw UnimplementedError('realtimeStop() not implemented');
 
-  Future<bool> realtimeIsActive() => throw UnimplementedError('realtimeIsActive() not implemented');
+  Future<bool> realtimeIsActive() =>
+      throw UnimplementedError('realtimeIsActive() not implemented');
 
   Future<void> realtimePlayDiscrete(double amplitude, double frequency) =>
       throw UnimplementedError('realtimePlayDiscrete() not implemented');
@@ -64,7 +88,15 @@ abstract class PulsarPlatform extends PlatformInterface {
   Future<void> patternParsePattern(PatternData data) =>
       throw UnimplementedError('patternParsePattern() not implemented');
 
-  Future<void> patternPlay() => throw UnimplementedError('patternPlay() not implemented');
+  Future<void> patternPlayPattern(PatternData data) =>
+      throw UnimplementedError('patternPlayPattern() not implemented');
 
-  Future<void> patternStop() => throw UnimplementedError('patternStop() not implemented');
+  Future<void> patternPlay() =>
+      throw UnimplementedError('patternPlay() not implemented');
+
+  Future<void> patternPlayAudioOnly() =>
+      throw UnimplementedError('patternPlayAudioOnly() not implemented');
+
+  Future<void> patternStop() =>
+      throw UnimplementedError('patternStop() not implemented');
 }

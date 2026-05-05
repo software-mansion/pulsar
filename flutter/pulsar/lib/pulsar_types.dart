@@ -1,8 +1,7 @@
-/// Maps to CompatibilityMode on Android and CoreHaptics support on iOS.
-/// Ordinal values match the Android CompatibilityMode enum order.
+/// Maps to CompatibilityMode on Android and Pulsar's support model on iOS.
+/// Ordinal values match the native CompatibilityMode enum order.
 enum HapticSupport {
   noSupport,
-  minimalSupport,
   limitedSupport,
   standardSupport,
   advancedSupport,
@@ -42,10 +41,10 @@ class DiscretePoint {
   final double frequency;
 
   Map<String, dynamic> toMap() => {
-        'time': time,
-        'amplitude': amplitude,
-        'frequency': frequency,
-      };
+    'time': time,
+    'amplitude': amplitude,
+    'frequency': frequency,
+  };
 }
 
 /// A continuous haptic pattern defined by amplitude and frequency curves.
@@ -56,9 +55,9 @@ class ContinuousPattern {
   final List<ValuePoint> frequency;
 
   Map<String, dynamic> toMap() => {
-        'amplitude': amplitude.map((p) => p.toMap()).toList(),
-        'frequency': frequency.map((p) => p.toMap()).toList(),
-      };
+    'amplitude': amplitude.map((p) => p.toMap()).toList(),
+    'frequency': frequency.map((p) => p.toMap()).toList(),
+  };
 }
 
 /// Full haptic pattern combining a continuous curve and discrete events.
@@ -72,7 +71,7 @@ class PatternData {
   final List<DiscretePoint> discretePattern;
 
   Map<String, dynamic> toMap() => {
-        'continuousPattern': continuousPattern.toMap(),
-        'discretePattern': discretePattern.map((p) => p.toMap()).toList(),
-      };
+    'continuousPattern': continuousPattern.toMap(),
+    'discretePattern': discretePattern.map((p) => p.toMap()).toList(),
+  };
 }
