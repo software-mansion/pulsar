@@ -1,15 +1,14 @@
 package com.swmansion.pulsar.presets
 
-import android.app.Activity
-import android.content.Context
 import android.os.Build
 import android.view.HapticFeedbackConstants
+import com.swmansion.pulsar.ActivityProvider
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.types.Preset
 import com.swmansion.pulsar.types.PresetWithName
 
-class SystemViewBasedPresets(private var activity: Activity?) {
+class SystemViewBasedPresets(private val activityProvider: ActivityProvider) {
     fun longPress() { playHaptic(HapticFeedbackConstants.LONG_PRESS) }
     fun virtualKey() { playHaptic(HapticFeedbackConstants.VIRTUAL_KEY) }
     fun keyboardTap() { playHaptic(HapticFeedbackConstants.KEYBOARD_TAP) }
@@ -89,7 +88,7 @@ class SystemViewBasedPresets(private var activity: Activity?) {
     }
 
     private fun playHaptic(preset: Int) {
-        activity?.window?.decorView?.performHapticFeedback(preset)
+        activityProvider.getCurrentActivity()?.window?.decorView?.performHapticFeedback(preset)
     }
 }
 

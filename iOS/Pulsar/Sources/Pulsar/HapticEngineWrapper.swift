@@ -225,6 +225,7 @@ private extension HapticEngineWrapper {
     engine?.resetHandler = { [weak self] in
       guard let self else { return }
       self.initialized = false
+      self.clearPlayerState(stopPlayers: false)
       self.engine = nil
     }
   }
