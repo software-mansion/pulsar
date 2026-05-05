@@ -7,19 +7,77 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
 
     fun getStepsPoints(): ArrayList<ControlPoint> {
         val points = ArrayList<ControlPoint>()
-        val stepsPerSecond = 200L
+        /*
+            This variable is determined empirically. If the transition time is too wide,
+            the transition will be nearly imperceptible. Conversely, if the transition is too short,
+            the internal LRA cannot keep up due to its own minimum transition time; as a result,
+            the haptic effect lasts longer than intended.
+        */
+        val stepsPerSecond = 13L
 
         val stepDurationMs = 1000L / stepsPerSecond
+        val configPoints = configLine.points
 
-        val maxTime = if (configLine.points.isEmpty()) { 0L } else configLine.points.maxOf { it.time }
+        val maxTime = if (configPoints.isEmpty()) { 0L } else configPoints.last().time
 
         var currentTime = 0L
+        var segmentIndex = -1
         while (currentTime < maxTime) {
             val nextTime = minOf(currentTime + stepDurationMs, maxTime)
             val duration = maxOf(1L, (nextTime - currentTime))
 
-            val configPoint = interpolateConfigPoint(currentTime, configLine)
-            points.add(ControlPoint(configPoint.amplitude, configPoint.frequency, duration))
+            var bucketTime = currentTime
+            var amplitudeArea = 0f
+            var frequencyArea = 0f
+
+            while (bucketTime < nextTime) {
+                while (
+                    segmentIndex + 1 < configPoints.size &&
+                    configPoints[segmentIndex + 1].time <= bucketTime
+                ) {
+                    segmentIndex++
+                }
+
+                val segmentEnd = when {
+                    segmentIndex < 0 -> minOf(nextTime, configPoints.first().time)
+                    segmentIndex >= configPoints.lastIndex -> nextTime
+                    else -> minOf(nextTime, configPoints[segmentIndex + 1].time)
+                }
+
+                val segmentDuration = segmentEnd - bucketTime
+                if (segmentDuration <= 0L) {
+                    bucketTime = segmentEnd
+                    continue
+                }
+
+                val (averageAmplitude, averageFrequency) = when {
+                    segmentIndex < 0 -> {
+                        val point = configPoints.first()
+                        point.amplitude to point.frequency
+                    }
+                    segmentIndex >= configPoints.lastIndex -> {
+                        val point = configPoints.last()
+                        point.amplitude to point.frequency
+                    }
+                    else -> {
+                        val startPoint = configPoints[segmentIndex]
+                        val endPoint = configPoints[segmentIndex + 1]
+                        averageValuesInSegment(bucketTime, segmentEnd, startPoint, endPoint)
+                    }
+                }
+
+                amplitudeArea += averageAmplitude * segmentDuration
+                frequencyArea += averageFrequency * segmentDuration
+                bucketTime = segmentEnd
+            }
+
+            points.add(
+                ControlPoint(
+                    intensity = amplitudeArea / duration,
+                    sharpness = frequencyArea / duration,
+                    duration = duration,
+                )
+            )
             currentTime = nextTime
         }
         return points
@@ -38,25 +96,29 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
         return points
     }
 
-    private fun interpolateConfigPoint(time: Long, configLine: ConfigLineBuilder): ConfigPoint {
-        if (configLine.points.isEmpty()) return ConfigPoint(time, 0f, 0f)
-        if (configLine.points.any { it.time == time }) return configLine.points.first { it.time == time }
-        if (configLine.points.size == 1) return configLine.points[0]
-        if (time <= configLine.points.first().time) return configLine.points.first()
-        if (time >= configLine.points.last().time) return configLine.points.last()
+    private fun averageValuesInSegment(
+        startTime: Long,
+        endTime: Long,
+        startPoint: ConfigPoint,
+        endPoint: ConfigPoint,
+    ): Pair<Float, Float> {
+        val timeDiff = endPoint.time - startPoint.time
+        if (timeDiff <= 0L) {
+            return startPoint.amplitude to startPoint.frequency
+        }
 
-        val nextPointIndex = configLine.points.indexOfFirst { it.time > time }
-        val prevPoint = configLine.points[nextPointIndex - 1]
-        val nextPoint = configLine.points[nextPointIndex]
+        val startProgress = (startTime - startPoint.time).toFloat() / timeDiff
+        val endProgress = (endTime - startPoint.time).toFloat() / timeDiff
 
-        val timeDiff = nextPoint.time - prevPoint.time
-        val amplitudeDiff = nextPoint.amplitude - prevPoint.amplitude
-        val frequencyDiff = nextPoint.frequency - prevPoint.frequency
-        val progress = (time - prevPoint.time).toFloat() / timeDiff
+        val startAmplitude =
+            startPoint.amplitude + (endPoint.amplitude - startPoint.amplitude) * startProgress
+        val endAmplitude =
+            startPoint.amplitude + (endPoint.amplitude - startPoint.amplitude) * endProgress
+        val startFrequency =
+            startPoint.frequency + (endPoint.frequency - startPoint.frequency) * startProgress
+        val endFrequency =
+            startPoint.frequency + (endPoint.frequency - startPoint.frequency) * endProgress
 
-        val interpolatedAmplitude = prevPoint.amplitude + amplitudeDiff * progress
-        val interpolatedFrequency = prevPoint.frequency + frequencyDiff * progress
-
-        return ConfigPoint(time = time, amplitude = interpolatedAmplitude, frequency = interpolatedFrequency)
+        return ((startAmplitude + endAmplitude) / 2f) to ((startFrequency + endFrequency) / 2f)
     }
 }

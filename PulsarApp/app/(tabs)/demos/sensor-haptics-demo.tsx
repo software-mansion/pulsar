@@ -1,6 +1,4 @@
-import { useCallback } from 'react';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
 import { useRealtimeComposer } from 'react-native-pulsar';
 import Animated, {
   useSharedValue,
@@ -15,7 +13,7 @@ import Animated, {
 import BasicLayout from '@/components/BasicLayout';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
-import { runOnUIAsync } from 'react-native-worklets';
+import { useHapticsScreenActivity } from '@/hooks/useHapticsScreenActivity';
 
 const CIRCLE_RADIUS = 150;
 const CIRCLE_BORDER_WIDTH = 2;
@@ -27,16 +25,7 @@ const isAndroid = Platform.OS === 'android';
 export default function SensorHapticsDemo() {
   const sensor = useAnimatedSensor(isAndroid ? SensorType.GYROSCOPE : SensorType.ACCELEROMETER);
   const composer = useRealtimeComposer();
-
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        runOnUIAsync(() => {
-          composer.stop();
-        });
-      };
-    }, [])
-  );
+  const isScreenActive = useHapticsScreenActivity(composer);
 
   const dotX = useSharedValue(CENTER_X - DOT_SIZE / 2);
   const dotY = useSharedValue(CENTER_Y - DOT_SIZE / 2);
@@ -48,10 +37,16 @@ export default function SensorHapticsDemo() {
 
   useAnimatedReaction(
     () => ({
+      isScreenActive: isScreenActive.value,
       sensorX: sensor.sensor.value.x,
       sensorY: sensor.sensor.value.y,
     }),
-    ({ sensorX, sensorY }) => {
+    ({ isScreenActive, sensorX, sensorY }) => {
+      if (!isScreenActive) {
+        composer.stop();
+        return;
+      }
+
       // iOS accelerometer: g-force units (-1 to 1), x/y map directly to tilt direction.
       // Android gyroscope: rotation rate in rad/s; roll (gy) drives horizontal,
       // pitch (gx) drives vertical. Signs may need flipping if movement feels inverted.

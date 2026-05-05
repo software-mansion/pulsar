@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ViewProps, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, ViewProps, Dimensions, type ImageStyle, type StyleProp } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Presets } from 'react-native-pulsar';
-const loaderIcon = require('../assets/images/loader.svg');
 import { Image } from 'expo-image';
 
+const loaderIcon = require('../assets/images/loader.svg');
 const arrowIcon = require('@/assets/images/arrow.svg');
 const playIcon = require('@/assets/images/play.svg');
 const stopIcon = require('@/assets/images/stop.svg');
@@ -18,6 +18,7 @@ const { width } = Dimensions.get('window');
 interface Props {
   label?: string;
   style?: ViewProps['style'];
+  iconStyle?: StyleProp<ImageStyle>;
   onClick?: () => void;
   onComplete?: () => void;
   state?: 'loading' | 'default';
@@ -28,9 +29,12 @@ interface Props {
   disableHaptics?: boolean;
 }
 
+type IconName = Exclude<NonNullable<Props['showIcon']>, 'none'>;
+
 function Button({
   label,
   style,
+  iconStyle,
   onClick,
   onComplete,
   state = 'default',
@@ -60,7 +64,18 @@ function Button({
       }
     }, 200);
     return () => clearTimeout(timer);
-  }, [pressed]);
+  }, [enabled, isLoading, onComplete, pressed]);
+
+  const iconRenderers: Record<IconName, () => React.JSX.Element> = {
+    arrow: () => <Image source={arrowIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
+    play: () => <Image source={playIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
+    stop: () => <Image source={stopIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
+    download: () => <Image source={downloadIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
+    record: () => <Image source={recordIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
+    square: () => <Image source={squareIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
+  };
+
+  const renderIcon = showIcon === 'none' ? null : iconRenderers[showIcon]();
 
   const containerStyle = [
     styles.container,
@@ -83,12 +98,7 @@ function Button({
         ) : (
           <View style={[largeIcon ? styles.largeIconRow : styles.row, !enabled && styles.disabled]}>
             {label && <Text style={styles.text}>{label}</Text>}
-            {showIcon === 'arrow' && <Image source={arrowIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
-            {showIcon === 'play' && <Image source={playIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
-            {showIcon === 'stop' && <Image source={stopIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
-            {showIcon === 'download' && <Image source={downloadIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
-            {showIcon === 'record' && <Image source={recordIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
-            {showIcon === 'square' && <Image source={squareIcon} style={largeIcon ? styles.largeArrowIcon : styles.arrowIcon} />}
+            {renderIcon}
           </View>
         )}
       </Animated.View>

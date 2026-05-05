@@ -51,6 +51,11 @@ function getKotlinPresetImport(shortName: string) {
   return `import com.swmansion.pulsar\n\nlet pulsar = Pulsar()\npulsar.getPresets().${normalizedName}()`;
 }
 
+function getKmpPresetImport(shortName: string) {
+  const normalizedName = shortName.charAt(0).toLowerCase() + shortName.slice(1);
+  return `import com.swmansion.pulsar.kmp.Pulsar\n\nval pulsar = Pulsar.create()\npulsar.getPresets().${normalizedName}()`;
+}
+
 function toAnchorId(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
@@ -62,11 +67,12 @@ interface CompactPresetInternalProps {
   handleCopy: () => void;
   definitionOpen: boolean;
   setDefinitionOpen: (open: boolean) => void;
+  soundEnabled: boolean;
   isFavourite: boolean;
   onToggleFavourite: () => void;
 }
 
-function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitionOpen, setDefinitionOpen, isFavourite, onToggleFavourite }: CompactPresetInternalProps) {
+function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitionOpen, setDefinitionOpen, soundEnabled, isFavourite, onToggleFavourite }: CompactPresetInternalProps) {
   const { data } = preset;
   const [isPlaying, setIsPlaying] = useState(false);
   const audioPlayerRef = useRef<AudioPatternUtility | null>(null);
@@ -98,7 +104,11 @@ function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitio
           await audioPlayer.parsePattern(data);
           isParsed.current = true;
         }
-        audioPlayer.play().then(() => setIsPlaying(false));
+        if (soundEnabled) {
+          audioPlayer.play().then(() => setIsPlaying(false));
+        } else {
+          setIsPlaying(false);
+        }
       } catch (error) {
         console.error('Error playing audio:', error);
         setIsPlaying(false);
@@ -146,12 +156,13 @@ function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitio
 
 interface PresetProps extends PresetConfig {
   compact?: boolean;
+  soundEnabled?: boolean;
   isFavourite?: boolean;
   onToggleFavourite?: () => void;
 }
 
 export function Preset(preset: PresetProps) {
-  const { data, compact = false, isFavourite = false, onToggleFavourite = () => {} } = preset;
+  const { data, compact = false, soundEnabled = true, isFavourite = false, onToggleFavourite = () => {} } = preset;
   const anchorId = toAnchorId(data.name);
   const [usageViewed, setUsageViewed] = useState(false);
   const [definitionOpen, setDefinitionOpen] = useState(false);
@@ -175,7 +186,7 @@ export function Preset(preset: PresetProps) {
 
   if (compact) {
     return (
-      <CompactPreset preset={preset} anchorId={anchorId} definitionJson={definitionJson} handleCopy={handleCopy} definitionOpen={definitionOpen} setDefinitionOpen={setDefinitionOpen} isFavourite={isFavourite} onToggleFavourite={onToggleFavourite} />
+      <CompactPreset preset={preset} anchorId={anchorId} definitionJson={definitionJson} handleCopy={handleCopy} definitionOpen={definitionOpen} setDefinitionOpen={setDefinitionOpen} soundEnabled={soundEnabled} isFavourite={isFavourite} onToggleFavourite={onToggleFavourite} />
     );
   }
 
@@ -217,13 +228,14 @@ export function Preset(preset: PresetProps) {
         </Modal>
       )}
 
-      <VisualizationPanel visualization={preset} presetName={data.name} />
+      <VisualizationPanel visualization={preset} presetName={data.name} soundEnabled={soundEnabled} />
 
       <div onClick={handleUsageToggle}>
         <Accordion title="Usage" className={style.marginTop}>
           <CodeTabs
             swift={getSwiftPresetImport(data.name)}
             kotlin={getKotlinPresetImport(data.name)}
+            kmp={getKmpPresetImport(data.name)}
             reactNative={getReactNativePresetImport(data.name)}
           />
         </Accordion>

@@ -7,7 +7,7 @@ A haptic feedback SDK for Android, written in Kotlin. Pulsar provides ready-to-u
 
 ## Features
 
-- **Presets** - Library of built-in haptic patterns (earthquake, success, fail, tap) and system feedback styles (impacts, notifications, selection)
+- **Presets** - Library of built-in haptic patterns (hammer, dogBark, buzz, pulse) and system feedback styles (impacts, notifications, selection)
 - **Pattern Composer** - Define custom haptic patterns using discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** - Live amplitude and frequency control for gesture-driven haptics
 - **Android-native** - Built on Android haptics APIs with graceful compatibility fallbacks
@@ -17,13 +17,33 @@ A haptic feedback SDK for Android, written in Kotlin. Pulsar provides ready-to-u
 
 ### Installation
 
+<!-- GENERATED:ANDROID_VERSION_START -->
+Latest available version: `1.1.0`
+<!-- GENERATED:ANDROID_VERSION_END -->
+
 Add Pulsar as a Gradle dependency:
 
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-	implementation("com.swmansion:pulsar:1.0.0")
+  implementation("com.swmansion:pulsar:1.1.0")
 }
 ```
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_END -->
+
+Declare the vibration permission in your app's `AndroidManifest.xml`:
+
+```xml
+<manifest ...>
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application ...>
+    ...
+  </application>
+</manifest>
+```
+
+Without `android.permission.VIBRATE`, Android will block vibration playback. Pulsar will log a warning and skip the vibration instead of crashing.
 
 ### Preset example
 

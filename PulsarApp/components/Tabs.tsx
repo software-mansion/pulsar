@@ -1,7 +1,6 @@
 import { useState, Children, isValidElement, ReactElement } from 'react';
 import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { ThemedText } from './themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
 
 interface TabProps {
   name: string;

@@ -8,7 +8,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "sentry:upload-sourcemaps": "sentry-expo-upload-sourcemaps dist",
+    "update:production": "eas update --environment production --branch production && eas env:exec production 'npm run sentry:upload-sourcemaps'"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -17,7 +19,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
-    "@sentry/react-native": "~7.11.0",
+    "@sentry/react-native": "^8.8.0",
     "expo": "~55.0.9",
     "expo-application": "~55.0.10",
     "expo-clipboard": "~55.0.9",
@@ -38,7 +40,7 @@
     "expo-system-ui": "~55.0.11",
     "expo-updates": "~55.0.19",
     "expo-web-browser": "~55.0.10",
-    "posthog-react-native": "^4.36.1",
+    "posthog-react-native": "^4.41.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-native": "0.83.4",
@@ -55,6 +57,7 @@
     "@types/react": "~19.2.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~55.0.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "typescript": "~5.9.2"
   },
   "private": true,
@@ -64,5 +67,5 @@
       "react-native": "0.83.4"
     }
   },
-  "packageManager": "yarn@3.6.1+sha512.de524adec81a6c3d7a26d936d439d2832e351cdfc5728f9d91f3fc85dd20b04391c038e9b4ecab11cae2b0dd9f0d55fd355af766bc5c1a7f8d25d96bb2a0b2ca"
+  "packageManager": "npm@11.12.1"
 }

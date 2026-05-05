@@ -18,7 +18,7 @@ open class RealtimePrimitiveComposer(
     private var maxIntervalMs = 100L
 
     init {
-        if (compatibilityMode == CompatibilityMode.MINIMAL_SUPPORT) {
+        if (compatibilityMode == CompatibilityMode.LIMITED_SUPPORT) {
             minIntervalMs = 60L
             maxIntervalMs = 200L
         }

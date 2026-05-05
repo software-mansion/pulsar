@@ -61,5 +61,9 @@ import UIKit
   @objc public func isHapticsSupported() -> Bool {
     return engine.isHapticsSupported()
   }
+
+  @objc public func canPlayHaptics() -> Bool {
+    return engine.canPlayHaptics()
+  }
   
 }

@@ -9,7 +9,8 @@ import AVFAudio
   private var cache: [String: Preset] = [:]
   private var haptics: Pulsar!
   
-  private var mapper: [String: Preset.Type] = [
+  private lazy var mapper: [String: Preset.Type] = {
+    let rawMapper: [String: Preset.Type] = [
     "SystemImpactLight": SystemImpactLightPreset.self,
     "SystemImpactMedium": SystemImpactMediumPreset.self,
     "SystemImpactHeavy": SystemImpactHeavyPreset.self,
@@ -173,7 +174,9 @@ import AVFAudio
     "Woodpecker": WoodpeckerPreset.self,
     "Zipper": ZipperPreset.self,
 // CODEGEN_END_{mappers}
-  ]
+    ]
+    return Dictionary(uniqueKeysWithValues: rawMapper.map { (self.normalizeName($0.key), $0.value) })
+  }()
   
   public init(haptics: Pulsar) {
     super.init()
@@ -203,27 +206,39 @@ import AVFAudio
   
   public func preloadPresetByName(_ name: String) {
     self.useCache = true
-    _ = getCacheablePreset(mapper[name]!)
+    guard let type = getPresetType(for: name) else {
+      return
+    }
+    _ = getCacheablePreset(type)
   }
   
   @objc public func getByName(_ name: String) -> Preset? {
-    guard mapper.keys.contains(name) else {
+    guard let type = getPresetType(for: name) else {
       return nil
     }
-    return getCacheablePreset(mapper[name]!)
+    return getCacheablePreset(type)
   }
   
   private func getCacheablePreset(_ type: Preset.Type) -> Preset {
+    let cacheKey = normalizeName(type.name)
     if (useCache) {
-      if let cachedPreset = cache[type.name] {
+      if let cachedPreset = cache[cacheKey] {
         return cachedPreset
       } else {
         let preset = type.getInstance(haptics: haptics!)
-        cache[type.name] = preset
+        cache[cacheKey] = preset
         return preset
       }
     }
     return type.getInstance(haptics: haptics!)
+  }
+
+  private func getPresetType(for name: String) -> Preset.Type? {
+    return mapper[normalizeName(name)]
+  }
+
+  private func normalizeName(_ name: String) -> String {
+    return name.lowercased()
   }
   
   public func systemImpactLight() {

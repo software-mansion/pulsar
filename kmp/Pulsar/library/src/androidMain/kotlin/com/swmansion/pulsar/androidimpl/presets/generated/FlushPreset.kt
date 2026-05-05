@@ -1,0 +1,26 @@
+package com.swmansion.pulsar.kmp.androidimpl.presets.generated
+
+import com.swmansion.pulsar.kmp.androidimpl.Pulsar
+import com.swmansion.pulsar.kmp.androidimpl.presets.Player
+import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
+import com.swmansion.pulsar.kmp.androidimpl.types.Preset
+import com.swmansion.pulsar.kmp.androidimpl.types.PresetWithName
+
+class FlushPreset(haptics: Pulsar) :
+    Preset,
+    Player(haptics, PatternData(
+        rawContinuousPattern = listOf(
+            listOf(listOf(0.0f, 0.0f), listOf(30.0f, 0.22f), listOf(80.0f, 0.45f), listOf(100.0f, 0.78f), listOf(140.0f, 0.52f), listOf(200.0f, 0.2f), listOf(380.0f, 0.0f)),
+            listOf(listOf(0.0f, 0.3f), listOf(100.0f, 0.35f), listOf(150.0f, 0.28f), listOf(380.0f, 0.22f)),
+        ),
+        rawDiscretePattern = listOf(
+            listOf(0.0f, 0.25f, 0.3f),
+            listOf(100.0f, 0.5f, 0.35f),
+            listOf(150.0f, 0.8f, 0.3f),
+            listOf(200.0f, 0.55f, 0.25f),
+        )
+    )) {
+    companion object: PresetWithName {
+        override val name = "Flush"
+    }
+}
