@@ -17,6 +17,6 @@
   },
   "flutter": {
     "version": "0.0.1",
-    "packageName": "pulsar"
+    "packageName": "pulsar_haptics"
   }
 }

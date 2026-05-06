@@ -38,7 +38,7 @@ head:
       content: https://docs.swmansion.com/pulsar/og.png
 ---
 
-import { Code } from '@astrojs/starlight/components';
+import { Aside, Code } from '@astrojs/starlight/components';
 import CollapsibleTable from '../../../components/CollapsibleTable.astro';
 import CollapsibleList from '../../../components/CollapsibleList.astro';
 
@@ -53,6 +53,10 @@ The Pulsar Flutter SDK exposes the same building blocks as the native SDKs — `
 
 ## Installation
 
+<Aside type="caution" title="Package name">
+  The Flutter package is published on pub.dev as [`pulsar_haptics`](https://pub.dev/packages/pulsar_haptics), **not** `pulsar`. The shorter `pulsar` name on pub.dev was reserved by an unrelated author before this project was published and is not maintained by Software Mansion. Always depend on `pulsar_haptics`.
+</Aside>
+
 {/* GENERATED:FLUTTER_VERSION_START */}
 Latest available version: `0.0.1`
 {/* GENERATED:FLUTTER_VERSION_END */}
@@ -62,14 +66,14 @@ Add Pulsar to your `pubspec.yaml`:
 {/* GENERATED:FLUTTER_INSTALL_SNIPPET_START */}
 ```yaml
 dependencies:
-  pulsar: ^0.0.1
+  pulsar_haptics: ^0.0.1
 ```
 {/* GENERATED:FLUTTER_INSTALL_SNIPPET_END */}
 
 Or install via the Flutter CLI:
 
 ```bash
-flutter pub add pulsar
+flutter pub add pulsar_haptics
 ```
 
 ### Android setup
@@ -99,7 +103,7 @@ The iOS plugin uses CoreHaptics directly — no extra setup beyond running `pod 
 Create a `Pulsar` instance and reuse it throughout your app:
 
 ```dart
-import 'package:pulsar/pulsar.dart';
+import 'package:pulsar_haptics/pulsar.dart';
 
 final pulsar = Pulsar();
 ```
@@ -641,7 +645,7 @@ Future<void> dispose();
 ### Example
 
 ```dart
-import 'package:pulsar/pulsar.dart';
+import 'package:pulsar_haptics/pulsar.dart';
 
 final pulsar = Pulsar();
 
@@ -708,7 +712,7 @@ await pulsar.enableHaptics(false);
 
 ## Types
 
-All public types are re-exported from `package:pulsar/pulsar.dart`.
+All public types are re-exported from `package:pulsar_haptics/pulsar.dart`.
 
 ### PatternData
 

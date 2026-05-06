@@ -3,7 +3,7 @@ import UIKit
 import XCTest
 
 
-@testable import pulsar
+@testable import pulsar_haptics
 
 // This demonstrates a simple unit test of the Swift portion of this plugin's implementation.
 //

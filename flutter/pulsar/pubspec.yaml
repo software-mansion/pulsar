@@ -1,4 +1,4 @@
-name: pulsar
+name: pulsar_haptics
 description: Rich haptic feedback for Flutter with presets, pattern playback, and realtime control.
 version: 0.0.1
 homepage: https://github.com/software-mansion/pulsar/tree/main/flutter/pulsar

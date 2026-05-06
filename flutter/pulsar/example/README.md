@@ -1,6 +1,6 @@
 # pulsar_example
 
-Demonstrates how to use the pulsar plugin.
+Demonstrates how to use the pulsar_haptics plugin.
 
 ## Getting Started
 

@@ -1,4 +1,4 @@
-# pulsar
+# pulsar_haptics
 
 Pulsar is a Flutter plugin for rich haptic feedback on Android and iOS. It exposes built-in presets, a pattern composer, and a realtime composer through a Dart-friendly API.
 
@@ -12,6 +12,8 @@ Pulsar is a Flutter plugin for rich haptic feedback on Android and iOS. It expos
 
 ## Installation
 
+> **Note:** This package is published as **`pulsar_haptics`**, not `pulsar`. The shorter `pulsar` name on pub.dev was reserved by an unrelated author before this project was published and is not maintained by Software Mansion. Always depend on `pulsar_haptics`.
+
 <!-- GENERATED:FLUTTER_VERSION_START -->
 Latest available version: `0.0.1`
 <!-- GENERATED:FLUTTER_VERSION_END -->
@@ -19,14 +21,14 @@ Latest available version: `0.0.1`
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_START -->
 ```yaml
 dependencies:
-  pulsar: ^0.0.1
+  pulsar_haptics: ^0.0.1
 ```
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_END -->
 
 ## Usage
 
 ```dart
-import 'package:pulsar/pulsar.dart';
+import 'package:pulsar_haptics/pulsar.dart';
 
 final pulsar = Pulsar();
 
@@ -43,10 +45,10 @@ await pulsar.getRealtimeComposer().stop();
 
 ## Publishing
 
-This package is configured to publish from GitHub Actions when a tag matching `pulsar-v{{version}}` is pushed. Before the workflow can publish successfully:
+This package is configured to publish from GitHub Actions when a tag matching `pulsar_haptics-v{{version}}` is pushed. Before the workflow can publish successfully:
 
-1. In `pub.dev/packages/pulsar/admin`, enable automated publishing from GitHub Actions for `software-mansion/pulsar`.
-2. Set the tag pattern to `pulsar-v{{version}}`.
+1. In `pub.dev/packages/pulsar_haptics/admin`, enable automated publishing from GitHub Actions for `software-mansion/pulsar`.
+2. Set the tag pattern to `pulsar_haptics-v{{version}}`.
 3. If this repository has never published the package before, publish the first version manually on pub.dev.
 
-After that, bump `version` in `pubspec.yaml`, push a matching tag such as `pulsar-v0.1.1`, and GitHub Actions will publish from `flutter/pulsar`.
+After that, bump `version` in `pubspec.yaml`, push a matching tag such as `pulsar_haptics-v0.1.1`, and GitHub Actions will publish from `flutter/pulsar`.

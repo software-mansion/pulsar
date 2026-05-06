@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:pulsar/pulsar.dart';
+import 'package:pulsar_haptics/pulsar.dart';
 
 void main() {
   runApp(const MyApp());
