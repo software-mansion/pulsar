@@ -30,6 +30,8 @@ class PulsarDemoScreen extends StatefulWidget {
 
 class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
   final _pulsar = Pulsar();
+  late final PulsarPatternComposer _patternComposer =
+      _pulsar.getPatternComposer();
   String _status = 'Ready';
   HapticSupport _hapticSupport = HapticSupport.noSupport;
   double _amplitude = 0.5;
@@ -65,13 +67,13 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
   Future<void> _onSliderChange(double value) async {
     setState(() => _amplitude = value);
     try {
-      await _pulsar.realtimeComposer.set(_amplitude, _frequency);
+      await _pulsar.getRealtimeComposer().set(_amplitude, _frequency);
     } catch (_) {}
   }
 
   Future<void> _onSliderEnd(double _) async {
     try {
-      await _pulsar.realtimeComposer.stop();
+      await _pulsar.getRealtimeComposer().stop();
       _setStatus('Realtime: stopped');
     } catch (_) {}
   }
@@ -104,8 +106,8 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
           DiscretePoint(time: 450, amplitude: 0.7, frequency: 0.5),
         ],
       );
-      await _pulsar.patternComposer.parsePattern(pattern);
-      await _pulsar.patternComposer.play();
+      await _patternComposer.parsePattern(pattern);
+      await _patternComposer.play();
       _setStatus('Pattern: playing');
     } catch (e) {
       _setStatus('Pattern error: $e');
@@ -183,7 +185,7 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
               _PresetButton('Heartbeat', () => _tryHaptic('heartbeat', _pulsar.presets.heartbeat)),
               _PresetButton('Hammer', () => _tryHaptic('hammer', _pulsar.presets.hammer)),
               _PresetButton('Buzz', () => _tryHaptic('buzz', _pulsar.presets.buzz)),
-              _PresetButton('Earthquake', () => _tryHaptic('earthquake', _pulsar.presets.earthquake)),
+              _PresetButton('Tremor', () => _tryHaptic('tremor', _pulsar.presets.tremor)),
               _PresetButton('Fanfare', () => _tryHaptic('fanfare', _pulsar.presets.fanfare)),
               _PresetButton('Thunder', () => _tryHaptic('thunder', _pulsar.presets.thunder)),
               _PresetButton('Applause', () => _tryHaptic('applause', _pulsar.presets.applause)),
@@ -205,7 +207,7 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
               ),
               const SizedBox(width: 8),
               ElevatedButton.icon(
-                onPressed: () => _tryHaptic('patternStop', _pulsar.patternComposer.stop),
+                onPressed: () => _tryHaptic('patternStop', _patternComposer.stop),
                 icon: const Icon(Icons.stop),
                 label: const Text('Stop'),
               ),
@@ -231,7 +233,7 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
           ElevatedButton.icon(
             onPressed: () => _tryHaptic(
               'realtimePlayDiscrete',
-              () => _pulsar.realtimeComposer.playDiscrete(_amplitude, _frequency),
+              () => _pulsar.getRealtimeComposer().playDiscrete(_amplitude, _frequency),
             ),
             icon: const Icon(Icons.flash_on),
             label: const Text('Play Discrete Event'),

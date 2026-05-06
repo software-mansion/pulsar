@@ -93,7 +93,7 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
 
             "Pulsar_isCacheEnabled" -> {
-                result.success(p.isCacheEnabled())
+                result.success(p.getPresets().isCacheEnabled())
             }
 
             "Pulsar_clearCache" -> {
@@ -104,7 +104,7 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "Pulsar_preloadPreset" -> {
                 val name = call.argument<String>("presetName")
                     ?: return result.error("INVALID_ARGS", "presetName required", null)
-                p.preloadPreset(name)
+                p.getPresets().preloadPresetByName(name)
                 result.success(null)
             }
 
@@ -131,11 +131,12 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             }
 
             "Pulsar_isHapticsEnabled" -> {
-                result.success(p.isHapticsEnabled())
+                // Android core does not expose this; assume enabled.
+                result.success(true)
             }
 
             "Pulsar_canPlayHaptics" -> {
-                result.success(p.canPlayHaptics())
+                result.success(p.hapticSupport() != CompatibilityMode.NO_SUPPORT)
             }
 
             "Pulsar_hapticSupport" -> {
