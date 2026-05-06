@@ -82,7 +82,7 @@ Full API reference and guides are available at the [documentation site](https://
 - [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) - Core concepts: types of haptics, preloading, and caching
 - [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
 
-## AI Skills
+<!-- ## AI Skills
 
 Install the `pulsar-haptics` skill from the [software-mansion-labs/skills](https://github.com/software-mansion-labs/skills) repository:
 
@@ -96,7 +96,7 @@ Or with `npx`:
 
 ```bash
 npx skills add software-mansion-labs/skills
-```
+``` -->
 
 ## Contributing
 
