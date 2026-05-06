@@ -61,6 +61,7 @@ export default defineConfig({
             { label: 'Android', slug: 'sdk/android' },
             { label: 'React Native', slug: 'sdk/react-native' },
             { label: 'Kotlin Multiplatform', slug: 'sdk/kmp' },
+            { label: 'Flutter', slug: 'sdk/flutter' },
           ],
         },
         {

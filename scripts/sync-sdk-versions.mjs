@@ -17,10 +17,12 @@ const files = [
   'docs/src/content/docs/sdk/android.mdx',
   'docs/src/content/docs/sdk/react-native.mdx',
   'docs/src/content/docs/sdk/kmp.mdx',
+  'docs/src/content/docs/sdk/flutter.mdx',
   'iOS/Pulsar/README.md',
   'Android/Pulsar/README.md',
   'react-native/react-native-pulsar/README.md',
   'kmp/Pulsar/README.md',
+  'flutter/pulsar/README.md',
 ];
 
 function replaceGeneratedSection(content, key, replacement) {
@@ -61,7 +63,8 @@ function getOverviewBlock() {
 - iOS: Swift Package tag \`${versions.ios.version}\`
 - Android: Maven artifact \`${versions.android.mavenCoordinate}:${versions.android.version}\`
 - React Native: npm package \`${versions.reactNative.packageName}@${versions.reactNative.version}\`
-- Kotlin Multiplatform: Maven artifact \`${versions.kmp.mavenCoordinate}:${versions.kmp.version}\``;
+- Kotlin Multiplatform: Maven artifact \`${versions.kmp.mavenCoordinate}:${versions.kmp.version}\`
+- Flutter: pub.dev package \`${versions.flutter.packageName}@${versions.flutter.version}\``;
 }
 
 function getIosVersionLine() {
@@ -101,6 +104,17 @@ function getKmpSnippet() {
 dependencies {
   implementation("${versions.kmp.mavenCoordinate}:${versions.kmp.version}")
 }
+\`\`\``;
+}
+
+function getFlutterVersionLine() {
+  return `Latest available version: \`${versions.flutter.version}\``;
+}
+
+function getFlutterSnippet() {
+  return `\`\`\`yaml
+dependencies:
+  ${versions.flutter.packageName}: ^${versions.flutter.version}
 \`\`\``;
 }
 
@@ -144,6 +158,15 @@ for (const relativeFile of files) {
   ) {
     content = replaceGeneratedSection(content, 'KMP_VERSION', getKmpVersionLine());
     content = replaceGeneratedSection(content, 'KMP_INSTALL_SNIPPET', getKmpSnippet());
+  }
+
+  if (
+    relativeFile === 'docs/src/content/docs/sdk/flutter.mdx' ||
+    relativeFile === 'flutter/pulsar/README.md' ||
+    relativeFile === 'README.md'
+  ) {
+    content = replaceGeneratedSection(content, 'FLUTTER_VERSION', getFlutterVersionLine());
+    content = replaceGeneratedSection(content, 'FLUTTER_INSTALL_SNIPPET', getFlutterSnippet());
   }
 
   await fs.writeFile(absoluteFile, content);

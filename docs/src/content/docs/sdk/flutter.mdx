@@ -1,0 +1,820 @@
+---
+title: Flutter SDK
+description: Add haptic feedback to your Flutter app with Pulsar – a rich, open-source haptics library for Android and iOS.
+head:
+  - tag: title
+    content: "Flutter Haptic Feedback SDK | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar - a rich haptics presets library for Swift, Kotlin, React Native & Flutter"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "Rich and ready-to-use haptics library\nPresets that you can hear and feel with Live Preview."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar - a rich haptics presets library for Swift, Kotlin, React Native & Flutter"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "Rich and ready-to-use haptics library\nPresets that you can hear and feel with Live Preview."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+import { Code } from '@astrojs/starlight/components';
+import CollapsibleTable from '../../../components/CollapsibleTable.astro';
+import CollapsibleList from '../../../components/CollapsibleList.astro';
+
+The Pulsar Flutter SDK exposes the same building blocks as the native SDKs — `Presets`, `PatternComposer`, and `RealtimeComposer` — through a Dart-friendly API. The plugin bridges to the native Pulsar implementation on Android and iOS, so you get identical behavior on both platforms.
+
+## Requirements
+
+- Flutter 3.3+
+- Dart 3.11+
+- Android API 24+ (Android 7.0)
+- iOS 13+
+
+## Installation
+
+{/* GENERATED:FLUTTER_VERSION_START */}
+Latest available version: `0.0.1`
+{/* GENERATED:FLUTTER_VERSION_END */}
+
+Add Pulsar to your `pubspec.yaml`:
+
+{/* GENERATED:FLUTTER_INSTALL_SNIPPET_START */}
+```yaml
+dependencies:
+  pulsar: ^0.0.1
+```
+{/* GENERATED:FLUTTER_INSTALL_SNIPPET_END */}
+
+Or install via the Flutter CLI:
+
+```bash
+flutter pub add pulsar
+```
+
+### Android setup
+
+Pulsar registers itself on Android automatically through the Flutter plugin lifecycle — no manual wiring is required.
+
+Declare the vibration permission in your Android app's `AndroidManifest.xml`:
+
+```xml
+<manifest ...>
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application ...>
+    ...
+  </application>
+</manifest>
+```
+
+Without `android.permission.VIBRATE`, Android will block vibration playback. Pulsar logs a warning and skips the vibration instead of crashing.
+
+### iOS setup
+
+The iOS plugin uses CoreHaptics directly — no extra setup beyond running `pod install` after adding the dependency.
+
+## Setup
+
+Create a `Pulsar` instance and reuse it throughout your app:
+
+```dart
+import 'package:pulsar/pulsar.dart';
+
+final pulsar = Pulsar();
+```
+
+All Pulsar methods are asynchronous and return a `Future`. Await them when you need to chain calls or know when playback has been dispatched.
+
+---
+
+## Presets
+
+A collection of ready-to-use haptic patterns accessed through `pulsar.getPresets()` (or the `pulsar.presets` shorthand).
+
+```dart
+final presets = pulsar.getPresets();
+```
+
+The `PulsarPresets` instance is created lazily on first access and cached for the lifetime of the `Pulsar` instance.
+
+### Playing by direct method
+
+Each built-in preset is exposed as a direct method on the `PulsarPresets` instance, mirroring the React Native and KMP APIs.
+
+```dart
+final presets = pulsar.getPresets();
+
+await presets.hammer();
+await presets.dogBark();
+await presets.fanfare();
+```
+
+### Playing by name
+
+Built-in presets can also be played by passing their name to `play()`.
+
+```dart
+Future<void> play(String name);
+```
+
+`getByName(name)` returns a lightweight `PulsarPreset` handle that can be played later, or `null` if the name is unknown:
+
+```dart
+Future<PulsarPreset?> getByName(String name);
+```
+
+Available names:
+
+<CollapsibleList
+  items={[
+    "afterglow",
+    "aftershock",
+    "alarm",
+    "anvil",
+    "applause",
+    "ascent",
+    "balloonPop",
+    "barrage",
+    "bassDrop",
+    "batter",
+    "bellToll",
+    "blip",
+    "bloom",
+    "bongo",
+    "boulder",
+    "breakingWave",
+    "breath",
+    "buildup",
+    "burst",
+    "buzz",
+    "cadence",
+    "cameraShutter",
+    "canter",
+    "cascade",
+    "castanets",
+    "catPaw",
+    "charge",
+    "chime",
+    "chip",
+    "chirp",
+    "clamor",
+    "clasp",
+    "cleave",
+    "coil",
+    "coinDrop",
+    "combinationLock",
+    "crescendo",
+    "dewdrop",
+    "dirge",
+    "dissolve",
+    "dogBark",
+    "drone",
+    "engineRev",
+    "exhale",
+    "explosion",
+    "fadeOut",
+    "fanfare",
+    "feather",
+    "finale",
+    "fingerDrum",
+    "firecracker",
+    "fizz",
+    "flare",
+    "flick",
+    "flinch",
+    "flourish",
+    "flurry",
+    "flush",
+    "gallop",
+    "gavel",
+    "glitch",
+    "guitarStrum",
+    "hail",
+    "hammer",
+    "heartbeat",
+    "herald",
+    "hoofBeat",
+    "ignition",
+    "impact",
+    "jolt",
+    "keyboardMechanical",
+    "keyboardMembrane",
+    "knell",
+    "knock",
+    "lament",
+    "latch",
+    "lighthouse",
+    "lilt",
+    "lock",
+    "lope",
+    "march",
+    "metronome",
+    "murmur",
+    "nudge",
+    "passingCar",
+    "patter",
+    "peal",
+    "peck",
+    "pendulum",
+    "ping",
+    "pip",
+    "piston",
+    "plink",
+    "plummet",
+    "plunk",
+    "poke",
+    "pound",
+    "powerDown",
+    "propel",
+    "pulse",
+    "pummel",
+    "push",
+    "radar",
+    "rain",
+    "ramp",
+    "rap",
+    "ratchet",
+    "rebound",
+    "ripple",
+    "rivet",
+    "rustle",
+    "shockwave",
+    "snap",
+    "sonar",
+    "spark",
+    "spin",
+    "stagger",
+    "stamp",
+    "stampede",
+    "stomp",
+    "stoneSkip",
+    "strike",
+    "summon",
+    "surge",
+    "sway",
+    "sweep",
+    "swell",
+    "syncopate",
+    "throb",
+    "thud",
+    "thump",
+    "thunder",
+    "thunderRoll",
+    "tickTock",
+    "tidalSurge",
+    "tideSwell",
+    "tremor",
+    "trigger",
+    "triumph",
+    "trumpet",
+    "typewriter",
+    "unfurl",
+    "vortex",
+    "wane",
+    "warDrum",
+    "waterfall",
+    "wave",
+    "wisp",
+    "wobble",
+    "woodpecker",
+    "zipper",
+  ]}
+  initialItems={8}
+  columns={2}
+  code
+/>
+
+**Example**
+
+```dart
+final presets = pulsar.getPresets();
+
+await presets.play('hammer');
+await presets.play('dogBark');
+```
+
+For per-preset descriptions, see the [iOS](/sdk/ios) and [Android](/sdk/android) reference pages — the underlying patterns are shared.
+
+### Preloading and caching
+
+`PulsarPresets` exposes its own preload/cache controls in addition to the equivalents on the `Pulsar` instance.
+
+| Method                                              | Description                                         |
+| --------------------------------------------------- | --------------------------------------------------- |
+| `preloadPresetByName(String name)`                  | Preload a single preset by name                     |
+| `preloadPresetByNames(List<String> names)`          | Preload multiple presets in a batch                 |
+| `enableCache(bool state)`                           | Enable or disable preset caching                    |
+| `isCacheEnabled()`                                  | Returns `true` if caching is currently enabled      |
+| `resetCache()`                                      | Drop all cached preset data                         |
+
+### System presets
+
+Cross-platform system feedback styles are exposed as direct methods so you can call them from Dart without name lookup.
+
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0]}
+  rows={[
+    ["systemImpactHeavy()", "Heavy impact"],
+    ["systemImpactLight()", "Light impact"],
+    ["systemImpactMedium()", "Medium impact"],
+    ["systemImpactRigid()", "Rigid impact"],
+    ["systemImpactSoft()", "Soft impact"],
+    ["systemNotificationError()", "Error notification"],
+    ["systemNotificationSuccess()", "Success notification"],
+    ["systemNotificationWarning()", "Warning notification"],
+    ["systemSelection()", "Selection change feedback"],
+  ]}
+/>
+
+**Example**
+
+```dart
+final presets = pulsar.getPresets();
+
+await presets.systemImpactMedium();
+await presets.systemNotificationSuccess();
+```
+
+#### Android-specific system presets
+
+Android's `HapticFeedbackConstants` and `VibrationEffect` system styles are also surfaced on the Dart API. They are no-ops on iOS, so you can call them from shared code — but they only produce feedback on Android.
+
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0, 1]}
+  rows={[
+    ["systemEffectClick()", "VibrationEffect.EFFECT_CLICK"],
+    ["systemEffectDoubleClick()", "VibrationEffect.EFFECT_DOUBLE_CLICK"],
+    ["systemEffectTick()", "VibrationEffect.EFFECT_TICK"],
+    ["systemEffectHeavyClick()", "VibrationEffect.EFFECT_HEAVY_CLICK"],
+    ["systemLongPress()", "HapticFeedbackConstants.LONG_PRESS"],
+    ["systemVirtualKey()", "HapticFeedbackConstants.VIRTUAL_KEY"],
+    ["systemVirtualKeyRelease()", "HapticFeedbackConstants.VIRTUAL_KEY_RELEASE"],
+    ["systemKeyboardTap()", "HapticFeedbackConstants.KEYBOARD_TAP"],
+    ["systemKeyboardPress()", "HapticFeedbackConstants.KEYBOARD_PRESS"],
+    ["systemKeyboardRelease()", "HapticFeedbackConstants.KEYBOARD_RELEASE"],
+    ["systemClockTick()", "HapticFeedbackConstants.CLOCK_TICK"],
+    ["systemCalendarDate()", "HapticFeedbackConstants.CALENDAR_DATE"],
+    ["systemContextClick()", "HapticFeedbackConstants.CONTEXT_CLICK"],
+    ["systemTextHandleMove()", "HapticFeedbackConstants.TEXT_HANDLE_MOVE"],
+    ["systemDragCrossing()", "HapticFeedbackConstants.DRAG_CROSSING"],
+    ["systemDragStart()", "HapticFeedbackConstants.DRAG_START"],
+    ["systemGestureStart()", "HapticFeedbackConstants.GESTURE_START"],
+    ["systemGestureEnd()", "HapticFeedbackConstants.GESTURE_END"],
+    ["systemEdgeSqueeze()", "HapticFeedbackConstants.EDGE_SQUEEZE"],
+    ["systemEdgeRelease()", "HapticFeedbackConstants.EDGE_RELEASE"],
+    ["systemConfirm()", "HapticFeedbackConstants.CONFIRM"],
+    ["systemRelease()", "HapticFeedbackConstants.REJECT"],
+    ["systemScrollTick()", "HapticFeedbackConstants.SCROLL_TICK"],
+    ["systemScrollItemFocus()", "HapticFeedbackConstants.SCROLL_ITEM_FOCUS"],
+    ["systemScrollLimit()", "HapticFeedbackConstants.SCROLL_LIMIT"],
+    ["systemToggleOn()", "HapticFeedbackConstants.TOGGLE_ON"],
+    ["systemToggleOff()", "HapticFeedbackConstants.TOGGLE_OFF"],
+    ["systemSegmentTick()", "HapticFeedbackConstants.SEGMENT_TICK"],
+    ["systemSegmentFrequentTick()", "HapticFeedbackConstants.SEGMENT_FREQUENT_TICK"],
+    ["systemPrimitiveClick()", "VibrationEffect.Composition.PRIMITIVE_CLICK"],
+    ["systemPrimitiveThud()", "VibrationEffect.Composition.PRIMITIVE_THUD"],
+    ["systemPrimitiveSpin()", "VibrationEffect.Composition.PRIMITIVE_SPIN"],
+    ["systemPrimitiveQuickRise()", "VibrationEffect.Composition.PRIMITIVE_QUICK_RISE"],
+    ["systemPrimitiveSlowRise()", "VibrationEffect.Composition.PRIMITIVE_SLOW_RISE"],
+    ["systemPrimitiveQuickFall()", "VibrationEffect.Composition.PRIMITIVE_QUICK_FALL"],
+    ["systemPrimitiveTick()", "VibrationEffect.Composition.PRIMITIVE_TICK"],
+    ["systemPrimitiveLowTick()", "VibrationEffect.Composition.PRIMITIVE_LOW_TICK"],
+  ]}
+/>
+
+---
+
+## PatternComposer
+
+Composes and plays custom haptic patterns. Get a new instance from `pulsar.getPatternComposer()`. Each call returns a fresh composer, so you can manage multiple patterns independently.
+
+```dart
+final composer = pulsar.getPatternComposer();
+```
+
+Pattern composers hold native resources. Call `dispose()` when you no longer need a composer to release the underlying handle.
+
+### Methods
+
+#### `parsePattern(pattern)`
+
+Parses a `PatternData` object and prepares it for playback.
+
+```dart
+Future<void> parsePattern(PatternData data);
+```
+
+#### `playPattern(pattern)`
+
+Convenience method that parses and immediately plays a pattern.
+
+```dart
+Future<void> playPattern(PatternData data);
+```
+
+#### `play()`
+
+Plays the previously parsed pattern. Throws `StateError` if no pattern has been parsed yet.
+
+```dart
+Future<void> play();
+```
+
+#### `playAudioOnly()`
+
+Plays only the audio simulation of the parsed pattern, skipping the haptic engine. Useful for previewing patterns on simulators.
+
+```dart
+Future<void> playAudioOnly();
+```
+
+#### `stop()`
+
+Stops all playback for this composer.
+
+```dart
+Future<void> stop();
+```
+
+#### `dispose()`
+
+Releases the native composer handle held by this instance. After calling `dispose`, the composer can no longer be played.
+
+```dart
+Future<void> dispose();
+```
+
+### Example
+
+```dart
+final composer = pulsar.getPatternComposer();
+
+final pattern = PatternData(
+  continuousPattern: ContinuousPattern(
+    amplitude: const [
+      ValuePoint(time: 0, value: 0),
+      ValuePoint(time: 200, value: 1),
+      ValuePoint(time: 400, value: 0),
+    ],
+    frequency: const [
+      ValuePoint(time: 0, value: 0.3),
+      ValuePoint(time: 400, value: 0.8),
+    ],
+  ),
+  discretePattern: const [
+    DiscretePoint(time: 0, amplitude: 1, frequency: 0.5),
+    DiscretePoint(time: 100, amplitude: 0.5, frequency: 0.5),
+  ],
+);
+
+await composer.playPattern(pattern);
+```
+
+`PatternData.fromArrays` is a convenience constructor that accepts the raw triplet form used by the JSON pattern format:
+
+```dart
+final pattern = PatternData.fromArrays(
+  amplitude: [[0, 0], [200, 1], [400, 0]],
+  frequency: [[0, 0.3], [400, 0.8]],
+  discrete: [[0, 1, 0.5], [100, 0.5, 0.5]],
+);
+```
+
+---
+
+## RealtimeComposer
+
+Provides real-time haptic control with live amplitude and frequency modulation. Useful for gesture-driven or continuously evolving haptic experiences. Get a composer from `pulsar.getRealtimeComposer()`.
+
+```dart
+final realtime = pulsar.getRealtimeComposer();
+```
+
+The `Pulsar` instance keeps a single realtime composer alive. Passing a new `strategy` rebuilds it with that strategy and updates the active default — see [`RealtimeComposerStrategy`](#realtimecomposerstrategy).
+
+```dart
+final realtime = pulsar.getRealtimeComposer(
+  strategy: RealtimeComposerStrategy.primitiveComplex,
+);
+
+await pulsar.setRealtimeComposerStrategy(RealtimeComposerStrategy.envelope);
+```
+
+### Methods
+
+#### `set(amplitude, frequency)`
+
+Updates the ongoing haptic with new amplitude and frequency values. Automatically starts playback if it is not already active. Values should be in the 0–1 range.
+
+```dart
+Future<void> set(double amplitude, double frequency);
+```
+
+#### `playDiscrete([amplitude, frequency])`
+
+Plays a single discrete haptic event. Defaults match iOS native (`amplitude = 1.0`, `frequency = 0.5`).
+
+```dart
+Future<void> playDiscrete([double amplitude = 1.0, double frequency = 0.5]);
+```
+
+#### `stop()`
+
+Stops the active continuous haptic.
+
+```dart
+Future<void> stop();
+```
+
+#### `isActive()`
+
+Returns `true` if a continuous haptic is currently playing.
+
+```dart
+Future<bool> isActive();
+```
+
+### Example
+
+```dart
+final realtime = pulsar.getRealtimeComposer();
+
+await realtime.set(0.5, 0.8);
+await realtime.set(1.0, 0.3);
+
+await realtime.playDiscrete(0.7, 0.5);
+
+await realtime.stop();
+```
+
+---
+
+## AdaptiveHaptics
+
+Plays haptics from a cross-platform `AdaptivePreset`. The correct configuration is selected for the current platform automatically. Each platform can provide either a custom `PatternData` or a callback that triggers a built-in or system preset directly.
+
+```dart
+final haptics = await pulsar.createAdaptiveHaptics(preset);
+```
+
+`createAdaptiveHaptics` is asynchronous because pattern-based configs are pre-parsed when the instance is created, so `play()` can fire without delay. Call `dispose()` when you no longer need the instance.
+
+### AdaptivePresetConfig
+
+```dart
+sealed class AdaptivePresetConfig {}
+
+final class AdaptivePresetCallback extends AdaptivePresetConfig {
+  const AdaptivePresetCallback(this.play);
+  final Future<void> Function() play;
+}
+
+final class AdaptivePresetPattern extends AdaptivePresetConfig {
+  const AdaptivePresetPattern(this.pattern);
+  final PatternData pattern;
+}
+```
+
+- `AdaptivePresetCallback` — a callback invoked on `play()`. Use it to trigger a native or built-in preset.
+- `AdaptivePresetPattern` — a custom `PatternData` parsed once on creation and replayed on each `play()`.
+
+### AdaptivePreset
+
+```dart
+class AdaptivePreset {
+  const AdaptivePreset({required this.ios, required this.android});
+
+  final AdaptivePresetConfig ios;
+  final AdaptivePresetConfig android;
+}
+```
+
+### Methods
+
+#### `play()`
+
+Plays the configuration for the current platform. If the platform config is a callback, it is invoked. If it is a pattern, it is played via the underlying pattern composer.
+
+```dart
+Future<void> play();
+```
+
+#### `stop()`
+
+Stops the active pattern. No-op when the platform config is a callback.
+
+```dart
+Future<void> stop();
+```
+
+#### `dispose()`
+
+Releases the underlying native resources. Call when the adaptive instance is no longer needed.
+
+```dart
+Future<void> dispose();
+```
+
+### Example
+
+```dart
+import 'package:pulsar/pulsar.dart';
+
+final pulsar = Pulsar();
+
+final adaptivePreset = AdaptivePreset(
+  ios: AdaptivePresetCallback(() => pulsar.presets.systemNotificationSuccess()),
+  android: AdaptivePresetPattern(
+    PatternData(
+      continuousPattern: const ContinuousPattern(
+        amplitude: [],
+        frequency: [],
+      ),
+      discretePattern: const [
+        DiscretePoint(time: 0, amplitude: 1, frequency: 0.5),
+        DiscretePoint(time: 150, amplitude: 0.6, frequency: 0.4),
+      ],
+    ),
+  ),
+);
+
+final haptics = await pulsar.createAdaptiveHaptics(adaptivePreset);
+await haptics.play();
+```
+
+---
+
+## Settings
+
+Configuration methods available directly on the `Pulsar` instance. All return a `Future`.
+
+| Method                                                        | Description                                                                                  |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `enableHaptics(bool state)`                                   | Enable or disable all haptic feedback                                                        |
+| `enableSound(bool state)`                                     | Enable or disable audio simulation                                                           |
+| `enableCache(bool state)`                                     | Enable or disable preset caching                                                             |
+| `isCacheEnabled()`                                            | Returns `true` if preset caching is enabled                                                  |
+| `clearCache()`                                                | Clear the preset cache                                                                       |
+| `preloadPreset(String name)`                                  | Preload a single preset                                                                      |
+| `preloadPresets(List<String> names)`                          | Preload presets by name for faster playback                                                  |
+| `stopHaptics()`                                               | Stop all currently playing haptics                                                           |
+| `shutDownEngine()`                                            | (iOS only) Tear down the underlying haptic engine                                            |
+| `isHapticsEnabled()`                                          | Returns `true` if haptics are currently enabled                                              |
+| `isHapticsSupported()`                                        | Returns `true` if the device supports haptics                                                |
+| `canPlayHaptics()`                                            | Returns `true` when haptics can play right now                                               |
+| `hapticSupport()`                                             | Returns the device's [`HapticSupport`](#hapticsupport)                                       |
+| `forceHapticsSupportLevel(HapticSupport level)`               | (Android only) Override the detected support level. Intended for testing fallback behavior.  |
+| `enableImpulseCompositionMode(bool state)`                    | (Android only) Enable or disable impulse composition mode                                    |
+| `setRealtimeComposerStrategy(RealtimeComposerStrategy s)`     | (Android only) Set the default [`RealtimeComposerStrategy`](#realtimecomposerstrategy)       |
+
+### Example
+
+```dart
+final pulsar = Pulsar();
+
+await pulsar.preloadPresets(['hammer', 'dogBark']);
+
+if (await pulsar.canPlayHaptics()) {
+  await pulsar.getPresets().play('hammer');
+}
+
+await pulsar.enableHaptics(false);
+```
+
+---
+
+## Types
+
+All public types are re-exported from `package:pulsar/pulsar.dart`.
+
+### PatternData
+
+Describes a complete haptic pattern with discrete pulses and continuous envelope curves.
+
+```dart
+class PatternData {
+  const PatternData({
+    required this.continuousPattern,
+    required this.discretePattern,
+  });
+
+  final ContinuousPattern continuousPattern;
+  final List<DiscretePoint> discretePattern;
+}
+```
+
+The `PatternData.fromArrays` factory accepts the raw triplet form (`List<List<double>>`) for parity with serialized pattern definitions.
+
+### ContinuousPattern
+
+Represents continuous haptic curves for amplitude and frequency.
+
+```dart
+class ContinuousPattern {
+  const ContinuousPattern({required this.amplitude, required this.frequency});
+
+  final List<ValuePoint> amplitude;
+  final List<ValuePoint> frequency;
+}
+```
+
+### ValuePoint
+
+A single point in a continuous curve.
+
+```dart
+class ValuePoint {
+  const ValuePoint({required this.time, required this.value});
+
+  final double time;  // Milliseconds from pattern start
+  final double value; // Normalized value (0–1)
+}
+```
+
+### DiscretePoint
+
+A single discrete haptic event.
+
+```dart
+class DiscretePoint {
+  const DiscretePoint({
+    required this.time,
+    required this.amplitude,
+    required this.frequency,
+  });
+
+  final double time;      // Milliseconds from pattern start
+  final double amplitude; // Intensity (0–1)
+  final double frequency; // Sharpness (0–1)
+}
+```
+
+Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+
+### HapticSupport
+
+The haptic capability level of the current device, returned by `pulsar.hapticSupport()`.
+
+```dart
+enum HapticSupport {
+  noSupport,
+  limitedSupport,
+  standardSupport,
+  advancedSupport,
+}
+```
+
+Ordinal values match the native `CompatibilityMode` enum. On Android, `pulsar.forceHapticsSupportLevel(level)` accepts these values to override the detected fallback path.
+
+**Example**
+
+```dart
+final pulsar = Pulsar();
+
+if ((await pulsar.hapticSupport()).index >= HapticSupport.standardSupport.index) {
+  await pulsar.getPresets().dogBark();
+}
+```
+
+### RealtimeComposerStrategy
+
+Android-only. Controls how `RealtimeComposer` simulates continuous haptics, since Android has no native continuous haptic API. Pass one of these values to `pulsar.getRealtimeComposer(strategy: ...)` or `pulsar.setRealtimeComposerStrategy(...)`.
+
+```dart
+enum RealtimeComposerStrategy {
+  envelope,
+  primitiveTick,
+  primitiveComplex,
+  envelopeWithDiscretePrimitives,
+}
+```
+
+| Value                             | Description |
+| --------------------------------- | ----------- |
+| `envelope`                        | Approximation based on the Envelope API. Allows control over amplitude and frequency, but the signal oscillates and can be unstable. Available on Android API 36+. |
+| `primitiveTick`                   | Approximation using the Composition API TICK primitive at varying intervals. Amplitude is controllable; frequency is simulated by the timing between ticks. Signal is discrete rather than continuous. |
+| `primitiveComplex`                | Similar to `primitiveTick`, but uses multiple primitives depending on the requested frequency. |
+| `envelopeWithDiscretePrimitives`  | **Default.** Hybrid strategy. Uses the Envelope API for continuous events (API 36+) and composition primitives for discrete events (API 33+). Best of both worlds when both event types are used. |

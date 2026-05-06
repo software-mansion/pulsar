@@ -99,6 +99,28 @@ val pulsar = Pulsar.create()
 pulsar.getPresets().play("Hammer")
 ```
 
+### Flutter
+
+<!-- GENERATED:FLUTTER_VERSION_START -->
+Latest available version: `0.0.1`
+<!-- GENERATED:FLUTTER_VERSION_END -->
+
+Add Pulsar to your `pubspec.yaml`:
+
+<!-- GENERATED:FLUTTER_INSTALL_SNIPPET_START -->
+```yaml
+dependencies:
+  pulsar: ^0.0.1
+```
+<!-- GENERATED:FLUTTER_INSTALL_SNIPPET_END -->
+
+```dart
+import 'package:pulsar/pulsar.dart';
+
+final pulsar = Pulsar();
+await pulsar.getPresets().hammer();
+```
+
 ## Repository structure
 
 ```
@@ -115,6 +137,9 @@ pulsar/
 ├── kmp/
 │   ├── Pulsar/         # Kotlin Multiplatform SDK (Android + iOS targets)
 │   └── PulsarApp/      # Compose Multiplatform demo app
+├── flutter/
+│   ├── pulsar/         # Flutter plugin (Android + iOS)
+│   └── PulsarApp/      # Flutter demo app
 ├── PulsarApp/          # React Native Expo showcase app
 └── docs/               # Documentation site (Astro/Starlight)
 ```
@@ -127,6 +152,7 @@ pulsar/
 | iOS | [Swift Package](https://github.com/software-mansion-labs/pulsar-ios) |
 | Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
 | Kotlin Multiplatform | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) |
+| Flutter | [pub.dev](https://pub.dev/packages/pulsar) |
 
 ## Documentation
 
@@ -137,6 +163,7 @@ Full API reference and guides are available at the [documentation site](https://
 - [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) - Kotlin API reference
 - [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
 - [Kotlin Multiplatform SDK](https://docs.swmansion.com/pulsar/sdk/kmp) - Kotlin Multiplatform API reference
+- [Flutter SDK](https://docs.swmansion.com/pulsar/sdk/flutter) - Dart API reference
 
 <!-- ## AI Skills
 

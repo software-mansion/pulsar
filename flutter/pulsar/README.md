@@ -12,10 +12,16 @@ Pulsar is a Flutter plugin for rich haptic feedback on Android and iOS. It expos
 
 ## Installation
 
+<!-- GENERATED:FLUTTER_VERSION_START -->
+Latest available version: `0.0.1`
+<!-- GENERATED:FLUTTER_VERSION_END -->
+
+<!-- GENERATED:FLUTTER_INSTALL_SNIPPET_START -->
 ```yaml
 dependencies:
-  pulsar: ^0.1.0
+  pulsar: ^0.0.1
 ```
+<!-- GENERATED:FLUTTER_INSTALL_SNIPPET_END -->
 
 ## Usage
 

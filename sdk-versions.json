@@ -14,5 +14,9 @@
   "kmp": {
     "version": "0.0.2",
     "mavenCoordinate": "com.swmansion:pulsar-kmp"
+  },
+  "flutter": {
+    "version": "0.0.1",
+    "packageName": "pulsar"
   }
 }
