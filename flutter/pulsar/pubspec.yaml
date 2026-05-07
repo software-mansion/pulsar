@@ -1,7 +1,7 @@
 name: pulsar_haptics
 description: Rich haptic feedback for Flutter with presets, pattern playback, and realtime control.
 version: 0.0.1
-homepage: https://github.com/software-mansion/pulsar/tree/main/flutter/pulsar
+homepage: https://github.com/software-mansion/pulsar
 repository: https://github.com/software-mansion/pulsar
 issue_tracker: https://github.com/software-mansion/pulsar/issues
 documentation: https://docs.swmansion.com/pulsar
@@ -9,7 +9,8 @@ topics:
   - flutter
   - haptics
   - vibration
-  - plugin
+  - ios
+  - android
 
 environment:
   sdk: ^3.11.4
