@@ -3,7 +3,12 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'pulsar_method_channel.dart';
 import 'pulsar_types.dart';
 
+/// Platform interface for the Pulsar haptics plugin.
+///
+/// Implement this class to provide a custom platform implementation.
+/// The default implementation uses [MethodChannelPulsar].
 abstract class PulsarPlatform extends PlatformInterface {
+  /// Creates a [PulsarPlatform] instance.
   PulsarPlatform() : super(token: _token);
 
   static final Object _token = Object();

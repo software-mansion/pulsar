@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'pulsar_platform_interface.dart';
 import 'pulsar_types.dart';
 
+/// The default [PulsarPlatform] implementation using a [MethodChannel].
 class MethodChannelPulsar extends PulsarPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('pulsar');
