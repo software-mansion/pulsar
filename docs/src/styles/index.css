@@ -93,7 +93,9 @@ body {
   mobile-starlight-toc {
     display: none;
   }
-  aside {
+  .right-sidebar aside,
+  #starlight__sidebar aside,
+  mobile-starlight-toc aside {
     margin-top: -50px;
   }
 }
