@@ -6,7 +6,7 @@ A haptic feedback SDK for React Native. Pulsar provides ready-to-use haptic pres
 
 ## Features
 
-- **Presets** - Library of built-in haptic patterns (earthquake, success, fail, tap) and system feedback styles (impacts, notifications, selection)
+- **Presets** - Library of built-in haptic patterns (hammer, dogBark, buzz, pulse) and system feedback styles (impacts, notifications, selection)
 - **Pattern Composer** - Define custom haptic patterns using discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** - Live amplitude and frequency control for gesture-driven haptics
 - **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), and React Native (TypeScript)
@@ -15,6 +15,10 @@ A haptic feedback SDK for React Native. Pulsar provides ready-to-use haptic pres
 ## Quick start
 
 ### Installation
+
+<!-- GENERATED:REACT_NATIVE_VERSION_START -->
+Latest available version: `1.4.0`
+<!-- GENERATED:REACT_NATIVE_VERSION_END -->
 
 ```bash
 npx expo install react-native-pulsar react-native-worklets
@@ -78,7 +82,7 @@ Full API reference and guides are available at the [documentation site](https://
 - [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) - Core concepts: types of haptics, preloading, and caching
 - [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
 
-## AI Skills
+<!-- ## AI Skills
 
 Install the `pulsar-haptics` skill from the [software-mansion-labs/skills](https://github.com/software-mansion-labs/skills) repository:
 
@@ -92,7 +96,7 @@ Or with `npx`:
 
 ```bash
 npx skills add software-mansion-labs/skills
-```
+``` -->
 
 ## Contributing
 

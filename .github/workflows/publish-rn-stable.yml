@@ -36,9 +36,6 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Publish stable
         uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
         with:
@@ -48,4 +45,4 @@ jobs:
           version: ${{ github.event.inputs.version || '' }}
           tag: ${{ github.event.inputs.tag || 'latest' }}
           dry-run: ${{ github.event.inputs.dry-run || 'true' }}
-          install-dependencies-command: yarn install --immutable
+          install-dependencies-command: npm ci

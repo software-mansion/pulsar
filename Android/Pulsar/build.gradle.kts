@@ -68,8 +68,8 @@ afterEvaluate {
                 version = version.toString()
 
                 pom {
-                    name.set("Pulsar Android Library")
-                    description.set("Pulsar audio visualization and manipulation library for Android")
+                    name.set("Pulsar")
+                    description.set("Pulsar haptics SDK for Android with presets, custom patterns, and realtime feedback control")
                     url.set("https://github.com/software-mansion/pulsar")
                     
                     licenses {

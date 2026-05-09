@@ -44,10 +44,9 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     val hapticSupport = pulsar.hapticSupport()
     return when (hapticSupport) {
         CompatibilityMode.NO_SUPPORT -> { 0.toDouble() }
-        CompatibilityMode.MINIMAL_SUPPORT -> { 1.toDouble() }
-        CompatibilityMode.LIMITED_SUPPORT -> { 2.toDouble() }
-        CompatibilityMode.STANDARD_SUPPORT -> { 3.toDouble() }
-        else -> { 4.toDouble() }
+        CompatibilityMode.LIMITED_SUPPORT -> { 1.toDouble() }
+        CompatibilityMode.STANDARD_SUPPORT -> { 2.toDouble() }
+        else -> { 3.toDouble() }
     }
   }
 
@@ -55,9 +54,8 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     val mode = when (level.toInt()) {
       0 -> CompatibilityMode.NO_SUPPORT
       1 -> CompatibilityMode.LIMITED_SUPPORT
-      2 -> CompatibilityMode.MINIMAL_SUPPORT
-      3 -> CompatibilityMode.STANDARD_SUPPORT
-      4 -> CompatibilityMode.ADVANCED_SUPPORT
+      2 -> CompatibilityMode.STANDARD_SUPPORT
+      3 -> CompatibilityMode.ADVANCED_SUPPORT
       else -> CompatibilityMode.NO_SUPPORT
     }
     pulsar.forceHapticsSupportLevel(mode)

@@ -2,14 +2,14 @@
   <img src="https://github.com/software-mansion/pulsar/blob/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
 </p>
 
-A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
+A haptic feedback SDK for iOS, Android, React Native, and Kotlin Multiplatform. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
 
 ## Features
 
-- **Presets** - Library of built-in haptic patterns (earthquake, success, fail, tap) and system feedback styles (impacts, notifications, selection)
+- **Presets** - Library of built-in haptic patterns (hammer, dogBark, buzz, pulse) and system feedback styles (impacts, notifications, selection)
 - **Pattern Composer** - Define custom haptic patterns using discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** - Live amplitude and frequency control for gesture-driven haptics
-- **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), and React Native (TypeScript)
+- **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), React Native (TypeScript), and Kotlin Multiplatform
 - **Worklet-compatible** - All React Native preset functions and hook methods work inside Reanimated worklets
 
 ## Quick start
@@ -17,7 +17,7 @@ A haptic feedback SDK for iOS, Android, and React Native. Pulsar provides ready-
 ### React Native
 
 ```bash
-npx expo install react-native-pulsar
+npx expo install react-native-pulsar react-native-worklets
 ```
 
 ```ts
@@ -27,41 +27,100 @@ import { Presets, usePatternComposer, useRealtimeComposer } from 'react-native-p
 Presets.dogBark();
 
 // Play a system haptic
-Presets.System.ImpactMedium();
+Presets.System.impactMedium();
 ```
 
 ### iOS
 
+<!-- GENERATED:IOS_VERSION_START -->
+Latest available version: `1.1.1`
+<!-- GENERATED:IOS_VERSION_END -->
+
 Add Pulsar as a Swift Package dependency in Xcode, or add it to your `Package.swift`:
 
+<!-- GENERATED:IOS_INSTALL_SNIPPET_START -->
 ```swift
 dependencies: [
-  .package(url: "https://github.com/software-mansion-labs/pulsar-ios")
+  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.1.1")
 ]
 ```
+<!-- GENERATED:IOS_INSTALL_SNIPPET_END -->
 
 ```swift
 import Pulsar
 
 let pulsar = Pulsar()
-pulsar.getPresets().success()
+pulsar.getPresets().hammer()
 ```
 
 ### Android
 
+<!-- GENERATED:ANDROID_VERSION_START -->
+Latest available version: `1.1.0`
+<!-- GENERATED:ANDROID_VERSION_END -->
+
 Add Pulsar as a Gradle dependency:
 
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar:1.0.0")
+  implementation("com.swmansion:pulsar:1.1.0")
 }
 ```
+<!-- GENERATED:ANDROID_INSTALL_SNIPPET_END -->
 
 ```kotlin
 import com.swmansion.pulsar.Pulsar
 
 val pulsar = Pulsar(context)
-pulsar.getPresets().success()
+pulsar.getPresets().hammer()
+```
+
+### Kotlin Multiplatform
+
+<!-- GENERATED:KMP_VERSION_START -->
+Latest available version: `0.0.2`
+<!-- GENERATED:KMP_VERSION_END -->
+
+Add Pulsar KMP as a Gradle dependency in your shared module (works on Android and iOS targets):
+
+<!-- GENERATED:KMP_INSTALL_SNIPPET_START -->
+```kotlin
+dependencies {
+  implementation("com.swmansion:pulsar-kmp:0.0.2")
+}
+```
+<!-- GENERATED:KMP_INSTALL_SNIPPET_END -->
+
+```kotlin
+import com.swmansion.pulsar.kmp.Pulsar
+
+val pulsar = Pulsar.create()
+pulsar.getPresets().play("Hammer")
+```
+
+### Flutter
+
+> **Note:** Published on pub.dev as **`pulsar_haptics`**, not `pulsar`. The shorter `pulsar` name was reserved by an unrelated author before this project was published and is not maintained by Software Mansion.
+
+<!-- GENERATED:FLUTTER_VERSION_START -->
+Latest available version: `0.0.1`
+<!-- GENERATED:FLUTTER_VERSION_END -->
+
+Add Pulsar to your `pubspec.yaml`:
+
+<!-- GENERATED:FLUTTER_INSTALL_SNIPPET_START -->
+```yaml
+dependencies:
+  pulsar_haptics: ^0.0.1
+```
+<!-- GENERATED:FLUTTER_INSTALL_SNIPPET_END -->
+
+```dart
+import 'package:pulsar_haptics/pulsar.dart';
+
+final pulsar = Pulsar();
+await pulsar.getPresets().hammer();
 ```
 
 ## Repository structure
@@ -77,6 +136,12 @@ pulsar/
 ├── react-native/
 │   └── react-native-pulsar/  # React Native Turbo Module
 │   └── PulsarApp/            # React Native native demo app
+├── kmp/
+│   ├── Pulsar/         # Kotlin Multiplatform SDK (Android + iOS targets)
+│   └── PulsarApp/      # Compose Multiplatform demo app
+├── flutter/
+│   ├── pulsar/         # Flutter plugin (Android + iOS)
+│   └── PulsarApp/      # Flutter demo app
 ├── PulsarApp/          # React Native Expo showcase app
 └── docs/               # Documentation site (Astro/Starlight)
 ```
@@ -88,6 +153,8 @@ pulsar/
 | React Native | [![npm](https://img.shields.io/npm/v/react-native-pulsar)](https://www.npmjs.com/package/react-native-pulsar) |
 | iOS | [Swift Package](https://github.com/software-mansion-labs/pulsar-ios) |
 | Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
+| Kotlin Multiplatform | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) |
+| Flutter | [pub.dev](https://pub.dev/packages/pulsar_haptics) |
 
 ## Documentation
 
@@ -97,6 +164,8 @@ Full API reference and guides are available at the [documentation site](https://
 - [iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios) - Swift API reference
 - [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) - Kotlin API reference
 - [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
+- [Kotlin Multiplatform SDK](https://docs.swmansion.com/pulsar/sdk/kmp) - Kotlin Multiplatform API reference
+- [Flutter SDK](https://docs.swmansion.com/pulsar/sdk/flutter) - Dart API reference
 
 <!-- ## AI Skills
 

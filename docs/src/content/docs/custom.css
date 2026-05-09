@@ -170,3 +170,27 @@ html {
     display: none !important;
   }
 }
+
+@media (max-width: 50rem) {
+  #starlight__sidebar .social-icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  #starlight__sidebar .social-icons > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+  }
+
+  #starlight__sidebar .social-icons > a > svg {
+    width: 30px;
+    height: 30px;
+  }
+}

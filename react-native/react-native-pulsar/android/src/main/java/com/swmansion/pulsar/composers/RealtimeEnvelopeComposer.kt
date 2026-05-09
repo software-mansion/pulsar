@@ -49,7 +49,7 @@ open class RealtimeEnvelopeComposer(
         val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
             ControlPoint(amplitude, frequency, SEGMENT_DURATION_MS)
         ))
-        engine.vibrate(effect)
+        effect?.let { engine.vibrate(it) }
     }
 
     override fun stop() {
@@ -71,7 +71,7 @@ open class RealtimeEnvelopeComposer(
                     val effect = vibrationEffectsGenerator.convertToVibrationEffect(listOf(
                         ControlPoint(currentAmplitude, currentFrequency, SEGMENT_DURATION_MS)
                     ))
-                    engine.vibrate(effect)
+                    effect?.let { engine.vibrate(it) }
                     delay(SEGMENT_DURATION_MS)
                 }
             } finally {

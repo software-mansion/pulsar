@@ -1,0 +1,783 @@
+---
+title: Kotlin Multiplatform SDK
+description: Add haptic feedback to your Kotlin Multiplatform app with Pulsar – a rich, open-source haptics library for Android and iOS targets.
+head:
+  - tag: title
+    content: "Kotlin Multiplatform Haptic Feedback SDK | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar - a rich haptics presets library for Swift, Kotlin & React Native"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "Rich and ready-to-use haptics library\nPresets that you can hear and feel with Live Preview."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar - a rich haptics presets library for Swift, Kotlin & React Native"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "Rich and ready-to-use haptics library\nPresets that you can hear and feel with Live Preview."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+import { Code } from '@astrojs/starlight/components';
+import CollapsibleTable from '../../../components/CollapsibleTable.astro';
+import CollapsibleList from '../../../components/CollapsibleList.astro';
+
+The Pulsar Kotlin Multiplatform SDK exposes the same building blocks as the native SDKs — `Presets`, `PatternComposer`, and `RealtimeComposer` — from common Kotlin code. The library targets Android and iOS (`iosX64`, `iosArm64`, `iosSimulatorArm64`) and bridges to the native Pulsar implementation on each platform.
+
+## Requirements
+
+- Kotlin 2.0+
+- Android API 24+ (Android 7.0) for Android targets
+- iOS 13+ for iOS targets
+
+## Installation
+
+{/* GENERATED:KMP_VERSION_START */}
+Latest available version: `0.0.2`
+{/* GENERATED:KMP_VERSION_END */}
+
+Add Pulsar KMP as a Gradle dependency in your shared module:
+
+{/* GENERATED:KMP_INSTALL_SNIPPET_START */}
+```kotlin
+dependencies {
+  implementation("com.swmansion:pulsar-kmp:0.0.2")
+}
+```
+{/* GENERATED:KMP_INSTALL_SNIPPET_END */}
+
+The library publishes the artifact as a Kotlin Multiplatform module — Gradle will resolve the right variant for each target automatically.
+
+### Android setup
+
+Pulsar registers itself on Android through a `ContentProvider` (`PulsarInitializer`), so no manual wiring is required.
+
+Declare the vibration permission in your Android app's `AndroidManifest.xml`:
+
+```xml
+<manifest ...>
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application ...>
+    ...
+  </application>
+</manifest>
+```
+
+Without `android.permission.VIBRATE`, Android will block vibration playback. Pulsar logs a warning and skips the vibration instead of crashing.
+
+### iOS setup
+
+The iOS target uses CoreHaptics directly — no extra setup beyond adding the dependency. When consuming the KMP library from an Xcode project, link the produced framework as you would any other Kotlin/Native binary.
+
+## Setup
+
+Create a `Pulsar` instance from common code:
+
+```kotlin
+import com.swmansion.pulsar.kmp.Pulsar
+
+val pulsar = Pulsar.create()
+```
+
+`Pulsar.create()` resolves the platform implementation registered for the current target. On Android the factory is registered automatically by `PulsarInitializer`; on iOS the factory is provided by the iOS target. If you need to register a custom factory (for tests or advanced setups), use `Pulsar.registerFactory(...)` before the first `create()` call.
+
+---
+
+## Presets
+
+A collection of ready-to-use haptic patterns accessed through `pulsar.getPresets()`.
+
+```kotlin
+val presets = pulsar.getPresets()
+```
+
+### Playing by direct method
+
+Each built-in preset is exposed as a direct method on the `PulsarPresets` instance, mirroring the React Native API.
+
+```kotlin
+val presets = pulsar.getPresets()
+
+presets.hammer()
+presets.dogBark()
+presets.fanfare()
+```
+
+### Playing by name
+
+Built-in presets can also be played by passing their name to `play()`. The method returns `true` if the preset was found and dispatched, or `false` otherwise.
+
+```kotlin
+fun play(name: String): Boolean
+```
+
+`getByName(name)` returns a lightweight `PulsarPreset` handle that can be played later, or `null` if the name is unknown:
+
+```kotlin
+fun getByName(name: String): PulsarPreset?
+```
+
+Available names:
+
+<CollapsibleList
+  items={[
+    "Afterglow",
+    "Aftershock",
+    "Alarm",
+    "Anvil",
+    "Applause",
+    "Ascent",
+    "BalloonPop",
+    "Barrage",
+    "BassDrop",
+    "Batter",
+    "BellToll",
+    "Blip",
+    "Bloom",
+    "Bongo",
+    "Boulder",
+    "BreakingWave",
+    "Breath",
+    "Breathing",
+    "Buildup",
+    "Burst",
+    "Buzz",
+    "Cadence",
+    "CameraShutter",
+    "Canter",
+    "Cascade",
+    "Castanets",
+    "CatPaw",
+    "Charge",
+    "Chime",
+    "Chip",
+    "Chirp",
+    "Clamor",
+    "Clasp",
+    "Cleave",
+    "Coil",
+    "CoinDrop",
+    "CombinationLock",
+    "Crescendo",
+    "Dewdrop",
+    "Dirge",
+    "Dissolve",
+    "DogBark",
+    "Drone",
+    "EngineRev",
+    "Exhale",
+    "Explosion",
+    "FadeOut",
+    "Fanfare",
+    "Feather",
+    "Finale",
+    "FingerDrum",
+    "Firecracker",
+    "Fizz",
+    "Flare",
+    "Flick",
+    "Flinch",
+    "Flourish",
+    "Flurry",
+    "Flush",
+    "Gallop",
+    "Gavel",
+    "Glitch",
+    "GuitarStrum",
+    "Hail",
+    "Hammer",
+    "Heartbeat",
+    "Herald",
+    "HoofBeat",
+    "Ignition",
+    "Impact",
+    "Jolt",
+    "KeyboardMechanical",
+    "KeyboardMembrane",
+    "Knell",
+    "Knock",
+    "Lament",
+    "Latch",
+    "Lighthouse",
+    "Lilt",
+    "Lock",
+    "Lope",
+    "March",
+    "Metronome",
+    "Murmur",
+    "Nudge",
+    "PassingCar",
+    "Patter",
+    "Peal",
+    "Peck",
+    "Pendulum",
+    "Ping",
+    "Pip",
+    "Piston",
+    "Plink",
+    "Plummet",
+    "Plunk",
+    "Poke",
+    "Pound",
+    "PowerDown",
+    "Propel",
+    "Pulse",
+    "Pummel",
+    "Push",
+    "Radar",
+    "Rain",
+    "Ramp",
+    "Rap",
+    "Ratchet",
+    "Rebound",
+    "Ripple",
+    "Rivet",
+    "Rustle",
+    "Shockwave",
+    "Snap",
+    "Sonar",
+    "Spark",
+    "Spin",
+    "Stagger",
+    "Stamp",
+    "Stampede",
+    "Stomp",
+    "StoneSkip",
+    "Strike",
+    "Summon",
+    "Surge",
+    "Sway",
+    "Sweep",
+    "Swell",
+    "Syncopate",
+    "Throb",
+    "Thud",
+    "Thump",
+    "Thunder",
+    "ThunderRoll",
+    "TickTock",
+    "TidalSurge",
+    "TideSwell",
+    "Tremor",
+    "Trigger",
+    "Triumph",
+    "Trumpet",
+    "Typewriter",
+    "Unfurl",
+    "Vortex",
+    "Wane",
+    "WarDrum",
+    "Waterfall",
+    "Wave",
+    "Wisp",
+    "Wobble",
+    "Woodpecker",
+    "Zipper",
+  ]}
+  initialItems={8}
+  columns={2}
+  code
+/>
+
+**Example**
+
+```kotlin
+val presets = pulsar.getPresets()
+
+presets.play("Hammer")
+presets.play("DogBark")
+```
+
+For per-preset descriptions, see the [iOS](/sdk/ios) and [Android](/sdk/android) reference pages — the underlying patterns are shared.
+
+### Preloading and caching
+
+`PulsarPresets` exposes its own preload/cache controls in addition to the equivalents on the `Pulsar` instance.
+
+| Method                                              | Description                                         |
+| --------------------------------------------------- | --------------------------------------------------- |
+| `preloadPresetByName(name: String)`                 | Preload a single preset by name                     |
+| `preloadPresetByNames(names: List<String>)`         | Preload multiple presets in a batch                 |
+| `enableCache(state: Boolean)`                       | Enable or disable preset caching                    |
+| `isCacheEnabled(): Boolean`                         | Returns `true` if caching is currently enabled      |
+| `resetCache()`                                      | Drop all cached preset data                         |
+
+### System presets
+
+Cross-platform system feedback styles are exposed as direct methods so you can call them from common code without name lookup.
+
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0]}
+  rows={[
+    ["systemImpactHeavy()", "Heavy impact"],
+    ["systemImpactLight()", "Light impact"],
+    ["systemImpactMedium()", "Medium impact"],
+    ["systemImpactRigid()", "Rigid impact"],
+    ["systemImpactSoft()", "Soft impact"],
+    ["systemNotificationError()", "Error notification"],
+    ["systemNotificationSuccess()", "Success notification"],
+    ["systemNotificationWarning()", "Warning notification"],
+    ["systemSelection()", "Selection change feedback"],
+  ]}
+/>
+
+**Example**
+
+```kotlin
+val presets = pulsar.getPresets()
+
+presets.systemImpactMedium()
+presets.systemNotificationSuccess()
+```
+
+#### Android-specific system presets
+
+Android's `HapticFeedbackConstants` and `VibrationEffect` system styles are also surfaced on the common API. They are no-ops on iOS, so you can call them from common code — but they only produce feedback on Android.
+
+<CollapsibleTable
+  headers={["Method", "Description"]}
+  codeColumns={[0, 1]}
+  rows={[
+    ["systemEffectClick()", "VibrationEffect.EFFECT_CLICK"],
+    ["systemEffectDoubleClick()", "VibrationEffect.EFFECT_DOUBLE_CLICK"],
+    ["systemEffectTick()", "VibrationEffect.EFFECT_TICK"],
+    ["systemEffectHeavyClick()", "VibrationEffect.EFFECT_HEAVY_CLICK"],
+    ["systemLongPress()", "HapticFeedbackConstants.LONG_PRESS"],
+    ["systemVirtualKey()", "HapticFeedbackConstants.VIRTUAL_KEY"],
+    ["systemVirtualKeyRelease()", "HapticFeedbackConstants.VIRTUAL_KEY_RELEASE"],
+    ["systemKeyboardTap()", "HapticFeedbackConstants.KEYBOARD_TAP"],
+    ["systemKeyboardPress()", "HapticFeedbackConstants.KEYBOARD_PRESS"],
+    ["systemKeyboardRelease()", "HapticFeedbackConstants.KEYBOARD_RELEASE"],
+    ["systemClockTick()", "HapticFeedbackConstants.CLOCK_TICK"],
+    ["systemCalendarDate()", "HapticFeedbackConstants.CALENDAR_DATE"],
+    ["systemContextClick()", "HapticFeedbackConstants.CONTEXT_CLICK"],
+    ["systemTextHandleMove()", "HapticFeedbackConstants.TEXT_HANDLE_MOVE"],
+    ["systemDragCrossing()", "HapticFeedbackConstants.DRAG_CROSSING"],
+    ["systemDragStart()", "HapticFeedbackConstants.DRAG_START"],
+    ["systemGestureStart()", "HapticFeedbackConstants.GESTURE_START"],
+    ["systemGestureEnd()", "HapticFeedbackConstants.GESTURE_END"],
+    ["systemEdgeSqueeze()", "HapticFeedbackConstants.EDGE_SQUEEZE"],
+    ["systemEdgeRelease()", "HapticFeedbackConstants.EDGE_RELEASE"],
+    ["systemConfirm()", "HapticFeedbackConstants.CONFIRM"],
+    ["systemRelease()", "HapticFeedbackConstants.REJECT"],
+    ["systemScrollTick()", "HapticFeedbackConstants.SCROLL_TICK"],
+    ["systemScrollItemFocus()", "HapticFeedbackConstants.SCROLL_ITEM_FOCUS"],
+    ["systemScrollLimit()", "HapticFeedbackConstants.SCROLL_LIMIT"],
+    ["systemToggleOn()", "HapticFeedbackConstants.TOGGLE_ON"],
+    ["systemToggleOff()", "HapticFeedbackConstants.TOGGLE_OFF"],
+    ["systemSegmentTick()", "HapticFeedbackConstants.SEGMENT_TICK"],
+    ["systemSegmentFrequentTick()", "HapticFeedbackConstants.SEGMENT_FREQUENT_TICK"],
+    ["systemPrimitiveClick()", "VibrationEffect.Composition.PRIMITIVE_CLICK"],
+    ["systemPrimitiveThud()", "VibrationEffect.Composition.PRIMITIVE_THUD"],
+    ["systemPrimitiveSpin()", "VibrationEffect.Composition.PRIMITIVE_SPIN"],
+    ["systemPrimitiveQuickRise()", "VibrationEffect.Composition.PRIMITIVE_QUICK_RISE"],
+    ["systemPrimitiveSlowRise()", "VibrationEffect.Composition.PRIMITIVE_SLOW_RISE"],
+    ["systemPrimitiveQuickFall()", "VibrationEffect.Composition.PRIMITIVE_QUICK_FALL"],
+    ["systemPrimitiveTick()", "VibrationEffect.Composition.PRIMITIVE_TICK"],
+    ["systemPrimitiveLowTick()", "VibrationEffect.Composition.PRIMITIVE_LOW_TICK"],
+  ]}
+/>
+
+---
+
+## PatternComposer
+
+Composes and plays custom haptic patterns. Get a new instance from `pulsar.getPatternComposer()`. Each call returns a fresh composer, so you can manage multiple patterns independently.
+
+```kotlin
+val composer = pulsar.getPatternComposer()
+```
+
+### Methods
+
+#### `parsePattern(pattern)`
+
+Parses a `PatternData` object and prepares it for playback.
+
+```kotlin
+fun parsePattern(pattern: PatternData)
+```
+
+#### `playPattern(pattern)`
+
+Convenience method that parses and immediately plays a pattern.
+
+```kotlin
+fun playPattern(pattern: PatternData)
+```
+
+#### `play()`
+
+Plays the previously parsed pattern.
+
+```kotlin
+fun play()
+```
+
+#### `playAudioOnly()`
+
+Plays only the audio simulation of the parsed pattern, skipping the haptic engine. Useful for previewing patterns on simulators.
+
+```kotlin
+fun playAudioOnly()
+```
+
+#### `stop()`
+
+Stops all playback.
+
+```kotlin
+fun stop()
+```
+
+### Example
+
+```kotlin
+val composer = pulsar.getPatternComposer()
+
+val pattern = PatternData(
+  continuousPattern = ContinuousPattern(
+    amplitude = listOf(
+      ValuePoint(time = 0, value = 0f),
+      ValuePoint(time = 200, value = 1f),
+      ValuePoint(time = 400, value = 0f),
+    ),
+    frequency = listOf(
+      ValuePoint(time = 0, value = 0.3f),
+      ValuePoint(time = 400, value = 0.8f),
+    )
+  ),
+  discretePattern = listOf(
+    ConfigPoint(time = 0, amplitude = 1f, frequency = 0.5f),
+    ConfigPoint(time = 100, amplitude = 0.5f, frequency = 0.5f),
+  )
+)
+
+composer.playPattern(pattern)
+```
+
+---
+
+## RealtimeComposer
+
+Provides real-time haptic control with live amplitude and frequency modulation. Useful for gesture-driven or continuously evolving haptic experiences. Get a composer from `pulsar.getRealtimeComposer()`.
+
+```kotlin
+val realtime = pulsar.getRealtimeComposer()
+```
+
+On Android, you can also request a composer that uses a specific strategy, or read/write the global default via the `realtimeComposerStrategy` property on `Pulsar`. See [`RealtimeComposerStrategy`](#realtimecomposerstrategy) for available strategies.
+
+```kotlin
+val realtime = pulsar.getRealtimeComposer(RealtimeComposerStrategy.PRIMITIVE_COMPLEX)
+
+pulsar.realtimeComposerStrategy = RealtimeComposerStrategy.ENVELOPE
+```
+
+### Methods
+
+#### `set(amplitude, frequency)`
+
+Updates the ongoing haptic with new amplitude and frequency values. Automatically starts playback if it is not already active. Values should be in the 0-1 range.
+
+```kotlin
+fun set(amplitude: Float, frequency: Float)
+```
+
+#### `playDiscrete(amplitude, frequency)`
+
+Plays a single discrete haptic event.
+
+```kotlin
+fun playDiscrete(amplitude: Float, frequency: Float)
+```
+
+#### `stop()`
+
+Stops the active continuous haptic.
+
+```kotlin
+fun stop()
+```
+
+#### `isActive()`
+
+Returns `true` if a continuous haptic is currently playing.
+
+```kotlin
+fun isActive(): Boolean
+```
+
+### Example
+
+```kotlin
+val realtime = pulsar.getRealtimeComposer()
+
+realtime.set(amplitude = 0.5f, frequency = 0.8f)
+realtime.set(amplitude = 1.0f, frequency = 0.3f)
+
+realtime.playDiscrete(amplitude = 0.7f, frequency = 0.5f)
+
+realtime.stop()
+```
+
+---
+
+## AdaptiveHaptics
+
+Plays haptics from a cross-platform `AdaptivePreset`. The correct configuration is selected for the current platform automatically. Each platform can provide either a custom `PatternData` or a callback that triggers a built-in or system preset directly.
+
+```kotlin
+val haptics = pulsar.createAdaptiveHaptics(preset)
+```
+
+### AdaptivePresetConfig
+
+```kotlin
+sealed class AdaptivePresetConfig {
+  class Function(val play: (PulsarPresets) -> Unit) : AdaptivePresetConfig()
+  class Pattern(val pattern: PatternData) : AdaptivePresetConfig()
+}
+```
+
+- `Function` — a callback that receives the `PulsarPresets` instance and triggers a native or built-in preset directly.
+- `Pattern` — a custom `PatternData` parsed once on creation and replayed on each `play()`.
+
+### AdaptivePreset
+
+```kotlin
+data class AdaptivePreset(
+  val ios: AdaptivePresetConfig,
+  val android: AdaptivePresetConfig,
+)
+```
+
+### Returns
+
+#### `play()`
+
+Plays the configuration for the current platform. If the platform config is a `Function`, it is invoked. If it is a `Pattern`, it is played via the underlying pattern composer.
+
+#### `stop()`
+
+Stops the active pattern. No-op when the platform config is a `Function`.
+
+### Example
+
+```kotlin
+import com.swmansion.pulsar.kmp.AdaptiveHaptics
+import com.swmansion.pulsar.kmp.AdaptivePreset
+import com.swmansion.pulsar.kmp.AdaptivePresetConfig
+import com.swmansion.pulsar.kmp.ConfigPoint
+import com.swmansion.pulsar.kmp.ContinuousPattern
+import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.Pulsar
+
+val pulsar = Pulsar.create()
+
+val adaptivePreset = AdaptivePreset(
+  ios = AdaptivePresetConfig.Function { presets ->
+    presets.systemNotificationSuccess()
+  },
+  android = AdaptivePresetConfig.Pattern(
+    PatternData(
+      continuousPattern = ContinuousPattern(amplitude = emptyList(), frequency = emptyList()),
+      discretePattern = listOf(
+        ConfigPoint(time = 0, amplitude = 1f, frequency = 0.5f),
+        ConfigPoint(time = 150, amplitude = 0.6f, frequency = 0.4f),
+      ),
+    ),
+  ),
+)
+
+val haptics = pulsar.createAdaptiveHaptics(adaptivePreset)
+haptics.play()
+```
+
+---
+
+## Settings
+
+Configuration methods available directly on the `Pulsar` instance.
+
+| Method                                                          | Description                                                                                  |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `enableHaptics(state: Boolean)`                                 | Enable or disable all haptic feedback                                                        |
+| `enableSound(state: Boolean)`                                   | Enable or disable audio simulation                                                           |
+| `enableCache(state: Boolean)`                                   | Enable or disable preset caching                                                             |
+| `isCacheEnabled()`                                              | Returns `true` if preset caching is enabled                                                  |
+| `clearCache()`                                                  | Clear the preset cache                                                                       |
+| `preloadPresets(presetNames: List<String>)`                     | Preload presets by name for faster playback                                                  |
+| `stopHaptics()`                                                 | Stop all currently playing haptics                                                           |
+| `shutDownEngine()`                                              | Tear down the underlying haptic engine                                                       |
+| `isHapticsEnabled()`                                            | Returns `true` if haptics are currently enabled                                              |
+| `isHapticsSupported()`                                          | Returns `true` if the device supports haptics                                                |
+| `canPlayHaptics()`                                              | Returns `true` when haptics can play right now                                               |
+| `hapticSupport(): CompatibilityMode`                            | Returns the device's [`CompatibilityMode`](#compatibilitymode)                               |
+| `forceHapticsSupportLevel(mode: CompatibilityMode)`             | (Android only) Override the detected support level. Intended for testing fallback behavior.  |
+| `enableImpulseCompositionMode(state: Boolean)`                  | (Android only) Enable or disable impulse composition mode                                    |
+| `realtimeComposerStrategy` (property)                           | (Android only) Get or set the default [`RealtimeComposerStrategy`](#realtimecomposerstrategy) |
+
+### Example
+
+```kotlin
+val pulsar = Pulsar.create()
+
+pulsar.preloadPresets(listOf("Hammer", "DogBark"))
+
+if (pulsar.canPlayHaptics()) {
+  pulsar.getPresets().play("Hammer")
+}
+
+pulsar.enableHaptics(false)
+```
+
+---
+
+## Types
+
+All shared types live in the `com.swmansion.pulsar.kmp` package and are usable from common code.
+
+### PatternData
+
+Describes a complete haptic pattern with discrete pulses and continuous envelope curves.
+
+```kotlin
+data class PatternData(
+  val continuousPattern: ContinuousPattern,
+  val discretePattern: List<ConfigPoint>
+)
+```
+
+A secondary constructor accepts the raw triplet form (`List<List<List<Float>>>` for continuous, `List<List<Float>>` for discrete) for parity with serialized pattern definitions.
+
+### ContinuousPattern
+
+Represents continuous haptic curves for amplitude and frequency.
+
+```kotlin
+data class ContinuousPattern(
+  val amplitude: List<ValuePoint>,
+  val frequency: List<ValuePoint>
+)
+```
+
+### ValuePoint
+
+A single point in a continuous curve.
+
+```kotlin
+data class ValuePoint(
+  val time: Long,    // Milliseconds from pattern start
+  val value: Float   // Normalized value (0-1)
+)
+```
+
+### ConfigPoint
+
+A single discrete haptic event.
+
+```kotlin
+data class ConfigPoint(
+  val time: Long,        // Milliseconds from pattern start
+  val amplitude: Float,  // Intensity (0-1)
+  val frequency: Float   // Sharpness (0-1)
+)
+```
+
+Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+
+### CompatibilityMode
+
+The haptic capability level of the current device, returned by `pulsar.hapticSupport()`.
+
+```kotlin
+enum class CompatibilityMode {
+  NO_SUPPORT,
+  LIMITED_SUPPORT,
+  STANDARD_SUPPORT,
+  ADVANCED_SUPPORT,
+}
+```
+
+On Android, `pulsar.forceHapticsSupportLevel(mode)` accepts these values to override the detected fallback path.
+
+**Example**
+
+```kotlin
+val pulsar = Pulsar.create()
+
+if (pulsar.hapticSupport() >= CompatibilityMode.STANDARD_SUPPORT) {
+  pulsar.getPresets().dogBark()
+}
+```
+
+### RealtimeComposerStrategy
+
+Android-only. Controls how `RealtimeComposer` simulates continuous haptics, since Android has no native continuous haptic API. Pass one of these values to `pulsar.getRealtimeComposer(strategy)` or assign to `pulsar.realtimeComposerStrategy`.
+
+```kotlin
+enum class RealtimeComposerStrategy {
+  ENVELOPE,
+  PRIMITIVE_TICK,
+  PRIMITIVE_COMPLEX,
+  ENVELOPE_WITH_DISCRETE_PRIMITIVES,
+}
+```
+
+| Value                                 | Description |
+| ------------------------------------- | ----------- |
+| `ENVELOPE`                            | Approximation based on the Envelope API. Allows control over amplitude and frequency, but the signal oscillates and can be unstable. Available on Android API 36+. |
+| `PRIMITIVE_TICK`                      | Approximation using the Composition API TICK primitive at varying intervals. Amplitude is controllable; frequency is simulated by the timing between ticks. Signal is discrete rather than continuous. |
+| `PRIMITIVE_COMPLEX`                   | Similar to `PRIMITIVE_TICK`, but uses multiple primitives depending on the requested frequency. |
+| `ENVELOPE_WITH_DISCRETE_PRIMITIVES`   | **Default.** Hybrid strategy. Uses the Envelope API for continuous events (API 36+) and composition primitives for discrete events (API 33+). Best of both worlds when both event types are used. |
+
+### ControlPoint
+
+Used internally by curve interpolation and exposed for advanced custom composers.
+
+```kotlin
+data class ControlPoint(
+  val intensity: Float,
+  val sharpness: Float,
+  val duration: Long
+)
+```
+
+---
+
+## Custom platform factories
+
+For tests or hosting environments where the default initializer cannot run, register a custom factory before the first `Pulsar.create()` call:
+
+```kotlin
+import com.swmansion.pulsar.kmp.Pulsar
+import com.swmansion.pulsar.kmp.PulsarPlatformFactory
+
+Pulsar.registerFactory(myFactory)
+val pulsar = Pulsar.create()
+```
+
+`PulsarPlatformFactory` produces a `PulsarPlatformHandle`, which exposes the low-level operations (`presets()`, `patternComposer()`, `realtimeComposer()`, lifecycle, capability checks) that the public API delegates to.

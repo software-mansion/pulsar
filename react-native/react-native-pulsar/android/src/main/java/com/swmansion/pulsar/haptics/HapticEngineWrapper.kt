@@ -1,6 +1,8 @@
 package com.swmansion.pulsar.haptics
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -9,9 +11,12 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.swmansion.pulsar.types.CompatibilityMode
 
-class HapticEngineWrapper(context: Context) {
+class HapticEngineWrapper(private val context: Context) {
 
     private val vibrationService = context.getSystemService(Vibrator::class.java)
+    private val hasVibrationPermission: Boolean by lazy {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED
+    }
     private var vibrator: Vibrator? = null
     private var initialized = false
     private var isHapticsEnabled = true
@@ -39,10 +44,18 @@ class HapticEngineWrapper(context: Context) {
         if (!isHapticsEnabled) {
             return
         }
+        if (!hasVibrationPermission) {
+            Log.w(TAG, "Skipping vibration because android.permission.VIBRATE is not granted")
+            return
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrationService.vibrate(vibrationEffect)
+            try {
+                vibrationService.vibrate(vibrationEffect)
+            } catch (securityException: SecurityException) {
+                Log.w(TAG, "Skipping vibration because the app cannot use the vibrator", securityException)
+            }
         } else {
-            Log.w("Pulsar", "Incompatible Android version. Minimal supported version is Android API 26")
+            Log.w(TAG, "Incompatible Android version. Minimal supported version is Android API 26")
         }
     }
 
@@ -108,15 +121,21 @@ class HapticEngineWrapper(context: Context) {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             if (isFrequencyProfileSupported()) {
                 CompatibilityMode.ADVANCED_SUPPORT
-            } else {
+            } else if (isAmplitudeSupported()) {
                 CompatibilityMode.STANDARD_SUPPORT
+            } else {
+                CompatibilityMode.LIMITED_SUPPORT
             }
         } else {
             if (isAmplitudeSupported()) {
-                CompatibilityMode.LIMITED_SUPPORT
+                CompatibilityMode.STANDARD_SUPPORT
             } else {
-                CompatibilityMode.MINIMAL_SUPPORT
+                CompatibilityMode.LIMITED_SUPPORT
             }
         }
+    }
+
+    private companion object {
+        const val TAG = "Pulsar"
     }
 }

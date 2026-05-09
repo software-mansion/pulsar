@@ -1,4 +1,5 @@
 #import "Haptics.h"
+#import <UIKit/UIKit.h>
 #if __has_include(<Pulsar/Pulsar-Swift.h>)
 #import <Pulsar/Pulsar-Swift.h>
 #else
@@ -11,7 +12,34 @@
   int nextId;
   NSMutableDictionary<NSNumber*, PatternComposer*> *patternComposersRegistry_;
 }
+
+static BOOL RNPulsarIsAppActive(void) {
+  return UIApplication.sharedApplication.applicationState == UIApplicationStateActive;
+}
+
+static void RNPulsarLogBridgeException(NSString *context, NSException *exception) {
+  NSLog(@"[RNPulsar] Ignored %@ after native exception: %@ (%@)", context, exception.name, exception.reason);
+}
+
+static void RNPulsarPerformSafely(NSString *context, void (^block)(void)) {
+  @try {
+    block();
+  } @catch (NSException *exception) {
+    RNPulsarLogBridgeException(context, exception);
+  }
+}
+
 RCT_EXPORT_MODULE()
+
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
+}
+
+- (dispatch_queue_t)methodQueue
+{
+  return dispatch_get_main_queue();
+}
 
 - (instancetype)init
 {
@@ -34,7 +62,13 @@ RCT_EXPORT_MODULE()
 // Pulsar -----------------------------------------------------------------
 
 - (void)Pulsar_play:(nonnull NSString *)name {
-  [[[pulsar_ getPresets] getByName:name] play];
+  if (!RNPulsarIsAppActive()) {
+    return;
+  }
+
+  RNPulsarPerformSafely(@"Pulsar_play", ^{
+    [[[pulsar_ getPresets] getByName:name] play];
+  });
 }
 
 - (void)Pulsar_preloadPresets:(nonnull NSArray *)presetNames {
@@ -66,7 +100,7 @@ RCT_EXPORT_MODULE()
 }
 
 - (nonnull NSNumber *)Pulsar_hapticSupport {
-  return [pulsar_ isHapticsSupported] ? @(4) : @(0);
+  return [pulsar_ isHapticsSupported] ? @(3) : @(0);
 }
 
 - (void)Pulsar_forceHapticsSupportLevel:(double)level {
@@ -124,7 +158,13 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
 }
 
 - (void)PatternComposer_play:(double)patternId {
-  [patternComposersRegistry_[@(patternId)] play];
+  if (!RNPulsarIsAppActive()) {
+    return;
+  }
+
+  RNPulsarPerformSafely(@"PatternComposer_play", ^{
+    [patternComposersRegistry_[@(patternId)] play];
+  });
 }
 
 - (void)PatternComposer_stop:(double)patternId {
@@ -132,17 +172,31 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
 }
 
 - (void)PatternComposer_release:(double)patternId {
+  PatternComposer *composer = patternComposersRegistry_[@(patternId)];
+  [composer dispose];
   [patternComposersRegistry_ removeObjectForKey:@(patternId)];
 }
 
 // RealtimeComposer -----------------------------------------------------------------
 
 - (void)RealtimeComposer_set:(double)amplitude frequency:(double)frequency {
-  [realtimeComposer_ setWithAmplitude:amplitude frequency:frequency];
+  if (!RNPulsarIsAppActive()) {
+    return;
+  }
+
+  RNPulsarPerformSafely(@"RealtimeComposer_set", ^{
+    [realtimeComposer_ setWithAmplitude:amplitude frequency:frequency];
+  });
 }
 
 - (void)RealtimeComposer_playDiscrete:(double)amplitude frequency:(double)frequency {
-  [realtimeComposer_ playDiscreteWithAmplitude:amplitude frequency:frequency];
+  if (!RNPulsarIsAppActive()) {
+    return;
+  }
+
+  RNPulsarPerformSafely(@"RealtimeComposer_playDiscrete", ^{
+    [realtimeComposer_ playDiscreteWithAmplitude:amplitude frequency:frequency];
+  });
 }
 
 - (void)RealtimeComposer_stop {

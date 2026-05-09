@@ -558,8 +558,6 @@ function HapticsSupportBanner({ level, onClose }: { level: HapticSupport; onClos
         return { name: 'Standard', description: 'Most presets are fully supported on your device.' };
       case HapticSupport.LIMITED_SUPPORT:
         return { name: 'Limited', description: 'Some presets may not work as expected on your device.' };
-      case HapticSupport.MINIMAL_SUPPORT:
-        return { name: 'Minimal', description: 'Only basic vibrations are available on your device.' };
       default:
         return { name: 'None', description: 'Your device does not support haptics.' };
     }
