@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulsar Web Playground</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3efe6;
+        --panel: rgba(255, 251, 245, 0.92);
+        --panel-border: rgba(115, 88, 53, 0.16);
+        --text: #22170f;
+        --muted: #6d5847;
+        --accent: #a2471f;
+        --accent-strong: #7d3214;
+        --accent-soft: #f2d1ba;
+        --success: #245c3f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 32%),
+          radial-gradient(circle at bottom right, rgba(162, 71, 31, 0.16), transparent 30%),
+          linear-gradient(180deg, #efe8da 0%, #e8dece 100%);
+      }
+
+      .shell {
+        width: min(1120px, calc(100vw - 32px));
+        margin: 32px auto;
+        display: grid;
+        gap: 20px;
+      }
+
+      .hero,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 28px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 18px 50px rgba(53, 32, 17, 0.08);
+      }
+
+      .hero {
+        padding: 32px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(36px, 6vw, 64px);
+        line-height: 0.95;
+      }
+
+      .hero p {
+        max-width: 740px;
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .panel h2 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+
+      .panel p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .row {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .row.inline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      input[type="range"],
+      textarea,
+      button {
+        width: 100%;
+      }
+
+      textarea {
+        min-height: 170px;
+        resize: vertical;
+        border-radius: 18px;
+        padding: 14px 16px;
+        border: 1px solid rgba(109, 88, 71, 0.18);
+        background: rgba(255, 255, 255, 0.84);
+        color: var(--text);
+        font: 14px/1.5 "SFMono-Regular", "Menlo", monospace;
+      }
+
+      .range-readout {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+      }
+
+      input[type="range"] {
+        accent-color: var(--accent);
+      }
+
+      button {
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: var(--accent);
+        color: white;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.14s ease, background 0.14s ease, opacity 0.14s ease;
+      }
+
+      button.secondary {
+        background: rgba(162, 71, 31, 0.12);
+        color: var(--accent-strong);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .toggle-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(109, 88, 71, 0.14);
+      }
+
+      .toggle strong {
+        display: block;
+        color: var(--text);
+      }
+
+      .toggle span {
+        font-size: 13px;
+      }
+
+      .toggle input {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--accent);
+      }
+
+      .status {
+        min-height: 120px;
+        white-space: pre-wrap;
+        border-radius: 18px;
+        padding: 16px;
+        background: #1f1814;
+        color: #f5ede4;
+        font: 13px/1.5 "SFMono-Regular", "Menlo", monospace;
+      }
+
+      .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .footer-note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .preset-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .preset-card {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 20px;
+        border: 1px solid rgba(109, 88, 71, 0.14);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .preset-card-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .preset-card strong {
+        font-size: 16px;
+      }
+
+      .preset-card span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 860px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .row.inline {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Pulsar Web Playground</p>
+        <h1>Test Haptics, PWM Realtime Control, and Audio Simulation</h1>
+        <p>
+          This page is a focused example for the current web SDK. It exercises the real public
+          API surface and the standalone <code>AudioGenerator</code>, so it is useful both for
+          manual QA and for future SDK iteration.
+        </p>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Runtime</h2>
+          <p>Use the real global toggles and verify browser support before testing patterns.</p>
+
+          <div class="toggle-grid">
+            <label class="toggle">
+              <span>
+                <strong>Haptics Enabled</strong>
+                Turns all browser vibration behavior on or off globally.
+              </span>
+              <input id="toggle-haptics" type="checkbox" checked />
+            </label>
+
+            <label class="toggle">
+              <span>
+                <strong>Sound Enabled</strong>
+                Controls standalone audio simulation playback.
+              </span>
+              <input id="toggle-sound" type="checkbox" checked />
+            </label>
+          </div>
+
+          <div class="row" style="margin-top: 18px;">
+            <button id="check-support" class="secondary" type="button">Check Support</button>
+            <button id="stop-all" type="button">Stop All Haptics</button>
+          </div>
+
+          <div class="chip-list">
+            <span class="chip" id="chip-support">Support: unknown</span>
+            <span class="chip" id="chip-haptics">Haptics: enabled</span>
+            <span class="chip" id="chip-sound">Sound: enabled</span>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>Realtime Composer</h2>
+          <p>Drive the shared realtime PWM channel like a gesture stream.</p>
+
+          <div class="row">
+            <label for="realtime-intensity">
+              <span class="range-readout">
+                <span>Intensity</span>
+                <span id="realtime-intensity-value">0.50</span>
+              </span>
+              <input id="realtime-intensity" type="range" min="0" max="1" step="0.01" value="0.5" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label for="realtime-frequency">
+              <span class="range-readout">
+                <span>Frequency</span>
+                <span id="realtime-frequency-value">0.50</span>
+              </span>
+              <input id="realtime-frequency" type="range" min="0" max="1" step="0.01" value="0.5" />
+            </label>
+          </div>
+
+          <div class="row inline">
+            <button id="start-realtime" type="button">Start / Update</button>
+            <button id="stop-realtime" class="secondary" type="button">Stop Realtime</button>
+          </div>
+
+          <p class="footer-note">
+            Tip: while realtime is running, move the sliders and press <code>Start / Update</code>
+            again to verify live PWM retuning.
+          </p>
+        </article>
+
+        <article class="panel">
+          <h2>Presets</h2>
+          <p>Load or play a few built-in haptic motifs through the public presets API.</p>
+
+          <div id="preset-list" class="preset-grid"></div>
+        </article>
+
+        <article class="panel">
+          <h2>Pattern Composer</h2>
+          <p>Edit a web haptic pattern, compile it, and play the resulting vibration schedule.</p>
+
+          <div class="row">
+            <textarea id="pattern-input">[
+  { "type": "continuous", "timestamp": 0, "duration": 160 },
+  { "type": "pulse", "timestamp": 240, "duration": 420, "intensity": 0.25, "frequency": 0.85 },
+  { "type": "continuous", "timestamp": 760, "duration": 90 }
+]</textarea>
+          </div>
+
+          <div class="row inline">
+            <button id="compile-pattern" class="secondary" type="button">Compile Pattern</button>
+            <button id="play-pattern" type="button">Play Pattern</button>
+          </div>
+
+          <div class="row">
+            <button id="stop-pattern" class="secondary" type="button">Stop Pattern</button>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>Audio Simulation</h2>
+          <p>
+            Generate a Web Audio preview from the same pattern. This uses the exported
+            <code>AudioGenerator</code> directly because the current <code>Pulsar</code> class does
+            not expose <code>getAudioGenerator()</code>.
+          </p>
+
+          <div class="row inline">
+            <button id="render-audio" class="secondary" type="button">Render Audio</button>
+            <button id="play-audio" type="button">Play Audio</button>
+          </div>
+
+          <div class="row">
+            <button id="stop-audio" class="secondary" type="button">Stop Audio</button>
+          </div>
+
+          <p class="footer-note" id="audio-buffer-info">No audio buffer rendered yet.</p>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>Log</h2>
+        <p>Actions and parsed pattern output appear here.</p>
+        <div id="status" class="status">Playground ready.</div>
+      </section>
+    </main>
+
+    <script type="module">
+      import Pulsar, { AudioGenerator } from "./src/index.ts";
+
+      const pulsar = new Pulsar();
+      const audioGenerator = new AudioGenerator();
+      const realtimeComposer = pulsar.getRealtimeComposer();
+      const presets = pulsar.getPresets();
+      let patternComposer = pulsar.getPatternComposer();
+
+      const status = document.getElementById("status");
+      const patternInput = document.getElementById("pattern-input");
+      const presetList = document.getElementById("preset-list");
+      const chipSupport = document.getElementById("chip-support");
+      const chipHaptics = document.getElementById("chip-haptics");
+      const chipSound = document.getElementById("chip-sound");
+      const audioBufferInfo = document.getElementById("audio-buffer-info");
+
+      const hapticsToggle = document.getElementById("toggle-haptics");
+      const soundToggle = document.getElementById("toggle-sound");
+
+      const realtimeIntensity = document.getElementById("realtime-intensity");
+      const realtimeFrequency = document.getElementById("realtime-frequency");
+      const realtimeIntensityValue = document.getElementById("realtime-intensity-value");
+      const realtimeFrequencyValue = document.getElementById("realtime-frequency-value");
+
+      const log = (message) => {
+        const timestamp = new Date().toLocaleTimeString();
+        status.textContent = `[${timestamp}] ${message}\n\n${status.textContent}`.trim();
+      };
+
+      const updateRuntimeChips = () => {
+        chipSupport.textContent = `Support: ${pulsar.isHapticsSupported() ? "available" : "missing"}`;
+        chipHaptics.textContent = `Haptics: ${hapticsToggle.checked ? "enabled" : "disabled"}`;
+        chipSound.textContent = `Sound: ${soundToggle.checked ? "enabled" : "disabled"}`;
+      };
+
+      const parsePatternInput = () => {
+        const parsed = JSON.parse(patternInput.value);
+
+        if (!Array.isArray(parsed)) {
+          throw new Error("Pattern JSON must be an array.");
+        }
+
+        return parsed;
+      };
+
+      const updateRealtimeLabels = () => {
+        realtimeIntensityValue.textContent = Number(realtimeIntensity.value).toFixed(2);
+        realtimeFrequencyValue.textContent = Number(realtimeFrequency.value).toFixed(2);
+      };
+
+      const updateAudioBufferInfo = () => {
+        const info = audioGenerator.getBufferInfo();
+
+        if (!info) {
+          audioBufferInfo.textContent = "No audio buffer rendered yet.";
+          return;
+        }
+
+        audioBufferInfo.textContent =
+          `Rendered ${info.duration.toFixed(3)}s at ${info.sampleRate}Hz, ` +
+          `${info.channels} channel, ${info.length} frames.`;
+      };
+
+      const formatPresetLabel = (name) => {
+        return name.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase());
+      };
+
+      const loadPresetIntoEditor = (name) => {
+        const pattern = presets.get(name);
+        patternInput.value = JSON.stringify(pattern, null, 2);
+        log(`Loaded preset "${name}" into the pattern editor.`);
+      };
+
+      const renderPresetButtons = () => {
+        const presetNames = presets.list();
+        const fragment = document.createDocumentFragment();
+
+        for (const name of presetNames) {
+          const card = document.createElement("div");
+          card.className = "preset-card";
+
+          const header = document.createElement("div");
+          header.className = "preset-card-header";
+
+          const title = document.createElement("strong");
+          title.textContent = formatPresetLabel(name);
+
+          const meta = document.createElement("span");
+          meta.textContent = `${presets.get(name).length} segment${presets.get(name).length === 1 ? "" : "s"}`;
+
+          header.append(title, meta);
+
+          const actions = document.createElement("div");
+          actions.className = "row inline";
+
+          const loadButton = document.createElement("button");
+          loadButton.type = "button";
+          loadButton.className = "secondary";
+          loadButton.textContent = "Load";
+          loadButton.addEventListener("click", () => {
+            loadPresetIntoEditor(name);
+          });
+
+          const playButton = document.createElement("button");
+          playButton.type = "button";
+          playButton.textContent = "Play";
+          playButton.addEventListener("click", async () => {
+            try {
+              const result = await presets.play(name);
+              log(
+                `Preset "${name}" played -> haptics=${result.haptics} ` +
+                `audio=${result.audio} fallback=${result.usedAudioFallback}.`,
+              );
+            } catch (error) {
+              log(`Preset play error: ${error instanceof Error ? error.message : String(error)}`);
+            }
+          });
+
+          actions.append(loadButton, playButton);
+          card.append(header, actions);
+          fragment.append(card);
+        }
+
+        presetList.replaceChildren(fragment);
+      };
+
+      hapticsToggle.addEventListener("change", () => {
+        pulsar.enableHaptics(hapticsToggle.checked);
+        updateRuntimeChips();
+        log(`Global haptics ${hapticsToggle.checked ? "enabled" : "disabled"}.`);
+      });
+
+      soundToggle.addEventListener("change", () => {
+        pulsar.enableSound(soundToggle.checked);
+        updateRuntimeChips();
+        log(`Global sound ${soundToggle.checked ? "enabled" : "disabled"}.`);
+      });
+
+      document.getElementById("check-support").addEventListener("click", () => {
+        updateRuntimeChips();
+        log(`Haptics support: ${pulsar.isHapticsSupported()}.`);
+      });
+
+      document.getElementById("stop-all").addEventListener("click", () => {
+        const didStop = pulsar.stopHaptics();
+        realtimeComposer.stop();
+        patternComposer.stop();
+        presets.stop();
+        audioGenerator.stop();
+        log(`Stopped all haptics. Browser vibration cancelled: ${didStop}.`);
+      });
+
+      realtimeIntensity.addEventListener("input", updateRealtimeLabels);
+      realtimeFrequency.addEventListener("input", updateRealtimeLabels);
+
+      document.getElementById("start-realtime").addEventListener("click", () => {
+        const intensity = Number(realtimeIntensity.value);
+        const frequency = Number(realtimeFrequency.value);
+        const didStart = realtimeComposer.set(intensity, frequency);
+
+        log(
+          `Realtime set intensity=${intensity.toFixed(2)} frequency=${frequency.toFixed(2)} -> ${didStart}.`,
+        );
+      });
+
+      document.getElementById("stop-realtime").addEventListener("click", () => {
+        const didStop = realtimeComposer.stop();
+        log(`Realtime stopped -> ${didStop}.`);
+      });
+
+      document.getElementById("compile-pattern").addEventListener("click", () => {
+        try {
+          const pattern = parsePatternInput();
+          patternComposer = pulsar.getPatternComposer();
+          const compiled = patternComposer.parse(pattern);
+
+          log(`Compiled pattern:\n${JSON.stringify(compiled)}`);
+        } catch (error) {
+          log(`Pattern compile error: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      });
+
+      document.getElementById("play-pattern").addEventListener("click", () => {
+        try {
+          const pattern = parsePatternInput();
+          patternComposer = pulsar.getPatternComposer();
+          patternComposer.parse(pattern);
+          const didPlay = patternComposer.play();
+
+          log(`Pattern played -> ${didPlay}.`);
+        } catch (error) {
+          log(`Pattern play error: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      });
+
+      document.getElementById("stop-pattern").addEventListener("click", () => {
+        const didStop = patternComposer.stop();
+        log(`Pattern stopped -> ${didStop}.`);
+      });
+
+      document.getElementById("render-audio").addEventListener("click", async () => {
+        try {
+          const pattern = parsePatternInput();
+          const buffer = await audioGenerator.parse(pattern);
+          updateAudioBufferInfo();
+
+          log(`Audio rendered -> ${buffer ? "buffer ready" : "not available in this environment"}.`);
+        } catch (error) {
+          log(`Audio render error: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      });
+
+      document.getElementById("play-audio").addEventListener("click", async () => {
+        try {
+          const didPlay = await audioGenerator.play();
+          log(`Audio play -> ${didPlay}.`);
+        } catch (error) {
+          log(`Audio play error: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      });
+
+      document.getElementById("stop-audio").addEventListener("click", () => {
+        const didStop = audioGenerator.stop();
+        log(`Audio stopped -> ${didStop}.`);
+      });
+
+      updateRealtimeLabels();
+      updateRuntimeChips();
+      updateAudioBufferInfo();
+      renderPresetButtons();
+    </script>
+  </body>
+</html>

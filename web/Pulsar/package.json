@@ -21,7 +21,9 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
+    "example": "vite --host",
     "build": "vite build && tsc --emitDeclarationOnly --declaration --declarationDir dist",
+    "test": "node --test --experimental-strip-types tests/*.test.js",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "clean": "rm -rf dist node_modules .turbo *.tsbuildinfo"
