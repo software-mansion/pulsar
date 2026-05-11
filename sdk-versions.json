@@ -16,7 +16,7 @@
     "mavenCoordinate": "com.swmansion:pulsar-kmp"
   },
   "flutter": {
-    "version": "0.0.1",
+    "version": "0.0.2",
     "packageName": "pulsar_haptics"
   }
 }
