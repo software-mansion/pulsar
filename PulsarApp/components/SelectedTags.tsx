@@ -1,9 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { useFilters } from '@/contexts/FilterContext';
-import { Image } from 'expo-image';
-
-const xIcon = require('@/assets/images/x.svg');
+import { Icon } from './Icon';
 
 export default function SelectedTags() {
   const { selectedTags, setSelectedTags } = useFilters();
@@ -29,7 +27,7 @@ export default function SelectedTags() {
           onPress={() => removeTag(tag)}
         >
           <Text style={styles.tagText}>{tag}</Text>
-          <Image source={xIcon} style={styles.xIcon} />
+          <Icon name="x" size={17} color="#001A72" />
         </Pressable>
       ))}
       <Pressable style={styles.clearAllButton} onPress={clearAll}>
@@ -59,10 +57,6 @@ const styles = StyleSheet.create({
     color: '#001A72',
     fontSize: 13,
     fontWeight: '500',
-  },
-  xIcon: {
-    width: 17,
-    height: 17,
   },
   clearAllButton: {
     flexDirection: 'row',

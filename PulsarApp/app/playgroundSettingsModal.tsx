@@ -1,14 +1,12 @@
 import { router } from 'expo-router';
 import { StyleSheet, ScrollView, View, TouchableOpacity, Platform, Pressable } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { Image } from 'expo-image';
+import { Icon } from '@/components/Icon';
 import { usePlayground } from '@/contexts/PlaygroundContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RealtimeComposerStrategy } from 'react-native-pulsar';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect } from 'react';
-
-const closeIcon = require('@/assets/images/x.svg');
 
 const REALTIME_COMPOSER_STRATEGIES: { label: string; value: RealtimeComposerStrategy; description: string }[] = [
   {
@@ -59,7 +57,7 @@ export default function PlaygroundSettingsModal() {
         <View style={styles.header}>
           <ThemedText type="subtitle">Playground settings</ThemedText>
           <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-            <Image source={closeIcon} style={styles.closeIcon} />
+            <Icon name="x" size={28} color="#001A72" />
           </TouchableOpacity>
         </View>
 
@@ -131,10 +129,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     paddingLeft: 12,
     paddingRight: 0,
-  },
-  closeIcon: {
-    width: 28,
-    height: 28,
   },
   scrollContent: {
     padding: 15,

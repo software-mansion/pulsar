@@ -70,6 +70,16 @@ export default {
       },
     ],
     "expo-localization",
+    [
+      "react-native-nano-icons",
+      {
+        iconSets: [
+          {
+            inputDir: "./assets/icons/pulsar-icons",
+          },
+        ],
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

@@ -3,16 +3,12 @@ import { Image, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } f
 import { Pressable } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useAnimatedReaction, useAnimatedRef, scrollTo } from 'react-native-reanimated';
 import { usePostHog } from 'posthog-react-native';
-import { Image as ExpoImage } from 'expo-image';
-
 import Card from './Card';
 import { ThemedText } from './themed-text';
 import { Colors, Fonts } from '@/constants/theme';
 import Button from './Button';
 import { useFavourites } from '@/contexts/FavouritesContext';
-
-import heartIcon from '@/assets/images/heart.svg';
-import heartFillIcon from '@/assets/images/heart-fill.svg';
+import { Icon } from './Icon';
 
 const IMAGE_HEIGHT = 160;
 
@@ -119,7 +115,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration, compact 
 							<ThemedText type="subtitle" style={styles.titleCompact}>{title}</ThemedText>
 						</View>
 						<Pressable onPress={handleFavouritePress} style={styles.compactHeartButton} hitSlop={8}>
-							<ExpoImage source={favourite ? heartFillIcon : heartIcon} style={styles.heartIcon} />
+							<Icon name={favourite ? 'heart-fill' : 'heart'} size={22} color="#001A72" />
 						</Pressable>
 						<Text style={styles.compactPlayIcon}>{isPlaying ? '■' : '▶'}</Text>
 					</View>
@@ -143,7 +139,7 @@ function Preset({ title, subtitle, tags = [], image, onPress, duration, compact 
 						))}
 					</View>
 					<Pressable onPress={handleFavouritePress} hitSlop={8}>
-						<ExpoImage source={favourite ? heartFillIcon : heartIcon} style={styles.heartIcon} />
+						<Icon name={favourite ? 'heart-fill' : 'heart'} size={22} color="#001A72" />
 					</Pressable>
 				</View>
 
@@ -251,10 +247,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'flex-start',
 		gap: 8,
-	},
-	heartIcon: {
-		width: 22,
-		height: 22,
 	},
 	compactHeartButton: {
 		marginLeft: 10,

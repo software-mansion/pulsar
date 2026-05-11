@@ -1,12 +1,10 @@
 import { router } from 'expo-router';
 import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { Image } from 'expo-image';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import Button from '@/components/Button';
+import { Icon } from '@/components/Icon';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const closeIcon = require('@/assets/images/x.svg');
 
 export default function PlaygroundModal() {
   const { resetOnboarding } = useOnboarding();
@@ -22,7 +20,7 @@ export default function PlaygroundModal() {
         <View style={styles.header}>
           <ThemedText type="subtitle">How does it work?</ThemedText>
           <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-            <Image source={closeIcon} style={styles.closeIcon} />
+            <Icon name="x" size={28} color="#001A72" />
           </TouchableOpacity>
         </View>
         
@@ -105,10 +103,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     paddingLeft: 12,
     paddingRight: 0,
-  },
-  closeIcon: {
-    width: 28,
-    height: 28,
   },
   scrollContent: {
     padding: 15,

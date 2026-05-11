@@ -4,7 +4,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Settings, HapticSupport } from 'react-native-pulsar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
+import { Icon } from '@/components/Icon';
 import { Link } from 'expo-router';
 import { useFilteredPresets } from '@/components/PresetList';
 import Preset from '@/components/Preset';
@@ -14,10 +14,6 @@ import Button from '@/components/Button';
 import { useDeferredValue, useMemo, useRef, useState } from 'react';
 import { useFilters } from '@/contexts/FilterContext';
 import Animated, { runOnJS, useAnimatedScrollHandler } from 'react-native-reanimated';
-
-const infoIcon = require('@/assets/images/info.svg');
-const slidersIcon = require('@/assets/images/sliders.svg');
-const xIcon = require('@/assets/images/x.svg');
 type PresetListItem = ReturnType<typeof useFilteredPresets>['filteredPresets'][number];
 
 const defaultEdges = {
@@ -82,7 +78,7 @@ export default function PresetsScreen() {
         <Link.Trigger>
           <View style={styles.learnMoreContainer}>
             <Text style={styles.learnMore}>Learn more about tags</Text>
-            <Image source={infoIcon} style={styles.infoIcon} />
+            <Icon name="info" size={22} color="#001A72" style={styles.infoIcon} />
           </View>
         </Link.Trigger>
       </Link>
@@ -93,7 +89,7 @@ export default function PresetsScreen() {
         </ThemedText>
         <Link href="/filtersModal">
           <Link.Trigger>
-            <Image source={slidersIcon} style={styles.settingsIcon} />
+            <Icon name="sliders" size={25} color="#001A72" style={styles.settingsIcon} />
           </Link.Trigger>
         </Link>
       </View>
@@ -108,7 +104,7 @@ export default function PresetsScreen() {
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity style={styles.searchClear} onPress={() => setSearchQuery('')}>
-            <Image source={xIcon} style={styles.searchClearIcon} />
+            <Icon name="x" size={16} color="#001A72" />
           </TouchableOpacity>
         )}
       </View>
@@ -205,8 +201,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   infoIcon: {
-    width: 22,
-    height: 22,
     marginLeft: 8,
   },
   learnMoreContainer: {
@@ -220,8 +214,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   settingsIcon: {
-    width: 25,
-    height: 25,
     marginTop: 20,
   },
   searchContainer: {
@@ -242,10 +234,6 @@ const styles = StyleSheet.create({
   },
   searchClear: {
     padding: 10,
-  },
-  searchClearIcon: {
-    width: 16,
-    height: 16,
   },
   hapticsSupportInfo: {
     fontSize: 13,

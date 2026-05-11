@@ -110,7 +110,7 @@ const GesturePlayground = forwardRef<GesturePlaygroundHandle, GesturePlaygroundP
   return (
     <OnboardingOverlay state={onboardingState}>
       <GestureDetector gesture={onboardingState === 3 ? composedGesture : onboardingComposedGesture}>
-        <Animated.View  style={styles.gridContainer} onLayout={handleLayout}>
+        <Animated.View style={styles.gridContainer} onLayout={handleLayout}>
           <Animated.View style={[styles.tapIndicator, tapIndicatorStyle]} />
           <Animated.View style={[styles.panIndicator, panIndicatorStyle]} />
           <Image
