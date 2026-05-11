@@ -7,6 +7,9 @@ let package = Package(
         .iOS(.v13),
     ],
     products: [
+        // Flutter's generated SwiftPM integration may request the plugin product
+        // using a hyphenated name derived from the pub package name.
+        .library(name: "pulsar-haptics", targets: ["pulsar_haptics"]),
         .library(name: "pulsar_haptics", targets: ["pulsar_haptics"]),
     ],
     targets: [
