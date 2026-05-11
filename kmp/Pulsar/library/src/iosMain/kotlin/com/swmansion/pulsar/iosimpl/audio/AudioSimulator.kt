@@ -18,8 +18,6 @@ import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.AVAudioUnitEQ
 import platform.AVFAudio.AVAudioUnitEQFilterTypeLowPass
 import platform.AVFAudio.AVAudioUnitEQFilterParameters
-import platform.darwin.dispatch_async
-import platform.darwin.dispatch_get_main_queue
 import platform.posix.memcpy
 import kotlin.math.PI
 import kotlin.math.ceil
@@ -72,11 +70,7 @@ internal class IOSAudioSimulator {
         }
 
         val pcmBuffer = buffer.toPcmBuffer(sampleRate) ?: return
-        playerNode.scheduleBuffer(pcmBuffer) {
-            dispatch_async(dispatch_get_main_queue()) {
-                stop()
-            }
-        }
+        playerNode.scheduleBuffer(pcmBuffer)
         playerNode.play()
     }
 
