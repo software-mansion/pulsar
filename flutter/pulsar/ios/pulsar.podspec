@@ -5,13 +5,15 @@
 Pod::Spec.new do |s|
   s.name             = 'pulsar'
   s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.summary          = 'Rich haptic feedback for Flutter with presets, pattern playback, and realtime control.'
   s.description      = <<-DESC
-A new Flutter plugin project.
+Pulsar gives you 150+ ready-to-play haptic presets, a pattern composer for fully custom
+sequences, and a realtime composer for gesture-driven feedback — all behind a single
+Dart-friendly API that bridges to native CoreHaptics on iOS.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/software-mansion/pulsar'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Software Mansion' => 'projects@swmansion.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'

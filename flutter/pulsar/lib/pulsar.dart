@@ -6,9 +6,8 @@ library;
 
 export 'pulsar_types.dart';
 export 'pulsar_platform_interface.dart';
-export 'pulsar_method_channel.dart';
 
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 
 import 'pulsar_platform_interface.dart';
 import 'pulsar_types.dart';
@@ -132,7 +131,7 @@ class Pulsar {
   ///
   /// Call [AdaptiveHaptics.dispose] when the instance is no longer needed.
   Future<AdaptiveHaptics> createAdaptiveHaptics(AdaptivePreset preset) async {
-    final config = Platform.isIOS ? preset.ios : preset.android;
+    final config = defaultTargetPlatform == TargetPlatform.iOS ? preset.ios : preset.android;
     final composer = getPatternComposer();
     if (config is AdaptivePresetPattern) {
       await composer.parsePattern(config.pattern);

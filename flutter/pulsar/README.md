@@ -6,7 +6,7 @@ A haptic feedback SDK for Flutter. Pulsar gives you 150+ ready-to-play presets, 
 
 ## Features
 
-- **200+ built-in presets** – Expressive patterns (`hammer`, `dogBark`, `heartbeat`, `fanfare`…) plus system feedback (impact, notification, selection)
+- **150+ built-in presets** – Expressive patterns (`hammer`, `dogBark`, `heartbeat`, `fanfare`…) plus system feedback (impact, notification, selection)
 - **Pattern Composer** – Build custom haptics from discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** – Live amplitude and frequency control for sliders, gestures, and continuously evolving feedback
 - **Adaptive presets** – Define iOS and Android variants in one object and let Pulsar pick the right one per platform

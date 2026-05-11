@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pulsar_haptics/pulsar.dart';
+import 'package:pulsar_haptics/pulsar_method_channel.dart';
 
 class MockPulsarPlatform
     with MockPlatformInterfaceMixin
