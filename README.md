@@ -104,7 +104,7 @@ pulsar.getPresets().play("Hammer")
 > **Note:** Published on pub.dev as **`pulsar_haptics`**, not `pulsar`. The shorter `pulsar` name was reserved by an unrelated author before this project was published and is not maintained by Software Mansion.
 
 <!-- GENERATED:FLUTTER_VERSION_START -->
-Latest available version: `0.0.2`
+Latest available version: `0.0.3`
 <!-- GENERATED:FLUTTER_VERSION_END -->
 
 Add Pulsar to your `pubspec.yaml`:
@@ -112,7 +112,7 @@ Add Pulsar to your `pubspec.yaml`:
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_START -->
 ```yaml
 dependencies:
-  pulsar_haptics: ^0.0.2
+  pulsar_haptics: ^0.0.3
 ```
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_END -->
 

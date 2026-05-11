@@ -7,3 +7,7 @@
 ## 0.0.2
 
 * Fix pub.dev score
+
+## 0.0.3
+
+* Fix SwiftPM support for iOS platform.
