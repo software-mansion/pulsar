@@ -9,86 +9,86 @@ import com.swmansion.pulsar.types.Preset
 import com.swmansion.pulsar.types.PresetWithName
 
 class SystemViewBasedPresets(private val activityProvider: ActivityProvider) {
-    fun longPress() { playHaptic(HapticFeedbackConstants.LONG_PRESS) }
-    fun virtualKey() { playHaptic(HapticFeedbackConstants.VIRTUAL_KEY) }
-    fun keyboardTap() { playHaptic(HapticFeedbackConstants.KEYBOARD_TAP) }
-    fun clockTick() { playHaptic(HapticFeedbackConstants.CLOCK_TICK) }
-    fun calendarDate() { playHaptic(5) } // CALENDAR_DATE
-    fun contextClick() { playHaptic(HapticFeedbackConstants.CONTEXT_CLICK) }
-    fun keyboardPress() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            playHaptic(HapticFeedbackConstants.KEYBOARD_PRESS)
-        }
+    fun longPress(): Boolean = playHaptic(HapticFeedbackConstants.LONG_PRESS)
+    fun virtualKey(): Boolean = playHaptic(HapticFeedbackConstants.VIRTUAL_KEY)
+    fun keyboardTap(): Boolean = playHaptic(HapticFeedbackConstants.KEYBOARD_TAP)
+    fun clockTick(): Boolean = playHaptic(HapticFeedbackConstants.CLOCK_TICK)
+    fun calendarDate(): Boolean = playHaptic(5) // CALENDAR_DATE
+    fun contextClick(): Boolean = playHaptic(HapticFeedbackConstants.CONTEXT_CLICK)
+    fun keyboardPress(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        playHaptic(HapticFeedbackConstants.KEYBOARD_PRESS)
+    } else {
+        false
     }
-    fun keyboardRelease() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            playHaptic(HapticFeedbackConstants.KEYBOARD_RELEASE)
-        }
+    fun keyboardRelease(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        playHaptic(HapticFeedbackConstants.KEYBOARD_RELEASE)
+    } else {
+        false
     }
-    fun virtualKeyRelease() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            playHaptic(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE)
-        }
+    fun virtualKeyRelease(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        playHaptic(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE)
+    } else {
+        false
     }
-    fun textHandleMove() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            playHaptic(HapticFeedbackConstants.TEXT_HANDLE_MOVE)
-        }
+    fun textHandleMove(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        playHaptic(HapticFeedbackConstants.TEXT_HANDLE_MOVE)
+    } else {
+        false
     }
-    fun dragCrossing() { playHaptic(11) } // DRAG_CROSSING
-    fun gestureStart() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(HapticFeedbackConstants.GESTURE_START)
-        }
+    fun dragCrossing(): Boolean = playHaptic(11) // DRAG_CROSSING
+    fun gestureStart(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(HapticFeedbackConstants.GESTURE_START)
+    } else {
+        false
     }
-    fun gestureEnd() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(HapticFeedbackConstants.GESTURE_END)
-        }
+    fun gestureEnd(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(HapticFeedbackConstants.GESTURE_END)
+    } else {
+        false
     }
-    fun edgeSqueeze() { playHaptic(14) } // EDGE_SQUEEZE
-    fun edgeRelease() { playHaptic(15) } // EDGE_RELEASE
-    fun confirm() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(HapticFeedbackConstants.CONFIRM)
-        }
+    fun edgeSqueeze(): Boolean = playHaptic(14) // EDGE_SQUEEZE
+    fun edgeRelease(): Boolean = playHaptic(15) // EDGE_RELEASE
+    fun confirm(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(HapticFeedbackConstants.CONFIRM)
+    } else {
+        false
     }
-    fun release() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(HapticFeedbackConstants.REJECT)
-        }
+    fun release(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(HapticFeedbackConstants.REJECT)
+    } else {
+        false
     }
-    fun scrollTick() { playHaptic(18) } // SCROLL_TICK
-    fun scrollItemFocus() { playHaptic(19) } // SCROLL_ITEM_FOCUS
-    fun scrollLimit() { playHaptic(20) } // SCROLL_LIMIT
-    fun toggleOn() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            playHaptic(HapticFeedbackConstants.TOGGLE_ON)
-        }
+    fun scrollTick(): Boolean = playHaptic(18) // SCROLL_TICK
+    fun scrollItemFocus(): Boolean = playHaptic(19) // SCROLL_ITEM_FOCUS
+    fun scrollLimit(): Boolean = playHaptic(20) // SCROLL_LIMIT
+    fun toggleOn(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        playHaptic(HapticFeedbackConstants.TOGGLE_ON)
+    } else {
+        false
     }
-    fun toggleOff() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            playHaptic(HapticFeedbackConstants.TOGGLE_OFF)
-        }
+    fun toggleOff(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        playHaptic(HapticFeedbackConstants.TOGGLE_OFF)
+    } else {
+        false
     }
-    fun dragStart() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            playHaptic(HapticFeedbackConstants.DRAG_START)
-        }
+    fun dragStart(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        playHaptic(HapticFeedbackConstants.DRAG_START)
+    } else {
+        false
     }
-    fun segmentTick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            playHaptic(HapticFeedbackConstants.SEGMENT_TICK)
-        }
+    fun segmentTick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        playHaptic(HapticFeedbackConstants.SEGMENT_TICK)
+    } else {
+        false
     }
-    fun segmentFrequentTick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            playHaptic(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
-        }
+    fun segmentFrequentTick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        playHaptic(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+    } else {
+        false
     }
 
-    private fun playHaptic(preset: Int) {
-        activityProvider.getCurrentActivity()?.window?.decorView?.performHapticFeedback(preset)
+    private fun playHaptic(preset: Int): Boolean {
+        return activityProvider.getCurrentActivity()?.window?.decorView?.performHapticFeedback(preset) == true
     }
 }
 
@@ -109,8 +109,7 @@ class SystemLongPressPreset(haptics: Pulsar, private val systemPresets: SystemVi
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.longPress()
+        playSystemOrFallback { systemPresets.longPress() }
     }
     companion object: PresetWithName { override val name = "SystemLongPress" }
 }
@@ -132,8 +131,7 @@ class SystemVirtualKeyPreset(haptics: Pulsar, private val systemPresets: SystemV
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.virtualKey()
+        playSystemOrFallback { systemPresets.virtualKey() }
     }
     companion object: PresetWithName { override val name = "SystemVirtualKey" }
 }
@@ -155,8 +153,7 @@ class SystemKeyboardTapPreset(haptics: Pulsar, private val systemPresets: System
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.keyboardTap()
+        playSystemOrFallback { systemPresets.keyboardTap() }
     }
     companion object: PresetWithName { override val name = "SystemKeyboardTap" }
 }
@@ -178,8 +175,7 @@ class SystemClockTickPreset(haptics: Pulsar, private val systemPresets: SystemVi
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.clockTick()
+        playSystemOrFallback { systemPresets.clockTick() }
     }
     companion object: PresetWithName { override val name = "SystemClockTick" }
 }
@@ -201,8 +197,7 @@ class SystemCalendarDatePreset(haptics: Pulsar, private val systemPresets: Syste
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.calendarDate()
+        playSystemOrFallback { systemPresets.calendarDate() }
     }
     companion object: PresetWithName { override val name = "SystemCalendarDate" }
 }
@@ -224,8 +219,7 @@ class SystemContextClickPreset(haptics: Pulsar, private val systemPresets: Syste
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.contextClick()
+        playSystemOrFallback { systemPresets.contextClick() }
     }
     companion object: PresetWithName { override val name = "SystemContextClick" }
 }
@@ -247,8 +241,7 @@ class SystemKeyboardPressPreset(haptics: Pulsar, private val systemPresets: Syst
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.keyboardPress()
+        playSystemOrFallback { systemPresets.keyboardPress() }
     }
     companion object: PresetWithName { override val name = "SystemKeyboardPress" }
 }
@@ -270,8 +263,7 @@ class SystemKeyboardReleasePreset(haptics: Pulsar, private val systemPresets: Sy
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.keyboardRelease()
+        playSystemOrFallback { systemPresets.keyboardRelease() }
     }
     companion object: PresetWithName { override val name = "SystemKeyboardRelease" }
 }
@@ -293,8 +285,7 @@ class SystemVirtualKeyReleasePreset(haptics: Pulsar, private val systemPresets: 
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.virtualKeyRelease()
+        playSystemOrFallback { systemPresets.virtualKeyRelease() }
     }
     companion object: PresetWithName { override val name = "SystemVirtualKeyRelease" }
 }
@@ -316,8 +307,7 @@ class SystemTextHandleMovePreset(haptics: Pulsar, private val systemPresets: Sys
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.textHandleMove()
+        playSystemOrFallback { systemPresets.textHandleMove() }
     }
     companion object: PresetWithName { override val name = "SystemTextHandleMove" }
 }
@@ -339,8 +329,7 @@ class SystemDragCrossingPreset(haptics: Pulsar, private val systemPresets: Syste
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.dragCrossing()
+        playSystemOrFallback { systemPresets.dragCrossing() }
     }
     companion object: PresetWithName { override val name = "SystemDragCrossing" }
 }
@@ -362,8 +351,7 @@ class SystemGestureStartPreset(haptics: Pulsar, private val systemPresets: Syste
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.gestureStart()
+        playSystemOrFallback { systemPresets.gestureStart() }
     }
     companion object: PresetWithName { override val name = "SystemGestureStart" }
 }
@@ -385,8 +373,7 @@ class SystemGestureEndPreset(haptics: Pulsar, private val systemPresets: SystemV
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.gestureEnd()
+        playSystemOrFallback { systemPresets.gestureEnd() }
     }
     companion object: PresetWithName { override val name = "SystemGestureEnd" }
 }
@@ -408,8 +395,7 @@ class SystemEdgeSqueezePreset(haptics: Pulsar, private val systemPresets: System
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.edgeSqueeze()
+        playSystemOrFallback { systemPresets.edgeSqueeze() }
     }
     companion object: PresetWithName { override val name = "SystemEdgeSqueeze" }
 }
@@ -431,8 +417,7 @@ class SystemEdgeReleasePreset(haptics: Pulsar, private val systemPresets: System
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.edgeRelease()
+        playSystemOrFallback { systemPresets.edgeRelease() }
     }
     companion object: PresetWithName { override val name = "SystemEdgeRelease" }
 }
@@ -454,8 +439,7 @@ class SystemConfirmPreset(haptics: Pulsar, private val systemPresets: SystemView
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.confirm()
+        playSystemOrFallback { systemPresets.confirm() }
     }
     companion object: PresetWithName { override val name = "SystemConfirm" }
 }
@@ -478,8 +462,7 @@ class SystemReleasePreset(haptics: Pulsar, private val systemPresets: SystemView
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.release()
+        playSystemOrFallback { systemPresets.release() }
     }
     companion object: PresetWithName { override val name = "SystemRelease" }
 }
@@ -501,8 +484,7 @@ class SystemScrollTickPreset(haptics: Pulsar, private val systemPresets: SystemV
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.scrollTick()
+        playSystemOrFallback { systemPresets.scrollTick() }
     }
     companion object: PresetWithName { override val name = "SystemScrollTick" }
 }
@@ -524,8 +506,7 @@ class SystemScrollItemFocusPreset(haptics: Pulsar, private val systemPresets: Sy
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.scrollItemFocus()
+        playSystemOrFallback { systemPresets.scrollItemFocus() }
     }
     companion object: PresetWithName { override val name = "SystemScrollItemFocus" }
 }
@@ -547,8 +528,7 @@ class SystemScrollLimitPreset(haptics: Pulsar, private val systemPresets: System
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.scrollLimit()
+        playSystemOrFallback { systemPresets.scrollLimit() }
     }
     companion object: PresetWithName { override val name = "SystemScrollLimit" }
 }
@@ -570,8 +550,7 @@ class SystemToggleOnPreset(haptics: Pulsar, private val systemPresets: SystemVie
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.toggleOn()
+        playSystemOrFallback { systemPresets.toggleOn() }
     }
     companion object: PresetWithName { override val name = "SystemToggleOn" }
 }
@@ -593,8 +572,7 @@ class SystemToggleOffPreset(haptics: Pulsar, private val systemPresets: SystemVi
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.toggleOff()
+        playSystemOrFallback { systemPresets.toggleOff() }
     }
     companion object: PresetWithName { override val name = "SystemToggleOff" }
 }
@@ -616,8 +594,7 @@ class SystemDragStartPreset(haptics: Pulsar, private val systemPresets: SystemVi
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.dragStart()
+        playSystemOrFallback { systemPresets.dragStart() }
     }
     companion object: PresetWithName { override val name = "SystemDragStart" }
 }
@@ -639,8 +616,7 @@ class SystemSegmentTickPreset(haptics: Pulsar, private val systemPresets: System
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.segmentTick()
+        playSystemOrFallback { systemPresets.segmentTick() }
     }
     companion object: PresetWithName { override val name = "SystemSegmentTick" }
 }
@@ -662,8 +638,7 @@ class SystemSegmentFrequentTickPreset(haptics: Pulsar, private val systemPresets
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.segmentFrequentTick()
+        playSystemOrFallback { systemPresets.segmentFrequentTick() }
     }
     companion object: PresetWithName { override val name = "SystemSegmentFrequentTick" }
 }

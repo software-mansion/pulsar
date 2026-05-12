@@ -83,6 +83,22 @@ class HapticEngineWrapper(private val context: Context) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && vibrationService.hasAmplitudeControl()
     }
 
+    fun areEffectsSupported(vararg effects: Int): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return true
+        }
+
+        return vibrationService.areAllEffectsSupported(*effects) != Vibrator.VIBRATION_EFFECT_SUPPORT_NO
+    }
+
+    fun arePrimitivesSupported(vararg primitives: Int): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return false
+        }
+
+        return vibrationService.areAllPrimitivesSupported(*primitives)
+    }
+
     fun isEnvelopeSupported(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
                 vibrationService.areEnvelopeEffectsSupported()

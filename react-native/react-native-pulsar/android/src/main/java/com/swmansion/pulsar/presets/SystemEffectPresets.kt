@@ -10,32 +10,37 @@ import com.swmansion.pulsar.types.Preset
 import com.swmansion.pulsar.types.PresetWithName
 
 class SystemEffectPresets(private val engine: HapticEngineWrapper) {
-    fun effectClick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            playHaptic(VibrationEffect.EFFECT_CLICK)
-        }
+    fun effectClick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        playHaptic(VibrationEffect.EFFECT_CLICK)
+    } else {
+        false
     }
-    fun effectDoubleClick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            playHaptic(VibrationEffect.EFFECT_DOUBLE_CLICK)
-        }
+    fun effectDoubleClick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        playHaptic(VibrationEffect.EFFECT_DOUBLE_CLICK)
+    } else {
+        false
     }
-    fun effectTick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            playHaptic(VibrationEffect.EFFECT_TICK)
-        }
+    fun effectTick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        playHaptic(VibrationEffect.EFFECT_TICK)
+    } else {
+        false
     }
-    fun effectHeavyClick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            playHaptic(VibrationEffect.EFFECT_HEAVY_CLICK)
-        }
+    fun effectHeavyClick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        playHaptic(VibrationEffect.EFFECT_HEAVY_CLICK)
+    } else {
+        false
     }
 
-    private fun playHaptic(preset: Int) {
+    private fun playHaptic(preset: Int): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (!engine.areEffectsSupported(preset)) {
+                return false
+            }
             engine.vibrate(VibrationEffect.createPredefined(preset))
+            return true
         } else {
             Log.w("Pulsar", "Incompatible Android version. System primitive preset unsupported")
+            return false
         }
     }
 }
@@ -57,8 +62,7 @@ class SystemEffectClickPreset(haptics: Pulsar, private val systemPresets: System
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.effectClick()
+        playSystemOrFallback { systemPresets.effectClick() }
     }
     companion object: PresetWithName { override val name = "SystemEffectClick" }
 }
@@ -81,8 +85,7 @@ class SystemEffectDoubleClickPreset(haptics: Pulsar, private val systemPresets: 
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.effectDoubleClick()
+        playSystemOrFallback { systemPresets.effectDoubleClick() }
     }
     companion object: PresetWithName { override val name = "SystemEffectDoubleClick" }
 }
@@ -104,8 +107,7 @@ class SystemEffectTickPreset(haptics: Pulsar, private val systemPresets: SystemE
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.effectTick()
+        playSystemOrFallback { systemPresets.effectTick() }
     }
     companion object: PresetWithName { override val name = "SystemEffectTick" }
 }
@@ -127,8 +129,7 @@ class SystemEffectHeavyClickPreset(haptics: Pulsar, private val systemPresets: S
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.effectHeavyClick()
+        playSystemOrFallback { systemPresets.effectHeavyClick() }
     }
     companion object: PresetWithName { override val name = "SystemEffectHeavyClick" }
 }
