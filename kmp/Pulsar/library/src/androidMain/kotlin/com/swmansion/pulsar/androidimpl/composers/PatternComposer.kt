@@ -41,6 +41,10 @@ class PatternComposer(
         vibrationEffect?.let { engine.vibrate(it) }
     }
 
+    fun playHapticsOnly() {
+        vibrationEffect?.let { engine.vibrate(it) }
+    }
+
     fun playAudioOnly() {
         audioSimulator.play(audioBuffer)
     }

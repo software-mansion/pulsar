@@ -23,4 +23,16 @@ open class Player(
         composer.play()
     }
 
+    protected fun playSystemOrFallback(systemPlay: () -> Boolean) {
+        if (!audioOnly) {
+            play()
+            return
+        }
+
+        composer.playAudioOnly()
+        if (!systemPlay()) {
+            composer.playHapticsOnly()
+        }
+    }
+
 }
