@@ -10,6 +10,12 @@ export type Article = {
 
 export const articles: Article[] = [
   {
+    title: 'How Haptic Feedback Affects Sales, Trust, and Product Perception',
+    shortTitle: 'How Haptic Feedback Affects Sales, Trust, and Product Perception',
+    url: 'https://swmansion.com/blog/how-haptic-feedback-affects-sales-trust-and-product-perception/',
+    source: 'Software Mansion Blog',
+  },
+  {
     title: 'Haptic Feedback Explained: What It Is and What It Does for Your App (and Business)',
     shortTitle: 'What Haptics Does for Your App (and Business)',
     url: 'https://swmansion.com/blog/haptic-feedback-explained-what-it-is-and-what-it-does-for-your-app-and-business/',
