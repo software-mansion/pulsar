@@ -24,13 +24,10 @@ open class Player(
     }
 
     protected fun playSystemOrFallback(systemPlay: () -> Boolean) {
-        if (audioOnly) {
-            composer.playAudioOnly()
-            return
-        }
+        composer.playAudioOnly()
 
         if (!systemPlay()) {
-            play()
+            composer.play()
         }
     }
 
