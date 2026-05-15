@@ -43,10 +43,12 @@ final pulsar = Pulsar();
 
 // Built-in expressive preset
 await pulsar.getPresets().hammer();
+pulsar.getSyncPresets().hammer();
 
 // System feedback
 await pulsar.getPresets().systemImpactMedium();
 await pulsar.getPresets().systemNotificationSuccess();
+pulsar.syncPresets.systemNotificationSuccess();
 ```
 
 ### Pattern composer example

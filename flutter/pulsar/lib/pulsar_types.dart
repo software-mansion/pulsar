@@ -155,19 +155,18 @@ class PatternData {
   }) {
     return PatternData(
       continuousPattern: ContinuousPattern(
-        amplitude: amplitude
-            .map((p) => ValuePoint(time: p[0], value: p[1]))
-            .toList(),
-        frequency: frequency
-            .map((p) => ValuePoint(time: p[0], value: p[1]))
-            .toList(),
+        amplitude:
+            amplitude.map((p) => ValuePoint(time: p[0], value: p[1])).toList(),
+        frequency:
+            frequency.map((p) => ValuePoint(time: p[0], value: p[1])).toList(),
       ),
-      discretePattern: discrete
-          .map(
-            (p) =>
-                DiscretePoint(time: p[0], amplitude: p[1], frequency: p[2]),
-          )
-          .toList(),
+      discretePattern:
+          discrete
+              .map(
+                (p) =>
+                    DiscretePoint(time: p[0], amplitude: p[1], frequency: p[2]),
+              )
+              .toList(),
     );
   }
 
