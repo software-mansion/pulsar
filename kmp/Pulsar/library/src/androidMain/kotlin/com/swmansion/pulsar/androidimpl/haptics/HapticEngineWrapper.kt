@@ -110,7 +110,7 @@ class HapticEngineWrapper(private val context: Context) {
     }
 
     fun getMinControlPointDurationMillis(): Long {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+        return if (isEnvelopeSupported()) {
             vibrator?.envelopeEffectInfo?.minControlPointDurationMillis ?: 15L
         } else {
             15L
