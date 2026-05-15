@@ -30,5 +30,16 @@ target 'example' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    hermes_cli_path = File.realpath(
+      File.join(__dir__, '..', 'node_modules', 'hermes-compiler', 'hermesc', 'osx-bin', 'hermesc')
+    )
+
+    installer.aggregate_targets.each do |aggregate_target|
+      aggregate_target.xcconfigs.each do |config_name, config_file|
+        config_file.attributes['HERMES_CLI_PATH'] = hermes_cli_path
+        config_file.save_as(aggregate_target.xcconfig_path(config_name))
+      end
+    end
   end
 end

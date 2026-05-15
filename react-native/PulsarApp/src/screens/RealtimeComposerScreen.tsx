@@ -55,8 +55,8 @@ export default function RealtimeComposerScreen() {
 
       tapIndicatorPosition.value = { x, y };
 
-      const normalizedX = (x / containerSize.value.width) * 100;
-      const normalizedY = ((containerSize.value.height - y) / containerSize.value.height) * 100;
+      const normalizedX = (x / containerSize.value.width);
+      const normalizedY = ((containerSize.value.height - y) / containerSize.value.height);
 
       composer.playDiscrete(normalizedY, normalizedX);
 

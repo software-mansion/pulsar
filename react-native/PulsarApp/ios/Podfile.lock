@@ -8,7 +8,7 @@ PODS:
   - hermes-engine (0.14.0):
     - hermes-engine/Pre-built (= 0.14.0)
   - hermes-engine/Pre-built (0.14.0)
-  - Pulsar (0.1.0):
+  - Pulsar (1.5.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -3041,7 +3041,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: eb10572db306a79a59ba09d76b5fad04f97e7835
-  Pulsar: 23a7a80efa8212acdd1a6168abdb5620ea807ce5
+  Pulsar: 5001b0c41c1b00a0c21df9444357e75283b3d5d4
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
   RCTRequired: 7be34aabb0b77c3cefe644528df0fa0afad4e4d0
@@ -3120,4 +3120,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 3aa3b5f5253be927d355cf1499f60c53140eb9a3
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
