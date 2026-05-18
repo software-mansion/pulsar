@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulsar Preset Creator</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f1e7;
+        --panel: rgba(255, 250, 243, 0.88);
+        --panel-strong: #fffdf9;
+        --line: rgba(95, 66, 43, 0.14);
+        --text: #2d1f14;
+        --muted: #76614f;
+        --accent: #bf5a2a;
+        --accent-deep: #8f3b17;
+        --accent-soft: #f6d7c6;
+        --surface: #f2e7d8;
+        --success: #1f6a49;
+        --danger: #932d22;
+        --shadow: 0 24px 60px rgba(74, 45, 18, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 28%),
+          radial-gradient(circle at 80% 20%, rgba(191, 90, 42, 0.18), transparent 26%),
+          linear-gradient(180deg, #f8f2e9 0%, #efe1ce 100%);
+      }
+
+      .shell {
+        width: min(1240px, calc(100vw - 28px));
+        margin: 20px auto 40px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .hero {
+        padding: 28px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(34px, 6vw, 62px);
+        line-height: 0.95;
+      }
+
+      .hero-copy {
+        max-width: 780px;
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .hero-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .workspace {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .panel h2 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
+
+      .panel-intro {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .row {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .row.inline-2,
+      .row.inline-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .row.inline-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        width: 100%;
+        font: inherit;
+      }
+
+      input,
+      select,
+      textarea {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 13px 14px;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--text);
+      }
+
+      textarea,
+      pre {
+        font: 13px/1.55 "SFMono-Regular", "Menlo", monospace;
+      }
+
+      textarea {
+        min-height: 200px;
+        resize: vertical;
+      }
+
+      button {
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 16px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        color: white;
+        background: var(--accent);
+        transition: transform 0.14s ease, opacity 0.14s ease, background 0.14s ease;
+      }
+
+      button.secondary {
+        color: var(--accent-deep);
+        background: rgba(191, 90, 42, 0.12);
+      }
+
+      button.ghost {
+        color: var(--text);
+        background: rgba(45, 31, 20, 0.08);
+      }
+
+      button.danger {
+        background: rgba(147, 45, 34, 0.14);
+        color: var(--danger);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .segment-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .segment-card {
+        padding: 16px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--line);
+      }
+
+      .segment-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .segment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--accent-deep);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .segment-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .segment-actions button {
+        width: auto;
+        min-width: 44px;
+        padding: 10px 12px;
+      }
+
+      .mini-note {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .readout {
+        display: grid;
+        gap: 10px;
+      }
+
+      .metric-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .metric {
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--line);
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 24px;
+      }
+
+      .metric span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .code-box,
+      .status {
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border-radius: 18px;
+        padding: 16px;
+        border: 1px solid var(--line);
+      }
+
+      .code-box {
+        background: #221812;
+        color: #f4ebe2;
+      }
+
+      .status {
+        min-height: 120px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text);
+      }
+
+      .footer {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 980px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .row.inline-2,
+        .row.inline-3,
+        .metric-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .segment-top {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .segment-actions {
+          width: 100%;
+          flex-wrap: wrap;
+        }
+
+        .segment-actions button {
+          flex: 1 1 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Pulsar Web</p>
+        <h1>Preset Creator</h1>
+        <p class="hero-copy">
+          Build Pulsar haptics presets as editable timeline segments, preview the exact compiled
+          vibration pattern, and export clean JSON or TypeScript for the web SDK.
+        </p>
+        <div class="hero-bar">
+          <span class="chip" id="support-chip">Haptics support: checking</span>
+          <span class="chip">Preset format: <code>HapticPattern</code></span>
+          <span class="chip">Segment types: <code>continuous</code> + <code>pulse</code></span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <article class="panel">
+          <h2>Builder</h2>
+          <p class="panel-intro">
+            Start from a built-in preset or create a new one from scratch. Each row maps directly
+            to one Pulsar web haptic segment.
+          </p>
+
+          <div class="row inline-3">
+            <label for="preset-name">
+              Preset Name
+              <input id="preset-name" type="text" value="customPulse" />
+            </label>
+            <label for="preset-source">
+              Load Built-In
+              <select id="preset-source"></select>
+            </label>
+            <label for="preset-format">
+              Export Mode
+              <select id="preset-format">
+                <option value="ts">TypeScript</option>
+                <option value="json">JSON</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="row inline-3">
+            <button id="load-selected" class="secondary" type="button">Load Built-In</button>
+            <button id="new-preset" class="ghost" type="button">New Preset</button>
+            <button id="sort-segments" class="ghost" type="button">Sort by Time</button>
+          </div>
+
+          <div class="row inline-2">
+            <button id="add-continuous" type="button">Add Continuous Segment</button>
+            <button id="add-pulse" class="secondary" type="button">Add Pulse Segment</button>
+          </div>
+
+          <div id="segment-list" class="segment-list"></div>
+
+          <p class="footer">
+            Pulse segments use PWM-style timing. Higher intensity extends each vibration shot, and
+            higher frequency shortens the gaps between shots.
+          </p>
+        </article>
+
+        <article class="panel stack">
+          <div>
+            <h2>Preview</h2>
+            <p class="panel-intro">
+              This panel compiles the current builder state using the real
+              <code>PatternComposer</code>.
+            </p>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <strong id="segment-count">0</strong>
+              <span>Segments</span>
+            </div>
+            <div class="metric">
+              <strong id="timeline-length">0 ms</strong>
+              <span>Total Timeline</span>
+            </div>
+            <div class="metric">
+              <strong id="compiled-steps">0</strong>
+              <span>Compiled Steps</span>
+            </div>
+          </div>
+
+          <div class="row inline-2">
+            <button id="compile-pattern" class="secondary" type="button">Compile</button>
+            <button id="play-pattern" type="button">Play Preset</button>
+          </div>
+
+          <div class="row inline-2">
+            <button id="copy-export" class="ghost" type="button">Copy Export</button>
+            <button id="stop-pattern" class="danger" type="button">Stop</button>
+          </div>
+
+          <div class="readout">
+            <div>
+              <label for="compiled-pattern">Compiled vibration pattern</label>
+              <pre id="compiled-pattern" class="code-box">[]</pre>
+            </div>
+
+            <div>
+              <label for="export-output">Export output</label>
+              <textarea id="export-output" readonly></textarea>
+            </div>
+
+            <div>
+              <label for="status-log">Status</label>
+              <div id="status-log" class="status">Preset creator ready.</div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module">
+      import Pulsar from "./src/index.ts";
+
+      const pulsar = new Pulsar();
+      const presets = pulsar.getPresets();
+
+      const supportChip = document.getElementById("support-chip");
+      const presetNameInput = document.getElementById("preset-name");
+      const presetSourceSelect = document.getElementById("preset-source");
+      const presetFormatSelect = document.getElementById("preset-format");
+      const segmentList = document.getElementById("segment-list");
+      const segmentCount = document.getElementById("segment-count");
+      const timelineLength = document.getElementById("timeline-length");
+      const compiledSteps = document.getElementById("compiled-steps");
+      const compiledPatternOutput = document.getElementById("compiled-pattern");
+      const exportOutput = document.getElementById("export-output");
+      const statusLog = document.getElementById("status-log");
+
+      const defaultPattern = [
+        { type: "continuous", timestamp: 0, duration: 40 },
+        { type: "pulse", timestamp: 90, duration: 260, intensity: 0.35, frequency: 0.8 },
+        { type: "continuous", timestamp: 420, duration: 90 },
+      ];
+
+      let segments = clonePattern(defaultPattern);
+      let latestCompiledPattern = [];
+
+      function clonePattern(pattern) {
+        return pattern.map((entry) => ({ ...entry }));
+      }
+
+      function log(message) {
+        const stamp = new Date().toLocaleTimeString();
+        statusLog.textContent = `[${stamp}] ${message}\n\n${statusLog.textContent}`.trim();
+      }
+
+      function titleize(name) {
+        if (!name) {
+          return "CustomPreset";
+        }
+
+        return name
+          .replace(/[-_\s]+(.)?/g, (_, char) => (char ? char.toUpperCase() : ""))
+          .replace(/^[a-z]/, (char) => char.toUpperCase())
+          .replace(/[^a-zA-Z0-9]/g, "");
+      }
+
+      function normalizeNumber(value, fallback = 0) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : fallback;
+      }
+
+      function normalizeUnitInterval(value, fallback = 0.5) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) {
+          return fallback;
+        }
+        return Math.min(1, Math.max(0, parsed));
+      }
+
+      function getSegmentsFromDom() {
+        return Array.from(segmentList.querySelectorAll(".segment-card")).map((card) => {
+          const type = card.querySelector('[data-field="type"]').value;
+          const entry = {
+            type,
+            timestamp: Math.max(0, normalizeNumber(card.querySelector('[data-field="timestamp"]').value)),
+            duration: Math.max(0, normalizeNumber(card.querySelector('[data-field="duration"]').value)),
+          };
+
+          if (type === "pulse") {
+            entry.intensity = normalizeUnitInterval(
+              card.querySelector('[data-field="intensity"]').value,
+              0.5,
+            );
+            entry.frequency = normalizeUnitInterval(
+              card.querySelector('[data-field="frequency"]').value,
+              0.5,
+            );
+          }
+
+          return entry;
+        });
+      }
+
+      function buildSegmentCard(entry, index) {
+        const card = document.createElement("div");
+        card.className = "segment-card";
+
+        const badgeLabel = entry.type === "pulse" ? "Pulse" : "Continuous";
+        const pulseFields = entry.type === "pulse"
+          ? `
+            <div class="row inline-2">
+              <label>
+                Intensity
+                <input data-field="intensity" type="number" min="0" max="1" step="0.01" value="${entry.intensity ?? 0.5}" />
+              </label>
+              <label>
+                Frequency
+                <input data-field="frequency" type="number" min="0" max="1" step="0.01" value="${entry.frequency ?? 0.5}" />
+              </label>
+            </div>
+            <div class="mini-note">
+              Pulse blocks translate to repeated vibration shots with PWM-style timing.
+            </div>
+          `
+          : `
+            <div class="mini-note">
+              Continuous blocks become one uninterrupted vibration interval.
+            </div>
+          `;
+
+        card.innerHTML = `
+          <div class="segment-top">
+            <span class="segment-badge">Segment ${index + 1} · ${badgeLabel}</span>
+            <div class="segment-actions">
+              <button class="ghost" type="button" data-action="up">↑</button>
+              <button class="ghost" type="button" data-action="down">↓</button>
+              <button class="secondary" type="button" data-action="duplicate">Duplicate</button>
+              <button class="danger" type="button" data-action="remove">Remove</button>
+            </div>
+          </div>
+          <div class="row inline-3">
+            <label>
+              Type
+              <select data-field="type">
+                <option value="continuous"${entry.type === "continuous" ? " selected" : ""}>continuous</option>
+                <option value="pulse"${entry.type === "pulse" ? " selected" : ""}>pulse</option>
+              </select>
+            </label>
+            <label>
+              Timestamp (ms)
+              <input data-field="timestamp" type="number" min="0" step="1" value="${entry.timestamp}" />
+            </label>
+            <label>
+              Duration (ms)
+              <input data-field="duration" type="number" min="0" step="1" value="${entry.duration}" />
+            </label>
+          </div>
+          ${pulseFields}
+        `;
+
+        card.querySelectorAll("input, select").forEach((element) => {
+          element.addEventListener("input", () => {
+            syncFromDom();
+            renderOutputs();
+          });
+        });
+
+        card.querySelector('[data-action="remove"]').addEventListener("click", () => {
+          segments.splice(index, 1);
+          renderBuilder();
+          renderOutputs();
+          log(`Removed segment ${index + 1}.`);
+        });
+
+        card.querySelector('[data-action="duplicate"]').addEventListener("click", () => {
+          const duplicate = { ...segments[index] };
+          duplicate.timestamp += 40;
+          segments.splice(index + 1, 0, duplicate);
+          renderBuilder();
+          renderOutputs();
+          log(`Duplicated segment ${index + 1}.`);
+        });
+
+        card.querySelector('[data-action="up"]').addEventListener("click", () => {
+          if (index === 0) {
+            return;
+          }
+
+          [segments[index - 1], segments[index]] = [segments[index], segments[index - 1]];
+          renderBuilder();
+          renderOutputs();
+        });
+
+        card.querySelector('[data-action="down"]').addEventListener("click", () => {
+          if (index >= segments.length - 1) {
+            return;
+          }
+
+          [segments[index], segments[index + 1]] = [segments[index + 1], segments[index]];
+          renderBuilder();
+          renderOutputs();
+        });
+
+        card.querySelector('[data-field="type"]').addEventListener("change", (event) => {
+          const nextType = event.target.value;
+          const previous = segments[index];
+          segments[index] =
+            nextType === "pulse"
+              ? {
+                  type: "pulse",
+                  timestamp: previous.timestamp,
+                  duration: previous.duration,
+                  intensity: previous.intensity ?? 0.5,
+                  frequency: previous.frequency ?? 0.5,
+                }
+              : {
+                  type: "continuous",
+                  timestamp: previous.timestamp,
+                  duration: previous.duration,
+                };
+          renderBuilder();
+          renderOutputs();
+        });
+
+        return card;
+      }
+
+      function syncFromDom() {
+        segments = getSegmentsFromDom();
+      }
+
+      function renderBuilder() {
+        segmentList.innerHTML = "";
+
+        if (segments.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "segment-card";
+          empty.textContent = "No segments yet. Add a continuous or pulse segment to begin.";
+          segmentList.append(empty);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        segments.forEach((entry, index) => {
+          fragment.append(buildSegmentCard(entry, index));
+        });
+        segmentList.append(fragment);
+      }
+
+      function renderOutputs() {
+        const composer = pulsar.getPatternComposer();
+        const safePattern = clonePattern(segments);
+        latestCompiledPattern = composer.parse(safePattern);
+
+        const totalDuration = safePattern.reduce((max, entry) => {
+          return Math.max(max, entry.timestamp + entry.duration);
+        }, 0);
+
+        segmentCount.textContent = String(safePattern.length);
+        timelineLength.textContent = `${totalDuration} ms`;
+        compiledSteps.textContent = String(latestCompiledPattern.length);
+        compiledPatternOutput.textContent = JSON.stringify(latestCompiledPattern, null, 2);
+
+        const exportName = titleize(presetNameInput.value || "CustomPreset");
+        const exportValue =
+          presetFormatSelect.value === "json"
+            ? JSON.stringify(safePattern, null, 2)
+            : `export const ${exportName}Preset = ${JSON.stringify(safePattern, null, 2)};`;
+
+        exportOutput.value = exportValue;
+        supportChip.textContent = `Haptics support: ${pulsar.isHapticsSupported() ? "available" : "missing"}`;
+      }
+
+      function resetToDefault() {
+        presetNameInput.value = "customPulse";
+        segments = clonePattern(defaultPattern);
+        renderBuilder();
+        renderOutputs();
+      }
+
+      function populateBuiltinOptions() {
+        const names = presets.list();
+        const fragment = document.createDocumentFragment();
+
+        names.forEach((name) => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          fragment.append(option);
+        });
+
+        presetSourceSelect.append(fragment);
+      }
+
+      async function copyExport() {
+        try {
+          await navigator.clipboard.writeText(exportOutput.value);
+          log("Copied export output to clipboard.");
+        } catch (error) {
+          log(`Clipboard copy failed: ${error.message}`);
+        }
+      }
+
+      document.getElementById("load-selected").addEventListener("click", () => {
+        const selected = presetSourceSelect.value;
+        segments = clonePattern(presets.get(selected));
+        presetNameInput.value = selected;
+        renderBuilder();
+        renderOutputs();
+        log(`Loaded built-in preset "${selected}".`);
+      });
+
+      document.getElementById("new-preset").addEventListener("click", () => {
+        resetToDefault();
+        log("Started a fresh custom preset.");
+      });
+
+      document.getElementById("sort-segments").addEventListener("click", () => {
+        syncFromDom();
+        segments.sort((left, right) => left.timestamp - right.timestamp);
+        renderBuilder();
+        renderOutputs();
+        log("Sorted segments by timestamp.");
+      });
+
+      document.getElementById("add-continuous").addEventListener("click", () => {
+        syncFromDom();
+        const lastEnd = segments.reduce((max, entry) => Math.max(max, entry.timestamp + entry.duration), 0);
+        segments.push({ type: "continuous", timestamp: lastEnd, duration: 60 });
+        renderBuilder();
+        renderOutputs();
+        log("Added a continuous segment.");
+      });
+
+      document.getElementById("add-pulse").addEventListener("click", () => {
+        syncFromDom();
+        const lastEnd = segments.reduce((max, entry) => Math.max(max, entry.timestamp + entry.duration), 0);
+        segments.push({
+          type: "pulse",
+          timestamp: lastEnd,
+          duration: 240,
+          intensity: 0.4,
+          frequency: 0.75,
+        });
+        renderBuilder();
+        renderOutputs();
+        log("Added a pulse segment.");
+      });
+
+      document.getElementById("compile-pattern").addEventListener("click", () => {
+        syncFromDom();
+        renderOutputs();
+        log(`Compiled preset to vibration pattern ${JSON.stringify(latestCompiledPattern)}.`);
+      });
+
+      document.getElementById("play-pattern").addEventListener("click", () => {
+        syncFromDom();
+        renderOutputs();
+        const composer = pulsar.getPatternComposer();
+        composer.parse(clonePattern(segments));
+        const played = composer.play();
+        log(
+          played
+            ? `Played preset with vibration pattern ${JSON.stringify(composer.getPattern())}.`
+            : "Browser did not play haptics. Support may be unavailable or disabled.",
+        );
+      });
+
+      document.getElementById("stop-pattern").addEventListener("click", () => {
+        pulsar.stopHaptics();
+        log("Stopped active haptics.");
+      });
+
+      document.getElementById("copy-export").addEventListener("click", copyExport);
+      presetNameInput.addEventListener("input", renderOutputs);
+      presetFormatSelect.addEventListener("change", renderOutputs);
+
+      populateBuiltinOptions();
+      resetToDefault();
+    </script>
+  </body>
+</html>

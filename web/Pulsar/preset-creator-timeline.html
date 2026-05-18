@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulsar Timeline Preset Creator</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4efe8;
+        --panel: rgba(255, 251, 246, 0.9);
+        --line: rgba(88, 65, 48, 0.14);
+        --text: #281c13;
+        --muted: #79614f;
+        --accent: #c75d2c;
+        --accent-deep: #8a3917;
+        --accent-soft: #f6d2c0;
+        --pulse: #d47b45;
+        --continuous: #8b5cf6;
+        --continuous-soft: rgba(139, 92, 246, 0.18);
+        --pulse-soft: rgba(212, 123, 69, 0.18);
+        --shadow: 0 24px 64px rgba(57, 34, 20, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 24%),
+          radial-gradient(circle at 84% 18%, rgba(199, 93, 44, 0.16), transparent 26%),
+          linear-gradient(180deg, #f8f3ec 0%, #ecdfcf 100%);
+      }
+
+      .shell {
+        width: min(1380px, calc(100vw - 24px));
+        margin: 16px auto 28px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .hero,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .hero {
+        padding: 28px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(34px, 6vw, 64px);
+        line-height: 0.96;
+      }
+
+      .hero p {
+        max-width: 840px;
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .layout {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
+      }
+
+      .panel {
+        padding: 22px;
+      }
+
+      .panel h2 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
+
+      .panel p {
+        margin: 0 0 16px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .row {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .row.inline-2,
+      .row.inline-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .row.inline-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        width: 100%;
+        font: inherit;
+      }
+
+      input,
+      select,
+      textarea {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px 14px;
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--text);
+      }
+
+      input[type="range"] {
+        padding: 0;
+        accent-color: var(--accent);
+      }
+
+      textarea,
+      pre,
+      .status {
+        font: 13px/1.55 "SFMono-Regular", "Menlo", monospace;
+      }
+
+      button {
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 16px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        color: white;
+        background: var(--accent);
+      }
+
+      button.secondary {
+        background: rgba(199, 93, 44, 0.12);
+        color: var(--accent-deep);
+      }
+
+      button.ghost {
+        background: rgba(40, 28, 19, 0.08);
+        color: var(--text);
+      }
+
+      button.danger {
+        background: rgba(140, 35, 32, 0.14);
+        color: #8c2320;
+      }
+
+      .toolbar {
+        display: grid;
+        gap: 12px;
+      }
+
+      .timeline-shell {
+        overflow: auto;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(249, 244, 239, 0.84));
+      }
+
+      .timeline {
+        position: relative;
+        min-height: 360px;
+        padding: 0 0 18px;
+      }
+
+      .ruler {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        height: 48px;
+        background: rgba(255, 250, 245, 0.96);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .ruler-mark {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: rgba(88, 65, 48, 0.14);
+      }
+
+      .ruler-mark span {
+        position: absolute;
+        top: 8px;
+        left: 6px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .lanes {
+        position: relative;
+        min-height: 300px;
+      }
+
+      .lane {
+        position: relative;
+        height: 86px;
+        border-bottom: 1px dashed rgba(88, 65, 48, 0.14);
+      }
+
+      .lane-label {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        z-index: 1;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.86);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .block {
+        position: absolute;
+        top: 18px;
+        height: 50px;
+        border-radius: 16px;
+        border: 1px solid transparent;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 0 12px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+      }
+
+      .block[data-type="continuous"] {
+        background: linear-gradient(135deg, var(--continuous), #5b6cf9);
+      }
+
+      .block[data-type="pulse"] {
+        background: linear-gradient(135deg, var(--pulse), #c9513c);
+      }
+
+      .block.selected {
+        outline: 3px solid rgba(255, 255, 255, 0.8);
+        border-color: rgba(40, 28, 19, 0.35);
+      }
+
+      .block-title {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .block-meta {
+        font-size: 11px;
+        opacity: 0.9;
+      }
+
+      .resize-handle {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        width: 12px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.32);
+        cursor: ew-resize;
+      }
+
+      .resize-handle.left {
+        left: 4px;
+      }
+
+      .resize-handle.right {
+        right: 4px;
+      }
+
+      .inspector-card,
+      .metric,
+      .code-box,
+      .status {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.74);
+      }
+
+      .inspector-card {
+        padding: 16px;
+      }
+
+      .metric-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .metric {
+        padding: 14px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 24px;
+      }
+
+      .metric span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .range-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12px;
+      }
+
+      .range-head strong {
+        color: var(--text);
+      }
+
+      .code-box,
+      .status {
+        padding: 16px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      textarea {
+        min-height: 220px;
+        resize: vertical;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .legend i {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+      }
+
+      .empty {
+        padding: 18px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 1080px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .row.inline-2,
+        .row.inline-3,
+        .metric-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Pulsar Web</p>
+        <h1>Timeline Preset Creator</h1>
+        <p>
+          Shape haptic presets directly on a timeline. Drag blocks to move them, pull their edges
+          to resize, and fine-tune the selected segment with sliders.
+        </p>
+        <div class="chip-row">
+          <span class="chip" id="support-chip">Haptics support: checking</span>
+          <span class="chip">Drag body: move block</span>
+          <span class="chip">Drag handles: resize block</span>
+          <span class="chip">Selected pulse: intensity + frequency sliders</span>
+        </div>
+      </section>
+
+      <section class="layout">
+        <article class="panel">
+          <h2>Timeline</h2>
+          <p>
+            Each block is one `HapticPattern` entry. Continuous blocks are cool-toned, pulse blocks
+            are warm-toned.
+          </p>
+
+          <div class="toolbar">
+            <div class="row inline-3">
+              <label>
+                Preset Name
+                <input id="preset-name" type="text" value="timelinePreset" />
+              </label>
+              <label>
+                Load Built-In
+                <select id="preset-source"></select>
+              </label>
+              <label>
+                Zoom
+                <input id="zoom-slider" type="range" min="0.2" max="1.8" step="0.05" value="0.6" />
+              </label>
+            </div>
+
+            <div class="row inline-3">
+              <button id="load-selected" class="secondary" type="button">Load Built-In</button>
+              <button id="add-continuous" type="button">Add Continuous Block</button>
+              <button id="add-pulse" class="secondary" type="button">Add Pulse Block</button>
+            </div>
+
+            <div class="row inline-3">
+              <button id="sort-blocks" class="ghost" type="button">Sort by Time</button>
+              <button id="compile-pattern" class="ghost" type="button">Compile</button>
+              <button id="play-pattern" type="button">Play</button>
+            </div>
+
+            <div class="legend">
+              <span><i style="background: var(--continuous);"></i>continuous</span>
+              <span><i style="background: var(--pulse);"></i>pulse</span>
+            </div>
+
+            <div class="timeline-shell">
+              <div id="timeline" class="timeline"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>Inspector</h2>
+          <p>Use sliders for precise tuning after placing a block on the timeline.</p>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <strong id="metric-count">0</strong>
+              <span>Blocks</span>
+            </div>
+            <div class="metric">
+              <strong id="metric-duration">0 ms</strong>
+              <span>Total Length</span>
+            </div>
+            <div class="metric">
+              <strong id="metric-compiled">0</strong>
+              <span>Compiled Steps</span>
+            </div>
+          </div>
+
+          <div id="inspector" class="inspector-card"></div>
+
+          <div class="row inline-2">
+            <button id="copy-export" class="ghost" type="button">Copy Export</button>
+            <button id="stop-pattern" class="danger" type="button">Stop</button>
+          </div>
+
+          <div class="row">
+            <label for="compiled-output">Compiled vibration pattern</label>
+            <pre id="compiled-output" class="code-box">[]</pre>
+          </div>
+
+          <div class="row">
+            <label for="export-output">TypeScript export</label>
+            <textarea id="export-output" readonly></textarea>
+          </div>
+
+          <div class="row">
+            <label for="status-log">Status</label>
+            <div id="status-log" class="status">Timeline preset creator ready.</div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module">
+      import Pulsar from "./src/index.ts";
+
+      const pulsar = new Pulsar();
+      const presets = pulsar.getPresets();
+
+      const supportChip = document.getElementById("support-chip");
+      const timeline = document.getElementById("timeline");
+      const inspector = document.getElementById("inspector");
+      const presetNameInput = document.getElementById("preset-name");
+      const presetSourceSelect = document.getElementById("preset-source");
+      const zoomSlider = document.getElementById("zoom-slider");
+      const metricCount = document.getElementById("metric-count");
+      const metricDuration = document.getElementById("metric-duration");
+      const metricCompiled = document.getElementById("metric-compiled");
+      const compiledOutput = document.getElementById("compiled-output");
+      const exportOutput = document.getElementById("export-output");
+      const statusLog = document.getElementById("status-log");
+
+      const laneCount = 4;
+      const laneHeight = 86;
+      const minDuration = 20;
+      const defaultPattern = [
+        { type: "continuous", timestamp: 0, duration: 50, lane: 0 },
+        { type: "pulse", timestamp: 100, duration: 260, intensity: 0.35, frequency: 0.82, lane: 1 },
+        { type: "continuous", timestamp: 410, duration: 90, lane: 2 },
+      ];
+
+      let zoom = Number(zoomSlider.value);
+      let segments = clonePattern(defaultPattern);
+      let selectedId = segments[0]?.id ?? null;
+      let compiledPattern = [];
+      let interaction = null;
+      let nextId = 1;
+
+      function createId() {
+        return `segment-${nextId++}`;
+      }
+
+      function clonePattern(pattern) {
+        return pattern.map((entry, index) => ({
+          id: entry.id ?? `seed-${index + 1}`,
+          lane: entry.lane ?? index % laneCount,
+          ...entry,
+        }));
+      }
+
+      function ensureIds() {
+        segments = segments.map((segment) => {
+          if (segment.id.startsWith("seed-")) {
+            return { ...segment, id: createId() };
+          }
+          return segment;
+        });
+      }
+
+      function log(message) {
+        const stamp = new Date().toLocaleTimeString();
+        statusLog.textContent = `[${stamp}] ${message}\n\n${statusLog.textContent}`.trim();
+      }
+
+      function pxPerMs() {
+        return 1 + zoom * 4;
+      }
+
+      function roundMs(value) {
+        return Math.max(0, Math.round(value / 5) * 5);
+      }
+
+      function clamp01(value) {
+        return Math.min(1, Math.max(0, Number(value)));
+      }
+
+      function formatName(name) {
+        return name
+          .replace(/[-_\s]+(.)?/g, (_, char) => (char ? char.toUpperCase() : ""))
+          .replace(/^[a-z]/, (char) => char.toUpperCase())
+          .replace(/[^a-zA-Z0-9]/g, "") || "TimelinePreset";
+      }
+
+      function patternForComposer() {
+        return segments.map(({ id, lane, ...entry }) => ({ ...entry }));
+      }
+
+      function totalDuration() {
+        return segments.reduce((max, segment) => {
+          return Math.max(max, segment.timestamp + segment.duration);
+        }, 0);
+      }
+
+      function findSelected() {
+        return segments.find((segment) => segment.id === selectedId) ?? null;
+      }
+
+      function renderRuler(width) {
+        const ruler = document.createElement("div");
+        ruler.className = "ruler";
+
+        const intervalMs = 100;
+        for (let ms = 0; ms <= width / pxPerMs(); ms += intervalMs) {
+          const mark = document.createElement("div");
+          mark.className = "ruler-mark";
+          mark.style.left = `${ms * pxPerMs()}px`;
+
+          const label = document.createElement("span");
+          label.textContent = `${ms} ms`;
+          mark.append(label);
+          ruler.append(mark);
+        }
+
+        return ruler;
+      }
+
+      function renderLanes(width) {
+        const lanes = document.createElement("div");
+        lanes.className = "lanes";
+        lanes.style.width = `${width}px`;
+        lanes.style.height = `${laneCount * laneHeight}px`;
+
+        for (let laneIndex = 0; laneIndex < laneCount; laneIndex += 1) {
+          const lane = document.createElement("div");
+          lane.className = "lane";
+          lane.style.top = `${laneIndex * laneHeight}px`;
+
+          const label = document.createElement("div");
+          label.className = "lane-label";
+          label.textContent = `Lane ${laneIndex + 1}`;
+          lane.append(label);
+          lanes.append(lane);
+        }
+
+        return lanes;
+      }
+
+      function beginInteraction(event, segmentId, mode) {
+        event.preventDefault();
+        const segment = segments.find((entry) => entry.id === segmentId);
+        if (!segment) {
+          return;
+        }
+
+        selectedId = segmentId;
+        interaction = {
+          mode,
+          segmentId,
+          startX: event.clientX,
+          originTimestamp: segment.timestamp,
+          originDuration: segment.duration,
+          originLane: segment.lane,
+        };
+
+        event.target.setPointerCapture(event.pointerId);
+        renderAll();
+      }
+
+      function updateInteraction(event) {
+        if (!interaction) {
+          return;
+        }
+
+        const segment = segments.find((entry) => entry.id === interaction.segmentId);
+        if (!segment) {
+          return;
+        }
+
+        const deltaMs = roundMs((event.clientX - interaction.startX) / pxPerMs());
+
+        if (interaction.mode === "move") {
+          segment.timestamp = Math.max(0, interaction.originTimestamp + deltaMs);
+          const lanesElement = timeline.querySelector(".lanes");
+          const lanesRect = lanesElement?.getBoundingClientRect();
+          const pointerY = lanesRect ? event.clientY - lanesRect.top : 0;
+          const lane = Math.floor(pointerY / laneHeight);
+          if (Number.isFinite(lane)) {
+            segment.lane = Math.min(laneCount - 1, Math.max(0, lane));
+          }
+        }
+
+        if (interaction.mode === "resize-right") {
+          segment.duration = Math.max(minDuration, interaction.originDuration + deltaMs);
+        }
+
+        if (interaction.mode === "resize-left") {
+          const nextTimestamp = Math.max(0, interaction.originTimestamp + deltaMs);
+          const rightEdge = interaction.originTimestamp + interaction.originDuration;
+          segment.timestamp = Math.min(nextTimestamp, rightEdge - minDuration);
+          segment.duration = Math.max(minDuration, rightEdge - segment.timestamp);
+        }
+
+        renderAll();
+      }
+
+      function endInteraction() {
+        if (!interaction) {
+          return;
+        }
+
+        log(`Updated ${findSelected()?.type ?? "segment"} block timing on the timeline.`);
+        interaction = null;
+      }
+
+      function createBlock(segment) {
+        const block = document.createElement("div");
+        block.className = "block";
+        block.dataset.type = segment.type;
+        if (segment.id === selectedId) {
+          block.classList.add("selected");
+        }
+
+        block.style.left = `${segment.timestamp * pxPerMs()}px`;
+        block.style.top = `${segment.lane * laneHeight + 18}px`;
+        block.style.width = `${Math.max(minDuration, segment.duration) * pxPerMs()}px`;
+
+        const title = segment.type === "pulse" ? "Pulse" : "Continuous";
+        block.innerHTML = `
+          <div class="resize-handle left" data-mode="resize-left"></div>
+          <div>
+            <div class="block-title">${title}</div>
+            <div class="block-meta">${segment.timestamp} ms · ${segment.duration} ms</div>
+          </div>
+          <div class="resize-handle right" data-mode="resize-right"></div>
+        `;
+
+        block.addEventListener("pointerdown", (event) => {
+          const handle = event.target.closest(".resize-handle");
+          const mode = handle ? handle.dataset.mode : "move";
+          beginInteraction(event, segment.id, mode);
+        });
+
+        block.addEventListener("click", () => {
+          selectedId = segment.id;
+          renderAll();
+        });
+
+        return block;
+      }
+
+      function renderTimeline() {
+        const width = Math.max(900, totalDuration() * pxPerMs() + 260);
+        timeline.innerHTML = "";
+        timeline.style.width = `${width}px`;
+
+        const ruler = renderRuler(width);
+        const lanes = renderLanes(width);
+
+        segments.forEach((segment) => {
+          lanes.append(createBlock(segment));
+        });
+
+        timeline.append(ruler, lanes);
+      }
+
+      function inspectorRow(labelText, inputHtml) {
+        return `<label>${labelText}${inputHtml}</label>`;
+      }
+
+      function renderInspector() {
+        const selected = findSelected();
+        if (!selected) {
+          inspector.innerHTML = `<div class="empty">Select a block to edit its timing and pulse parameters.</div>`;
+          return;
+        }
+
+        const pulseFields = selected.type === "pulse"
+          ? `
+            <div class="row">
+              <label>
+                <span class="range-head"><strong>Intensity</strong><span>${(selected.intensity ?? 0.5).toFixed(2)}</span></span>
+                <input data-field="intensity" type="range" min="0" max="1" step="0.01" value="${selected.intensity ?? 0.5}" />
+              </label>
+            </div>
+            <div class="row">
+              <label>
+                <span class="range-head"><strong>Frequency</strong><span>${(selected.frequency ?? 0.5).toFixed(2)}</span></span>
+                <input data-field="frequency" type="range" min="0" max="1" step="0.01" value="${selected.frequency ?? 0.5}" />
+              </label>
+            </div>
+          `
+          : `
+            <div class="row">
+              <div class="empty">Continuous blocks only need start time, duration, and lane placement.</div>
+            </div>
+          `;
+
+        inspector.innerHTML = `
+          <div class="row inline-2">
+            ${inspectorRow(
+              "Type",
+              `<select data-field="type">
+                <option value="continuous"${selected.type === "continuous" ? " selected" : ""}>continuous</option>
+                <option value="pulse"${selected.type === "pulse" ? " selected" : ""}>pulse</option>
+              </select>`,
+            )}
+            ${inspectorRow(
+              "Lane",
+              `<input data-field="lane" type="range" min="0" max="${laneCount - 1}" step="1" value="${selected.lane}" />`,
+            )}
+          </div>
+          <div class="row">
+            <label>
+              <span class="range-head"><strong>Timestamp</strong><span>${selected.timestamp} ms</span></span>
+              <input data-field="timestamp" type="range" min="0" max="${Math.max(1000, totalDuration() + 400)}" step="5" value="${selected.timestamp}" />
+            </label>
+          </div>
+          <div class="row">
+            <label>
+              <span class="range-head"><strong>Duration</strong><span>${selected.duration} ms</span></span>
+              <input data-field="duration" type="range" min="${minDuration}" max="${Math.max(400, totalDuration() + 400)}" step="5" value="${selected.duration}" />
+            </label>
+          </div>
+          ${pulseFields}
+          <div class="row inline-2">
+            <button id="duplicate-selected" class="secondary" type="button">Duplicate Selected</button>
+            <button id="delete-selected" class="danger" type="button">Delete Selected</button>
+          </div>
+        `;
+
+        inspector.querySelectorAll("[data-field]").forEach((control) => {
+          control.addEventListener("input", () => {
+            const active = findSelected();
+            if (!active) {
+              return;
+            }
+
+            const field = control.dataset.field;
+            if (field === "type") {
+              active.type = control.value;
+              if (active.type === "pulse") {
+                active.intensity = active.intensity ?? 0.5;
+                active.frequency = active.frequency ?? 0.5;
+              } else {
+                delete active.intensity;
+                delete active.frequency;
+              }
+            } else if (field === "lane") {
+              active.lane = Number(control.value);
+            } else if (field === "timestamp") {
+              active.timestamp = roundMs(control.value);
+            } else if (field === "duration") {
+              active.duration = Math.max(minDuration, roundMs(control.value));
+            } else if (field === "intensity") {
+              active.intensity = clamp01(control.value);
+            } else if (field === "frequency") {
+              active.frequency = clamp01(control.value);
+            }
+
+            renderAll();
+          });
+        });
+
+        document.getElementById("duplicate-selected").addEventListener("click", () => {
+          const active = findSelected();
+          if (!active) {
+            return;
+          }
+
+          const duplicate = { ...active, id: createId(), timestamp: active.timestamp + 40, lane: (active.lane + 1) % laneCount };
+          segments.push(duplicate);
+          selectedId = duplicate.id;
+          renderAll();
+          log("Duplicated selected block.");
+        });
+
+        document.getElementById("delete-selected").addEventListener("click", () => {
+          if (!selectedId) {
+            return;
+          }
+
+          segments = segments.filter((segment) => segment.id !== selectedId);
+          selectedId = segments[0]?.id ?? null;
+          renderAll();
+          log("Deleted selected block.");
+        });
+      }
+
+      function renderOutputs() {
+        const composer = pulsar.getPatternComposer();
+        compiledPattern = composer.parse(patternForComposer());
+        compiledOutput.textContent = JSON.stringify(compiledPattern, null, 2);
+        exportOutput.value = `export const ${formatName(presetNameInput.value)}Preset = ${JSON.stringify(patternForComposer(), null, 2)};`;
+        metricCount.textContent = String(segments.length);
+        metricDuration.textContent = `${totalDuration()} ms`;
+        metricCompiled.textContent = String(compiledPattern.length);
+        supportChip.textContent = `Haptics support: ${pulsar.isHapticsSupported() ? "available" : "missing"}`;
+      }
+
+      function renderAll() {
+        renderTimeline();
+        renderInspector();
+        renderOutputs();
+      }
+
+      function loadPreset(name) {
+        segments = presets.get(name).map((entry, index) => ({
+          ...entry,
+          id: createId(),
+          lane: index % laneCount,
+        }));
+        selectedId = segments[0]?.id ?? null;
+        presetNameInput.value = name;
+        renderAll();
+        log(`Loaded built-in preset "${name}" onto the timeline.`);
+      }
+
+      function copyExport() {
+        navigator.clipboard.writeText(exportOutput.value)
+          .then(() => log("Copied TypeScript export to clipboard."))
+          .catch((error) => log(`Clipboard copy failed: ${error.message}`));
+      }
+
+      function addSegment(type) {
+        const segment = type === "pulse"
+          ? { id: createId(), type, timestamp: totalDuration(), duration: 220, intensity: 0.4, frequency: 0.78, lane: segments.length % laneCount }
+          : { id: createId(), type, timestamp: totalDuration(), duration: 70, lane: segments.length % laneCount };
+        segments.push(segment);
+        selectedId = segment.id;
+        renderAll();
+        log(`Added a ${type} block.`);
+      }
+
+      function populateBuiltins() {
+        presets.list().forEach((name) => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          presetSourceSelect.append(option);
+        });
+      }
+
+      document.getElementById("load-selected").addEventListener("click", () => {
+        loadPreset(presetSourceSelect.value);
+      });
+
+      document.getElementById("add-continuous").addEventListener("click", () => addSegment("continuous"));
+      document.getElementById("add-pulse").addEventListener("click", () => addSegment("pulse"));
+
+      document.getElementById("sort-blocks").addEventListener("click", () => {
+        segments.sort((left, right) => left.timestamp - right.timestamp);
+        renderAll();
+        log("Sorted blocks by timestamp.");
+      });
+
+      document.getElementById("compile-pattern").addEventListener("click", () => {
+        renderOutputs();
+        log(`Compiled vibration pattern ${JSON.stringify(compiledPattern)}.`);
+      });
+
+      document.getElementById("play-pattern").addEventListener("click", () => {
+        const composer = pulsar.getPatternComposer();
+        composer.parse(patternForComposer());
+        const played = composer.play();
+        log(
+          played
+            ? `Played timeline preset ${JSON.stringify(composer.getPattern())}.`
+            : "Browser did not play haptics. Support may be unavailable or disabled.",
+        );
+      });
+
+      document.getElementById("stop-pattern").addEventListener("click", () => {
+        pulsar.stopHaptics();
+        log("Stopped active haptics.");
+      });
+
+      document.getElementById("copy-export").addEventListener("click", copyExport);
+
+      presetNameInput.addEventListener("input", renderOutputs);
+      zoomSlider.addEventListener("input", () => {
+        zoom = Number(zoomSlider.value);
+        renderAll();
+      });
+
+      timeline.addEventListener("pointermove", updateInteraction);
+      timeline.addEventListener("pointerup", endInteraction);
+      timeline.addEventListener("pointercancel", endInteraction);
+      timeline.addEventListener("pointerleave", (event) => {
+        if (interaction && event.buttons === 0) {
+          endInteraction();
+        }
+      });
+
+      ensureIds();
+      populateBuiltins();
+      selectedId = segments[0]?.id ?? null;
+      renderAll();
+    </script>
+  </body>
+</html>
