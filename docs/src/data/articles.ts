@@ -14,6 +14,9 @@ export const articles: Article[] = [
     shortTitle: 'How Haptic Feedback Affects Sales, Trust, and Product Perception',
     url: 'https://swmansion.com/blog/how-haptic-feedback-affects-sales-trust-and-product-perception/',
     source: 'Software Mansion Blog',
+    publishedAt: 'May 14, 2026',
+    imageUrl: 'https://strapi-production-5f3f.up.railway.app/uploads/BLOGPOST_Haptics_In_Business_24a0d6f4b8.png',
+    imageAlt: 'Banner for the article How Haptic Feedback Affects Sales, Trust, and Product Perception',
   },
   {
     title: 'Haptic Feedback Explained: What It Is and What It Does for Your App (and Business)',
