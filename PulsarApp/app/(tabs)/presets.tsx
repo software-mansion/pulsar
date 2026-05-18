@@ -249,9 +249,9 @@ const styles = StyleSheet.create({
     right: 20,
   },
   scrollToTopIcon: {
-    width: 18,
-    height: 18,
-    marginLeft: 0,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
     transform: [{ rotate: '-90deg' }],
   },
 });

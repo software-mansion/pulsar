@@ -129,11 +129,15 @@ const styles = StyleSheet.create({
     height: 18,
     marginLeft: 5,
     alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   largeArrowIcon: {
     width: 22,
     height: 22,
     alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   largeIconRow: {
     flexDirection: 'row',
