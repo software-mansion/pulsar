@@ -29,8 +29,9 @@ class ImpulseCompositionHapticBuilder {
         val impulses = preset.discretePattern.sortedBy { it.time }
         if (impulses.isEmpty()) return null
 
-        val primitives = impulses.map { selectPrimitive(it.frequency) }.distinct().toIntArray()
-        if (!engine.arePrimitivesSupported(*primitives)) return null
+        for (primitive in impulses.map { selectPrimitive(it.frequency) }.distinct()) {
+            if (!engine.isPrimitiveSupported(primitive)) return null
+        }
 
         val composition = VibrationEffect.startComposition()
         var prevTime = 0L
@@ -46,6 +47,7 @@ class ImpulseCompositionHapticBuilder {
         return composition.compose()
     }
 
+    @SupportedVibrationPrimitive
     @RequiresApi(Build.VERSION_CODES.R)
     private fun selectPrimitive(frequency: Float): Int {
         return when {

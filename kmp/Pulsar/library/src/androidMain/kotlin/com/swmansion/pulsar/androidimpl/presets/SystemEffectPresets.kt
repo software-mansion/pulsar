@@ -5,6 +5,7 @@ import android.os.VibrationEffect
 import android.util.Log
 import com.swmansion.pulsar.kmp.androidimpl.Pulsar
 import com.swmansion.pulsar.kmp.androidimpl.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.kmp.androidimpl.haptics.SupportedVibrationEffect
 import com.swmansion.pulsar.kmp.androidimpl.types.PatternData
 import com.swmansion.pulsar.kmp.androidimpl.types.Preset
 import com.swmansion.pulsar.kmp.androidimpl.types.PresetWithName
@@ -31,9 +32,9 @@ class SystemEffectPresets(private val engine: HapticEngineWrapper) {
         false
     }
 
-    private fun playHaptic(preset: Int): Boolean {
+    private fun playHaptic(@SupportedVibrationEffect preset: Int): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (!engine.areEffectsSupported(preset)) {
+            if (!engine.isEffectSupported(preset)) {
                 return false
             }
             engine.vibrate(VibrationEffect.createPredefined(preset))
