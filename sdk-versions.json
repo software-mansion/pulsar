@@ -12,7 +12,7 @@
     "packageName": "react-native-pulsar"
   },
   "kmp": {
-    "version": "0.0.2",
+    "version": "0.0.3",
     "mavenCoordinate": "com.swmansion:pulsar-kmp"
   },
   "flutter": {
