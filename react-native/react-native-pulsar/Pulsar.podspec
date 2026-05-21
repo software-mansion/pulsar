@@ -1,6 +1,7 @@
 require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
+pulsar_ios_pod_version = ENV["PULSAR_IOS_POD_VERSION"] || "1.1.2"
 
 Pod::Spec.new do |s|
   s.name         = "Pulsar"
@@ -15,9 +16,6 @@ Pod::Spec.new do |s|
 
   s.source_files = [
     "ios/**/*.{h,m,mm,cpp,swift}",
-    "deps/Pulsar/Sources/Pulsar/*.swift",
-    "deps/Pulsar/Sources/Pulsar/*/*.swift",
-    "deps/Pulsar/Sources/Pulsar/*/*/*.swift",
   ]
   s.private_header_files = "ios/**/*.h"
 
@@ -25,5 +23,6 @@ Pod::Spec.new do |s|
     "DEFINES_MODULE" => "YES",
   }
 
+  s.dependency "Pulsar-haptics", pulsar_ios_pod_version
   install_modules_dependencies(s)
 end
