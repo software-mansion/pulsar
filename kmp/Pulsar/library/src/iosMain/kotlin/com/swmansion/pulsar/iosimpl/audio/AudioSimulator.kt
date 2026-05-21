@@ -38,7 +38,7 @@ internal class IOSAudioSimulator {
     private val playerNode = AVAudioPlayerNode()
     private val filterNode = AVAudioUnitEQ(numberOfBands = 1u)
     private var isEngineConfigured = false
-    private var playSound = Platform.isDebugBinary
+    private var playSound = isSimulatorDevice || Platform.isDebugBinary
     private var shouldForceAudiblePlayback = false
 
     fun parsePattern(data: PatternData): IOSAudioBuffer? {
@@ -53,8 +53,12 @@ internal class IOSAudioSimulator {
     fun enableSound(value: Boolean) {
         playSound = value
         shouldForceAudiblePlayback = value
-        updateAudioSessionCategory()
-        if (value) {
+        if (!value) {
+            stop()
+            audioContext.pause()
+            deactivateAudioSession()
+        } else {
+            updateAudioSessionCategory()
             configureAudioContext()
         }
     }
@@ -126,6 +130,14 @@ internal class IOSAudioSimulator {
             session.setActive(true, error = null)
         }.onFailure {
             log("AudioSession error: ${it.message}")
+        }
+    }
+
+    private fun deactivateAudioSession() {
+        runCatching {
+            AVAudioSession.sharedInstance().setActive(false, withOptions = 1uL, error = null)
+        }.onFailure {
+            log("AudioSession deactivation error: ${it.message}")
         }
     }
 

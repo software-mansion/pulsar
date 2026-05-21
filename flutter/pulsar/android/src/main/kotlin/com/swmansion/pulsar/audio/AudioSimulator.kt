@@ -18,12 +18,14 @@ import com.swmansion.pulsar.types.ValuePoint
 import com.swmansion.pulsar.types.WaveformType
 import kotlin.math.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -43,7 +45,7 @@ class AudioSimulator(
     private val isEmulatorDevice = isEmulator()
     private var audioTrack: AudioTrack? = null
     private var isInitialized = false
-    private var playSound: Boolean = BuildConfig.DEBUG
+    private var playSound: Boolean = isEmulatorDevice || BuildConfig.DEBUG
     private var shouldForceAudiblePlayback = false
     private val audioScope = CoroutineScope(Dispatchers.IO)
     private val audioMutex = Mutex()
@@ -61,9 +63,15 @@ class AudioSimulator(
     }
 
     fun enableSound(value: Boolean) {
-        this.playSound = value
-        this.shouldForceAudiblePlayback = value
-        resetAudioContext()
+        runBlocking {
+            currentPlayJob?.cancelAndJoin()
+            currentPlayJob = null
+            audioMutex.withLock {
+                stopAndReleaseAudioTrack()
+            }
+            this@AudioSimulator.shouldForceAudiblePlayback = value
+            this@AudioSimulator.playSound = value
+        }
     }
 
     fun play(buffer: ByteArray?) {
@@ -201,6 +209,18 @@ class AudioSimulator(
         } catch (_: Exception) {}
         audioTrack = null
         isInitialized = false
+    }
+
+    private fun stopAndReleaseAudioTrack() {
+        try {
+            audioTrack?.apply {
+                if (playState == AudioTrack.PLAYSTATE_PLAYING) {
+                    stop()
+                    flush()
+                }
+            }
+        } catch (_: Exception) {}
+        resetAudioContext()
     }
 
     private fun resolveAudioUsage(): Int {

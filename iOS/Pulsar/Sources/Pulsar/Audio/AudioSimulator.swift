@@ -3,6 +3,13 @@ import AVFoundation
 
 public class AudioSimulator: NSObject {
 	private let sampleRate: Double = 22050
+  private let isSimulatorDevice: Bool = {
+    #if targetEnvironment(simulator)
+      return true
+    #else
+      return false
+    #endif
+  }()
 	private var audioContext: AVAudioEngine = AVAudioEngine()
 	private var offlineContext: AVAudioEngine?
 	private var currentSource: AVAudioPlayerNode?
@@ -11,14 +18,18 @@ public class AudioSimulator: NSObject {
 	private var isInitialized = false
 	private var isEngineConfigured = false
   private var shouldForceAudiblePlayback = false
- #if DEBUG
-  private var playSound: Bool = true
-#else
-  private var playSound: Bool = false
-#endif
+  private var playSound: Bool
 
 	public override init() {
+    #if DEBUG
+      self.playSound = true
+    #else
+      self.playSound = false
+    #endif
 		super.init()
+    if (isSimulatorDevice) {
+      self.playSound = true
+    }
     if (playSound) {
       configureAudioContext()
     }
@@ -40,7 +51,13 @@ public class AudioSimulator: NSObject {
   public func enableSound(_ value: Bool) {
     self.playSound = value
     self.shouldForceAudiblePlayback = value
-    updateAudioSessionCategory()
+    if (!value) {
+      stop()
+      audioContext.pause()
+      deactivateAudioSession()
+    } else {
+      updateAudioSessionCategory()
+    }
   }
 
 	private func configureAudioContext() {
@@ -81,12 +98,19 @@ public class AudioSimulator: NSObject {
 		}
   }
 
+  private func deactivateAudioSession() {
+    do {
+      try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+    } catch {
+      print("AudioSession deactivation error: \(error)")
+    }
+  }
+
   private func resolveAudioSessionCategory() -> AVAudioSession.Category {
-    #if targetEnvironment(simulator)
+    if (isSimulatorDevice || shouldForceAudiblePlayback) {
       return .playback
-    #else
-      return shouldForceAudiblePlayback ? .playback : .ambient
-    #endif
+    }
+    return .ambient
   }
 
 	private func generateWaveform(_ waveform: WaveformType, phase: Double) -> Double {
