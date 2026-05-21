@@ -10,6 +10,7 @@ public class AudioSimulator: NSObject {
 	private var filterNode: AVAudioUnitEQ = AVAudioUnitEQ(numberOfBands: 1)
 	private var isInitialized = false
 	private var isEngineConfigured = false
+  private var shouldForceAudiblePlayback = false
  #if DEBUG
   private var playSound: Bool = true
 #else
@@ -38,18 +39,14 @@ public class AudioSimulator: NSObject {
 
   public func enableSound(_ value: Bool) {
     self.playSound = value
+    self.shouldForceAudiblePlayback = value
+    updateAudioSessionCategory()
   }
 
 	private func configureAudioContext() {
 		guard !isEngineConfigured else { return }
 
-    let session = AVAudioSession.sharedInstance()
-		do {
-			try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
-			try session.setActive(true)
-		} catch {
-			print("AudioSession error: \(error)")
-		}
+    updateAudioSessionCategory()
 
 		// Setup audio engine: Player -> Filter(lowpass) -> MainMixer
 		audioContext.attach(playerNode)
@@ -73,6 +70,24 @@ public class AudioSimulator: NSObject {
 			print("Failed to start AVAudioEngine: \(error)")
 		}
 	}
+
+  private func updateAudioSessionCategory() {
+    let session = AVAudioSession.sharedInstance()
+		do {
+			try session.setCategory(resolveAudioSessionCategory(), mode: .default, options: [.mixWithOthers])
+			try session.setActive(true)
+		} catch {
+			print("AudioSession error: \(error)")
+		}
+  }
+
+  private func resolveAudioSessionCategory() -> AVAudioSession.Category {
+    #if targetEnvironment(simulator)
+      return .playback
+    #else
+      return shouldForceAudiblePlayback ? .playback : .ambient
+    #endif
+  }
 
 	private func generateWaveform(_ waveform: WaveformType, phase: Double) -> Double {
 		let normalizedPhase = phase.truncatingRemainder(dividingBy: Double.pi * 2) / (Double.pi * 2)
