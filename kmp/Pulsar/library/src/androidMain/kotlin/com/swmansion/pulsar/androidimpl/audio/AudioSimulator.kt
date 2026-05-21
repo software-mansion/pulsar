@@ -3,6 +3,7 @@ package com.swmansion.pulsar.kmp.androidimpl.audio
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.os.Build
 import com.swmansion.pulsar.kmp.androidimpl.types.AudioDataConfig
 import com.swmansion.pulsar.kmp.androidimpl.types.AudioPatternConfig
 import com.swmansion.pulsar.kmp.androidimpl.types.CompatibilityMode
@@ -16,12 +17,14 @@ import com.swmansion.pulsar.kmp.androidimpl.types.ValuePoint
 import com.swmansion.pulsar.kmp.androidimpl.types.WaveformType
 import kotlin.math.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -39,9 +42,11 @@ class AudioSimulator(
 
     private val sampleRate: Int = 22050
     private val sampleRateF: Float = sampleRate.toFloat()
+    private val isEmulatorDevice = isEmulator()
     private var audioTrack: AudioTrack? = null
     private var isInitialized = false
-    private var playSound: Boolean = isDebugBuild
+    private var playSound: Boolean = isEmulatorDevice || isDebugBuild
+    private var shouldForceAudiblePlayback = false
     private val audioScope = CoroutineScope(Dispatchers.IO)
     private val audioMutex = Mutex()
     private var currentPlayJob: Job? = null
@@ -58,7 +63,15 @@ class AudioSimulator(
     }
 
     fun enableSound(value: Boolean) {
-        this.playSound = value
+        runBlocking {
+            currentPlayJob?.cancelAndJoin()
+            currentPlayJob = null
+            audioMutex.withLock {
+                stopAndReleaseAudioTrack()
+            }
+            this@AudioSimulator.shouldForceAudiblePlayback = value
+            this@AudioSimulator.playSound = value
+        }
     }
 
     fun play(buffer: ByteArray?) {
@@ -172,7 +185,7 @@ class AudioSimulator(
         audioTrack = AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setUsage(resolveAudioUsage())
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )
@@ -188,6 +201,62 @@ class AudioSimulator(
             .build()
 
         isInitialized = true
+    }
+
+    private fun resetAudioContext() {
+        try {
+            audioTrack?.release()
+        } catch (_: Exception) {}
+        audioTrack = null
+        isInitialized = false
+    }
+
+    private fun stopAndReleaseAudioTrack() {
+        try {
+            audioTrack?.apply {
+                if (playState == AudioTrack.PLAYSTATE_PLAYING) {
+                    stop()
+                    flush()
+                }
+            }
+        } catch (_: Exception) {}
+        resetAudioContext()
+    }
+
+    private fun resolveAudioUsage(): Int {
+        return if (isEmulatorDevice || shouldForceAudiblePlayback) {
+            AudioAttributes.USAGE_MEDIA
+        } else {
+            AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
+        }
+    }
+
+    private fun isEmulator(): Boolean {
+        val fingerprint = Build.FINGERPRINT
+        val model = Build.MODEL
+        val manufacturer = Build.MANUFACTURER
+        val brand = Build.BRAND
+        val device = Build.DEVICE
+        val hardware = Build.HARDWARE
+        val board = Build.BOARD.lowercase()
+        val bootloader = Build.BOOTLOADER.lowercase()
+        val hardwareLower = hardware.lowercase()
+        val product = Build.PRODUCT
+
+        return fingerprint.startsWith("generic") ||
+            fingerprint.startsWith("unknown") ||
+            model.contains("google_sdk") ||
+            model.contains("Emulator") ||
+            model.contains("Android SDK built for x86") ||
+            manufacturer.contains("Genymotion") ||
+            (brand.startsWith("generic") && device.startsWith("generic")) ||
+            product == "google_sdk" ||
+            hardware.contains("goldfish") ||
+            hardware.contains("ranchu") ||
+            board.contains("nox") ||
+            bootloader.contains("nox") ||
+            hardwareLower.contains("nox") ||
+            product.lowercase().contains("nox")
     }
 
     private fun generateWaveform(waveform: WaveformType, phase: Float): Float {
