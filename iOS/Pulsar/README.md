@@ -46,9 +46,11 @@ Then add `"Pulsar"` to your target dependencies.
 
 Add Pulsar to your `Podfile`:
 
+<!-- GENERATED:IOS_COCOAPODS_INSTALL_SNIPPET_START -->
 ```ruby
-pod 'Pulsar', '~> 1.1.2'
+pod 'Pulsar-haptics', '~> 1.1.2'
 ```
+<!-- GENERATED:IOS_COCOAPODS_INSTALL_SNIPPET_END -->
 
 Then run:
 
