@@ -3,6 +3,13 @@ import AVFoundation
 
 public class AudioSimulator: NSObject {
 	private let sampleRate: Double = 22050
+  private let isSimulatorDevice: Bool = {
+    #if targetEnvironment(simulator)
+      return true
+    #else
+      return false
+    #endif
+  }()
 	private var audioContext: AVAudioEngine = AVAudioEngine()
 	private var offlineContext: AVAudioEngine?
 	private var currentSource: AVAudioPlayerNode?
@@ -10,14 +17,19 @@ public class AudioSimulator: NSObject {
 	private var filterNode: AVAudioUnitEQ = AVAudioUnitEQ(numberOfBands: 1)
 	private var isInitialized = false
 	private var isEngineConfigured = false
- #if DEBUG
-  private var playSound: Bool = true
-#else
-  private var playSound: Bool = false
-#endif
+  private var shouldForceAudiblePlayback = false
+  private var playSound: Bool
 
 	public override init() {
+    #if DEBUG
+      self.playSound = true
+    #else
+      self.playSound = false
+    #endif
 		super.init()
+    if (isSimulatorDevice) {
+      self.playSound = true
+    }
     if (playSound) {
       configureAudioContext()
     }
@@ -38,18 +50,20 @@ public class AudioSimulator: NSObject {
 
   public func enableSound(_ value: Bool) {
     self.playSound = value
+    self.shouldForceAudiblePlayback = value
+    if (!value) {
+      stop()
+      audioContext.pause()
+      deactivateAudioSession()
+    } else {
+      updateAudioSessionCategory()
+    }
   }
 
 	private func configureAudioContext() {
 		guard !isEngineConfigured else { return }
 
-    let session = AVAudioSession.sharedInstance()
-		do {
-			try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
-			try session.setActive(true)
-		} catch {
-			print("AudioSession error: \(error)")
-		}
+    updateAudioSessionCategory()
 
 		// Setup audio engine: Player -> Filter(lowpass) -> MainMixer
 		audioContext.attach(playerNode)
@@ -73,6 +87,31 @@ public class AudioSimulator: NSObject {
 			print("Failed to start AVAudioEngine: \(error)")
 		}
 	}
+
+  private func updateAudioSessionCategory() {
+    let session = AVAudioSession.sharedInstance()
+		do {
+			try session.setCategory(resolveAudioSessionCategory(), mode: .default, options: [.mixWithOthers])
+			try session.setActive(true)
+		} catch {
+			print("AudioSession error: \(error)")
+		}
+  }
+
+  private func deactivateAudioSession() {
+    do {
+      try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+    } catch {
+      print("AudioSession deactivation error: \(error)")
+    }
+  }
+
+  private func resolveAudioSessionCategory() -> AVAudioSession.Category {
+    if (isSimulatorDevice || shouldForceAudiblePlayback) {
+      return .playback
+    }
+    return .ambient
+  }
 
 	private func generateWaveform(_ waveform: WaveformType, phase: Double) -> Double {
 		let normalizedPhase = phase.truncatingRemainder(dividingBy: Double.pi * 2) / (Double.pi * 2)

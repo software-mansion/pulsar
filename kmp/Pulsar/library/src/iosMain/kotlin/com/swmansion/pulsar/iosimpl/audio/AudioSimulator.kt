@@ -12,12 +12,14 @@ import platform.AVFAudio.AVAudioFormat
 import platform.AVFAudio.AVAudioPCMBuffer
 import platform.AVFAudio.AVAudioPlayerNode
 import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryAmbient
 import platform.AVFAudio.AVAudioSessionCategoryOptionMixWithOthers
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.AVAudioUnitEQ
 import platform.AVFAudio.AVAudioUnitEQFilterTypeLowPass
 import platform.AVFAudio.AVAudioUnitEQFilterParameters
+import platform.Foundation.NSProcessInfo
 import platform.posix.memcpy
 import kotlin.math.PI
 import kotlin.math.ceil
@@ -31,11 +33,13 @@ import kotlin.native.Platform
 @OptIn(ExperimentalForeignApi::class, kotlin.experimental.ExperimentalNativeApi::class)
 internal class IOSAudioSimulator {
     private val sampleRate = 22_050.0
+    private val isSimulatorDevice = NSProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] != null
     private val audioContext = AVAudioEngine()
     private val playerNode = AVAudioPlayerNode()
     private val filterNode = AVAudioUnitEQ(numberOfBands = 1u)
     private var isEngineConfigured = false
-    private var playSound = Platform.isDebugBinary
+    private var playSound = isSimulatorDevice || Platform.isDebugBinary
+    private var shouldForceAudiblePlayback = false
 
     fun parsePattern(data: PatternData): IOSAudioBuffer? {
         if (!playSound) return null
@@ -48,7 +52,13 @@ internal class IOSAudioSimulator {
 
     fun enableSound(value: Boolean) {
         playSound = value
-        if (value) {
+        shouldForceAudiblePlayback = value
+        if (!value) {
+            stop()
+            audioContext.pause()
+            deactivateAudioSession()
+        } else {
+            updateAudioSessionCategory()
             configureAudioContext()
         }
     }
@@ -84,17 +94,7 @@ internal class IOSAudioSimulator {
     private fun configureAudioContext() {
         if (isEngineConfigured) return
 
-        val session = AVAudioSession.sharedInstance()
-        runCatching {
-            session.setCategory(
-                AVAudioSessionCategoryPlayback,
-                mode = AVAudioSessionModeDefault,
-                options = AVAudioSessionCategoryOptionMixWithOthers,
-                error = null,
-            )
-        }.onFailure {
-            log("AudioSession error: ${it.message}")
-        }
+        updateAudioSessionCategory()
 
         audioContext.attachNode(playerNode)
         (filterNode.bands.firstOrNull() as? AVAudioUnitEQFilterParameters)?.let { band ->
@@ -115,6 +115,37 @@ internal class IOSAudioSimulator {
             isEngineConfigured = true
         }.onFailure {
             log("Failed to start AVAudioEngine: ${it.message}")
+        }
+    }
+
+    private fun updateAudioSessionCategory() {
+        val session = AVAudioSession.sharedInstance()
+        runCatching {
+            session.setCategory(
+                resolveAudioSessionCategory(),
+                mode = AVAudioSessionModeDefault,
+                options = AVAudioSessionCategoryOptionMixWithOthers,
+                error = null,
+            )
+            session.setActive(true, error = null)
+        }.onFailure {
+            log("AudioSession error: ${it.message}")
+        }
+    }
+
+    private fun deactivateAudioSession() {
+        runCatching {
+            AVAudioSession.sharedInstance().setActive(false, withOptions = 1uL, error = null)
+        }.onFailure {
+            log("AudioSession deactivation error: ${it.message}")
+        }
+    }
+
+    private fun resolveAudioSessionCategory(): String {
+        return if (isSimulatorDevice || shouldForceAudiblePlayback) {
+            AVAudioSessionCategoryPlayback
+        } else {
+            AVAudioSessionCategoryAmbient
         }
     }
 
