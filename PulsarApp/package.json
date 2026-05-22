@@ -20,7 +20,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "@sentry/react-native": "^8.8.0",
-    "expo": "~55.0.9",
+    "expo": "^56.0.3",
     "expo-application": "~55.0.10",
     "expo-clipboard": "~55.0.9",
     "expo-constants": "~55.0.9",
