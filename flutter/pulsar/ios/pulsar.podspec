@@ -2,6 +2,8 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 # Run `pod lib lint pulsar.podspec` to validate before publishing.
 #
+pulsar_ios_pod_version = ENV['PULSAR_IOS_POD_VERSION'] || '1.1.2'
+
 Pod::Spec.new do |s|
   s.name             = 'pulsar'
   s.version          = '0.0.1'
@@ -15,8 +17,11 @@ Dart-friendly API that bridges to native CoreHaptics on iOS.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Software Mansion' => 'projects@swmansion.com' }
   s.source           = { :path => '.' }
+  # Only the Flutter bridge lives here; the haptics implementation comes from the
+  # published Pulsar-haptics CocoaPod (or a local override, see the example Podfile).
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
+  s.dependency 'Pulsar-haptics', pulsar_ios_pod_version
   s.platform = :ios, '13.0'
   s.frameworks = 'CoreHaptics', 'AudioToolbox', 'AVFoundation'
 

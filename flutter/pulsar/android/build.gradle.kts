@@ -27,6 +27,27 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
 }
 
+fun getStringPropertyOrEnv(name: String, defaultValue: String): String {
+    val projectValue = (rootProject.findProperty(name) ?: project.findProperty(name)) as String?
+    return projectValue ?: System.getenv(name) ?: defaultValue
+}
+
+// By default the plugin compiles against the published com.swmansion:pulsar Maven
+// artifact. Set USE_LOCAL_PULSAR_ANDROID=1 to compile against the in-repo sources
+// under Android/Pulsar instead (useful when iterating on the native SDK).
+val useLocalPulsarAndroid = getStringPropertyOrEnv("USE_LOCAL_PULSAR_ANDROID", "0") == "1"
+val pulsarAndroidVersion = getStringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1")
+val localPulsarAndroidSourceDir = file("../../../Android/Pulsar/src/main/java")
+
+if (useLocalPulsarAndroid) {
+    if (!localPulsarAndroidSourceDir.exists()) {
+        throw GradleException("USE_LOCAL_PULSAR_ANDROID=1 but local Pulsar Android sources were not found at $localPulsarAndroidSourceDir")
+    }
+    logger.lifecycle("Using local Pulsar Android sources from $localPulsarAndroidSourceDir")
+} else {
+    logger.lifecycle("Using published Pulsar Android artifact com.swmansion:pulsar:$pulsarAndroidVersion")
+}
+
 android {
     namespace = "com.swmansion.pulsar"
 
@@ -48,6 +69,9 @@ android {
     sourceSets {
         getByName("main") {
             java.srcDirs("src/main/kotlin")
+            if (useLocalPulsarAndroid) {
+                java.srcDir(localPulsarAndroidSourceDir)
+            }
         }
         getByName("test") {
             java.srcDirs("src/test/kotlin")
@@ -79,7 +103,14 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    if (useLocalPulsarAndroid) {
+        // Local sources need the serialization runtime that the artifact would otherwise provide.
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    } else {
+        implementation("com.swmansion:pulsar:$pulsarAndroidVersion")
+    }
+
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.mockito:mockito-core:5.0.0")
 }
