@@ -1,16 +1,16 @@
 package com.swmansion.pulsar.kmp
 
 import android.content.Context
-import com.swmansion.pulsar.kmp.androidimpl.Pulsar as AndroidPulsar
-import com.swmansion.pulsar.kmp.androidimpl.composers.PatternComposer as AndroidPatternComposer
-import com.swmansion.pulsar.kmp.androidimpl.presets.PresetsWrapper as AndroidPresetsWrapper
-import com.swmansion.pulsar.kmp.androidimpl.types.PatternData as AndroidPatternData
-import com.swmansion.pulsar.kmp.androidimpl.types.ContinuousPattern as AndroidContinuousPattern
-import com.swmansion.pulsar.kmp.androidimpl.types.ConfigPoint as AndroidConfigPoint
-import com.swmansion.pulsar.kmp.androidimpl.types.ValuePoint as AndroidValuePoint
-import com.swmansion.pulsar.kmp.androidimpl.types.RealtimeComposable as AndroidRealtimeComposer
-import com.swmansion.pulsar.kmp.androidimpl.types.RealtimeComposerStrategy as AndroidRealtimeComposerStrategy
-import com.swmansion.pulsar.kmp.androidimpl.types.CompatibilityMode as AndroidCompatibilityMode
+import com.swmansion.pulsar.Pulsar as AndroidPulsar
+import com.swmansion.pulsar.composers.PatternComposer as AndroidPatternComposer
+import com.swmansion.pulsar.presets.PresetsWrapper as AndroidPresetsWrapper
+import com.swmansion.pulsar.types.PatternData as AndroidPatternData
+import com.swmansion.pulsar.types.ContinuousPattern as AndroidContinuousPattern
+import com.swmansion.pulsar.types.ConfigPoint as AndroidConfigPoint
+import com.swmansion.pulsar.types.ValuePoint as AndroidValuePoint
+import com.swmansion.pulsar.types.RealtimeComposable as AndroidRealtimeComposer
+import com.swmansion.pulsar.types.RealtimeComposerStrategy as AndroidRealtimeComposerStrategy
+import com.swmansion.pulsar.types.CompatibilityMode as AndroidCompatibilityMode
 
 fun registerAndroidPulsarFactory(context: Context) {
     Pulsar.registerFactory(AndroidPulsarFactory(context))

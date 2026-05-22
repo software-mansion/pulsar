@@ -11,6 +11,42 @@ plugins {
 group = "com.swmansion"
 version = System.getenv("LIB_VERSION") ?: "0.0.1"
 
+fun stringPropertyOrEnv(name: String, defaultValue: String): String =
+    (findProperty(name) as String?) ?: System.getenv(name) ?: defaultValue
+
+// Android: by default depend on the published `com.swmansion:pulsar` Maven artifact.
+// Set USE_LOCAL_PULSAR_ANDROID=1 to compile against the local `Android/Pulsar` sources instead.
+val useLocalPulsarAndroid = stringPropertyOrEnv("USE_LOCAL_PULSAR_ANDROID", "0") == "1"
+val pulsarAndroidVersion = stringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1")
+val localPulsarAndroidSourceDir = rootDir.resolve("../../Android/Pulsar/src/main/java")
+
+// When compiling the local Android sources we must also provide the `com.swmansion.pulsar.BuildConfig`
+// they reference — the standalone `Android/Pulsar` module generates it, but this KMP module (namespace
+// `com.swmansion.pulsar.kmp`) does not. Generate a minimal shim into a dedicated source dir.
+val localPulsarAndroidBuildConfigDir = layout.buildDirectory.dir("generated/localPulsarAndroid").get().asFile
+
+if (useLocalPulsarAndroid) {
+    if (!localPulsarAndroidSourceDir.exists()) {
+        throw GradleException(
+            "USE_LOCAL_PULSAR_ANDROID=1 but local Pulsar Android sources were not found at $localPulsarAndroidSourceDir"
+        )
+    }
+    logger.lifecycle("Using local Pulsar Android sources from $localPulsarAndroidSourceDir")
+    val buildConfigFile = localPulsarAndroidBuildConfigDir.resolve("com/swmansion/pulsar/BuildConfig.kt")
+    buildConfigFile.parentFile.mkdirs()
+    buildConfigFile.writeText(
+        """
+        package com.swmansion.pulsar
+
+        internal object BuildConfig {
+            const val DEBUG = true
+        }
+        """.trimIndent() + "\n"
+    )
+} else {
+    logger.lifecycle("Using published Pulsar Android artifact com.swmansion:pulsar:$pulsarAndroidVersion")
+}
+
 kotlin {
     androidLibrary {
         namespace = "com.swmansion.pulsar.kmp"
@@ -31,9 +67,18 @@ kotlin {
         commonMain.dependencies {
         }
 
-        androidMain.dependencies {
-            implementation(libs.androidx.core.ktx)
-            implementation(libs.kotlinx.coroutines.core)
+        androidMain {
+            if (useLocalPulsarAndroid) {
+                kotlin.srcDir(localPulsarAndroidSourceDir)
+                kotlin.srcDir(localPulsarAndroidBuildConfigDir)
+            }
+            dependencies {
+                implementation(libs.androidx.core.ktx)
+                implementation(libs.kotlinx.coroutines.core)
+                if (!useLocalPulsarAndroid) {
+                    implementation("com.swmansion:pulsar:$pulsarAndroidVersion")
+                }
+            }
         }
 
         commonTest.dependencies {

@@ -32,6 +32,11 @@ The iOS and Android SDKs are standalone native libraries. The React Native (Turb
 - **iOS:** the bridge podspec (`react-native/react-native-pulsar/Pulsar.podspec`, `flutter/pulsar/ios/pulsar.podspec`) depends on the published `Pulsar-haptics` CocoaPod by default. For local development in the example app, set `USE_LOCAL_PULSAR_IOS=1` before `pod install` to use `iOS/Pulsar/` instead.
 - **Android:** the bridge Gradle module (`react-native/react-native-pulsar/android/build.gradle`, `flutter/pulsar/android/build.gradle.kts`) depends on the published `com.swmansion:pulsar` Maven artifact by default. For local development, set `USE_LOCAL_PULSAR_ANDROID=1` to compile against `Android/Pulsar/src/main/java/` instead.
 
+The Kotlin Multiplatform SDK (`kmp/Pulsar/library`) follows the same convention on Android:
+
+- **Android:** `kmp/Pulsar/library/build.gradle.kts` depends on the published `com.swmansion:pulsar` Maven artifact by default. Set `USE_LOCAL_PULSAR_ANDROID=1` (property or env var) to compile `androidMain` against `Android/Pulsar/src/main/java/` instead.
+- **iOS:** `iosMain` still vendors a Kotlin/Native implementation under `iosimpl/`. The Swift `Pulsar-haptics` SDK exposes `@objc` symbols so it can be consumed from Kotlin/Native via cinterop, but the KMP library is not yet wired to it (doing so would require downstream iOS apps to supply the pod at link time).
+
 The native pod/artifact version can be overridden with `PULSAR_IOS_POD_VERSION` / `PULSAR_ANDROID_MAVEN_VERSION`.
 
 When you change native SDK code in `iOS/` or `Android/`, publish a new native artifact (or use the local overrides above) instead of copying shared sources into the RN or Flutter bridge.
