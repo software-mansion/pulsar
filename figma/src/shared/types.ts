@@ -46,11 +46,12 @@ export type UiToMain =
   | { type: 'request-selection' }
   | { type: 'persist-settings'; settings: Settings }
   | { type: 'persist-haptics-token'; token: string | null }
+  | { type: 'persist-favourites'; favourites: string[] }
   | { type: 'notify'; message: string };
 
 // Messages: Main -> UI
 export type MainToUi =
-  | { type: 'init'; settings: Settings; hapticsToken: string | null }
+  | { type: 'init'; settings: Settings; hapticsToken: string | null; favourites: string[] }
   | { type: 'selection'; node: SelectionInfo | null }
   | { type: 'play-preset'; presetId: string }; // emitted when a bound node is clicked in editor
 

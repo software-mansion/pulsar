@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
 
@@ -28,13 +28,12 @@ export default function PresetDetail({
   canPlayOnPhone: boolean;
   onBind: () => void;
 }) {
-  const [tab, setTab] = useState<keyof ReturnType<typeof SNIPPETS> | 'json'>('Swift');
+  const [lang, setLang] = useState<keyof ReturnType<typeof SNIPPETS>>('Swift');
   const snippets = SNIPPETS(entry.data.name);
-  const code =
-    tab === 'json' ? JSON.stringify(entry.data, null, 2) : snippets[tab];
+  const json = JSON.stringify(entry.data, null, 2);
 
-  const copy = () => {
-    navigator.clipboard?.writeText(code).catch(() => {});
+  const copy = (text: string) => {
+    navigator.clipboard?.writeText(text).catch(() => {});
   };
 
   return (
@@ -44,10 +43,11 @@ export default function PresetDetail({
         <div className="spacer" />
         <button className="ghost" onClick={onPlay}>▶ Play</button>
         {canPlayOnPhone && (
-          <button className="primary" onClick={onPlayOnPhone} title="Play on paired phone">
+          <button className="ghost" onClick={onPlayOnPhone} title="Play on paired phone">
             📱 Phone
           </button>
         )}
+        <button className="primary" onClick={onBind}>Bind</button>
       </div>
       <div>
         <div style={{ fontWeight: 700, fontSize: 'var(--fs-xl)' }}>{entry.data.name}</div>
@@ -60,39 +60,52 @@ export default function PresetDetail({
       <Visualization data={entry.data} height={80} />
       <p className="muted" style={{ margin: 0 }}>{entry.data.description}</p>
 
-      <div className="row" style={{ flexWrap: 'wrap', gap: 4 }}>
-        {(['Swift', 'Kotlin', 'React Native', 'Flutter', 'json'] as const).map((t) => (
-          <span
-            key={t}
-            className={`tag ${tab === t ? 'active' : ''}`}
-            onClick={() => setTab(t)}
-          >
-            {t === 'json' ? 'JSON' : t}
-          </span>
-        ))}
-      </div>
+      {/* Usage: SDK code snippets, collapsible */}
+      <details className="accordion">
+        <summary className="row" style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
+          <span className="caret" aria-hidden="true">▸</span>
+          Usage
+        </summary>
+        <div className="row" style={{ flexWrap: 'wrap', gap: 0, marginTop: 8 }}>
+          {(['Swift', 'Kotlin', 'React Native', 'Flutter'] as const).map((t) => (
+            <span
+              key={t}
+              className={`tab ${lang === t ? 'active' : ''}`}
+              onClick={() => setLang(t)}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <pre className="mono scroll" style={CODE_STYLE}>{snippets[lang]}</pre>
+        <div className="row" style={{ marginTop: 8 }}>
+          <div className="spacer" />
+          <button className="ghost" onClick={() => copy(snippets[lang])}>Copy</button>
+        </div>
+      </details>
 
-      <pre
-        className="mono scroll"
-        style={{
-          background: 'var(--color-blue-10)',
-          padding: 8,
-          borderRadius: 4,
-          margin: 0,
-          flex: 1,
-          maxHeight: 200,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word'
-        }}
-      >
-        {code}
-      </pre>
-
-      <div className="row">
-        <button className="ghost" onClick={copy}>Copy</button>
-        <div className="spacer" />
-        <button className="primary" onClick={onBind}>Bind to selection</button>
-      </div>
+      {/* Raw JSON, separate from Usage */}
+      <details className="accordion">
+        <summary className="row" style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
+          <span className="caret" aria-hidden="true">▸</span>
+          JSON
+        </summary>
+        <pre className="mono scroll" style={{ ...CODE_STYLE, marginTop: 8 }}>{json}</pre>
+        <div className="row" style={{ marginTop: 8 }}>
+          <div className="spacer" />
+          <button className="ghost" onClick={() => copy(json)}>Copy</button>
+        </div>
+      </details>
     </div>
   );
 }
+
+const CODE_STYLE: CSSProperties = {
+  background: 'var(--color-blue-10)',
+  padding: 8,
+  borderRadius: 4,
+  margin: 0,
+  maxHeight: 200,
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word'
+};

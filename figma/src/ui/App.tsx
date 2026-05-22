@@ -29,6 +29,8 @@ export default function App() {
   const [filter, setFilter] = useState<FilterState>(useFilterStateInit());
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [favourites, setFavourites] = useState<Set<string>>(new Set());
+  const [favouritesOnly, setFavouritesOnly] = useState(false);
 
   const presetById = useMemo(() => {
     const m = new Map<string, CatalogEntry>();
@@ -42,6 +44,7 @@ export default function App() {
       if (m.type === 'init') {
         setSettings(m.settings);
         setHapticsToken(m.hapticsToken);
+        setFavourites(new Set(m.favourites));
       }
       if (m.type === 'selection') setSelection(m.node);
       // play-preset is handled in a separate effect that re-binds when
@@ -68,6 +71,25 @@ export default function App() {
     send({ type: 'persist-haptics-token', token: hapticsToken });
   }, [hapticsToken]);
 
+  // Persist favourites on change, skipping the first render so we don't clobber
+  // the stored set before `init` arrives from the main thread.
+  const [didInitFav, setDidInitFav] = useState(false);
+  useEffect(() => {
+    if (!didInitFav) {
+      setDidInitFav(true);
+      return;
+    }
+    send({ type: 'persist-favourites', favourites: [...favourites] });
+  }, [favourites]);
+
+  const toggleFavourite = (id: string) => {
+    setFavourites((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   // The play-preset handler captured stale settings/token on mount. Rebind it on changes.
   useEffect(() => {
     const off = onMessage((m) => {
@@ -80,7 +102,10 @@ export default function App() {
     return off;
   }, [settings.soundInEdit, hapticsToken, presetById]);
 
-  const filtered = useMemo(() => applyFilter(PRESETS, filter), [filter]);
+  const filtered = useMemo(() => {
+    const base = applyFilter(PRESETS, filter);
+    return favouritesOnly ? base.filter((e) => favourites.has(e.id)) : base;
+  }, [filter, favouritesOnly, favourites]);
   const openEntry = openId ? presetById.get(openId) ?? null : null;
 
   const playEntry = async (e: CatalogEntry) => {
@@ -142,7 +167,12 @@ export default function App() {
             selection={selection}
             onUnbind={() => send({ type: 'unbind-preset' })}
           />
-          <Filters state={filter} setState={setFilter} />
+          <Filters
+            state={filter}
+            setState={setFilter}
+            favouritesOnly={favouritesOnly}
+            onFavouritesOnlyChange={setFavouritesOnly}
+          />
           <div className="row" style={{ padding: '4px 8px', gap: 6, marginTop: 8 }}>
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{filtered.length} results</span>
             <div className="spacer" />
@@ -181,6 +211,8 @@ export default function App() {
                 entry={e}
                 compact={settings.compactLayout}
                 isBound={selection?.binding?.presetId === e.id}
+                isFavourite={favourites.has(e.id)}
+                onToggleFavourite={() => toggleFavourite(e.id)}
                 onPlay={() => playEntry(e)}
                 onBind={() => bindEntry(e)}
                 onOpen={() => setOpenId(e.id)}

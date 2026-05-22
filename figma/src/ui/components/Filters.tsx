@@ -30,10 +30,14 @@ export type FilterState = {
 
 export default function Filters({
   state,
-  setState
+  setState,
+  favouritesOnly,
+  onFavouritesOnlyChange
 }: {
   state: FilterState;
   setState: (s: FilterState) => void;
+  favouritesOnly: boolean;
+  onFavouritesOnlyChange: (v: boolean) => void;
 }) {
   const update = (patch: Partial<FilterState>) => setState({ ...state, ...patch });
 
@@ -73,10 +77,10 @@ export default function Filters({
       </div>
 
       {/* Filters accordion: grouped tag chips + system presets */}
-      <details style={{ marginTop: 8 }}>
+      <details className="accordion" style={{ marginTop: 8, borderTop: 'none', paddingTop: 0 }}>
         <summary
-          className="row filters-summary"
-          style={{ cursor: 'pointer', userSelect: 'none', fontWeight: 600, fontSize: 'var(--fs-sm)' }}
+          className="row"
+          style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}
         >
           <span className="caret" aria-hidden="true">▸</span>
           Filters
@@ -101,6 +105,20 @@ export default function Filters({
         </summary>
 
         <div style={{ marginTop: 8 }}>
+          {/* Show favourites only */}
+          <label
+            className="row"
+            style={{ marginBottom: 8, gap: 6, cursor: 'pointer', fontSize: 'var(--fs-sm)', userSelect: 'none' }}
+          >
+            <input
+              type="checkbox"
+              checked={favouritesOnly}
+              onChange={(e) => onFavouritesOnlyChange(e.target.checked)}
+            />
+            <span className="star" style={{ color: 'var(--color-yellow-60)' }}>★</span>
+            Show favourites only
+          </label>
+
           {TAG_GROUPS.map((g) => (
             <div key={g.groupName} style={{ marginBottom: 8 }}>
               <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 4 }}>

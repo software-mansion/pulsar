@@ -5,6 +5,8 @@ export default function PresetCard({
   entry,
   compact,
   isBound,
+  isFavourite,
+  onToggleFavourite,
   onPlay,
   onBind,
   onOpen
@@ -12,11 +14,24 @@ export default function PresetCard({
   entry: CatalogEntry;
   compact: boolean;
   isBound: boolean;
+  isFavourite: boolean;
+  onToggleFavourite: () => void;
   onPlay: () => void;
   onBind: () => void;
   onOpen: () => void;
 }) {
   const { data } = entry;
+
+  const favButton = (
+    <button
+      className="fav"
+      title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
+      aria-pressed={isFavourite}
+      onClick={onToggleFavourite}
+    >
+      <span className="star">{isFavourite ? '★' : '☆'}</span>
+    </button>
+  );
 
   if (compact) {
     return (
@@ -32,12 +47,13 @@ export default function PresetCard({
         <div style={{ minWidth: 0, flex: 1 }} onClick={onOpen}>
           <div style={{ fontWeight: 600, cursor: 'pointer' }}>
             {data.name}
-            {isBound && <span className="tag" style={{ marginLeft: 6 }}>bound</span>}
+            {isBound && <span className="bound-badge" style={{ marginLeft: 6 }}>● bound</span>}
           </div>
           <div className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>
-            {data.tags.slice(0, 4).join(' · ')} · {data.duration}ms
+            {data.tags.slice(0, 4).join(' · ')}
           </div>
         </div>
+        {favButton}
         <button className="primary icon" onClick={onBind} title="Bind to selection">Bind</button>
       </div>
     );
@@ -48,8 +64,9 @@ export default function PresetCard({
       <div className="row" style={{ marginBottom: 8 }}>
         <div style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 'var(--fs-lg)' }}>
           {data.name}
-          {isBound && <span className="tag" style={{ marginLeft: 6 }}>bound</span>}
+          {isBound && <span className="bound-badge" style={{ marginLeft: 6 }}>● bound</span>}
         </div>
+        {favButton}
         <button className="ghost icon" onClick={onPlay} title="Play">▶</button>
       </div>
       {data.tags.length > 0 && (

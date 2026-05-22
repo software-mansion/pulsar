@@ -10,6 +10,7 @@ import type {
 const BINDING_KEY = 'pulsar:binding';
 const SETTINGS_KEY = 'pulsar:settings';
 const TOKEN_KEY = 'pulsar:hapticsToken';
+const FAVOURITES_KEY = 'pulsar:favourites';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
@@ -34,6 +35,11 @@ async function loadSettings(): Promise<Settings> {
 
 async function loadToken(): Promise<string | null> {
   return (await figma.clientStorage.getAsync(TOKEN_KEY)) ?? null;
+}
+
+async function loadFavourites(): Promise<string[]> {
+  const raw = await figma.clientStorage.getAsync(FAVOURITES_KEY);
+  return Array.isArray(raw) ? raw : [];
 }
 
 function readBinding(node: BaseNode): BindingMeta | null {
@@ -131,8 +137,12 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken] = await Promise.all([loadSettings(), loadToken()]);
-      postToUi({ type: 'init', settings, hapticsToken });
+      const [settings, hapticsToken, favourites] = await Promise.all([
+        loadSettings(),
+        loadToken(),
+        loadFavourites()
+      ]);
+      postToUi({ type: 'init', settings, hapticsToken, favourites });
       pushSelection();
       break;
     }
@@ -152,6 +162,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'persist-haptics-token':
       await figma.clientStorage.setAsync(TOKEN_KEY, msg.token);
+      break;
+    case 'persist-favourites':
+      await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);
       break;
     case 'notify':
       figma.notify(msg.message);

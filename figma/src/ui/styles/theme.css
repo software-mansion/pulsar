@@ -71,14 +71,33 @@ button {
   box-shadow: var(--shadow-card);
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
-/* No hover effect — feedback comes from the press (:active) state, as in the docs. */
-button:active { transform: translate(-3px, 3px); box-shadow: var(--shadow-press); }
+/* No hover effect — feedback comes from a subtle press (:active) nudge. */
+button:active { transform: translate(-1px, 1px); box-shadow: -1px 1px 0 var(--color-blue-50); }
 /* Unfilled docs variant — same border + offset shadow, lighter label. */
 button.ghost { font-weight: 500; }
 /* Filled docs variant — blue-20 face. */
 button.primary { background: var(--color-blue-20); }
 button.icon { padding: 4px 8px; }
 button.icon svg { display: block; }
+.star { display: block; font-size: var(--fs-lg); line-height: 1; }
+
+/* Favourite toggle — subtle square button on a light fill (mirrors the docs heart button). */
+button.fav {
+  border: 1px solid var(--color-blue-20);
+  box-shadow: none;
+  background: var(--color-blue-10);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+button.fav .star { color: inherit; }
+button.fav[aria-pressed='true'] .star { color: var(--color-yellow-60); }
+button.fav:active { transform: none; box-shadow: none; }
 
 /* Floating scroll-to-top, mirrors the docs preset-list button. */
 button.scroll-top {
@@ -98,7 +117,7 @@ button.scroll-top {
   color: var(--color-blue-50);
   box-shadow: var(--shadow-card);
 }
-button.scroll-top:active { transform: translate(-3px, 3px); box-shadow: var(--shadow-press); }
+button.scroll-top:active { transform: translate(-1px, 1px); box-shadow: -1px 1px 0 var(--color-blue-50); }
 
 input[type='text'], input[type='url'], textarea {
   width: 100%;
@@ -133,6 +152,22 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50);
   background: var(--color-blue-50);
   color: white;
   border-color: var(--color-blue-50);
+}
+
+/* Bound indicator — deliberately distinct from tag pills: solid navy chip. */
+.bound-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
 }
 
 /* Filter dropdown, ported from the docs SelectBox. */
@@ -215,17 +250,19 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50);
   scrollbar-width: thin;
 }
 
+/* Accordions — separated by a top divider line. */
+details.accordion { border-top: 1px solid var(--border); padding-top: 8px; }
 /* Accordion disclosure caret — hide the native marker, rotate ours on open. */
-.filters-summary { list-style: none; }
-.filters-summary::-webkit-details-marker { display: none; }
-.filters-summary .caret {
+details.accordion > summary { list-style: none; cursor: pointer; user-select: none; }
+details.accordion > summary::-webkit-details-marker { display: none; }
+details.accordion > summary .caret {
   display: inline-block;
   color: var(--color-blue-50);
   font-size: var(--fs-xl);
   line-height: 1;
   transition: transform 120ms ease;
 }
-details[open] > .filters-summary .caret { transform: rotate(90deg); }
+details.accordion[open] > summary .caret { transform: rotate(90deg); }
 
 .row { display: flex; align-items: center; gap: 8px; }
 .col { display: flex; flex-direction: column; gap: 8px; }
