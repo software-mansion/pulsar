@@ -1,0 +1,9 @@
+# Node
+*.log
+*.log.*
+node_modules
+
+out/
+dist/
+src/ui/presets-data/index.ts
+.DS_Store
