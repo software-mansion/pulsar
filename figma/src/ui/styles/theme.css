@@ -60,9 +60,10 @@ body,
 button {
   font-family: inherit;
   cursor: pointer;
-  border: 2px solid var(--text);
+  /* Docs button: blue-50 border + same-color offset edge, light face. */
+  border: 2px solid var(--color-blue-50);
   background: var(--surface);
-  color: var(--text);
+  color: var(--color-primary);
   border-radius: var(--radius);
   padding: 6px 10px;
   font-size: var(--fs-sm);
@@ -70,11 +71,34 @@ button {
   box-shadow: var(--shadow-card);
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
-button:hover { transform: translate(1px, -1px); }
+/* No hover effect — feedback comes from the press (:active) state, as in the docs. */
 button:active { transform: translate(-3px, 3px); box-shadow: var(--shadow-press); }
-button.ghost { box-shadow: none; border-color: var(--border); font-weight: 500; }
-button.primary { background: var(--color-blue-50); color: white; border-color: var(--color-primary); }
+/* Unfilled docs variant — same border + offset shadow, lighter label. */
+button.ghost { font-weight: 500; }
+/* Filled docs variant — blue-20 face. */
+button.primary { background: var(--color-blue-20); }
 button.icon { padding: 4px 8px; }
+button.icon svg { display: block; }
+
+/* Floating scroll-to-top, mirrors the docs preset-list button. */
+button.scroll-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--color-blue-50);
+  box-shadow: var(--shadow-card);
+}
+button.scroll-top:active { transform: translate(-3px, 3px); box-shadow: var(--shadow-press); }
 
 input[type='text'], input[type='url'], textarea {
   width: 100%;
@@ -89,17 +113,21 @@ input[type='text'], input[type='url'], textarea {
 input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50); }
 
 .tag {
-  display: inline-block;
-  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 8px;
   font-size: var(--fs-2xs);
-  font-weight: 600;
-  border-radius: 999px;
-  background: var(--color-blue-10);
+  font-weight: 500;
+  line-height: 100%;
+  border-radius: 20px;
+  background: var(--surface);
   color: var(--color-primary);
   border: 1px solid var(--color-blue-20);
   margin: 0 4px 4px 0;
   cursor: pointer;
   user-select: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 .tag.active {
   background: var(--color-blue-50);
@@ -107,10 +135,97 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50);
   border-color: var(--color-blue-50);
 }
 
+/* Filter dropdown, ported from the docs SelectBox. */
+.selectbox { position: relative; user-select: none; }
+.selectbox-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--surface);
+  border: 2px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  font-size: var(--fs-2xs);
+  color: var(--color-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.selectbox-header.has-selection { border-color: var(--color-blue-50); font-weight: 600; }
+.selectbox-arrow { transition: transform 0.2s ease; font-size: var(--fs-2xs); }
+.selectbox-arrow.open { transform: rotate(180deg); }
+.selectbox-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  z-index: 20;
+  padding: 12px;
+  background: var(--surface);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  max-width: calc(100vw - 24px);
+}
+.selectbox-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-2xs);
+  cursor: pointer;
+}
+.selectbox-option input { width: auto; }
+.selectbox-action {
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  color: var(--color-blue-60);
+  cursor: pointer;
+}
+
+/* Signature Pulsar docs preset card: blue-10 fill, blue-50 border + offset shadow. */
+.preset-card {
+  padding: 10px;
+  margin: 0 8px 8px;
+  background: var(--color-blue-10);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  box-sizing: border-box;
+}
+
+/* Top navigation tabs — underline indicator on the active tab. */
+.tab {
+  padding: 4px 2px 8px;
+  margin-left: 14px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: capitalize;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-blue-50);
+}
+
 .scroll {
   overflow-y: auto;
   scrollbar-width: thin;
 }
+
+/* Accordion disclosure caret — hide the native marker, rotate ours on open. */
+.filters-summary { list-style: none; }
+.filters-summary::-webkit-details-marker { display: none; }
+.filters-summary .caret {
+  display: inline-block;
+  color: var(--color-blue-50);
+  font-size: var(--fs-xl);
+  line-height: 1;
+  transition: transform 120ms ease;
+}
+details[open] > .filters-summary .caret { transform: rotate(90deg); }
 
 .row { display: flex; align-items: center; gap: 8px; }
 .col { display: flex; flex-direction: column; gap: 8px; }

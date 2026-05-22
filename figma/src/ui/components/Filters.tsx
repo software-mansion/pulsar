@@ -1,95 +1,143 @@
 import { useMemo } from 'react';
 import type { CatalogEntry } from '../../shared/types';
 
-const TAG_GROUPS: Record<string, string[]> = {
-  Intensity: ['Bold', 'Substantial', 'Gentle'],
-  Texture: ['Flexible', 'Rigid', 'Soft', 'Elastic'],
-  Shape: ['Peak', 'Bumps', 'Ramp', 'Saw', 'Solid', 'Impulses', 'Impulse'],
-  Duration: ['Short', 'Extended', 'Long'],
-  Source: ['System', 'iOS Fallback', 'Vendor', 'Effect', 'Primitive']
+// Tag grouping mirrors the docs `TagsInfo`. Within a group selections are OR'd;
+// across groups they are AND'd.
+const TAG_GROUPS: { groupName: string; tags: string[] }[] = [
+  { groupName: 'Intensity', tags: ['Gentle', 'Substantial', 'Bold'] },
+  { groupName: 'Sharpness', tags: ['Soft', 'Flexible', 'Rigid'] },
+  { groupName: 'Shape', tags: ['Peak', 'Impulses', 'Solid', 'Bumps', 'Saw', 'Pattern', 'Ramp'] },
+  { groupName: 'Duration', tags: ['Impulse', 'Short', 'Extended', 'Long'] }
+];
+
+const TAG_TO_GROUP = new Map<string, string>();
+for (const g of TAG_GROUPS) for (const t of g.tags) TAG_TO_GROUP.set(t, g.groupName);
+
+// System-preset options. Like the docs, selecting any of these switches the
+// dataset from user presets to the matching system presets.
+const SYSTEM_PRESETS = ['iOS', 'Android Primitives', 'Android Effects', 'Android Vendor'] as const;
+const ANDROID_SYSTEM_TAG: Record<string, string> = {
+  'Android Primitives': 'Primitive',
+  'Android Effects': 'Effect',
+  'Android Vendor': 'Vendor'
 };
 
 export type FilterState = {
   search: string;
   tags: Set<string>;
-  category: 'all' | 'user' | 'system';
-  platform: 'all' | 'ios' | 'android';
+  systemPresets: Set<string>;
 };
 
 export default function Filters({
   state,
-  setState,
-  total,
-  visible
+  setState
 }: {
   state: FilterState;
   setState: (s: FilterState) => void;
-  total: number;
-  visible: number;
 }) {
   const update = (patch: Partial<FilterState>) => setState({ ...state, ...patch });
-  const toggle = (tag: string) => {
+
+  const toggleTag = (tag: string) => {
     const next = new Set(state.tags);
     next.has(tag) ? next.delete(tag) : next.add(tag);
     update({ tags: next });
   };
 
+  const toggleSystem = (preset: string) => {
+    const next = new Set(state.systemPresets);
+    next.has(preset) ? next.delete(preset) : next.add(preset);
+    update({ systemPresets: next });
+  };
+
+  const activeCount = state.tags.size + state.systemPresets.size;
+
   return (
     <div style={{ padding: 8, borderBottom: '1px solid var(--border)' }}>
-      <input
-        type="text"
-        placeholder="Search presets…"
-        value={state.search}
-        onChange={(e) => update({ search: e.target.value })}
-      />
-      <div className="row" style={{ marginTop: 6, gap: 4 }}>
-        {(['all', 'user', 'system'] as const).map((c) => (
+      {/* Search */}
+      <div style={{ position: 'relative' }}>
+        <input
+          type="text"
+          placeholder="Search presets by name or description…"
+          value={state.search}
+          onChange={(e) => update({ search: e.target.value })}
+        />
+        {state.search.length > 0 && (
           <span
-            key={c}
-            className={`tag ${state.category === c ? 'active' : ''}`}
-            onClick={() => update({ category: c })}
+            className="tag"
+            style={{ position: 'absolute', right: 4, top: 4, margin: 0 }}
+            onClick={() => update({ search: '' })}
           >
-            {c}
+            Clear
           </span>
-        ))}
-        {state.category !== 'user' && (
-          <>
-            <span className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>·</span>
-            {(['all', 'ios', 'android'] as const).map((p) => (
-              <span
-                key={p}
-                className={`tag ${state.platform === p ? 'active' : ''}`}
-                onClick={() => update({ platform: p })}
-              >
-                {p}
-              </span>
-            ))}
-          </>
         )}
-        <div className="spacer" />
-        <span className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>
-          {visible}/{total}
-        </span>
       </div>
-      <details style={{ marginTop: 6 }}>
-        <summary className="muted" style={{ fontSize: 'var(--fs-xs)', cursor: 'pointer' }}>
-          Tags ({state.tags.size})
+
+      {/* Filters accordion: grouped tag chips + system presets */}
+      <details style={{ marginTop: 8 }}>
+        <summary
+          className="row filters-summary"
+          style={{ cursor: 'pointer', userSelect: 'none', fontWeight: 600, fontSize: 'var(--fs-sm)' }}
+        >
+          <span className="caret" aria-hidden="true">▸</span>
+          Filters
+          {activeCount > 0 && (
+            <span className="tag active" style={{ margin: 0 }}>{activeCount}</span>
+          )}
+          {activeCount > 0 && (
+            <>
+              <div className="spacer" />
+              <span
+                className="tag"
+                style={{ margin: 0 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  update({ tags: new Set(), systemPresets: new Set() });
+                }}
+              >
+                Clear all
+              </span>
+            </>
+          )}
         </summary>
-        <div style={{ marginTop: 6 }}>
-          {Object.entries(TAG_GROUPS).map(([group, tags]) => (
-            <div key={group} style={{ marginBottom: 4 }}>
-              <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 2 }}>{group}</div>
-              {tags.map((t) => (
+
+        <div style={{ marginTop: 8 }}>
+          {TAG_GROUPS.map((g) => (
+            <div key={g.groupName} style={{ marginBottom: 8 }}>
+              <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 4 }}>
+                {g.groupName}
+              </div>
+              <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+                {g.tags.map((t) => (
+                  <span
+                    key={t}
+                    className={`tag ${state.tags.has(t) ? 'active' : ''}`}
+                    style={{ margin: 0 }}
+                    onClick={() => toggleTag(t)}
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div style={{ marginBottom: 4 }}>
+            <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 4 }}>
+              System presets
+            </div>
+            <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+              {SYSTEM_PRESETS.map((s) => (
                 <span
-                  key={t}
-                  className={`tag ${state.tags.has(t) ? 'active' : ''}`}
-                  onClick={() => toggle(t)}
+                  key={s}
+                  className={`tag ${state.systemPresets.has(s) ? 'active' : ''}`}
+                  style={{ margin: 0 }}
+                  onClick={() => toggleSystem(s)}
                 >
-                  {t}
+                  {s}
                 </span>
               ))}
             </div>
-          ))}
+          </div>
         </div>
       </details>
     </div>
@@ -97,24 +145,56 @@ export default function Filters({
 }
 
 export function applyFilter(entries: CatalogEntry[], state: FilterState): CatalogEntry[] {
+  // 1. Active dataset: system presets when any are selected, else user presets.
+  let active: CatalogEntry[];
+  if (state.systemPresets.size > 0) {
+    const wantIos = state.systemPresets.has('iOS');
+    const androidTags = [...state.systemPresets]
+      .filter((s) => s in ANDROID_SYSTEM_TAG)
+      .map((s) => ANDROID_SYSTEM_TAG[s]);
+    active = entries.filter((e) => {
+      if (e.category !== 'system') return false;
+      if (wantIos && e.platform === 'ios') return true;
+      if (e.platform === 'android' && androidTags.some((t) => e.data.tags.includes(t))) return true;
+      return false;
+    });
+  } else {
+    active = entries.filter((e) => e.category === 'user');
+  }
+
+  // 2. Tag groups: OR within group, AND across groups.
+  if (state.tags.size > 0) {
+    const selectedByGroup = new Map<string, string[]>();
+    for (const t of state.tags) {
+      const group = TAG_TO_GROUP.get(t);
+      if (!group) continue;
+      const arr = selectedByGroup.get(group) ?? [];
+      arr.push(t);
+      selectedByGroup.set(group, arr);
+    }
+    active = active.filter((e) => {
+      for (const tagsInGroup of selectedByGroup.values()) {
+        if (!tagsInGroup.some((t) => e.data.tags.includes(t))) return false;
+      }
+      return true;
+    });
+  }
+
+  // 3. Search by name or description.
   const q = state.search.trim().toLowerCase();
-  return entries.filter((e) => {
-    if (state.category !== 'all' && e.category !== state.category) return false;
-    if (state.category !== 'user' && state.platform !== 'all' && e.platform !== state.platform) return false;
-    if (state.tags.size > 0) {
-      for (const t of state.tags) if (!e.data.tags.includes(t)) return false;
-    }
-    if (q) {
-      const hay = (e.data.name + ' ' + e.data.description + ' ' + e.data.tags.join(' ')).toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    return true;
-  });
+  if (q) {
+    active = active.filter(
+      (e) =>
+        e.data.name.toLowerCase().includes(q) || e.data.description.toLowerCase().includes(q)
+    );
+  }
+
+  return active;
 }
 
 export function useFilterStateInit(): FilterState {
   return useMemo(
-    () => ({ search: '', tags: new Set<string>(), category: 'all', platform: 'all' }),
+    () => ({ search: '', tags: new Set<string>(), systemPresets: new Set<string>() }),
     []
   );
 }

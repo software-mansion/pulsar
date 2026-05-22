@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import PRESETS from './presets-data';
 import type { CatalogEntry, SelectionInfo, Settings } from '../shared/types';
 import { onMessage, send } from './figmaBridge';
@@ -27,6 +27,8 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('presets');
   const [openId, setOpenId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterState>(useFilterStateInit());
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const presetById = useMemo(() => {
     const m = new Map<string, CatalogEntry>();
@@ -102,14 +104,16 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <div
         className="row"
-        style={{ padding: '8px 10px', borderBottom: '1px solid var(--border)' }}
+        style={{ padding: '8px 10px 0', gap: 0, borderBottom: '1px solid var(--border)' }}
       >
-        <div style={{ fontWeight: 700, color: 'var(--color-primary)' }}>Pulsar</div>
+        <div style={{ fontWeight: 700, color: 'var(--color-primary)', paddingBottom: 8 }}>
+          Pulsar
+        </div>
         <div className="spacer" />
         {(['presets', 'phone', 'settings'] as const).map((t) => (
           <span
             key={t}
-            className={`tag ${tab === t ? 'active' : ''}`}
+            className={`tab ${tab === t ? 'active' : ''}`}
             onClick={() => {
               setTab(t);
               setOpenId(null);
@@ -120,35 +124,57 @@ export default function App() {
         ))}
       </div>
 
-      <SelectionBar
-        selection={selection}
-        onUnbind={() => send({ type: 'unbind-preset' })}
-      />
+      {(tab !== 'presets' || !!openEntry) && (
+        <SelectionBar
+          selection={selection}
+          onUnbind={() => send({ type: 'unbind-preset' })}
+        />
+      )}
 
       {tab === 'presets' && !openEntry && (
-        <>
-          <Filters
-            state={filter}
-            setState={setFilter}
-            total={PRESETS.length}
-            visible={filtered.length}
+        <div
+          className="scroll"
+          style={{ flex: 1 }}
+          ref={scrollRef}
+          onScroll={(e) => setShowScrollTop(e.currentTarget.scrollTop > 300)}
+        >
+          <SelectionBar
+            selection={selection}
+            onUnbind={() => send({ type: 'unbind-preset' })}
           />
-          <div className="row" style={{ padding: '4px 8px', gap: 6 }}>
+          <Filters state={filter} setState={setFilter} />
+          <div className="row" style={{ padding: '4px 8px', gap: 6, marginTop: 8 }}>
+            <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{filtered.length} results</span>
+            <div className="spacer" />
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>Layout:</span>
-            <span
-              className={`tag ${!settings.compactLayout ? 'active' : ''}`}
+            <button
+              className={`icon ${settings.compactLayout ? 'ghost' : 'primary'}`}
+              title="Full cards"
+              aria-pressed={!settings.compactLayout}
               onClick={() => setSettings({ ...settings, compactLayout: false })}
             >
-              full
-            </span>
-            <span
-              className={`tag ${settings.compactLayout ? 'active' : ''}`}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+                <rect x="3" y="13" width="18" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            </button>
+            <button
+              className={`icon ${settings.compactLayout ? 'primary' : 'ghost'}`}
+              title="Compact rows"
+              aria-pressed={settings.compactLayout}
               onClick={() => setSettings({ ...settings, compactLayout: true })}
             >
-              compact
-            </span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
           </div>
-          <div className="scroll" style={{ flex: 1, paddingTop: settings.compactLayout ? 0 : 8 }}>
+          <div style={{ paddingTop: settings.compactLayout ? 0 : 8 }}>
             {filtered.map((e) => (
               <PresetCard
                 key={e.id}
@@ -164,7 +190,25 @@ export default function App() {
               <p className="muted" style={{ padding: 16 }}>No presets match.</p>
             )}
           </div>
-        </>
+        </div>
+      )}
+
+      {tab === 'presets' && !openEntry && showScrollTop && (
+        <button
+          className="scroll-top"
+          aria-label="Scroll to top"
+          onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 19V5M12 5l-6 6M12 5l6 6"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
       )}
 
       {tab === 'presets' && openEntry && (

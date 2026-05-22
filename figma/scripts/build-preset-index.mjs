@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 // Reads every preset JSON from the cloned Pulsar repo and emits a single
 // bundle (src/ui/presets-data/index.ts) the UI can import without touching disk at runtime.
-import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'fs';
+import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const PULSAR_ROOT = join(here, '..', '..', 'pulsar');
+// Prefer a sibling Pulsar clone (../pulsar); fall back to the repo root when the
+// plugin lives inside the Pulsar repo itself (figma/..).
+const PRESETS_REL = 'docs/src/content/docs/assets/presets';
+const PULSAR_ROOT = [
+  join(here, '..', '..', 'pulsar'),
+  join(here, '..', '..')
+].find((root) => existsSync(join(root, PRESETS_REL))) ?? join(here, '..', '..', 'pulsar');
 const OUT = join(here, '..', 'src', 'ui', 'presets-data', 'index.ts');
 
 const sources = [

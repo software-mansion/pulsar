@@ -42,7 +42,12 @@ export default function Visualization({
       width="100%"
       height={H}
       preserveAspectRatio="none"
-      style={{ background: 'var(--color-blue-10)', borderRadius: 4 }}
+      style={{
+        background: 'white',
+        border: '1px solid var(--color-blue-10)',
+        borderRadius: 8,
+        padding: 4
+      }}
     >
       {ampPath && (
         <path d={`${ampPath} L${W - 2},${H} L2,${H} Z`} fill="var(--color-blue-30)" opacity="0.55" />
