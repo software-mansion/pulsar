@@ -43,7 +43,7 @@ Pod::Spec.new do |s|
   s.source_files = source_files
   s.private_header_files = "ios/**/*.h"
 
-  s.pod_target_xcconfig = {
+  pod_target_xcconfig = {
     "DEFINES_MODULE" => "YES",
   }
 
@@ -51,7 +51,14 @@ Pod::Spec.new do |s|
     s.frameworks = "AVFoundation", "CoreHaptics", "UIKit"
   else
     s.dependency "Pulsar-haptics", pulsar_ios_pod_version
+    # The published `Pulsar-haptics` pod compiles its Swift into the `Pulsar_haptics`
+    # module, whose generated ObjC interface (`Pulsar_haptics-Swift.h`) is not on this
+    # pod's header search path by default. Expose it so the ObjC++ bridge can `#import`
+    # it (C++ modules are disabled, so `@import` is not an option here).
+    pod_target_xcconfig["HEADER_SEARCH_PATHS"] = '"${PODS_CONFIGURATION_BUILD_DIR}/Pulsar-haptics/Swift Compatibility Header"'
   end
+
+  s.pod_target_xcconfig = pod_target_xcconfig
 
   install_modules_dependencies(s)
 end
