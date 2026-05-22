@@ -92,7 +92,15 @@ class Presets {
   }
 
   private clonePattern(pattern: HapticPattern) {
-    return pattern.map((entry) => ({ ...entry }));
+    return pattern.map((entry) =>
+      entry.type === "line"
+        ? {
+            ...entry,
+            intensity: entry.intensity.map((point) => ({ ...point })),
+            frequency: entry.frequency.map((point) => ({ ...point })),
+          }
+        : { ...entry }
+    );
   }
 }
 

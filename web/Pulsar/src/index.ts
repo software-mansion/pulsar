@@ -7,5 +7,12 @@ import Settings from "./Settings.ts";
 
 export default Pulsar;
 export { AudioGenerator, PatternComposer, Presets, Pulsar, RealtimeComposer, Settings };
-export type { HapticPattern, ParsedPattern } from "./types.ts";
+export type {
+  HapticContinuousSegment,
+  HapticLineSegment,
+  HapticPattern,
+  HapticPulseSegment,
+  HapticValuePoint,
+  ParsedPattern,
+} from "./types.ts";
 export type { PresetName, PresetPlaybackResult } from "./Presets.ts";

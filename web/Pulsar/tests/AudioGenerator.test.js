@@ -230,6 +230,40 @@ test("parse follows the same PWM shot cadence as pulse haptics", async () => {
   }
 });
 
+test("parse follows interpolated line cadence for evolving haptics", async () => {
+  installAudioMocks();
+  const generator = new AudioGenerator();
+
+  await generator.parse([
+    {
+      type: "line",
+      timestamp: 0,
+      duration: 200,
+      intensity: [
+        { time: 0, value: 0 },
+        { time: 200, value: 1 },
+      ],
+      frequency: [
+        { time: 0, value: 1 },
+        { time: 200, value: 1 },
+      ],
+    },
+  ]);
+
+  try {
+    const oscillators = createdOfflineContexts[0].createdOscillators;
+    assert.equal(oscillators.length, 9);
+
+    const shotStartTimes = oscillators
+      .filter((_, index) => index % 3 === 0)
+      .map((oscillator) => oscillator.startTime);
+
+    assert.deepEqual(shotStartTimes, [0, 0.04, 0.116]);
+  } finally {
+    restoreAudioMocks();
+  }
+});
+
 test("play respects the global sound setting", async () => {
   installAudioMocks();
   const generator = new AudioGenerator();

@@ -1,6 +1,6 @@
 import { getHapticTimingCapabilities } from "./Engine.ts";
 import Settings from "./Settings.ts";
-import type { HapticPattern, ParsedPattern } from "./types.ts";
+import type { HapticPattern, HapticValuePoint, ParsedPattern } from "./types.ts";
 
 type Interval = {
   start: number;
@@ -71,6 +71,10 @@ class PatternComposer {
       return [{ start, end: start + duration }];
     }
 
+    if (entry.type === "line") {
+      return this.buildLineIntervals(start, duration, entry.intensity, entry.frequency);
+    }
+
     const intensity = this.clamp01(entry.intensity ?? 0.5);
     const frequency = this.clamp01(entry.frequency ?? 0.5);
     const shotLength = this.resolveShotLength(duration, intensity);
@@ -84,6 +88,38 @@ class PatternComposer {
       const shotEnd = Math.min(cursor + shotLength, end);
       intervals.push({ start: cursor, end: shotEnd });
       cursor = shotEnd + pauseLength;
+    }
+
+    return intervals;
+  }
+
+  private buildLineIntervals(
+    start: number,
+    duration: number,
+    intensityPoints: HapticValuePoint[],
+    frequencyPoints: HapticValuePoint[],
+  ) {
+    const normalizedIntensity = this.normalizeCurve(intensityPoints, duration);
+    const normalizedFrequency = this.normalizeCurve(frequencyPoints, duration);
+    const intervals: Interval[] = [];
+    let cursor = 0;
+
+    while (cursor < duration) {
+      const intensity = this.sampleCurve(normalizedIntensity, cursor);
+      const frequency = this.sampleCurve(normalizedFrequency, cursor);
+      const shotLength = Math.min(
+        duration - cursor,
+        this.resolveShotLength(duration, intensity),
+      );
+      const pauseLength = this.resolvePauseLength(duration, frequency);
+      const intervalStart = start + cursor;
+      const intervalEnd = intervalStart + shotLength;
+
+      if (shotLength > 0) {
+        intervals.push({ start: intervalStart, end: intervalEnd });
+      }
+
+      cursor += shotLength + pauseLength;
     }
 
     return intervals;
@@ -131,8 +167,77 @@ class PatternComposer {
     return this.lerp(maxPause, minPauseMs, frequency);
   }
 
+  private normalizeCurve(points: HapticValuePoint[], duration: number) {
+    const bounded = points
+      .map((point) => ({
+        time: this.clamp(point.time, 0, duration),
+        value: this.clamp01(point.value),
+      }))
+      .sort((left, right) => left.time - right.time);
+
+    if (bounded.length === 0) {
+      return [
+        { time: 0, value: 0.5 },
+        { time: duration, value: 0.5 },
+      ];
+    }
+
+    const firstPoint = bounded[0];
+    const lastPoint = bounded[bounded.length - 1];
+
+    if (firstPoint && firstPoint.time > 0) {
+      bounded.unshift({ time: 0, value: firstPoint.value });
+    }
+
+    if (lastPoint && lastPoint.time < duration) {
+      bounded.push({ time: duration, value: lastPoint.value });
+    }
+
+    return bounded;
+  }
+
+  private sampleCurve(points: HapticValuePoint[], time: number) {
+    const clampedTime = Math.max(0, time);
+    const lastPoint = points[points.length - 1];
+
+    if (!lastPoint) {
+      return 0.5;
+    }
+
+    if (clampedTime >= lastPoint.time) {
+      return lastPoint.value;
+    }
+
+    for (let index = 0; index < points.length - 1; index += 1) {
+      const current = points[index];
+      const next = points[index + 1];
+
+      if (!current || !next) {
+        continue;
+      }
+
+      if (clampedTime < current.time || clampedTime > next.time) {
+        continue;
+      }
+
+      const span = next.time - current.time;
+      if (span <= 0) {
+        return next.value;
+      }
+
+      const progress = (clampedTime - current.time) / span;
+      return this.lerp(current.value, next.value, progress);
+    }
+
+    return lastPoint.value;
+  }
+
   private clamp01(value: number) {
     return Math.min(1, Math.max(0, value));
+  }
+
+  private clamp(value: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, value));
   }
 
   private lerp(start: number, end: number, amount: number) {

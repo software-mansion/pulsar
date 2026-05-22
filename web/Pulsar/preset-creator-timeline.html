@@ -17,8 +17,10 @@
         --accent-soft: #f6d2c0;
         --pulse: #d47b45;
         --continuous: #8b5cf6;
+        --line-segment: #159a8c;
         --continuous-soft: rgba(139, 92, 246, 0.18);
         --pulse-soft: rgba(212, 123, 69, 0.18);
+        --line-soft: rgba(21, 154, 140, 0.16);
         --shadow: 0 24px 64px rgba(57, 34, 20, 0.12);
       }
 
@@ -289,6 +291,10 @@
         background: linear-gradient(135deg, var(--pulse), #c9513c);
       }
 
+      .block[data-type="line"] {
+        background: linear-gradient(135deg, var(--line-segment), #1f7bb6);
+      }
+
       .block.selected {
         outline: 3px solid rgba(255, 255, 255, 0.8);
         border-color: rgba(40, 28, 19, 0.35);
@@ -405,6 +411,71 @@
         color: var(--muted);
       }
 
+      .curve-stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .curve-panel {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .curve-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .curve-head strong {
+        font-size: 13px;
+      }
+
+      .curve-head span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .curve-svg {
+        display: block;
+        width: 100%;
+        height: 156px;
+        border-radius: 14px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 242, 235, 0.92));
+        touch-action: none;
+      }
+
+      .curve-grid {
+        stroke: rgba(88, 65, 48, 0.14);
+        stroke-width: 1;
+      }
+
+      .curve-path {
+        fill: none;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .curve-point {
+        cursor: grab;
+      }
+
+      .curve-point.locked {
+        cursor: ns-resize;
+      }
+
+      .curve-hint {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
       @media (max-width: 1080px) {
         .layout {
           grid-template-columns: 1fr;
@@ -427,13 +498,14 @@
         <h1>Timeline Preset Creator</h1>
         <p>
           Shape haptic presets directly on a timeline. Drag blocks to move them, pull their edges
-          to resize, and fine-tune the selected segment with sliders.
+          to resize, and fine-tune the selected segment with sliders or draggable curves.
         </p>
         <div class="chip-row">
           <span class="chip" id="support-chip">Haptics support: checking</span>
           <span class="chip">Drag body: move block</span>
           <span class="chip">Drag handles: resize block</span>
           <span class="chip">Selected pulse: intensity + frequency sliders</span>
+          <span class="chip">Selected line: drag chart points</span>
         </div>
       </section>
 
@@ -442,7 +514,7 @@
           <h2>Timeline</h2>
           <p>
             Each block is one `HapticPattern` entry. Continuous blocks are cool-toned, pulse blocks
-            are warm-toned.
+            are warm-toned, and line blocks carry evolving intensity and frequency curves.
           </p>
 
           <div class="toolbar">
@@ -467,6 +539,10 @@
               <button id="add-pulse" class="secondary" type="button">Add Pulse Block</button>
             </div>
 
+            <div class="row">
+              <button id="add-line" class="ghost" type="button">Add Line Block</button>
+            </div>
+
             <div class="row inline-3">
               <button id="sort-blocks" class="ghost" type="button">Sort by Time</button>
               <button id="compile-pattern" class="ghost" type="button">Compile</button>
@@ -476,6 +552,7 @@
             <div class="legend">
               <span><i style="background: var(--continuous);"></i>continuous</span>
               <span><i style="background: var(--pulse);"></i>pulse</span>
+              <span><i style="background: var(--line-segment);"></i>line</span>
             </div>
 
             <div class="timeline-shell">
@@ -486,7 +563,7 @@
 
         <article class="panel">
           <h2>Inspector</h2>
-          <p>Use sliders for precise tuning after placing a block on the timeline.</p>
+          <p>Use sliders for precise tuning, or shape line segments by dragging control points over time.</p>
 
           <div class="metric-grid">
             <div class="metric">
@@ -553,7 +630,22 @@
       const defaultPattern = [
         { type: "continuous", timestamp: 0, duration: 50, lane: 0 },
         { type: "pulse", timestamp: 100, duration: 260, intensity: 0.35, frequency: 0.82, lane: 1 },
-        { type: "continuous", timestamp: 410, duration: 90, lane: 2 },
+        {
+          type: "line",
+          timestamp: 410,
+          duration: 220,
+          intensity: [
+            { time: 0, value: 0.28 },
+            { time: 95, value: 0.86 },
+            { time: 220, value: 0.42 },
+          ],
+          frequency: [
+            { time: 0, value: 0.25 },
+            { time: 130, value: 0.72 },
+            { time: 220, value: 0.58 },
+          ],
+          lane: 2,
+        },
       ];
 
       let zoom = Number(zoomSlider.value);
@@ -561,18 +653,104 @@
       let selectedId = segments[0]?.id ?? null;
       let compiledPattern = [];
       let interaction = null;
+      let curveInteraction = null;
       let nextId = 1;
 
       function createId() {
         return `segment-${nextId++}`;
       }
 
+      function roundMs(value) {
+        return Math.max(0, Math.round(Number(value) / 5) * 5);
+      }
+
+      function clamp01(value) {
+        return Math.min(1, Math.max(0, Number(value)));
+      }
+
+      function defaultLinePoints(duration, startValue = 0.35, endValue = startValue) {
+        return [
+          { time: 0, value: clamp01(startValue) },
+          { time: duration, value: clamp01(endValue) },
+        ];
+      }
+
+      function normalizeLinePoints(points, duration, fallback = defaultLinePoints(duration)) {
+        const safeDuration = Math.max(minDuration, roundMs(duration));
+        const mapped = Array.isArray(points) && points.length
+          ? points.map((point) => ({
+              time: Math.min(safeDuration, Math.max(0, roundMs(point.time ?? 0))),
+              value: clamp01(point.value ?? 0),
+            }))
+          : fallback.map((point) => ({ ...point }));
+
+        mapped.sort((left, right) => left.time - right.time);
+
+        const deduped = [];
+        mapped.forEach((point) => {
+          const last = deduped[deduped.length - 1];
+          if (last && last.time === point.time) {
+            last.value = point.value;
+          } else {
+            deduped.push({ ...point });
+          }
+        });
+
+        if (!deduped.length) {
+          return defaultLinePoints(safeDuration);
+        }
+
+        if (deduped[0].time !== 0) {
+          deduped.unshift({ time: 0, value: deduped[0].value });
+        }
+
+        const tail = deduped[deduped.length - 1];
+        if (tail.time !== safeDuration) {
+          deduped.push({ time: safeDuration, value: tail.value });
+        } else {
+          tail.time = safeDuration;
+        }
+
+        deduped[0].time = 0;
+        return deduped;
+      }
+
+      function ensureLineSegmentShape(segment) {
+        if (segment.type !== "line") {
+          return segment;
+        }
+
+        segment.intensity = normalizeLinePoints(
+          segment.intensity,
+          segment.duration,
+          defaultLinePoints(segment.duration, 0.3, 0.7),
+        );
+        segment.frequency = normalizeLinePoints(
+          segment.frequency,
+          segment.duration,
+          defaultLinePoints(segment.duration, 0.35, 0.6),
+        );
+        return segment;
+      }
+
       function clonePattern(pattern) {
-        return pattern.map((entry, index) => ({
-          id: entry.id ?? `seed-${index + 1}`,
-          lane: entry.lane ?? index % laneCount,
-          ...entry,
-        }));
+        return pattern.map((entry, index) => {
+          const clone = {
+            ...entry,
+            id: entry.id ?? `seed-${index + 1}`,
+            lane: entry.lane ?? index % laneCount,
+          };
+
+          if (Array.isArray(entry.intensity)) {
+            clone.intensity = entry.intensity.map((point) => ({ ...point }));
+          }
+
+          if (Array.isArray(entry.frequency)) {
+            clone.frequency = entry.frequency.map((point) => ({ ...point }));
+          }
+
+          return ensureLineSegmentShape(clone);
+        });
       }
 
       function ensureIds() {
@@ -591,14 +769,6 @@
 
       function pxPerMs() {
         return 1 + zoom * 4;
-      }
-
-      function roundMs(value) {
-        return Math.max(0, Math.round(value / 5) * 5);
-      }
-
-      function clamp01(value) {
-        return Math.min(1, Math.max(0, Number(value)));
       }
 
       function formatName(name) {
@@ -708,6 +878,9 @@
 
         if (interaction.mode === "resize-right") {
           segment.duration = Math.max(minDuration, interaction.originDuration + deltaMs);
+          if (segment.type === "line") {
+            ensureLineSegmentShape(segment);
+          }
         }
 
         if (interaction.mode === "resize-left") {
@@ -715,6 +888,9 @@
           const rightEdge = interaction.originTimestamp + interaction.originDuration;
           segment.timestamp = Math.min(nextTimestamp, rightEdge - minDuration);
           segment.duration = Math.max(minDuration, rightEdge - segment.timestamp);
+          if (segment.type === "line") {
+            ensureLineSegmentShape(segment);
+          }
         }
 
         renderAll();
@@ -741,11 +917,16 @@
         block.style.top = `${segment.lane * laneHeight + 18}px`;
         block.style.width = `${Math.max(minDuration, segment.duration) * pxPerMs()}px`;
 
-        const title = segment.type === "pulse" ? "Pulse" : "Continuous";
+        const titleMap = {
+          continuous: "Continuous",
+          pulse: "Pulse",
+          line: "Line",
+        };
+
         block.innerHTML = `
           <div class="resize-handle left" data-mode="resize-left"></div>
           <div>
-            <div class="block-title">${title}</div>
+            <div class="block-title">${titleMap[segment.type] ?? "Segment"}</div>
             <div class="block-meta">${segment.timestamp} ms · ${segment.duration} ms</div>
           </div>
           <div class="resize-handle right" data-mode="resize-right"></div>
@@ -784,14 +965,179 @@
         return `<label>${labelText}${inputHtml}</label>`;
       }
 
-      function renderInspector() {
-        const selected = findSelected();
-        if (!selected) {
-          inspector.innerHTML = `<div class="empty">Select a block to edit its timing and pulse parameters.</div>`;
+      function chartPointX(point, duration) {
+        return (point.time / Math.max(duration, minDuration)) * 100;
+      }
+
+      function chartPointY(point) {
+        return (1 - clamp01(point.value)) * 100;
+      }
+
+      function chartPath(points, duration) {
+        return points
+          .map((point, index) => `${index === 0 ? "M" : "L"} ${chartPointX(point, duration).toFixed(2)} ${chartPointY(point).toFixed(2)}`)
+          .join(" ");
+      }
+
+      function renderCurveEditor(trackName, label, color, points, duration) {
+        const circles = points.map((point, index) => {
+          const locked = index === 0 || index === points.length - 1;
+          return `
+            <circle
+              class="curve-point${locked ? " locked" : ""}"
+              data-track="${trackName}"
+              data-index="${index}"
+              cx="${chartPointX(point, duration)}"
+              cy="${chartPointY(point)}"
+              r="5.5"
+              fill="${color}"
+              stroke="white"
+              stroke-width="2"
+            />
+          `;
+        }).join("");
+
+        return `
+          <div class="curve-panel">
+            <div class="curve-head">
+              <strong>${label}</strong>
+              <span>${points.length} points</span>
+            </div>
+            <svg class="curve-svg" data-track-svg="${trackName}" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line class="curve-grid" x1="0" y1="20" x2="100" y2="20"></line>
+              <line class="curve-grid" x1="0" y1="50" x2="100" y2="50"></line>
+              <line class="curve-grid" x1="0" y1="80" x2="100" y2="80"></line>
+              <line class="curve-grid" x1="0" y1="99.5" x2="100" y2="99.5"></line>
+              <path class="curve-path" d="${chartPath(points, duration)}" stroke="${color}"></path>
+              ${circles}
+            </svg>
+            <div class="curve-hint">Click the chart to add a point. Drag points to shape the curve. Double-click a middle point to remove it.</div>
+          </div>
+        `;
+      }
+
+      function pointerToCurvePoint(event, svg, duration, lockedTime = null) {
+        const rect = svg.getBoundingClientRect();
+        const relativeX = rect.width ? (event.clientX - rect.left) / rect.width : 0;
+        const relativeY = rect.height ? (event.clientY - rect.top) / rect.height : 0;
+        const time = lockedTime ?? Math.min(duration, Math.max(0, roundMs(relativeX * duration)));
+        const value = clamp01(1 - relativeY);
+        return { time, value };
+      }
+
+      function beginCurveInteraction(event, segmentId, track, index) {
+        curveInteraction = { segmentId, track, index };
+        event.preventDefault();
+      }
+
+      function updateCurveInteraction(event) {
+        if (!curveInteraction) {
           return;
         }
 
-        const pulseFields = selected.type === "pulse"
+        const segment = segments.find((entry) => entry.id === curveInteraction.segmentId && entry.type === "line");
+        if (!segment) {
+          curveInteraction = null;
+          return;
+        }
+
+        const svg = inspector.querySelector(`[data-track-svg="${curveInteraction.track}"]`);
+        if (!svg) {
+          return;
+        }
+
+        const points = segment[curveInteraction.track];
+        const point = points?.[curveInteraction.index];
+        if (!point) {
+          return;
+        }
+
+        const lockedEdge = curveInteraction.index === 0 || curveInteraction.index === points.length - 1;
+        const nextPoint = pointerToCurvePoint(event, svg, segment.duration, lockedEdge ? point.time : null);
+
+        if (!lockedEdge) {
+          const previousTime = curveInteraction.index > 0 ? points[curveInteraction.index - 1].time + 5 : 0;
+          const nextTime = curveInteraction.index < points.length - 1 ? points[curveInteraction.index + 1].time - 5 : segment.duration;
+          nextPoint.time = Math.min(nextTime, Math.max(previousTime, nextPoint.time));
+        }
+
+        point.time = nextPoint.time;
+        point.value = nextPoint.value;
+        segment[curveInteraction.track] = normalizeLinePoints(points, segment.duration);
+
+        renderInspector();
+        renderOutputs();
+      }
+
+      function endCurveInteraction() {
+        if (!curveInteraction) {
+          return;
+        }
+
+        log(`Updated ${curveInteraction.track} curve for the selected line block.`);
+        curveInteraction = null;
+      }
+
+      function wireCurveEditors(selected) {
+        inspector.querySelectorAll(".curve-point").forEach((pointNode) => {
+          pointNode.addEventListener("pointerdown", (event) => {
+            beginCurveInteraction(
+              event,
+              selected.id,
+              pointNode.dataset.track,
+              Number(pointNode.dataset.index),
+            );
+          });
+
+          pointNode.addEventListener("dblclick", () => {
+            const track = pointNode.dataset.track;
+            const index = Number(pointNode.dataset.index);
+            const points = selected[track];
+            if (!Array.isArray(points) || points.length <= 2 || index === 0 || index === points.length - 1) {
+              return;
+            }
+
+            points.splice(index, 1);
+            selected[track] = normalizeLinePoints(points, selected.duration);
+            renderAll();
+            log(`Removed a ${track} control point.`);
+          });
+        });
+
+        inspector.querySelectorAll(".curve-svg").forEach((svg) => {
+          svg.addEventListener("pointerdown", (event) => {
+            if (event.target.closest(".curve-point")) {
+              return;
+            }
+
+            const track = svg.dataset.trackSvg;
+            const candidate = pointerToCurvePoint(event, svg, selected.duration);
+            selected[track] = normalizeLinePoints([...selected[track], candidate], selected.duration);
+
+            const insertedIndex = selected[track].findIndex((point) => {
+              return point.time === candidate.time && Math.abs(point.value - candidate.value) < 0.001;
+            });
+
+            renderInspector();
+            renderOutputs();
+
+            if (insertedIndex >= 0) {
+              beginCurveInteraction(event, selected.id, track, insertedIndex);
+            }
+
+            log(`Added a ${track} control point.`);
+          });
+        });
+      }
+
+      function renderInspector() {
+        const selected = findSelected();
+        if (!selected) {
+          inspector.innerHTML = `<div class="empty">Select a block to edit its timing, pulse parameters, or line curves.</div>`;
+          return;
+        }
+
+        const detailFields = selected.type === "pulse"
           ? `
             <div class="row">
               <label>
@@ -806,11 +1152,20 @@
               </label>
             </div>
           `
-          : `
-            <div class="row">
-              <div class="empty">Continuous blocks only need start time, duration, and lane placement.</div>
-            </div>
-          `;
+          : selected.type === "line"
+            ? `
+              <div class="row">
+                <div class="curve-stack">
+                  ${renderCurveEditor("intensity", "Intensity Curve", "#159a8c", selected.intensity, selected.duration)}
+                  ${renderCurveEditor("frequency", "Frequency Curve", "#1f7bb6", selected.frequency, selected.duration)}
+                </div>
+              </div>
+            `
+            : `
+              <div class="row">
+                <div class="empty">Continuous blocks only need start time, duration, and lane placement.</div>
+              </div>
+            `;
 
         inspector.innerHTML = `
           <div class="row inline-2">
@@ -819,6 +1174,7 @@
               `<select data-field="type">
                 <option value="continuous"${selected.type === "continuous" ? " selected" : ""}>continuous</option>
                 <option value="pulse"${selected.type === "pulse" ? " selected" : ""}>pulse</option>
+                <option value="line"${selected.type === "line" ? " selected" : ""}>line</option>
               </select>`,
             )}
             ${inspectorRow(
@@ -838,7 +1194,7 @@
               <input data-field="duration" type="range" min="${minDuration}" max="${Math.max(400, totalDuration() + 400)}" step="5" value="${selected.duration}" />
             </label>
           </div>
-          ${pulseFields}
+          ${detailFields}
           <div class="row inline-2">
             <button id="duplicate-selected" class="secondary" type="button">Duplicate Selected</button>
             <button id="delete-selected" class="danger" type="button">Delete Selected</button>
@@ -856,8 +1212,11 @@
             if (field === "type") {
               active.type = control.value;
               if (active.type === "pulse") {
-                active.intensity = active.intensity ?? 0.5;
-                active.frequency = active.frequency ?? 0.5;
+                active.intensity = typeof active.intensity === "number" ? active.intensity : 0.5;
+                active.frequency = typeof active.frequency === "number" ? active.frequency : 0.5;
+              } else if (active.type === "line") {
+                active.intensity = normalizeLinePoints(active.intensity, active.duration, defaultLinePoints(active.duration, 0.3, 0.7));
+                active.frequency = normalizeLinePoints(active.frequency, active.duration, defaultLinePoints(active.duration, 0.35, 0.6));
               } else {
                 delete active.intensity;
                 delete active.frequency;
@@ -868,6 +1227,9 @@
               active.timestamp = roundMs(control.value);
             } else if (field === "duration") {
               active.duration = Math.max(minDuration, roundMs(control.value));
+              if (active.type === "line") {
+                ensureLineSegmentShape(active);
+              }
             } else if (field === "intensity") {
               active.intensity = clamp01(control.value);
             } else if (field === "frequency") {
@@ -884,7 +1246,13 @@
             return;
           }
 
-          const duplicate = { ...active, id: createId(), timestamp: active.timestamp + 40, lane: (active.lane + 1) % laneCount };
+          const duplicate = clonePattern([{
+            ...active,
+            id: createId(),
+            timestamp: active.timestamp + 40,
+            lane: (active.lane + 1) % laneCount,
+          }])[0];
+
           segments.push(duplicate);
           selectedId = duplicate.id;
           renderAll();
@@ -901,16 +1269,27 @@
           renderAll();
           log("Deleted selected block.");
         });
+
+        if (selected.type === "line") {
+          wireCurveEditors(selected);
+        }
       }
 
       function renderOutputs() {
-        const composer = pulsar.getPatternComposer();
-        compiledPattern = composer.parse(patternForComposer());
-        compiledOutput.textContent = JSON.stringify(compiledPattern, null, 2);
+        try {
+          const composer = pulsar.getPatternComposer();
+          compiledPattern = composer.parse(patternForComposer());
+          compiledOutput.textContent = JSON.stringify(compiledPattern, null, 2);
+          metricCompiled.textContent = String(compiledPattern.length);
+        } catch (error) {
+          compiledPattern = [];
+          compiledOutput.textContent = `Compile unavailable: ${error.message}`;
+          metricCompiled.textContent = "—";
+        }
+
         exportOutput.value = `export const ${formatName(presetNameInput.value)}Preset = ${JSON.stringify(patternForComposer(), null, 2)};`;
         metricCount.textContent = String(segments.length);
         metricDuration.textContent = `${totalDuration()} ms`;
-        metricCompiled.textContent = String(compiledPattern.length);
         supportChip.textContent = `Haptics support: ${pulsar.isHapticsSupported() ? "available" : "missing"}`;
       }
 
@@ -921,11 +1300,11 @@
       }
 
       function loadPreset(name) {
-        segments = presets.get(name).map((entry, index) => ({
+        segments = clonePattern(presets.get(name).map((entry, index) => ({
           ...entry,
           id: createId(),
           lane: index % laneCount,
-        }));
+        })));
         selectedId = segments[0]?.id ?? null;
         presetNameInput.value = name;
         renderAll();
@@ -939,10 +1318,26 @@
       }
 
       function addSegment(type) {
+        const lane = segments.length % laneCount;
         const segment = type === "pulse"
-          ? { id: createId(), type, timestamp: totalDuration(), duration: 220, intensity: 0.4, frequency: 0.78, lane: segments.length % laneCount }
-          : { id: createId(), type, timestamp: totalDuration(), duration: 70, lane: segments.length % laneCount };
-        segments.push(segment);
+          ? { id: createId(), type, timestamp: totalDuration(), duration: 220, intensity: 0.4, frequency: 0.78, lane }
+          : type === "line"
+            ? {
+                id: createId(),
+                type,
+                timestamp: totalDuration(),
+                duration: 240,
+                intensity: defaultLinePoints(240, 0.32, 0.74),
+                frequency: [
+                  { time: 0, value: 0.28 },
+                  { time: 120, value: 0.7 },
+                  { time: 240, value: 0.52 },
+                ],
+                lane,
+              }
+            : { id: createId(), type, timestamp: totalDuration(), duration: 70, lane };
+
+        segments.push(ensureLineSegmentShape(segment));
         selectedId = segment.id;
         renderAll();
         log(`Added a ${type} block.`);
@@ -963,6 +1358,7 @@
 
       document.getElementById("add-continuous").addEventListener("click", () => addSegment("continuous"));
       document.getElementById("add-pulse").addEventListener("click", () => addSegment("pulse"));
+      document.getElementById("add-line").addEventListener("click", () => addSegment("line"));
 
       document.getElementById("sort-blocks").addEventListener("click", () => {
         segments.sort((left, right) => left.timestamp - right.timestamp);
@@ -972,18 +1368,26 @@
 
       document.getElementById("compile-pattern").addEventListener("click", () => {
         renderOutputs();
-        log(`Compiled vibration pattern ${JSON.stringify(compiledPattern)}.`);
+        log(
+          compiledOutput.textContent.startsWith("Compile unavailable:")
+            ? compiledOutput.textContent
+            : `Compiled vibration pattern ${JSON.stringify(compiledPattern)}.`,
+        );
       });
 
       document.getElementById("play-pattern").addEventListener("click", () => {
-        const composer = pulsar.getPatternComposer();
-        composer.parse(patternForComposer());
-        const played = composer.play();
-        log(
-          played
-            ? `Played timeline preset ${JSON.stringify(composer.getPattern())}.`
-            : "Browser did not play haptics. Support may be unavailable or disabled.",
-        );
+        try {
+          const composer = pulsar.getPatternComposer();
+          composer.parse(patternForComposer());
+          const played = composer.play();
+          log(
+            played
+              ? `Played timeline preset ${JSON.stringify(composer.getPattern())}.`
+              : "Browser did not play haptics. Support may be unavailable or disabled.",
+          );
+        } catch (error) {
+          log(`Could not play current preset: ${error.message}`);
+        }
       });
 
       document.getElementById("stop-pattern").addEventListener("click", () => {
@@ -1007,6 +1411,10 @@
           endInteraction();
         }
       });
+
+      document.addEventListener("pointermove", updateCurveInteraction);
+      document.addEventListener("pointerup", endCurveInteraction);
+      document.addEventListener("pointercancel", endCurveInteraction);
 
       ensureIds();
       populateBuiltins();

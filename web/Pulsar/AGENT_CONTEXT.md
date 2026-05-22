@@ -70,11 +70,14 @@ Important note:
 
 - `continuous`
 - `pulse`
+- `line`
 
 Behavior:
 
 - `continuous` becomes one uninterrupted vibration interval
 - `pulse` becomes repeated vibration shots separated by pauses
+- `line` becomes repeated vibration shots separated by pauses, but the shot/pause sizes are
+  interpolated over time from control points
 - higher `intensity` means longer shots
 - higher `frequency` means shorter pauses
 - overlapping intervals are merged before producing the final vibrate sequence

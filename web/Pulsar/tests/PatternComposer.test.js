@@ -57,6 +57,44 @@ test("parse merges pulse output with overlapping continuous output", () => {
   assert.deepEqual(parsed, [60, 20, 20, 20, 20, 20, 20]);
 });
 
+test("parse expands line blocks using interpolated intensity and frequency curves", () => {
+  const composer = new PatternComposer();
+
+  const parsed = composer.parse([
+    {
+      type: "line",
+      timestamp: 0,
+      duration: 200,
+      intensity: [
+        { time: 0, value: 0 },
+        { time: 200, value: 1 },
+      ],
+      frequency: [
+        { time: 0, value: 1 },
+        { time: 200, value: 1 },
+      ],
+    },
+  ]);
+
+  assert.deepEqual(parsed, [20, 20, 56, 20, 84]);
+});
+
+test("parse extends line curves to segment boundaries when control points are partial", () => {
+  const composer = new PatternComposer();
+
+  const parsed = composer.parse([
+    {
+      type: "line",
+      timestamp: 50,
+      duration: 120,
+      intensity: [{ time: 30, value: 0 }],
+      frequency: [{ time: 30, value: 1 }],
+    },
+  ]);
+
+  assert.deepEqual(parsed, [0, 50, 20, 20, 20, 20, 20]);
+});
+
 test("play forwards the parsed pattern to navigator.vibrate", () => {
   const composer = new PatternComposer();
   const calls = [];
