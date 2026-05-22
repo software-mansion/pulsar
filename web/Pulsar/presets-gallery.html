@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulsar Web — Preset Gallery</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3efe6;
+        --panel: rgba(255, 251, 245, 0.92);
+        --panel-border: rgba(115, 88, 53, 0.16);
+        --text: #22170f;
+        --muted: #6d5847;
+        --accent: #a2471f;
+        --accent-strong: #7d3214;
+        --accent-soft: #f2d1ba;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 32%),
+          radial-gradient(circle at bottom right, rgba(162, 71, 31, 0.16), transparent 30%),
+          linear-gradient(180deg, #efe8da 0%, #e8dece 100%);
+      }
+
+      .shell {
+        width: min(1280px, calc(100vw - 32px));
+        margin: 32px auto;
+        display: grid;
+        gap: 20px;
+      }
+
+      .hero, .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 28px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 18px 50px rgba(53, 32, 17, 0.08);
+      }
+
+      .hero { padding: 32px; }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1 { margin: 0; font-size: clamp(32px, 5vw, 56px); line-height: 0.95; }
+
+      .hero p {
+        max-width: 820px;
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.6;
+      }
+
+      .panel { padding: 22px; }
+      .panel h2 { margin: 0 0 6px; font-size: 22px; }
+      .panel .subtitle { margin: 0 0 18px; color: var(--muted); }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .toolbar input[type="search"] {
+        flex: 1;
+        min-width: 220px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(109, 88, 71, 0.18);
+        background: rgba(255, 255, 255, 0.9);
+        font: 14px/1.4 inherit;
+        color: var(--text);
+      }
+
+      .toolbar select {
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(109, 88, 71, 0.18);
+        background: rgba(255, 255, 255, 0.9);
+        font: 14px/1.4 inherit;
+        color: var(--text);
+      }
+
+      button {
+        border: 0;
+        border-radius: 14px;
+        padding: 12px 16px;
+        background: var(--accent);
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.14s ease, background 0.14s ease, opacity 0.14s ease;
+      }
+
+      button.secondary {
+        background: rgba(162, 71, 31, 0.12);
+        color: var(--accent-strong);
+      }
+
+      button:hover { transform: translateY(-1px); }
+      button:active { transform: translateY(0); }
+      button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+      .chip {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+
+      .card {
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 20px;
+        border: 1px solid rgba(109, 88, 71, 0.14);
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .card strong { font-size: 16px; }
+      .card .category {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .card .description {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      .card .stats {
+        font: 11px/1.4 "SFMono-Regular", "Menlo", monospace;
+        color: var(--muted);
+      }
+
+      .card .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .vote-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 12px;
+        background: rgba(162, 71, 31, 0.07);
+      }
+
+      .vote-row button {
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 10px;
+      }
+
+      .vote-count {
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--accent-strong);
+      }
+
+      .vote-count.positive { color: var(--success, #245c3f); }
+      .vote-count.negative { color: #8a3024; }
+
+      .vote-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .vote-filter input {
+        width: 70px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(109, 88, 71, 0.18);
+        background: rgba(255, 255, 255, 0.9);
+        font: 13px/1.4 inherit;
+        color: var(--text);
+      }
+
+      .viz {
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(162, 71, 31, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .viz div {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        background: var(--accent);
+        border-radius: 4px;
+        opacity: 0.85;
+      }
+
+      .footer-note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .status {
+        min-height: 70px;
+        white-space: pre-wrap;
+        border-radius: 16px;
+        padding: 14px;
+        background: #1f1814;
+        color: #f5ede4;
+        font: 12px/1.5 "SFMono-Regular", "Menlo", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Pulsar Web · Preset Gallery</p>
+        <h1>50 web-haptic patterns to try in the browser</h1>
+        <p>
+          Each card defines a <code>HapticPattern</code> built from <code>continuous</code> blocks
+          and PWM <code>pulse</code> blocks. Patterns are compiled with the same logic as
+          <code>PatternComposer</code> (20–200&nbsp;ms shot/pause window) and shipped to
+          <code>navigator.vibrate</code>. Open this page on a phone with Web Vibration support to
+          actually feel them — desktop browsers will just show the compiled timing array in the log.
+        </p>
+        <div class="toolbar" style="margin-top: 22px;">
+          <input id="search" type="search" placeholder="Filter by name, category, or description…" />
+          <select id="category-filter">
+            <option value="">All categories</option>
+          </select>
+          <select id="sort-mode">
+            <option value="default">Order: default</option>
+            <option value="votes-desc">Order: votes (high → low)</option>
+            <option value="votes-asc">Order: votes (low → high)</option>
+            <option value="name">Order: name (A → Z)</option>
+          </select>
+          <label class="vote-filter">
+            min&nbsp;votes
+            <input id="vote-min" type="number" step="1" placeholder="−∞" />
+          </label>
+          <label class="vote-filter">
+            max&nbsp;votes
+            <input id="vote-max" type="number" step="1" placeholder="+∞" />
+          </label>
+          <button id="copy-votes" class="secondary" type="button">Copy votes JSON</button>
+          <button id="reset-votes" class="secondary" type="button">Reset votes</button>
+          <button id="stop-all" class="secondary" type="button">Stop all</button>
+          <span class="chip" id="support-chip">checking support…</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Presets</h2>
+        <p class="subtitle">Click <strong>Play</strong> to feel a preset, or <strong>Pattern</strong> to log its compiled vibration array.</p>
+        <div id="grid" class="grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Log</h2>
+        <p class="subtitle">Last action and the compiled vibration timing.</p>
+        <div id="status" class="status">Ready.</div>
+      </section>
+    </main>
+
+    <script>
+      // --- Engine config (mirrors src/Engine.ts) ---
+      const TIMING = { minPulseMs: 20, maxPulseMs: 200, minPauseMs: 20, maxPauseMs: 200 };
+      const clamp01 = (v) => Math.min(1, Math.max(0, v));
+      const lerp = (a, b, t) => a + (b - a) * t;
+
+      // --- Pattern compiler (mirrors src/PatternComposer.ts logic) ---
+      function toIntervals(entry) {
+        const start = Math.max(0, entry.timestamp);
+        const duration = Math.max(0, entry.duration);
+        if (duration === 0) return [];
+
+        if (entry.type === "continuous") {
+          return [{ start, end: start + duration }];
+        }
+
+        const intensity = clamp01(entry.intensity ?? 0.5);
+        const frequency = clamp01(entry.frequency ?? 0.5);
+        const maxShot = Math.max(TIMING.minPulseMs, Math.min(duration, TIMING.maxPulseMs));
+        const shotLength = lerp(TIMING.minPulseMs, maxShot, intensity);
+        const maxPause = Math.max(TIMING.minPauseMs, Math.min(duration, TIMING.maxPauseMs));
+        const pauseLength = lerp(maxPause, TIMING.minPauseMs, frequency);
+
+        const intervals = [];
+        let cursor = start;
+        const end = start + duration;
+        while (cursor < end) {
+          const shotEnd = Math.min(cursor + shotLength, end);
+          intervals.push({ start: cursor, end: shotEnd });
+          cursor = shotEnd + pauseLength;
+        }
+        return intervals;
+      }
+
+      function compile(pattern) {
+        const intervals = pattern.flatMap(toIntervals).sort((a, b) => a.start - b.start);
+        if (intervals.length === 0) return [];
+
+        const merged = [{ ...intervals[0] }];
+        for (let i = 1; i < intervals.length; i++) {
+          const prev = merged[merged.length - 1];
+          const cur = intervals[i];
+          if (cur.start <= prev.end) {
+            prev.end = Math.max(prev.end, cur.end);
+          } else {
+            merged.push({ ...cur });
+          }
+        }
+
+        const out = [];
+        let cursor = 0;
+        for (const iv of merged) {
+          if (iv.start > cursor) {
+            if (out.length === 0) out.push(0);
+            out.push(iv.start - cursor);
+          }
+          out.push(iv.end - iv.start);
+          cursor = iv.end;
+        }
+        return out.map((n) => Math.round(n));
+      }
+
+      // --- Helpers for building patterns ---
+      const c = (timestamp, duration) => ({ type: "continuous", timestamp, duration });
+      const p = (timestamp, duration, intensity, frequency) => ({
+        type: "pulse", timestamp, duration, intensity, frequency,
+      });
+
+      // Build a sequence of N continuous taps with given gap and duration.
+      function taps(start, count, gap, duration) {
+        const out = [];
+        for (let i = 0; i < count; i++) out.push(c(start + i * gap, duration));
+        return out;
+      }
+
+      // --- The preset catalog ---
+      const PRESETS = [
+        // --- Tactile UI ---
+        { name: "tap",            category: "UI",          description: "A single quick tap — minimal click feedback.",
+          pattern: [c(0, 30)] },
+        { name: "softTap",        category: "UI",          description: "Gentler tap for low-emphasis confirmations.",
+          pattern: [c(0, 20)] },
+        { name: "firmTap",        category: "UI",          description: "Heavier tap suggesting a deliberate press.",
+          pattern: [c(0, 65)] },
+        { name: "doubleTap",      category: "UI",          description: "Two crisp taps in quick succession.",
+          pattern: [c(0, 30), c(90, 30)] },
+        { name: "tripleTap",      category: "UI",          description: "Three even taps — strong attention pull.",
+          pattern: taps(0, 3, 80, 28) },
+        { name: "longPress",      category: "UI",          description: "Long sustained vibration for press-and-hold actions.",
+          pattern: [c(0, 200)] },
+        { name: "selectionTick",  category: "UI",          description: "Tiny tick reminiscent of a picker wheel.",
+          pattern: [c(0, 22)] },
+        { name: "toggleOn",       category: "UI",          description: "Short tick followed by a slightly stronger thunk.",
+          pattern: [c(0, 25), c(70, 55)] },
+        { name: "toggleOff",      category: "UI",          description: "Mirror of toggleOn — fades from strong to short.",
+          pattern: [c(0, 55), c(80, 25)] },
+        { name: "swipeRefresh",   category: "UI",          description: "Subtle ramp suggesting content snapping into place.",
+          pattern: [p(0, 220, 0.2, 0.6), c(260, 50)] },
+
+        // --- Notifications / system ---
+        { name: "success",        category: "Notification", description: "Ascending three-tap success motif.",
+          pattern: [c(0, 40), c(90, 55), c(180, 90)] },
+        { name: "error",          category: "Notification", description: "Two heavy buzzes spelling something went wrong.",
+          pattern: [c(0, 90), c(160, 90)] },
+        { name: "warning",        category: "Notification", description: "A textured warning pulse capped by a firm tap.",
+          pattern: [p(0, 240, 0.35, 0.9), c(320, 120)] },
+        { name: "notification",   category: "Notification", description: "Subtle two-step ping for incoming notifications.",
+          pattern: [c(0, 35), c(110, 60)] },
+        { name: "messageReceived",category: "Notification", description: "Quick double-tap echo like a chat bubble.",
+          pattern: [c(0, 28), c(70, 28), c(180, 48)] },
+        { name: "ringingPhone",   category: "Notification", description: "Two long buzzes with a pause, like a classic ring.",
+          pattern: [p(0, 400, 0.9, 0.95), p(700, 400, 0.9, 0.95)] },
+        { name: "morseSOS",       category: "Notification", description: "···−−−··· — three short, three long, three short.",
+          pattern: [
+            c(0, 60), c(120, 60), c(240, 60),
+            c(420, 180), c(660, 180), c(900, 180),
+            c(1140, 60), c(1260, 60), c(1380, 60),
+          ] },
+        { name: "alarmClock",     category: "Notification", description: "Repeating buzz volleys reminiscent of an alarm.",
+          pattern: [p(0, 300, 0.9, 0.95), p(450, 300, 0.9, 0.95), p(900, 300, 0.9, 0.95)] },
+        { name: "criticalAlert",  category: "Notification", description: "Long sharp blast followed by a tighter follow-up.",
+          pattern: [c(0, 180), c(240, 90), c(380, 90)] },
+
+        // --- Rhythm / musical ---
+        { name: "heartbeat",      category: "Rhythm",      description: "Lub-dub pairs at a calm resting tempo.",
+          pattern: [c(0, 45), c(120, 70), c(420, 45), c(540, 70)] },
+        { name: "heartbeatFast",  category: "Rhythm",      description: "Excited heartbeat with shorter spacing.",
+          pattern: [c(0, 40), c(95, 60), c(280, 40), c(375, 60), c(560, 40), c(655, 60)] },
+        { name: "breathing",      category: "Rhythm",      description: "Long inhale-style swell with a slow release.",
+          pattern: [p(0, 900, 0.4, 0.2)] },
+        { name: "metronome",      category: "Rhythm",      description: "Steady evenly spaced ticks like a click track.",
+          pattern: taps(0, 6, 200, 30) },
+        { name: "waltz",          category: "Rhythm",      description: "Strong-weak-weak in 3/4 time — one bar repeated.",
+          pattern: [c(0, 70), c(220, 30), c(420, 30), c(660, 70), c(880, 30), c(1080, 30)] },
+        { name: "march",          category: "Rhythm",      description: "Steady 4/4 march with accented downbeats.",
+          pattern: [c(0, 70), c(200, 35), c(400, 35), c(600, 35), c(800, 70), c(1000, 35), c(1200, 35), c(1400, 35)] },
+        { name: "claveSonClave",  category: "Rhythm",      description: "Afro-Cuban 3-2 son clave pattern.",
+          pattern: [c(0, 40), c(300, 40), c(600, 40), c(900, 40), c(1200, 40)] },
+        { name: "samba",          category: "Rhythm",      description: "Lively syncopated samba surdo pattern.",
+          pattern: [c(0, 60), c(180, 30), c(300, 30), c(480, 60), c(660, 30), c(780, 30)] },
+        { name: "drumroll",       category: "Rhythm",      description: "Accelerating roll with a final accent.",
+          pattern: [p(0, 600, 0.1, 1.0), c(640, 120)] },
+        { name: "tangoStomp",     category: "Rhythm",      description: "Sharp-sharp-long like a tango heel stomp.",
+          pattern: [c(0, 50), c(160, 50), c(320, 180)] },
+
+        // --- Textures / continuous feels ---
+        { name: "buzz",           category: "Texture",     description: "Tight high-frequency buzz, like an angry insect.",
+          pattern: [p(0, 600, 0.1, 1.0)] },
+        { name: "purr",           category: "Texture",     description: "Slow low-frequency rumble like a cat's purr.",
+          pattern: [p(0, 1200, 0.6, 0.35)] },
+        { name: "shiver",         category: "Texture",     description: "Rapid trembling pulses — a cold shiver.",
+          pattern: [p(0, 700, 0.2, 0.9)] },
+        { name: "tremor",         category: "Texture",     description: "Irregular small pulses with growing intensity.",
+          pattern: [p(0, 400, 0.15, 0.7), p(450, 500, 0.3, 0.75), p(1000, 600, 0.5, 0.8)] },
+        { name: "earthquake",     category: "Texture",     description: "Long heavy rumble that doesn't let up.",
+          pattern: [p(0, 1800, 0.9, 0.6)] },
+        { name: "tickle",         category: "Texture",     description: "Light fast pulses — almost playful.",
+          pattern: [p(0, 500, 0.05, 0.9)] },
+        { name: "machineGun",     category: "Texture",     description: "Rapid evenly-spaced bursts.",
+          pattern: [p(0, 800, 0.25, 1.0)] },
+        { name: "engineIdle",     category: "Texture",     description: "Steady mechanical idle — short shots, even pauses.",
+          pattern: [p(0, 1400, 0.2, 0.55)] },
+        { name: "engineRevving",  category: "Texture",     description: "Two engine revs followed by a sustained roar.",
+          pattern: [p(0, 350, 0.3, 0.7), p(450, 350, 0.5, 0.85), p(900, 800, 0.9, 0.95)] },
+        { name: "staticHiss",     category: "Texture",     description: "Tiny irregular ticks like radio static.",
+          pattern: [c(0, 22), c(60, 22), c(140, 22), c(180, 22), c(280, 22), c(330, 22), c(420, 22), c(480, 22), c(580, 22)] },
+
+        // --- Nature ---
+        { name: "raindrop",       category: "Nature",      description: "Single soft drop hitting a surface.",
+          pattern: [c(0, 25)] },
+        { name: "rainfall",       category: "Nature",      description: "Steady scattered drops over a few seconds.",
+          pattern: [c(0, 22), c(140, 22), c(310, 22), c(420, 22), c(610, 22), c(740, 22), c(900, 22), c(1080, 22)] },
+        { name: "thunder",        category: "Nature",      description: "Distant rumble with a sharp crack at the end.",
+          pattern: [p(0, 1200, 0.85, 0.45), c(1260, 180)] },
+        { name: "ocean",          category: "Nature",      description: "Two slow swells like waves rolling in.",
+          pattern: [p(0, 900, 0.4, 0.25), p(1100, 900, 0.5, 0.3)] },
+        { name: "cricket",        category: "Nature",      description: "Short high-frequency chirp.",
+          pattern: [p(0, 200, 0.1, 1.0), p(450, 200, 0.1, 1.0)] },
+        { name: "campfire",       category: "Nature",      description: "Irregular crackles over a soft background hiss.",
+          pattern: [p(0, 1500, 0.1, 0.4), c(220, 35), c(680, 45), c(1180, 35)] },
+        { name: "footsteps",      category: "Nature",      description: "Six even paced footsteps.",
+          pattern: taps(0, 6, 320, 60) },
+        { name: "gallop",         category: "Nature",      description: "Da-da-dum horse gallop, repeated.",
+          pattern: [c(0, 30), c(90, 30), c(170, 70), c(420, 30), c(510, 30), c(590, 70)] },
+
+        // --- Cinematic / dramatic ---
+        { name: "explosion",      category: "Cinematic",   description: "Sharp burst followed by a fading rumble.",
+          pattern: [c(0, 180), p(220, 700, 0.7, 0.45)] },
+        { name: "fireworksFinale",category: "Cinematic",   description: "Three escalating bursts climaxing in a long boom.",
+          pattern: [c(0, 60), c(180, 80), c(380, 100), c(560, 60), c(700, 60), c(900, 220)] },
+        { name: "powerUp",        category: "Cinematic",   description: "Ascending shimmer — like a charge completing.",
+          pattern: [p(0, 600, 0.15, 0.5), p(640, 400, 0.5, 0.8), c(1080, 140)] },
+        { name: "powerDown",      category: "Cinematic",   description: "Descending decay — like a system shutting off.",
+          pattern: [c(0, 140), p(180, 400, 0.5, 0.8), p(620, 600, 0.2, 0.4)] },
+        { name: "teleport",       category: "Cinematic",   description: "Swirling whoosh ending in a clean tap.",
+          pattern: [p(0, 500, 0.4, 0.85), c(540, 60)] },
+        { name: "anticipation",   category: "Cinematic",   description: "Slowly building tension — accelerating ticks.",
+          pattern: [c(0, 25), c(400, 25), c(720, 25), c(980, 30), c(1180, 30), c(1340, 35), c(1460, 60), c(1560, 120)] },
+        { name: "suspense",       category: "Cinematic",   description: "Slow ominous low pulse without resolution.",
+          pattern: [p(0, 1600, 0.7, 0.25)] },
+        { name: "drumrollReveal", category: "Cinematic",   description: "Accelerating roll, pause, single triumphant tap.",
+          pattern: [p(0, 700, 0.15, 0.95), c(900, 200)] },
+
+        // --- Gaming ---
+        { name: "coinPickup",     category: "Gaming",      description: "Sparkly two-tap reward.",
+          pattern: [c(0, 25), c(70, 35)] },
+        { name: "damageTaken",    category: "Gaming",      description: "Sharp painful jolt.",
+          pattern: [c(0, 120)] },
+        { name: "criticalHit",    category: "Gaming",      description: "Heavy slam followed by a wobble.",
+          pattern: [c(0, 160), p(200, 350, 0.6, 0.7)] },
+        { name: "levelUp",        category: "Gaming",      description: "Four ascending taps — celebratory.",
+          pattern: [c(0, 35), c(110, 45), c(240, 60), c(400, 90)] },
+        { name: "gameOver",       category: "Gaming",      description: "Four descending heavy taps — defeated.",
+          pattern: [c(0, 120), c(220, 90), c(380, 70), c(500, 45)] },
+        { name: "reload",         category: "Gaming",      description: "Click-slide-clack of reloading a weapon.",
+          pattern: [c(0, 40), p(80, 220, 0.4, 0.75), c(330, 60)] },
+        { name: "shoot",          category: "Gaming",      description: "Single sharp recoil tap.",
+          pattern: [c(0, 80)] },
+        { name: "shieldHit",      category: "Gaming",      description: "Hard impact bleeding into a shimmer.",
+          pattern: [c(0, 100), p(120, 300, 0.3, 0.85)] },
+        { name: "comboFinisher",  category: "Gaming",      description: "Triple hit ending in a heavy slam.",
+          pattern: [c(0, 40), c(110, 40), c(220, 40), c(360, 180)] },
+
+        // --- Emotional / ambient ---
+        { name: "calm",           category: "Emotional",   description: "Slow gentle breath-like pulse.",
+          pattern: [p(0, 1500, 0.5, 0.15)] },
+        { name: "nervous",        category: "Emotional",   description: "Irregular fast micro-taps — jittery.",
+          pattern: [p(0, 800, 0.1, 0.85)] },
+        { name: "anxiety",        category: "Emotional",   description: "Building uneven pulses that don't resolve.",
+          pattern: [p(0, 400, 0.2, 0.5), p(450, 500, 0.4, 0.7), p(1000, 600, 0.6, 0.85)] },
+        { name: "excitement",     category: "Emotional",   description: "Rapid bright bursts.",
+          pattern: [c(0, 30), c(70, 30), c(140, 50), p(220, 300, 0.3, 0.9)] },
+
+        // --- Communication / themed ---
+        { name: "morseHello",     category: "Communication", description: "H-I in morse: ···· ··",
+          pattern: [c(0, 60), c(140, 60), c(280, 60), c(420, 60), c(620, 60), c(760, 60)] },
+        { name: "clockTick",      category: "Communication", description: "Slow steady seconds-hand ticks.",
+          pattern: taps(0, 5, 500, 30) },
+        { name: "typewriter",     category: "Communication", description: "Rapid uneven key strikes with a final return.",
+          pattern: [c(0, 25), c(110, 25), c(180, 25), c(290, 25), c(360, 25), c(490, 25), c(560, 25), c(710, 60)] },
+        { name: "unlock",         category: "Communication", description: "Three short clicks and a satisfying clunk.",
+          pattern: [c(0, 25), c(80, 25), c(160, 25), c(260, 90)] },
+
+        // --- UI (more) ---
+        { name: "scrollEnd",      category: "UI",          description: "Soft bump when scrolling hits the boundary.",
+          pattern: [c(0, 22), c(50, 45)] },
+        { name: "pullToRefresh",  category: "UI",          description: "Gentle stretch with a snap at release.",
+          pattern: [p(0, 350, 0.15, 0.5), c(380, 70)] },
+        { name: "snapToGrid",     category: "UI",          description: "Tiny magnetic click locking into place.",
+          pattern: [c(0, 18), c(40, 35)] },
+        { name: "dragStart",      category: "UI",          description: "Soft lift confirming an item is now grabbed.",
+          pattern: [c(0, 35), c(80, 22)] },
+        { name: "dragDrop",       category: "UI",          description: "Firm thud as the item settles into its slot.",
+          pattern: [c(0, 90)] },
+        { name: "menuOpen",       category: "UI",          description: "Light swoosh into a tap as the menu opens.",
+          pattern: [p(0, 180, 0.2, 0.7), c(210, 35)] },
+        { name: "menuClose",      category: "UI",          description: "Inverse of menuOpen — tap then trailing fade.",
+          pattern: [c(0, 35), p(60, 180, 0.2, 0.7)] },
+        { name: "buttonHover",    category: "UI",          description: "Tiny acknowledgement when a control is focused.",
+          pattern: [c(0, 15)] },
+        { name: "sliderTick",     category: "UI",          description: "Even ticks as a slider crosses step boundaries.",
+          pattern: taps(0, 4, 80, 18) },
+        { name: "keyClick",       category: "UI",          description: "Short crisp key-press click.",
+          pattern: [c(0, 24)] },
+
+        // --- Notifications (more) ---
+        { name: "doNotDisturb",   category: "Notification", description: "Long low-energy buzz to discourage action.",
+          pattern: [p(0, 600, 0.6, 0.25)] },
+        { name: "lowBattery",     category: "Notification", description: "Two desperate short bursts.",
+          pattern: [c(0, 40), c(110, 40)] },
+        { name: "batteryFull",    category: "Notification", description: "Quiet rising confirmation.",
+          pattern: [c(0, 30), c(80, 50), c(180, 70)] },
+        { name: "callIncoming",   category: "Notification", description: "Pattern of two long pulses repeating.",
+          pattern: [p(0, 350, 0.85, 0.95), p(550, 350, 0.85, 0.95), p(1300, 350, 0.85, 0.95), p(1500, 350, 0.85, 0.95)] },
+        { name: "callEnded",      category: "Notification", description: "Single decisive thunk marking hang-up.",
+          pattern: [c(0, 110)] },
+        { name: "calendarReminder", category: "Notification", description: "Two polite chimes.",
+          pattern: [c(0, 45), c(180, 45)] },
+        { name: "emergency",      category: "Notification", description: "Aggressive triple-burst alarm.",
+          pattern: [p(0, 250, 0.9, 1.0), p(380, 250, 0.9, 1.0), p(760, 250, 0.9, 1.0)] },
+        { name: "softPing",       category: "Notification", description: "Single soft welcome ping.",
+          pattern: [c(0, 35)] },
+        { name: "mailSent",       category: "Notification", description: "Quick whoosh ending in a confident tap.",
+          pattern: [p(0, 200, 0.2, 0.85), c(230, 50)] },
+
+        // --- Rhythm (more) ---
+        { name: "bossanova",      category: "Rhythm",      description: "Smooth bossa nova partido alto cell.",
+          pattern: [c(0, 35), c(280, 35), c(480, 35), c(720, 35), c(960, 35), c(1160, 35)] },
+        { name: "funkGroove",     category: "Rhythm",      description: "Syncopated funk kick pattern.",
+          pattern: [c(0, 60), c(180, 30), c(360, 30), c(480, 60), c(660, 30), c(840, 60)] },
+        { name: "rockBeat",       category: "Rhythm",      description: "Classic kick-snare back-beat over two bars.",
+          pattern: [c(0, 70), c(240, 50), c(480, 70), c(720, 50), c(960, 70), c(1200, 50)] },
+        { name: "reggaeOneDrop",  category: "Rhythm",      description: "Reggae one-drop emphasising beat three.",
+          pattern: [c(0, 30), c(480, 80), c(720, 30)] },
+        { name: "tribalDrum",     category: "Rhythm",      description: "Deep tribal drum call with answering taps.",
+          pattern: [c(0, 120), c(220, 40), c(310, 40), c(500, 120)] },
+        { name: "tapDance",       category: "Rhythm",      description: "Rapid heel-toe sequence.",
+          pattern: [c(0, 22), c(80, 22), c(160, 22), c(220, 22), c(330, 35), c(440, 22), c(500, 22)] },
+        { name: "polka",          category: "Rhythm",      description: "Bouncy oom-pah polka beat.",
+          pattern: [c(0, 70), c(220, 35), c(440, 70), c(660, 35)] },
+        { name: "houseFourOnFloor", category: "Rhythm",    description: "Steady four-on-the-floor kick pattern.",
+          pattern: taps(0, 4, 240, 80) },
+        { name: "hipHopBoom",     category: "Rhythm",      description: "Boom-bap with kick and a delayed snare.",
+          pattern: [c(0, 80), c(280, 60), c(480, 80), c(700, 60)] },
+
+        // --- Texture (more) ---
+        { name: "snake",          category: "Texture",     description: "Sinuous low pulse evoking slithering.",
+          pattern: [p(0, 1400, 0.45, 0.3)] },
+        { name: "bee",            category: "Texture",     description: "Quick high-pitched buzz approaching.",
+          pattern: [p(0, 350, 0.1, 1.0), p(500, 500, 0.15, 1.0)] },
+        { name: "drilling",       category: "Texture",     description: "Mechanical relentless drilling.",
+          pattern: [p(0, 1200, 0.3, 1.0)] },
+        { name: "sawing",         category: "Texture",     description: "Slow back-and-forth sawing rhythm.",
+          pattern: [p(0, 1400, 0.5, 0.35)] },
+        { name: "hammering",      category: "Texture",     description: "Hard evenly-spaced hammer strikes.",
+          pattern: [c(0, 80), c(300, 80), c(600, 80), c(900, 80)] },
+        { name: "ratchet",        category: "Texture",     description: "Accelerating ratchet wheel clicks.",
+          pattern: [p(0, 600, 0.15, 0.8)] },
+        { name: "vinylCrackle",   category: "Texture",     description: "Sparse irregular pops over a soft hiss.",
+          pattern: [p(0, 1600, 0.08, 0.35), c(180, 30), c(620, 30), c(1100, 30)] },
+        { name: "boiling",        category: "Texture",     description: "Random small pulses like bubbles popping.",
+          pattern: [p(0, 1500, 0.12, 0.55)] },
+        { name: "windGust",       category: "Texture",     description: "Swelling sustained gust.",
+          pattern: [p(0, 1300, 0.7, 0.2)] },
+
+        // --- Nature (more) ---
+        { name: "owlHoot",        category: "Nature",      description: "Two soft hoots — hoo, hoo.",
+          pattern: [p(0, 200, 0.4, 0.55), p(420, 250, 0.5, 0.55)] },
+        { name: "wolfHowl",       category: "Nature",      description: "Long swelling howl that fades out.",
+          pattern: [p(0, 1500, 0.8, 0.18)] },
+        { name: "frogCroak",      category: "Nature",      description: "Two short throaty croaks.",
+          pattern: [p(0, 140, 0.4, 0.9), p(300, 140, 0.4, 0.9)] },
+        { name: "birdsong",       category: "Nature",      description: "Bright sequence of high chirps.",
+          pattern: [c(0, 20), c(70, 20), c(140, 20), c(280, 25), c(360, 20), c(420, 20)] },
+        { name: "waterfall",      category: "Nature",      description: "Continuous rumbling cascade.",
+          pattern: [p(0, 2000, 0.6, 0.6)] },
+        { name: "snowfall",       category: "Nature",      description: "Whisper-soft sparse touches.",
+          pattern: [c(0, 18), c(420, 18), c(780, 18), c(1180, 18)] },
+        { name: "rollingThunder", category: "Nature",      description: "Multiple distant rumbles overlapping.",
+          pattern: [p(0, 900, 0.65, 0.3), p(700, 1100, 0.75, 0.35)] },
+        { name: "horseTrot",      category: "Nature",      description: "Regular two-beat trot rhythm.",
+          pattern: [c(0, 35), c(120, 35), c(360, 35), c(480, 35), c(720, 35), c(840, 35)] },
+
+        // --- Cinematic (more) ---
+        { name: "spaceLaunch",    category: "Cinematic",   description: "Long building rumble climaxing in liftoff.",
+          pattern: [p(0, 1600, 0.4, 0.4), p(1620, 600, 0.8, 0.9)] },
+        { name: "swordDraw",      category: "Cinematic",   description: "Drawn-out shing ending with a sharp tip flick.",
+          pattern: [p(0, 350, 0.25, 0.8), c(380, 40)] },
+        { name: "swordClash",     category: "Cinematic",   description: "Two sharp metallic strikes.",
+          pattern: [c(0, 65), c(160, 65)] },
+        { name: "magicCast",      category: "Cinematic",   description: "Building shimmer climaxing in a release.",
+          pattern: [p(0, 600, 0.1, 0.45), p(650, 400, 0.4, 0.8), c(1080, 90)] },
+        { name: "magicFizzle",    category: "Cinematic",   description: "Spell failing — short shimmer then nothing.",
+          pattern: [p(0, 400, 0.15, 0.6)] },
+        { name: "portalOpen",     category: "Cinematic",   description: "Whirling buildup that resolves to a clean snap.",
+          pattern: [p(0, 800, 0.3, 0.75), c(830, 110)] },
+        { name: "dragonRoar",     category: "Cinematic",   description: "Massive sustained roar with a tail.",
+          pattern: [p(0, 1400, 0.85, 0.7), p(1450, 350, 0.5, 0.4)] },
+        { name: "footstepStone",  category: "Cinematic",   description: "Heavy slow giant-like footsteps.",
+          pattern: [c(0, 120), c(700, 120), c(1400, 120)] },
+        { name: "epicHit",        category: "Cinematic",   description: "Massive cinematic impact and decaying boom.",
+          pattern: [c(0, 220), p(260, 900, 0.7, 0.35)] },
+
+        // --- Gaming (more) ---
+        { name: "jump",           category: "Gaming",      description: "Tight upward tap — leaving the ground.",
+          pattern: [c(0, 30)] },
+        { name: "land",           category: "Gaming",      description: "Solid landing thunk.",
+          pattern: [c(0, 80)] },
+        { name: "dash",           category: "Gaming",      description: "Quick whoosh-and-stop motion.",
+          pattern: [p(0, 180, 0.3, 0.9), c(200, 35)] },
+        { name: "doubleJump",     category: "Gaming",      description: "Two ascending hops in close succession.",
+          pattern: [c(0, 28), c(110, 40)] },
+        { name: "parry",          category: "Gaming",      description: "Sharp deflection click and metallic ring.",
+          pattern: [c(0, 45), p(60, 220, 0.2, 0.85)] },
+        { name: "healthRegen",    category: "Gaming",      description: "Soft pulsing recovery feel.",
+          pattern: [p(0, 800, 0.35, 0.25)] },
+        { name: "manaRecharge",   category: "Gaming",      description: "Light shimmer of energy returning.",
+          pattern: [p(0, 700, 0.2, 0.55)] },
+        { name: "questAccepted",  category: "Gaming",      description: "Firm acknowledgement double-tap with weight.",
+          pattern: [c(0, 60), c(140, 100)] },
+        { name: "questComplete",  category: "Gaming",      description: "Triumphant ascending fanfare.",
+          pattern: [c(0, 40), c(110, 50), c(220, 60), c(360, 90), c(500, 140)] },
+        { name: "achievementUnlocked", category: "Gaming", description: "Sparkly intro then a satisfying lock-in.",
+          pattern: [p(0, 350, 0.15, 0.85), c(390, 120)] },
+        { name: "respawn",        category: "Gaming",      description: "Phasing-in pulse settling into a tap.",
+          pattern: [p(0, 500, 0.25, 0.5), c(540, 70)] },
+        { name: "deathBlow",      category: "Gaming",      description: "Final crushing strike with a long decay.",
+          pattern: [c(0, 200), p(240, 800, 0.65, 0.4)] },
+
+        // --- Emotional (more) ---
+        { name: "joy",            category: "Emotional",   description: "Bright bouncy ascending taps.",
+          pattern: [c(0, 30), c(90, 30), c(190, 40), c(310, 50)] },
+        { name: "sadness",        category: "Emotional",   description: "Slow heavy descending pulses.",
+          pattern: [c(0, 130), c(450, 100), c(820, 70)] },
+        { name: "surprise",       category: "Emotional",   description: "Single sharp jolt out of nowhere.",
+          pattern: [c(0, 100)] },
+        { name: "love",           category: "Emotional",   description: "Soft heart-shaped double pulse repeating.",
+          pattern: [c(0, 40), c(110, 65), c(500, 40), c(610, 65)] },
+        { name: "fear",           category: "Emotional",   description: "Sustained low pulse with a sudden spike.",
+          pattern: [p(0, 1000, 0.6, 0.2), c(1050, 120)] },
+        { name: "anger",          category: "Emotional",   description: "Hard erratic accented hits.",
+          pattern: [c(0, 90), c(160, 50), c(240, 90), c(380, 50), c(480, 110)] },
+
+        // --- Communication (more) ---
+        { name: "morseOK",        category: "Communication", description: "O-K in morse: −−− −·−",
+          pattern: [c(0, 180), c(240, 180), c(480, 180), c(720, 180), c(960, 60), c(1080, 180), c(1320, 60)] },
+        { name: "morseSMS",       category: "Communication", description: "S-M-S in morse: ··· −− ···",
+          pattern: [c(0, 60), c(120, 60), c(240, 60), c(420, 180), c(660, 180), c(900, 60), c(1020, 60), c(1140, 60)] },
+        { name: "binaryBeep",     category: "Communication", description: "Short-long-short pattern like a data ping.",
+          pattern: [c(0, 35), c(110, 140), c(310, 35)] },
+        { name: "robotChatter",   category: "Communication", description: "Mechanical clipped speech-like bursts.",
+          pattern: [c(0, 35), c(80, 18), c(120, 60), c(220, 18), c(260, 35), c(320, 90)] },
+        { name: "doorKnock",      category: "Communication", description: "Three even knocks against a door.",
+          pattern: taps(0, 3, 220, 70) },
+        { name: "doorbell",       category: "Communication", description: "Two-tone ding-dong.",
+          pattern: [c(0, 100), c(280, 160)] },
+        { name: "stamp",          category: "Communication", description: "Single heavy approval stamp.",
+          pattern: [c(0, 150)] },
+        { name: "applause",       category: "Communication", description: "Quick scattered claps building up.",
+          pattern: [c(0, 30), c(90, 28), c(160, 26), c(240, 30), c(320, 24), c(380, 28), c(470, 30), c(540, 28), c(620, 32)] },
+
+        // --- Transportation ---
+        { name: "carIgnition",    category: "Transportation", description: "Cranking starter followed by an engine catch.",
+          pattern: [p(0, 600, 0.2, 0.85), c(620, 130)] },
+        { name: "carHonk",        category: "Transportation", description: "Single loud honk warning the world.",
+          pattern: [c(0, 220)] },
+        { name: "carHonkDouble",  category: "Transportation", description: "Two short impatient honks.",
+          pattern: [c(0, 110), c(220, 110)] },
+        { name: "trainPassing",   category: "Transportation", description: "Doppler-style rumble swelling and fading.",
+          pattern: [p(0, 600, 0.3, 0.5), p(620, 600, 0.7, 0.7), p(1240, 600, 0.3, 0.5)] },
+        { name: "trainClickClack",category: "Transportation", description: "Rhythmic two-beat over rails.",
+          pattern: [c(0, 35), c(110, 35), c(380, 35), c(490, 35), c(760, 35), c(870, 35)] },
+        { name: "helicopter",     category: "Transportation", description: "Thumping rotor wash.",
+          pattern: [p(0, 1500, 0.35, 0.75)] },
+        { name: "airplaneTakeoff",category: "Transportation", description: "Long building roar lifting away.",
+          pattern: [p(0, 2000, 0.55, 0.5)] },
+        { name: "rocketLaunch",   category: "Transportation", description: "Slow ignite then explosive sustain.",
+          pattern: [p(0, 700, 0.3, 0.3), p(720, 1200, 0.85, 0.95)] },
+        { name: "subwayDoor",     category: "Transportation", description: "Two-tone chime then sliding hiss.",
+          pattern: [c(0, 80), c(220, 80), p(380, 300, 0.5, 0.3)] },
+        { name: "bicycleBell",    category: "Transportation", description: "Two crisp metallic rings.",
+          pattern: [c(0, 40), c(160, 40)] },
+        { name: "skateboardOllie",category: "Transportation", description: "Pop, lift, then landing slap.",
+          pattern: [c(0, 35), c(180, 22), c(280, 95)] },
+
+        // --- Food / Cooking ---
+        { name: "popcorn",        category: "Food",        description: "Sporadic pops accelerating into a flurry.",
+          pattern: [c(0, 25), c(280, 25), c(520, 25), c(680, 25), c(820, 25), c(920, 25), c(1010, 25), c(1080, 25), c(1140, 25)] },
+        { name: "sodaFizz",       category: "Food",        description: "Bright crackling release.",
+          pattern: [p(0, 800, 0.08, 0.8)] },
+        { name: "boilingWater",   category: "Food",        description: "Roiling bubbles building intensity.",
+          pattern: [p(0, 1600, 0.18, 0.7)] },
+        { name: "knockOnEgg",     category: "Food",        description: "Sharp tap and quick fracture.",
+          pattern: [c(0, 50), p(60, 120, 0.1, 0.95)] },
+        { name: "sizzlePan",      category: "Food",        description: "Steady sizzling once food hits oil.",
+          pattern: [p(0, 1400, 0.15, 0.85)] },
+        { name: "chopping",       category: "Food",        description: "Even rhythmic knife strikes on a board.",
+          pattern: taps(0, 6, 180, 40) },
+        { name: "kettleWhistle",  category: "Food",        description: "Long sustained whistle.",
+          pattern: [c(0, 200), c(220, 200), c(440, 200)] },
+        { name: "microwaveDing",  category: "Food",        description: "Single decisive ding.",
+          pattern: [c(0, 80)] },
+        { name: "champagnePop",   category: "Food",        description: "Building tension and a single sharp pop.",
+          pattern: [p(0, 400, 0.12, 0.4), c(440, 100)] },
+
+        // --- Tech / Sci-fi ---
+        { name: "phaserShot",     category: "Sci-fi",      description: "Descending energy beam release.",
+          pattern: [p(0, 350, 0.4, 0.9)] },
+        { name: "laserCharge",    category: "Sci-fi",      description: "Buildup whine ending in a tap.",
+          pattern: [p(0, 600, 0.2, 0.65), c(630, 70)] },
+        { name: "shieldActivate", category: "Sci-fi",      description: "Sudden burst then sustained hum.",
+          pattern: [c(0, 90), p(110, 700, 0.5, 0.4)] },
+        { name: "shieldBreak",    category: "Sci-fi",      description: "Heavy crack and fragmenting decay.",
+          pattern: [c(0, 140), p(160, 600, 0.4, 0.8)] },
+        { name: "warpJump",       category: "Sci-fi",      description: "Whining buildup then a long stretched whoosh.",
+          pattern: [p(0, 700, 0.25, 0.55), p(720, 900, 0.6, 0.85)] },
+        { name: "scanning",       category: "Sci-fi",      description: "Slow sweeping pulse, like a sensor sweep.",
+          pattern: [p(0, 1500, 0.3, 0.25)] },
+        { name: "robotPowerOn",   category: "Sci-fi",      description: "Servo whirs followed by a confirmation tap.",
+          pattern: [p(0, 500, 0.2, 0.6), c(540, 80)] },
+        { name: "robotPowerOff",  category: "Sci-fi",      description: "Confirmation tap and decaying whirr.",
+          pattern: [c(0, 80), p(100, 500, 0.2, 0.6)] },
+        { name: "glitch",         category: "Sci-fi",      description: "Erratic stuttering bursts.",
+          pattern: [c(0, 30), c(70, 60), c(180, 25), c(240, 80), c(360, 30), c(420, 50)] },
+        { name: "modemDialup",    category: "Sci-fi",      description: "Stutter, screech, then steady carrier.",
+          pattern: [c(0, 40), c(120, 40), p(220, 350, 0.2, 0.95), p(600, 600, 0.6, 0.4)] },
+        { name: "morseTransmit",  category: "Sci-fi",      description: "Rapid encoded data-style ticks.",
+          pattern: [c(0, 30), c(80, 30), c(160, 30), c(280, 80), c(400, 30), c(480, 30), c(600, 80)] },
+        { name: "energySurge",    category: "Sci-fi",      description: "Rising surge climaxing in a heavy boom.",
+          pattern: [p(0, 800, 0.2, 0.4), p(820, 600, 0.7, 0.9), c(1440, 180)] },
+
+        // --- Body / Sensation ---
+        { name: "goosebumps",     category: "Body",        description: "Fast superficial ripple along the skin.",
+          pattern: [p(0, 700, 0.08, 0.7)] },
+        { name: "stomachGrowl",   category: "Body",        description: "Slow uneven low rumble.",
+          pattern: [p(0, 1200, 0.55, 0.2)] },
+        { name: "hiccup",         category: "Body",        description: "Sharp single contraction.",
+          pattern: [c(0, 55)] },
+        { name: "sneeze",         category: "Body",        description: "Sharp buildup and decisive release.",
+          pattern: [c(0, 30), c(80, 35), c(160, 180)] },
+        { name: "cough",          category: "Body",        description: "Two sharp barks.",
+          pattern: [c(0, 80), c(180, 80)] },
+        { name: "yawn",           category: "Body",        description: "Long slow swell that fades.",
+          pattern: [p(0, 1400, 0.6, 0.15)] },
+        { name: "pulse",          category: "Body",        description: "Steady arterial pulse over a few beats.",
+          pattern: [c(0, 50), c(700, 50), c(1400, 50)] },
+        { name: "shudder",        category: "Body",        description: "Brief whole-body tremor.",
+          pattern: [p(0, 500, 0.5, 0.8)] },
+        { name: "tingles",        category: "Body",        description: "Light scattered prickling sensation.",
+          pattern: [p(0, 1000, 0.05, 0.55)] },
+
+        // --- Sports ---
+        { name: "tennisHit",      category: "Sports",      description: "Quick clean racket strike.",
+          pattern: [c(0, 45)] },
+        { name: "boxingPunch",    category: "Sports",      description: "Heavy single impact.",
+          pattern: [c(0, 130)] },
+        { name: "boxingCombo",    category: "Sports",      description: "Jab-jab-cross combo.",
+          pattern: [c(0, 50), c(140, 50), c(280, 130)] },
+        { name: "basketballBounce", category: "Sports",    description: "Even dribble cadence.",
+          pattern: taps(0, 5, 320, 60) },
+        { name: "footballKick",   category: "Sports",      description: "Sharp strike then a soft trailing roll.",
+          pattern: [c(0, 90), p(110, 400, 0.2, 0.4)] },
+        { name: "golfSwing",      category: "Sports",      description: "Smooth swoosh then clean impact tap.",
+          pattern: [p(0, 350, 0.25, 0.55), c(380, 50)] },
+        { name: "bowlingStrike",  category: "Sports",      description: "Long rolling rumble ending in pins clattering.",
+          pattern: [p(0, 900, 0.4, 0.55), c(940, 90), c(1080, 70), c(1180, 50)] },
+        { name: "diveSplash",     category: "Sports",      description: "Sudden impact with a frothy decay.",
+          pattern: [c(0, 100), p(120, 700, 0.15, 0.7)] },
+        { name: "skiCarve",       category: "Sports",      description: "Long shushing sweep with a final edge bite.",
+          pattern: [p(0, 1200, 0.55, 0.4), c(1240, 60)] },
+        { name: "whistleBlow",    category: "Sports",      description: "Two sharp referee whistles.",
+          pattern: [c(0, 120), c(280, 120)] },
+
+        // --- Musical Instruments ---
+        { name: "guitarStrum",    category: "Music",       description: "Quick downstroke shimmering decay.",
+          pattern: [p(0, 220, 0.15, 0.95), p(240, 500, 0.1, 0.4)] },
+        { name: "guitarPalmMute", category: "Music",       description: "Tight muted chugs.",
+          pattern: [c(0, 35), c(110, 35), c(220, 35), c(330, 35), c(440, 35)] },
+        { name: "pianoChord",     category: "Music",       description: "Single chord struck with a sustaining decay.",
+          pattern: [c(0, 60), p(80, 700, 0.25, 0.2)] },
+        { name: "violinBow",      category: "Music",       description: "Long sustained note with vibrato shimmer.",
+          pattern: [p(0, 1500, 0.6, 0.35)] },
+        { name: "drumKick",       category: "Music",       description: "Single deep kick drum hit.",
+          pattern: [c(0, 90)] },
+        { name: "snareRoll",      category: "Music",       description: "Tight buzzing roll into a final crack.",
+          pattern: [p(0, 600, 0.1, 1.0), c(620, 110)] },
+        { name: "cymbalCrash",    category: "Music",       description: "Sharp hit, long shimmering decay.",
+          pattern: [c(0, 70), p(90, 1200, 0.25, 0.3)] },
+        { name: "tambourine",     category: "Music",       description: "Quick jingle hit cluster.",
+          pattern: [p(0, 350, 0.1, 0.9)] },
+        { name: "djembeRoll",     category: "Music",       description: "Slap-tone-tone-bass djembe phrase.",
+          pattern: [c(0, 30), c(110, 50), c(230, 50), c(360, 120)] },
+        { name: "harpGlissando",  category: "Music",       description: "Sweeping rapid arpeggio.",
+          pattern: [p(0, 700, 0.05, 0.95)] },
+
+        // --- Toys / Playful ---
+        { name: "rubberDuck",     category: "Toys",        description: "Two cute squeaks.",
+          pattern: [c(0, 70), c(160, 70)] },
+        { name: "windUpToy",      category: "Toys",        description: "Slow tick-tick of a wind-up mechanism.",
+          pattern: taps(0, 6, 220, 22) },
+        { name: "popGun",         category: "Toys",        description: "Single bright pop.",
+          pattern: [c(0, 60)] },
+        { name: "boingSpring",    category: "Toys",        description: "Springy descending series of pulses.",
+          pattern: [c(0, 60), c(180, 50), c(330, 40), c(450, 30), c(550, 22)] },
+        { name: "yoyoWobble",     category: "Toys",        description: "Two-beat swing with a final hop.",
+          pattern: [c(0, 50), c(280, 50), c(500, 30)] },
+        { name: "marblesDrop",    category: "Toys",        description: "Cluster of small irregular impacts.",
+          pattern: [c(0, 30), c(120, 30), c(200, 30), c(310, 30), c(390, 30), c(480, 30), c(610, 30)] },
+        { name: "bubbleWrap",     category: "Toys",        description: "Quick satisfying succession of pops.",
+          pattern: [c(0, 30), c(140, 30), c(260, 30), c(380, 30), c(500, 30), c(620, 30)] },
+        { name: "kazoo",          category: "Toys",        description: "Buzzy comic two-tone honk.",
+          pattern: [p(0, 250, 0.4, 0.85), p(320, 350, 0.4, 0.85)] },
+
+        // --- Office ---
+        { name: "stapler",        category: "Office",      description: "Quick clack of a stapler.",
+          pattern: [c(0, 45)] },
+        { name: "scissorsCut",    category: "Office",      description: "Two crisp clipping motions.",
+          pattern: [c(0, 35), c(160, 35)] },
+        { name: "paperShredder",  category: "Office",      description: "Mechanical chewing of paper.",
+          pattern: [p(0, 1500, 0.35, 0.65)] },
+        { name: "printerWorking", category: "Office",      description: "Carriage sweeps and feed clicks.",
+          pattern: [p(0, 350, 0.3, 0.55), c(380, 35), p(440, 350, 0.3, 0.55), c(820, 35)] },
+        { name: "keyboardTyping", category: "Office",      description: "Bursts of typing then a pause.",
+          pattern: [c(0, 22), c(70, 22), c(140, 22), c(210, 22), c(290, 22), c(440, 22), c(510, 22), c(580, 22)] },
+        { name: "mouseClick",     category: "Office",      description: "Single satisfying mouse click.",
+          pattern: [c(0, 22)] },
+        { name: "mouseDoubleClick", category: "Office",    description: "Two rapid mouse clicks.",
+          pattern: [c(0, 22), c(60, 22)] },
+        { name: "phoneRingingOld",category: "Office",      description: "Two long classic desk-phone rings.",
+          pattern: [p(0, 500, 0.8, 0.95), p(750, 500, 0.8, 0.95)] },
+
+        // --- Weather (more) ---
+        { name: "hailstorm",      category: "Nature",      description: "Hard random small impacts.",
+          pattern: [c(0, 30), c(110, 30), c(190, 30), c(270, 30), c(380, 30), c(440, 30), c(560, 30), c(640, 30), c(720, 30), c(820, 30)] },
+        { name: "blizzard",       category: "Nature",      description: "Constant rough wind with sharper gusts.",
+          pattern: [p(0, 1800, 0.5, 0.55), c(800, 70), c(1400, 80)] },
+        { name: "drizzle",        category: "Nature",      description: "Faint scattered drops, gentle.",
+          pattern: [c(0, 18), c(220, 18), c(440, 18), c(660, 18), c(880, 18)] },
+        { name: "thunderclap",    category: "Nature",      description: "Single immense crack with rolling tail.",
+          pattern: [c(0, 200), p(220, 900, 0.7, 0.4)] },
+
+        // --- Wellness / Meditation ---
+        { name: "breathIn",       category: "Wellness",    description: "Slow rising inhalation cue.",
+          pattern: [p(0, 1500, 0.3, 0.1)] },
+        { name: "breathOut",      category: "Wellness",    description: "Long descending exhalation cue.",
+          pattern: [p(0, 1800, 0.5, 0.12)] },
+        { name: "boxBreathing",   category: "Wellness",    description: "Four equal phases — in, hold, out, hold.",
+          pattern: [c(0, 200), c(1400, 200), c(2800, 200), c(4200, 200)] },
+        { name: "meditationBell", category: "Wellness",    description: "Single soft chime with long decay.",
+          pattern: [c(0, 90), p(110, 1500, 0.1, 0.15)] },
+        { name: "focusPulse",     category: "Wellness",    description: "Slow rhythmic anchor for concentration.",
+          pattern: [c(0, 60), c(900, 60), c(1800, 60)] },
+        { name: "groundingTap",   category: "Wellness",    description: "Bilateral-style alternating taps.",
+          pattern: taps(0, 8, 350, 35) },
+
+        // --- Animals (more) ---
+        { name: "dogBark",        category: "Nature",      description: "Two firm dog barks.",
+          pattern: [c(0, 80), c(220, 80)] },
+        { name: "catMeow",        category: "Nature",      description: "Soft rising meow.",
+          pattern: [p(0, 400, 0.5, 0.35)] },
+        { name: "elephantTrumpet",category: "Nature",      description: "Long blaring call.",
+          pattern: [p(0, 1200, 0.85, 0.85)] },
+        { name: "horseNeigh",     category: "Nature",      description: "Bright fluttering call.",
+          pattern: [p(0, 600, 0.15, 0.95)] },
+        { name: "snakeHiss",      category: "Nature",      description: "Long unbroken hiss.",
+          pattern: [c(0, 200), c(220, 200), c(440, 200)] },
+        { name: "duckQuack",      category: "Nature",      description: "Two cheerful quacks.",
+          pattern: [c(0, 60), c(180, 60)] },
+        { name: "rooster",        category: "Nature",      description: "Four ascending crow segments.",
+          pattern: [c(0, 60), c(150, 80), c(290, 110), c(450, 160)] },
+        { name: "bumblebee",      category: "Nature",      description: "Drifting low buzz.",
+          pattern: [p(0, 1400, 0.2, 0.7)] },
+
+        // --- Materials / Physics ---
+        { name: "glassBreak",     category: "Materials",   description: "Sharp shatter into a quick cascade of shards.",
+          pattern: [c(0, 90), c(140, 25), c(190, 25), c(250, 25), c(330, 25), c(390, 25), c(470, 25)] },
+        { name: "woodCrack",      category: "Materials",   description: "Slow groan, then sudden snap.",
+          pattern: [p(0, 500, 0.2, 0.3), c(540, 110)] },
+        { name: "metalClang",     category: "Materials",   description: "Heavy strike with shimmering ring.",
+          pattern: [c(0, 100), p(120, 700, 0.2, 0.3)] },
+        { name: "iceCrack",       category: "Materials",   description: "Brittle tic-tic-snap of cracking ice.",
+          pattern: [c(0, 25), c(90, 25), c(180, 25), c(260, 90)] },
+        { name: "rubberStretch",  category: "Materials",   description: "Stretching tension that finally releases.",
+          pattern: [p(0, 800, 0.45, 0.18), c(830, 60)] },
+        { name: "paperTear",      category: "Materials",   description: "Quick rip with a small finishing snap.",
+          pattern: [p(0, 250, 0.15, 0.95), c(280, 35)] },
+        { name: "zipUp",          category: "Materials",   description: "Continuous zip closing motion.",
+          pattern: [p(0, 600, 0.25, 0.95)] },
+        { name: "zipDown",        category: "Materials",   description: "Shorter, faster zipper opening.",
+          pattern: [p(0, 400, 0.2, 1.0)] },
+        { name: "velcroRip",      category: "Materials",   description: "Rough tearing texture of hook-and-loop.",
+          pattern: [p(0, 500, 0.3, 0.9)] },
+        { name: "rockSlide",      category: "Materials",   description: "Long irregular rumble of falling rocks.",
+          pattern: [p(0, 1400, 0.5, 0.55), c(900, 90), c(1200, 70)] },
+        { name: "concreteBreak",  category: "Materials",   description: "Massive crunch followed by debris settling.",
+          pattern: [c(0, 200), p(220, 600, 0.4, 0.65)] },
+        { name: "balloonPop",     category: "Materials",   description: "Single sharp burst.",
+          pattern: [c(0, 70)] },
+        { name: "balloonInflate", category: "Materials",   description: "Strained sustained stretching.",
+          pattern: [p(0, 1200, 0.55, 0.2)] },
+        { name: "waterDrip",      category: "Materials",   description: "Slow regular drips into a pool.",
+          pattern: [c(0, 30), c(800, 30), c(1600, 30)] },
+
+        // --- Horror / Spooky ---
+        { name: "creakingDoor",   category: "Horror",      description: "Long uneasy creak resolving into stillness.",
+          pattern: [p(0, 1400, 0.7, 0.15)] },
+        { name: "ghostlyWhisper", category: "Horror",      description: "Soft uneven low pulse just below hearing.",
+          pattern: [p(0, 1500, 0.4, 0.1)] },
+        { name: "monsterRoar",    category: "Horror",      description: "Huge sustained roar with a heavy tail.",
+          pattern: [p(0, 1500, 0.9, 0.75), p(1520, 400, 0.5, 0.4)] },
+        { name: "jumpscare",      category: "Horror",      description: "Sudden massive blast out of silence.",
+          pattern: [c(0, 280)] },
+        { name: "heartPounding",  category: "Horror",      description: "Heavy panicked accelerating heartbeat.",
+          pattern: [c(0, 60), c(160, 90), c(420, 60), c(520, 90), c(720, 60), c(810, 90), c(990, 60), c(1070, 90)] },
+        { name: "footstepsBehind",category: "Horror",      description: "Slow heavy approaching steps that linger.",
+          pattern: [c(0, 110), c(800, 110), c(1500, 130), c(2150, 150)] },
+        { name: "evilLaugh",      category: "Horror",      description: "Five descending heh-heh-heh hits.",
+          pattern: [c(0, 60), c(180, 60), c(360, 70), c(560, 80), c(800, 100)] },
+        { name: "screamShort",    category: "Horror",      description: "Short sharp piercing burst.",
+          pattern: [p(0, 400, 0.6, 0.95)] },
+        { name: "screamLong",     category: "Horror",      description: "Long sustained terrified cry.",
+          pattern: [p(0, 1500, 0.7, 0.9)] },
+        { name: "spider",         category: "Horror",      description: "Eight quick scrambling micro-taps.",
+          pattern: [c(0, 18), c(60, 18), c(120, 18), c(180, 18), c(250, 18), c(310, 18), c(370, 18), c(430, 18)] },
+
+        // --- Holidays / Seasonal ---
+        { name: "sleighBells",    category: "Seasonal",    description: "Rapid jingling ride.",
+          pattern: [p(0, 800, 0.08, 0.9)] },
+        { name: "fireworksLaunch",category: "Seasonal",    description: "Whoosh up, pause, then burst.",
+          pattern: [p(0, 500, 0.25, 0.6), c(700, 180)] },
+        { name: "fireworksCrackle",category: "Seasonal",   description: "Scattered crackle after a big burst.",
+          pattern: [c(0, 22), c(80, 22), c(170, 22), c(240, 22), c(330, 22), c(420, 22), c(510, 22), c(600, 22), c(700, 22)] },
+        { name: "partyHorn",      category: "Seasonal",    description: "Bright rising honk with a flop.",
+          pattern: [p(0, 350, 0.4, 0.85), c(380, 50)] },
+        { name: "candleBlowOut",  category: "Seasonal",    description: "Soft puff resolving into stillness.",
+          pattern: [p(0, 250, 0.1, 0.75)] },
+        { name: "trickOrTreat",   category: "Seasonal",    description: "Three eager knocks.",
+          pattern: [c(0, 70), c(200, 70), c(400, 70)] },
+        { name: "easterHop",      category: "Seasonal",    description: "Light springy double bounce.",
+          pattern: [c(0, 35), c(220, 45), c(440, 35), c(660, 45)] },
+        { name: "newYearCountdown",category: "Seasonal",   description: "Five descending ticks then a celebratory boom.",
+          pattern: [c(0, 35), c(500, 35), c(1000, 35), c(1500, 35), c(2000, 35), c(2500, 200)] },
+
+        // --- Magic types ---
+        { name: "fireSpell",      category: "Magic",       description: "Crackling buildup and a whoosh out.",
+          pattern: [p(0, 600, 0.2, 0.9), p(640, 400, 0.45, 0.75)] },
+        { name: "iceSpell",       category: "Magic",       description: "Sharp brittle pulses, freezing snap.",
+          pattern: [c(0, 30), c(120, 30), c(240, 30), c(360, 30), p(440, 400, 0.15, 0.6)] },
+        { name: "lightningSpell", category: "Magic",       description: "Tense buildup then a sudden crack.",
+          pattern: [p(0, 500, 0.1, 0.45), c(540, 150)] },
+        { name: "healingSpell",   category: "Magic",       description: "Warm gentle pulsing glow.",
+          pattern: [p(0, 1200, 0.35, 0.2)] },
+        { name: "earthSpell",     category: "Magic",       description: "Heavy ground-shaking rumble.",
+          pattern: [p(0, 1500, 0.8, 0.55)] },
+        { name: "windSpell",      category: "Magic",       description: "Long swirling gusts.",
+          pattern: [p(0, 1500, 0.4, 0.3)] },
+        { name: "shadowSpell",    category: "Magic",       description: "Slow uneasy pulse with a final snap.",
+          pattern: [p(0, 1100, 0.5, 0.15), c(1140, 60)] },
+        { name: "summon",         category: "Magic",       description: "Three escalating swirling builds and a heavy slam.",
+          pattern: [p(0, 350, 0.2, 0.5), p(400, 400, 0.4, 0.7), p(820, 450, 0.6, 0.9), c(1280, 220)] },
+        { name: "enchant",        category: "Magic",       description: "Sparkly twinkle pattern.",
+          pattern: [c(0, 18), c(80, 22), c(180, 18), c(280, 22), c(380, 30), c(500, 22), c(620, 18)] },
+
+        // --- Construction / Industrial ---
+        { name: "jackhammer",     category: "Industrial",  description: "Hard relentless pneumatic hammering.",
+          pattern: [p(0, 1600, 0.45, 1.0)] },
+        { name: "welding",        category: "Industrial",  description: "Steady high-frequency crackle.",
+          pattern: [p(0, 1500, 0.1, 0.95)] },
+        { name: "circularSaw",    category: "Industrial",  description: "Whining buildup, sustained cut, decay.",
+          pattern: [p(0, 400, 0.2, 0.55), p(420, 800, 0.5, 0.95), p(1240, 400, 0.2, 0.5)] },
+        { name: "pneumaticPress", category: "Industrial",  description: "Hiss, slam, hiss.",
+          pattern: [p(0, 300, 0.3, 0.65), c(330, 150), p(490, 300, 0.3, 0.65)] },
+        { name: "forge",          category: "Industrial",  description: "Three measured hammer strikes on hot metal.",
+          pattern: [c(0, 120), c(500, 120), c(1000, 120)] },
+        { name: "conveyor",       category: "Industrial",  description: "Steady mechanical rolling rhythm.",
+          pattern: taps(0, 8, 240, 35) },
+        { name: "factoryStamp",   category: "Industrial",  description: "Heavy press cycling on, off, on.",
+          pattern: [c(0, 180), c(600, 180), c(1200, 180)] },
+
+        // --- Casino / Game-show ---
+        { name: "slotMachineSpin",category: "Casino",      description: "Continuous spinning reel until it slows.",
+          pattern: [p(0, 1500, 0.15, 0.95)] },
+        { name: "slotMachineWin", category: "Casino",      description: "Trio of locking reels then a payout shimmer.",
+          pattern: [c(0, 70), c(280, 70), c(560, 90), p(700, 600, 0.1, 0.95)] },
+        { name: "diceRoll",       category: "Casino",      description: "Tumbling clatter then settling.",
+          pattern: [p(0, 500, 0.1, 0.9), c(530, 50), c(620, 60)] },
+        { name: "cardShuffle",    category: "Casino",      description: "Brisk riffling of cards.",
+          pattern: [p(0, 500, 0.08, 1.0)] },
+        { name: "cardDeal",       category: "Casino",      description: "Four crisp card flicks.",
+          pattern: [c(0, 25), c(180, 25), c(360, 25), c(540, 25)] },
+        { name: "rouletteBall",   category: "Casino",      description: "Long rolling bounce settling into a pocket.",
+          pattern: [p(0, 1500, 0.12, 0.85), c(1540, 60)] },
+        { name: "gameShowBuzzer", category: "Casino",      description: "Harsh wrong-answer buzz.",
+          pattern: [p(0, 600, 0.85, 0.95)] },
+        { name: "gameShowBell",   category: "Casino",      description: "Bright right-answer ding-ding.",
+          pattern: [c(0, 60), c(180, 60)] },
+
+        // --- Fitness / Workout ---
+        { name: "repCounter",     category: "Fitness",     description: "Single firm rep-complete pulse.",
+          pattern: [c(0, 90)] },
+        { name: "setComplete",    category: "Fitness",     description: "Three escalating reps signalling end of set.",
+          pattern: [c(0, 50), c(180, 70), c(380, 110)] },
+        { name: "rest10sec",      category: "Fitness",     description: "Ten light ticks ending in a stronger tap.",
+          pattern: [...taps(0, 9, 1000, 25), c(9000, 120)] },
+        { name: "intervalStart",  category: "Fitness",     description: "Two quick taps and one long go-signal.",
+          pattern: [c(0, 35), c(120, 35), c(280, 180)] },
+        { name: "intervalEnd",    category: "Fitness",     description: "Long pulse then two cool-down taps.",
+          pattern: [c(0, 180), c(280, 35), c(380, 35)] },
+        { name: "paceFast",       category: "Fitness",     description: "Quick step cadence for fast pace.",
+          pattern: taps(0, 6, 200, 25) },
+        { name: "paceSlow",       category: "Fitness",     description: "Relaxed step cadence for slow pace.",
+          pattern: taps(0, 4, 500, 35) },
+        { name: "stretchHold",    category: "Fitness",     description: "Sustained gentle pulse to encourage holding.",
+          pattern: [p(0, 1500, 0.4, 0.18)] },
+
+        // --- Locomotion variants ---
+        { name: "tiptoe",         category: "Movement",    description: "Six whisper-light steps.",
+          pattern: taps(0, 6, 260, 18) },
+        { name: "stomp",          category: "Movement",    description: "Two heavy weight-shifting stomps.",
+          pattern: [c(0, 150), c(420, 150)] },
+        { name: "skip",           category: "Movement",    description: "Light-heavy alternating skip rhythm.",
+          pattern: [c(0, 25), c(160, 55), c(380, 25), c(540, 55)] },
+        { name: "hop",            category: "Movement",    description: "Single light hop landing.",
+          pattern: [c(0, 30), c(120, 60)] },
+        { name: "slide",          category: "Movement",    description: "Smooth scraping slide motion.",
+          pattern: [p(0, 600, 0.5, 0.4)] },
+        { name: "spin",           category: "Movement",    description: "Whirling pulse settling to a stop.",
+          pattern: [p(0, 800, 0.25, 0.9), c(830, 60)] },
+        { name: "crawl",          category: "Movement",    description: "Alternating hand-knee taps.",
+          pattern: [c(0, 30), c(180, 30), c(420, 30), c(600, 30), c(840, 30), c(1020, 30)] },
+        { name: "swim",           category: "Movement",    description: "Long sweeping pulses like alternating strokes.",
+          pattern: [p(0, 500, 0.4, 0.3), p(560, 500, 0.4, 0.3), p(1120, 500, 0.4, 0.3)] },
+        { name: "climbing",       category: "Movement",    description: "Four hand-over-hand pulls.",
+          pattern: [c(0, 90), c(450, 90), c(900, 90), c(1350, 90)] },
+
+        // --- Vehicles (more) ---
+        { name: "motorcycleRev",  category: "Transportation", description: "Two quick throttle blips then a long rev.",
+          pattern: [p(0, 250, 0.4, 0.85), p(320, 250, 0.4, 0.85), p(640, 700, 0.7, 0.95)] },
+        { name: "carCrash",       category: "Transportation", description: "Massive impact and crumpling decay.",
+          pattern: [c(0, 250), p(280, 600, 0.4, 0.7)] },
+        { name: "tireScreech",    category: "Transportation", description: "Long high-frequency skid.",
+          pattern: [p(0, 800, 0.15, 1.0)] },
+        { name: "doorClose",      category: "Transportation", description: "Solid satisfying car-door thunk.",
+          pattern: [c(0, 130)] },
+        { name: "boatHorn",       category: "Transportation", description: "Long low ship horn.",
+          pattern: [p(0, 1500, 0.95, 0.5)] },
+        { name: "shipBellTime",   category: "Transportation", description: "Two pairs of nautical bell strikes.",
+          pattern: [c(0, 50), c(180, 50), c(500, 50), c(680, 50)] },
+
+        // --- Eat / Drink ---
+        { name: "sipDrink",       category: "Food",        description: "Soft inward draw.",
+          pattern: [p(0, 400, 0.25, 0.3)] },
+        { name: "gulp",           category: "Food",        description: "Two heavy swallows.",
+          pattern: [c(0, 90), c(280, 90)] },
+        { name: "crunch",         category: "Food",        description: "Rapid bursts of crunching texture.",
+          pattern: [p(0, 800, 0.2, 0.85)] },
+        { name: "slurp",          category: "Food",        description: "Drawn-out noisy slurp.",
+          pattern: [p(0, 700, 0.35, 0.55)] },
+        { name: "burp",           category: "Food",        description: "Short comical release.",
+          pattern: [p(0, 250, 0.5, 0.4)] },
+        { name: "chewing",        category: "Food",        description: "Even mastication cycle.",
+          pattern: [c(0, 50), c(200, 50), c(400, 50), c(600, 50)] },
+
+        // --- Children's games ---
+        { name: "tag",            category: "Toys",        description: "Quick chase pulse and a tagging tap.",
+          pattern: [p(0, 400, 0.15, 0.95), c(440, 60)] },
+        { name: "hopscotch",      category: "Toys",        description: "Single-double-single-double hopping rhythm.",
+          pattern: [c(0, 50), c(280, 30), c(380, 30), c(620, 50), c(880, 30), c(980, 30)] },
+        { name: "jumpRope",       category: "Toys",        description: "Steady skipping cadence.",
+          pattern: taps(0, 6, 350, 35) },
+        { name: "swingsetCreak",  category: "Toys",        description: "Slow oscillating creak.",
+          pattern: [p(0, 1600, 0.55, 0.1)] },
+        { name: "slideWhoosh",    category: "Toys",        description: "Building whoosh down a slide.",
+          pattern: [p(0, 800, 0.4, 0.6)] },
+
+        // --- Trains / Old tech ---
+        { name: "steamWhistle",   category: "Transportation", description: "Long blaring steam whistle.",
+          pattern: [c(0, 200), c(220, 200), c(440, 200), c(660, 200)] },
+        { name: "steamEngineChug",category: "Transportation", description: "Accelerating chug-chug-chug.",
+          pattern: [c(0, 80), c(450, 80), c(820, 80), c(1140, 80), c(1410, 80), c(1640, 80)] },
+        { name: "rotaryPhoneDial",category: "Office",      description: "Spinning return clicks of a rotary dial.",
+          pattern: [c(0, 25), c(150, 25), c(290, 25), c(420, 25), c(540, 25), c(650, 25), c(750, 25)] },
+        { name: "filmProjector",  category: "Office",      description: "Steady film-strip clatter.",
+          pattern: taps(0, 10, 130, 22) },
+
+        // --- Pattern art / abstract ---
+        { name: "fibonacciTaps",  category: "Abstract",    description: "Taps spaced by Fibonacci intervals.",
+          pattern: [c(0, 35), c(50, 35), c(130, 35), c(290, 35), c(530, 35), c(910, 35)] },
+        { name: "morphAccelerate",category: "Abstract",    description: "Pulses that gradually speed up.",
+          pattern: [c(0, 40), c(600, 40), c(1100, 40), c(1500, 40), c(1800, 40), c(2000, 40)] },
+        { name: "morphDecelerate",category: "Abstract",    description: "Pulses that gradually slow down.",
+          pattern: [c(0, 40), c(200, 40), c(500, 40), c(900, 40), c(1400, 40), c(2000, 40)] },
+        { name: "crescendo",      category: "Abstract",    description: "Each pulse longer than the last.",
+          pattern: [c(0, 30), c(200, 50), c(450, 80), c(750, 120), c(1100, 180)] },
+        { name: "decrescendo",    category: "Abstract",    description: "Each pulse shorter than the last.",
+          pattern: [c(0, 180), c(350, 120), c(650, 80), c(900, 50), c(1100, 30)] },
+        { name: "pingPong",       category: "Abstract",    description: "Alternating short and long taps.",
+          pattern: [c(0, 25), c(150, 80), c(330, 25), c(480, 80), c(660, 25), c(810, 80)] },
+        { name: "staircaseUp",    category: "Abstract",    description: "Five evenly-spaced ascending pulses.",
+          pattern: [c(0, 30), c(200, 50), c(450, 70), c(770, 100), c(1170, 140)] },
+        { name: "staircaseDown",  category: "Abstract",    description: "Five evenly-spaced descending pulses.",
+          pattern: [c(0, 140), c(300, 100), c(540, 70), c(720, 50), c(850, 30)] },
+        { name: "mirror",         category: "Abstract",    description: "Build up and decay symmetrically.",
+          pattern: [c(0, 30), c(120, 50), c(280, 80), c(500, 80), c(720, 50), c(900, 30)] },
+        { name: "randomScatter",  category: "Abstract",    description: "Asymmetric scattered tap cluster.",
+          pattern: [c(0, 28), c(95, 60), c(240, 22), c(330, 90), c(540, 35), c(630, 45), c(810, 70)] },
+
+        // --- VR / AR feedback ---
+        { name: "vrControllerSelect", category: "Sci-fi",  description: "Two even soft selection taps.",
+          pattern: [c(0, 35), c(140, 35)] },
+        { name: "vrBoundaryHit",  category: "Sci-fi",      description: "Three sharp warnings hitting the play boundary.",
+          pattern: [c(0, 60), c(160, 60), c(320, 90)] },
+        { name: "vrTeleportArrive",category: "Sci-fi",     description: "Whoosh in and a settling thump.",
+          pattern: [p(0, 350, 0.3, 0.7), c(380, 100)] },
+        { name: "uiHologramFlicker",category: "Sci-fi",    description: "Erratic short stutters like a hologram glitch.",
+          pattern: [c(0, 20), c(70, 20), c(180, 20), c(260, 20), c(420, 25), c(510, 30)] },
+
+        // --- Medical / Sensing ---
+        { name: "ecgNormal",      category: "Body",        description: "Three crisp QRS-like beats.",
+          pattern: [c(0, 50), c(800, 50), c(1600, 50)] },
+        { name: "ecgFlatline",    category: "Body",        description: "Long continuous flat tone.",
+          pattern: [p(0, 2000, 0.95, 0.95)] },
+        { name: "pulseOxBeep",    category: "Body",        description: "Periodic sensor beeps.",
+          pattern: [c(0, 35), c(700, 35), c(1400, 35), c(2100, 35)] },
+        { name: "doctorTap",      category: "Body",        description: "Two diagnostic knee-jerk taps.",
+          pattern: [c(0, 45), c(220, 45)] },
+
+        // --- Space / Astronomy ---
+        { name: "blackHole",      category: "Space",       description: "Heavy collapsing pull with a final compression.",
+          pattern: [p(0, 1500, 0.8, 0.4), c(1540, 220)] },
+        { name: "supernova",      category: "Space",       description: "Long buildup detonating into a massive blast.",
+          pattern: [p(0, 1500, 0.4, 0.4), c(1520, 280), p(1820, 700, 0.6, 0.6)] },
+        { name: "pulsarBeacon",   category: "Space",       description: "Steady regular cosmic pulses.",
+          pattern: [c(0, 60), c(500, 60), c(1000, 60), c(1500, 60), c(2000, 60)] },
+        { name: "satelliteOrbit", category: "Space",       description: "Slow smooth orbital sweep.",
+          pattern: [p(0, 1800, 0.4, 0.15)] },
+        { name: "asteroidImpact", category: "Space",       description: "Whooshing approach and a giant impact.",
+          pattern: [p(0, 700, 0.5, 0.6), c(740, 280)] },
+        { name: "spacewalk",      category: "Space",       description: "Slow controlled breathing in vacuum.",
+          pattern: [p(0, 1200, 0.4, 0.15), p(1400, 1200, 0.4, 0.15)] },
+        { name: "wormhole",       category: "Space",       description: "Whirling tunnel buildup that releases.",
+          pattern: [p(0, 1500, 0.3, 0.7), p(1520, 500, 0.7, 0.95)] },
+        { name: "alienSignal",    category: "Space",       description: "Three pulses, pause, two pulses repeating.",
+          pattern: [c(0, 50), c(150, 50), c(300, 50), c(600, 50), c(720, 50)] },
+
+        // --- Underwater ---
+        { name: "underwaterBubble", category: "Nature",    description: "A few rising bubbles.",
+          pattern: [c(0, 25), c(220, 30), c(480, 35)] },
+        { name: "scubaBreath",    category: "Nature",      description: "Long regulator inhale and exhale.",
+          pattern: [p(0, 1200, 0.4, 0.18), p(1400, 1500, 0.45, 0.18)] },
+        { name: "sonarPing",      category: "Sci-fi",      description: "Single ping with a long fading return.",
+          pattern: [c(0, 70), p(90, 1500, 0.1, 0.1)] },
+        { name: "whaleSong",      category: "Nature",      description: "Long melodic low call.",
+          pattern: [p(0, 1800, 0.7, 0.18)] },
+        { name: "divingDescent",  category: "Nature",      description: "Slow sinking pressure pulse.",
+          pattern: [p(0, 2000, 0.55, 0.12)] },
+
+        // --- Coding / Dev ---
+        { name: "buildSuccess",   category: "Dev",         description: "Three rising confidence taps.",
+          pattern: [c(0, 35), c(110, 50), c(220, 75)] },
+        { name: "buildFailed",    category: "Dev",         description: "Heavy stop and a frustrated buzz.",
+          pattern: [c(0, 140), p(170, 400, 0.5, 0.85)] },
+        { name: "testPass",       category: "Dev",         description: "Single bright confirmation.",
+          pattern: [c(0, 50)] },
+        { name: "testFail",       category: "Dev",         description: "Two sharp rejection taps.",
+          pattern: [c(0, 80), c(180, 80)] },
+        { name: "lintWarning",    category: "Dev",         description: "Quick cautionary buzz.",
+          pattern: [p(0, 300, 0.4, 0.7)] },
+        { name: "gitCommit",      category: "Dev",         description: "Decisive single thunk.",
+          pattern: [c(0, 70)] },
+        { name: "gitPush",        category: "Dev",         description: "Building whoosh then a confirmation tap.",
+          pattern: [p(0, 350, 0.25, 0.7), c(380, 60)] },
+        { name: "deployComplete", category: "Dev",         description: "Three taps and a final triumphant pulse.",
+          pattern: [c(0, 40), c(140, 50), c(260, 60), c(420, 160)] },
+        { name: "compileError",   category: "Dev",         description: "Three jarring identical hits.",
+          pattern: [c(0, 80), c(180, 80), c(360, 80)] },
+        { name: "syntaxHighlight",category: "Dev",         description: "Quick scanning ticks across a line.",
+          pattern: taps(0, 8, 60, 18) },
+
+        // --- Cyberpunk / Glitch ---
+        { name: "neonFlicker",    category: "Cyberpunk",   description: "Irregular bright pops simulating a faulty sign.",
+          pattern: [c(0, 25), c(80, 22), c(180, 30), c(310, 22), c(400, 28), c(530, 22)] },
+        { name: "matrixCode",     category: "Cyberpunk",   description: "Cascading data-rain ticks.",
+          pattern: [c(0, 18), c(60, 18), c(110, 18), c(170, 18), c(230, 18), c(290, 18), c(360, 18), c(420, 18), c(490, 18), c(560, 18)] },
+        { name: "hackingAttempt", category: "Cyberpunk",   description: "Rapid keystroke flurries with a triumphant unlock.",
+          pattern: [p(0, 600, 0.1, 1.0), p(640, 400, 0.15, 1.0), c(1060, 90)] },
+        { name: "firewallBreach", category: "Cyberpunk",   description: "Build up alarm and a heavy entry slam.",
+          pattern: [p(0, 800, 0.4, 0.85), c(820, 200)] },
+        { name: "dataCorruption", category: "Cyberpunk",   description: "Erratic glitching bursts of varying intensity.",
+          pattern: [c(0, 30), c(100, 80), c(220, 25), c(290, 110), c(450, 30), c(540, 70)] },
+        { name: "encryptionKey",  category: "Cyberpunk",   description: "Three precise calibrating taps and an unlock pulse.",
+          pattern: [c(0, 30), c(180, 30), c(360, 30), c(540, 120)] },
+
+        // --- Steampunk ---
+        { name: "steamRelease",   category: "Steampunk",   description: "Sharp burst of escaping steam.",
+          pattern: [p(0, 600, 0.5, 0.95)] },
+        { name: "cogTurning",     category: "Steampunk",   description: "Slow heavy gear engagement clicks.",
+          pattern: [c(0, 60), c(400, 60), c(800, 60), c(1200, 60)] },
+        { name: "pocketWatchTick",category: "Steampunk",   description: "Precise mechanical ticking.",
+          pattern: taps(0, 8, 250, 22) },
+        { name: "brassValve",     category: "Steampunk",   description: "Slow squeak and a final clunk.",
+          pattern: [p(0, 700, 0.5, 0.2), c(720, 100)] },
+        { name: "pressureGauge",  category: "Steampunk",   description: "Rising pressure pulse climaxing in a hiss.",
+          pattern: [p(0, 900, 0.3, 0.3), p(920, 500, 0.5, 0.9)] },
+
+        // --- Dance moves ---
+        { name: "chaChaCha",      category: "Rhythm",      description: "Three quick steps closing a phrase.",
+          pattern: [c(0, 50), c(200, 50), c(400, 50), c(750, 80)] },
+        { name: "salsaBasic",     category: "Rhythm",      description: "Forward-back-pause-forward-back-pause cell.",
+          pattern: [c(0, 50), c(180, 50), c(360, 50), c(720, 50), c(900, 50), c(1080, 50)] },
+        { name: "tapDanceShuffle",category: "Rhythm",      description: "Shuffle-step-shuffle-step rhythm.",
+          pattern: [c(0, 22), c(80, 22), c(180, 60), c(320, 22), c(400, 22), c(500, 60)] },
+        { name: "breakdanceFreeze",category: "Rhythm",     description: "Rapid build and a sudden frozen hold.",
+          pattern: [p(0, 500, 0.15, 1.0), c(550, 180)] },
+        { name: "kPopStep",       category: "Rhythm",      description: "Sharp synchronized two-step accent.",
+          pattern: [c(0, 50), c(150, 50), c(380, 100)] },
+
+        // --- Beatbox / Vocal ---
+        { name: "beatboxKick",    category: "Music",       description: "Punchy boom sound.",
+          pattern: [c(0, 90)] },
+        { name: "beatboxSnare",   category: "Music",       description: "Quick tight pff snare.",
+          pattern: [c(0, 50)] },
+        { name: "beatboxHihat",   category: "Music",       description: "Tiny high-pitched tick.",
+          pattern: [c(0, 18)] },
+        { name: "beatboxLoop",    category: "Music",       description: "Boom-tick-snare-tick basic loop.",
+          pattern: [c(0, 90), c(220, 18), c(440, 50), c(660, 18), c(880, 90), c(1100, 18), c(1320, 50), c(1540, 18)] },
+        { name: "djScratch",      category: "Music",       description: "Quick back-forth scratch motion.",
+          pattern: [p(0, 250, 0.4, 0.9), p(260, 250, 0.4, 0.9)] },
+        { name: "djSpinback",     category: "Music",       description: "Decelerating long scratch.",
+          pattern: [p(0, 600, 0.4, 0.85)] },
+
+        // --- Camping / Outdoor ---
+        { name: "tentZipper",     category: "Nature",      description: "Long zipper movement closing a tent.",
+          pattern: [p(0, 800, 0.25, 0.95)] },
+        { name: "campfireCrackle",category: "Nature",      description: "Irregular sparking taps over a low hiss.",
+          pattern: [p(0, 1500, 0.08, 0.35), c(200, 28), c(540, 28), c(900, 28), c(1200, 28)] },
+        { name: "footstepLeaves", category: "Nature",      description: "Four crunching steps in leaves.",
+          pattern: [p(0, 200, 0.1, 0.9), p(450, 200, 0.1, 0.9), p(900, 200, 0.1, 0.9), p(1350, 200, 0.1, 0.9)] },
+        { name: "rustleLeaves",   category: "Nature",      description: "Soft wind through foliage.",
+          pattern: [p(0, 1200, 0.12, 0.45)] },
+        { name: "stickSnap",      category: "Nature",      description: "Sharp single twig break.",
+          pattern: [c(0, 45)] },
+
+        // --- Garden ---
+        { name: "sprinkler",      category: "Nature",      description: "Steady rhythmic spray ticks.",
+          pattern: taps(0, 10, 180, 30) },
+        { name: "lawnmower",      category: "Industrial",  description: "Steady mechanical mowing drone.",
+          pattern: [p(0, 1800, 0.4, 0.85)] },
+        { name: "rakingLeaves",   category: "Nature",      description: "Slow drawn brushing texture.",
+          pattern: [p(0, 700, 0.5, 0.4), p(900, 700, 0.5, 0.4)] },
+        { name: "treeFall",       category: "Nature",      description: "Long groan and a heavy final crash.",
+          pattern: [p(0, 1200, 0.5, 0.15), c(1240, 280)] },
+
+        // --- Medieval / Fantasy ---
+        { name: "catapult",       category: "Cinematic",   description: "Slow wind-up creak and a heavy launch.",
+          pattern: [p(0, 700, 0.55, 0.18), c(720, 140)] },
+        { name: "arrowDraw",      category: "Cinematic",   description: "Tightening bow then a snap release.",
+          pattern: [p(0, 500, 0.5, 0.15), c(520, 60)] },
+        { name: "arrowHit",       category: "Cinematic",   description: "Whoosh and a thudding strike.",
+          pattern: [p(0, 200, 0.2, 0.85), c(220, 90)] },
+        { name: "shieldBash",     category: "Cinematic",   description: "Heavy single shield slam.",
+          pattern: [c(0, 180)] },
+        { name: "armourClank",    category: "Cinematic",   description: "Multiple irregular metallic plates clanking.",
+          pattern: [c(0, 40), c(140, 30), c(250, 45), c(390, 30), c(490, 40)] },
+        { name: "drawbridge",     category: "Cinematic",   description: "Long heavy chain-lowering rumble.",
+          pattern: [p(0, 1800, 0.7, 0.3)] },
+
+        // --- Currency / Coins ---
+        { name: "coinDrop",       category: "Casino",      description: "Single coin bouncing to rest.",
+          pattern: [c(0, 30), c(180, 30), c(290, 25), c(370, 22)] },
+        { name: "coinPour",       category: "Casino",      description: "Cascade of coins pouring out.",
+          pattern: [p(0, 1200, 0.15, 0.95)] },
+        { name: "cashRegister",   category: "Casino",      description: "Two clicks, a drawer slide, and a ding.",
+          pattern: [c(0, 35), c(100, 35), p(220, 300, 0.3, 0.55), c(560, 60)] },
+        { name: "creditCardSwipe",category: "Office",      description: "Smooth swipe with a final confirm tap.",
+          pattern: [p(0, 250, 0.3, 0.85), c(280, 40)] },
+        { name: "atmDispense",    category: "Office",      description: "Counting whirr then a release tap.",
+          pattern: [p(0, 900, 0.15, 0.95), c(940, 70)] },
+
+        // --- Crowd / Social ---
+        { name: "crowdMurmur",    category: "Social",      description: "Soft uneven background hum.",
+          pattern: [p(0, 1800, 0.15, 0.4)] },
+        { name: "crowdCheer",     category: "Social",      description: "Building rolling roar of excitement.",
+          pattern: [p(0, 800, 0.3, 0.55), p(820, 800, 0.5, 0.75)] },
+        { name: "crowdGasp",      category: "Social",      description: "Sudden collective intake.",
+          pattern: [c(0, 70)] },
+        { name: "crowdBoo",       category: "Social",      description: "Long low disapproving rumble.",
+          pattern: [p(0, 1500, 0.7, 0.25)] },
+        { name: "standingOvation",category: "Social",      description: "Rising claps with a thunderous sustain.",
+          pattern: [c(0, 28), c(100, 28), c(180, 28), c(270, 30), p(360, 1200, 0.3, 0.8)] },
+        { name: "whisperingCrowd",category: "Social",      description: "Faint scattered whispers.",
+          pattern: [c(0, 20), c(150, 22), c(330, 20), c(530, 22), c(740, 20)] },
+
+        // --- Pets ---
+        { name: "catPurr",        category: "Pets",        description: "Slow soft contented rumble.",
+          pattern: [p(0, 1800, 0.55, 0.25)] },
+        { name: "dogTailWag",     category: "Pets",        description: "Quick rhythmic happy taps.",
+          pattern: taps(0, 8, 120, 22) },
+        { name: "dogPanting",     category: "Pets",        description: "Quick alternating breath cycle.",
+          pattern: [c(0, 50), c(200, 50), c(380, 50), c(580, 50), c(780, 50)] },
+        { name: "catKnead",       category: "Pets",        description: "Slow alternating paw-press rhythm.",
+          pattern: [c(0, 60), c(400, 60), c(800, 60), c(1200, 60)] },
+        { name: "hamsterWheel",   category: "Pets",        description: "Continuous fast running with a periodic squeak.",
+          pattern: [p(0, 1500, 0.1, 0.95), c(400, 35), c(900, 35), c(1300, 35)] },
+        { name: "birdInCage",     category: "Pets",        description: "Cheerful repeating chirp pattern.",
+          pattern: [c(0, 25), c(80, 25), c(150, 25), c(400, 25), c(480, 25), c(560, 25)] },
+
+        // --- Sleep / Dream ---
+        { name: "snoring",        category: "Body",        description: "Slow snore-pause-snore rhythm.",
+          pattern: [p(0, 800, 0.6, 0.2), p(1300, 800, 0.6, 0.2)] },
+        { name: "lullaby",        category: "Wellness",    description: "Three soft rocking pulses.",
+          pattern: [p(0, 600, 0.3, 0.2), p(900, 600, 0.3, 0.2), p(1800, 600, 0.3, 0.2)] },
+        { name: "dreamShimmer",   category: "Wellness",    description: "Gentle floating shimmer.",
+          pattern: [p(0, 1600, 0.1, 0.45)] },
+        { name: "wakeUpGentle",   category: "Wellness",    description: "Progressively brighter taps to rouse you.",
+          pattern: [c(0, 25), c(600, 30), c(1100, 45), c(1550, 70), c(1900, 110)] },
+        { name: "wakeUpSnooze",   category: "Wellness",    description: "Two annoyed second-alarm taps.",
+          pattern: [c(0, 100), c(250, 100)] },
+
+        // --- Tools (more) ---
+        { name: "drillImpact",    category: "Industrial",  description: "Short hard impact-drill burst.",
+          pattern: [p(0, 400, 0.5, 1.0)] },
+        { name: "wrenchClick",    category: "Industrial",  description: "Three ratcheting tightening clicks.",
+          pattern: [c(0, 35), c(180, 35), c(360, 35)] },
+        { name: "screwdriverTwist", category: "Industrial",description: "Slow rotating texture.",
+          pattern: [p(0, 700, 0.45, 0.25)] },
+        { name: "sandpaper",      category: "Industrial",  description: "Long abrasive rubbing texture.",
+          pattern: [p(0, 1500, 0.55, 0.55)] },
+        { name: "fileMetal",      category: "Industrial",  description: "Drawn back-and-forth filing.",
+          pattern: [p(0, 500, 0.5, 0.4), p(560, 500, 0.5, 0.4)] },
+
+        // --- Plants / Growth ---
+        { name: "leavesGrowing",  category: "Nature",      description: "Slow gentle stretch — a sprout reaching up.",
+          pattern: [p(0, 2000, 0.4, 0.1)] },
+        { name: "flowerBloom",    category: "Nature",      description: "Soft swelling expansion of opening petals.",
+          pattern: [p(0, 1600, 0.5, 0.18)] },
+        { name: "seedFall",       category: "Nature",      description: "Single light drop.",
+          pattern: [c(0, 22)] },
+
+        // --- Random reactions / emotional ---
+        { name: "laughter",       category: "Emotional",   description: "Quick ha-ha-ha bursts.",
+          pattern: [c(0, 35), c(120, 35), c(240, 35), c(360, 40), c(490, 45)] },
+        { name: "crying",         category: "Emotional",   description: "Slow uneven sob rhythm.",
+          pattern: [c(0, 80), c(380, 70), c(720, 90), c(1100, 70)] },
+        { name: "sigh",           category: "Emotional",   description: "Long single release.",
+          pattern: [p(0, 800, 0.6, 0.15)] },
+        { name: "gasp",           category: "Emotional",   description: "Single sharp intake.",
+          pattern: [c(0, 60)] },
+        { name: "groan",          category: "Emotional",   description: "Low drawn-out reluctance.",
+          pattern: [p(0, 1100, 0.7, 0.18)] },
+        { name: "cheer",          category: "Emotional",   description: "Sharp celebratory single burst.",
+          pattern: [c(0, 110)] },
+
+        // --- Mathematical / Algorithmic ---
+        { name: "primesTaps",     category: "Abstract",    description: "Taps spaced by prime intervals.",
+          pattern: [c(0, 30), c(60, 30), c(180, 30), c(360, 30), c(660, 30), c(1080, 30), c(1620, 30)] },
+        { name: "geometricRamp",  category: "Abstract",    description: "Intervals halving each step.",
+          pattern: [c(0, 35), c(800, 35), c(1200, 35), c(1400, 35), c(1500, 35), c(1550, 35)] },
+        { name: "sineWave",       category: "Abstract",    description: "Smoothly varying intensity over time.",
+          pattern: [p(0, 300, 0.2, 0.4), p(310, 300, 0.5, 0.6), p(620, 300, 0.8, 0.8), p(930, 300, 0.5, 0.6), p(1240, 300, 0.2, 0.4)] },
+        { name: "binaryEight",    category: "Abstract",    description: "01010101 pattern in taps and pauses.",
+          pattern: [c(150, 50), c(450, 50), c(750, 50), c(1050, 50)] },
+        { name: "logScaleBurst",  category: "Abstract",    description: "Bursts accelerating logarithmically.",
+          pattern: [c(0, 25), c(1000, 25), c(1500, 25), c(1750, 25), c(1875, 25), c(1937, 25)] },
+
+        // --- Driving feel ---
+        { name: "speedBump",      category: "Transportation", description: "Two even bumps as you cross.",
+          pattern: [c(0, 90), c(300, 90)] },
+        { name: "potholeHit",     category: "Transportation", description: "Sudden hard jolt.",
+          pattern: [c(0, 130)] },
+        { name: "gravelRoad",     category: "Transportation", description: "Constant fine scattered vibration.",
+          pattern: [p(0, 1800, 0.1, 0.65)] },
+        { name: "rumbleStrip",    category: "Transportation", description: "Rapid even strip vibration.",
+          pattern: [p(0, 1000, 0.2, 1.0)] },
+        { name: "highwayCruise",  category: "Transportation", description: "Smooth low background hum.",
+          pattern: [p(0, 1800, 0.25, 0.3)] },
+
+        // --- Insects ---
+        { name: "mosquito",       category: "Nature",      description: "Annoyingly high persistent whine.",
+          pattern: [p(0, 1500, 0.05, 1.0)] },
+        { name: "cicada",         category: "Nature",      description: "Long buzzing chorus that builds.",
+          pattern: [p(0, 1500, 0.15, 0.85)] },
+        { name: "antColumn",      category: "Nature",      description: "Hundreds of micro footfalls.",
+          pattern: [p(0, 1200, 0.05, 0.95)] },
+        { name: "beehive",        category: "Nature",      description: "Layered low and high buzzing.",
+          pattern: [p(0, 1500, 0.2, 0.8)] },
+
+        // --- Misc / Themed ---
+        { name: "knockKnock",     category: "Social",      description: "Two pairs of knocks waiting for entry.",
+          pattern: [c(0, 60), c(200, 60), c(700, 60), c(900, 60)] },
+        { name: "tapMorseHelp",   category: "Communication", description: "···· · ·−·· ·−·· ·-·-·-",
+          pattern: [c(0, 60), c(120, 60), c(240, 60), c(360, 60), c(560, 60), c(760, 60), c(880, 180), c(1120, 60), c(1240, 180), c(1480, 60), c(1640, 60)] },
+        { name: "elevatorDing",   category: "Office",      description: "Bright two-note arrival ding.",
+          pattern: [c(0, 60), c(280, 90)] },
+        { name: "vendingMachine", category: "Office",      description: "Mechanical drop with a clattering finish.",
+          pattern: [p(0, 350, 0.2, 0.4), c(380, 90), c(550, 50), c(650, 40)] },
+        { name: "elevatorMoving", category: "Office",      description: "Smooth sustained acceleration hum.",
+          pattern: [p(0, 1800, 0.3, 0.25)] },
+        { name: "rollerCoasterClick",category: "Transportation", description: "Rising slow chain-lift clicks.",
+          pattern: [c(0, 35), c(500, 35), c(950, 35), c(1350, 35), c(1700, 35), c(2000, 35)] },
+        { name: "rollerCoasterDrop",category: "Transportation", description: "Pause, then a long screaming descent.",
+          pattern: [p(0, 1800, 0.6, 0.85)] },
+        { name: "amusementPark",  category: "Social",      description: "Bright joyful celebration cluster.",
+          pattern: [c(0, 30), c(110, 30), c(220, 50), c(380, 70), c(560, 110)] },
+
+        // --- PWM Textures (pulse-only, sweeping parameters) ---
+        { name: "pulseSlowSparse", category: "PWM",        description: "Minimum-energy pulse: short shots, long pauses.",
+          pattern: [p(0, 1600, 0.0, 0.0)] },
+        { name: "pulseFastTight", category: "PWM",         description: "Maximum density: longest shots, shortest pauses.",
+          pattern: [p(0, 1600, 1.0, 1.0)] },
+        { name: "pulseSoftFast",  category: "PWM",         description: "Light fast taps — fizzy texture.",
+          pattern: [p(0, 1500, 0.05, 1.0)] },
+        { name: "pulseHeavySlow", category: "PWM",         description: "Long heavy shots widely spaced.",
+          pattern: [p(0, 1800, 1.0, 0.0)] },
+        { name: "pulseMidPlateau",category: "PWM",         description: "Even mid-density texture, steady ride.",
+          pattern: [p(0, 1500, 0.5, 0.5)] },
+
+        // Intensity sweeps (frequency held)
+        { name: "intensityRampUp",   category: "PWM",      description: "Shots grow longer while spacing stays tight.",
+          pattern: [p(0, 400, 0.05, 0.8), p(420, 400, 0.3, 0.8), p(840, 400, 0.6, 0.8), p(1260, 400, 1.0, 0.8)] },
+        { name: "intensityRampDown", category: "PWM",      description: "Shots shorten gradually at steady tempo.",
+          pattern: [p(0, 400, 1.0, 0.8), p(420, 400, 0.6, 0.8), p(840, 400, 0.3, 0.8), p(1260, 400, 0.05, 0.8)] },
+        { name: "intensityBreathe",  category: "PWM",      description: "Soft swell in and out of intensity.",
+          pattern: [p(0, 350, 0.1, 0.6), p(360, 350, 0.4, 0.6), p(720, 350, 0.8, 0.6), p(1080, 350, 0.4, 0.6), p(1440, 350, 0.1, 0.6)] },
+
+        // Frequency sweeps (intensity held)
+        { name: "frequencyRampUp",   category: "PWM",      description: "Spacing tightens — texture turns into a buzz.",
+          pattern: [p(0, 400, 0.3, 0.05), p(420, 400, 0.3, 0.4), p(840, 400, 0.3, 0.75), p(1260, 400, 0.3, 1.0)] },
+        { name: "frequencyRampDown", category: "PWM",      description: "Spacing opens up — buzz turns into sparse ticks.",
+          pattern: [p(0, 400, 0.3, 1.0), p(420, 400, 0.3, 0.75), p(840, 400, 0.3, 0.4), p(1260, 400, 0.3, 0.05)] },
+        { name: "frequencyWobble",   category: "PWM",      description: "Frequency oscillates while energy stays steady.",
+          pattern: [p(0, 300, 0.4, 0.2), p(310, 300, 0.4, 0.8), p(620, 300, 0.4, 0.2), p(930, 300, 0.4, 0.8), p(1240, 300, 0.4, 0.2)] },
+
+        // Two-axis morphs
+        { name: "morphSoftToHard",   category: "PWM",      description: "Starts as a whisper, finishes as a slam.",
+          pattern: [p(0, 500, 0.1, 0.2), p(510, 500, 0.4, 0.5), p(1020, 500, 0.8, 0.8), p(1530, 500, 1.0, 1.0)] },
+        { name: "morphHardToSoft",   category: "PWM",      description: "Begins dense, fades into a whisper.",
+          pattern: [p(0, 500, 1.0, 1.0), p(510, 500, 0.7, 0.7), p(1020, 500, 0.4, 0.4), p(1530, 500, 0.1, 0.15)] },
+        { name: "diagonalSweep",     category: "PWM",      description: "Intensity rises as frequency falls.",
+          pattern: [p(0, 400, 0.1, 1.0), p(410, 400, 0.4, 0.7), p(820, 400, 0.7, 0.4), p(1230, 400, 1.0, 0.1)] },
+        { name: "antiDiagonalSweep", category: "PWM",      description: "Intensity falls as frequency rises.",
+          pattern: [p(0, 400, 1.0, 0.1), p(410, 400, 0.7, 0.4), p(820, 400, 0.4, 0.7), p(1230, 400, 0.1, 1.0)] },
+
+        // Stepped textures
+        { name: "ladderStepUp",      category: "PWM",      description: "Four discrete steps climbing in density.",
+          pattern: [p(0, 350, 0.1, 0.3), p(360, 350, 0.35, 0.5), p(720, 350, 0.6, 0.7), p(1080, 350, 0.9, 0.95)] },
+        { name: "ladderStepDown",    category: "PWM",      description: "Four discrete steps descending in density.",
+          pattern: [p(0, 350, 0.9, 0.95), p(360, 350, 0.6, 0.7), p(720, 350, 0.35, 0.5), p(1080, 350, 0.1, 0.3)] },
+        { name: "telegraphRoll",     category: "PWM",      description: "Tight short pulses — like dot-dot-dot machine code.",
+          pattern: [p(0, 1200, 0.0, 1.0)] },
+        { name: "siren",             category: "PWM",      description: "Two alternating modes simulating a wailing siren.",
+          pattern: [p(0, 400, 0.7, 0.4), p(420, 400, 0.2, 0.95), p(840, 400, 0.7, 0.4), p(1260, 400, 0.2, 0.95)] },
+
+        // Layered / overlapping pulses (these merge in compile to form richer textures)
+        { name: "layeredDrone",      category: "PWM",      description: "Two overlapping pulse layers, different speeds.",
+          pattern: [p(0, 1600, 0.7, 0.2), p(0, 1600, 0.1, 0.95)] },
+        { name: "layeredThrum",      category: "PWM",      description: "Slow heavy pulse with a fizzy overlay.",
+          pattern: [p(0, 1500, 0.9, 0.15), p(0, 1500, 0.05, 0.9)] },
+        { name: "layeredFlutter",    category: "PWM",      description: "Two mid-frequency pulse layers, slightly offset.",
+          pattern: [p(0, 1400, 0.3, 0.6), p(60, 1400, 0.3, 0.55)] },
+        { name: "stackedBuzz",       category: "PWM",      description: "Three high-frequency layers stacked together.",
+          pattern: [p(0, 1200, 0.05, 0.9), p(0, 1200, 0.1, 0.95), p(0, 1200, 0.15, 1.0)] },
+
+        // Texture portraits
+        { name: "lowPurr",           category: "PWM",      description: "Warm low rumble at steady cadence.",
+          pattern: [p(0, 1800, 0.65, 0.2)] },
+        { name: "highBuzz",          category: "PWM",      description: "Fine high-frequency texture.",
+          pattern: [p(0, 1500, 0.1, 0.95)] },
+        { name: "throbbing",         category: "PWM",      description: "Slow heavy throb-pause-throb.",
+          pattern: [p(0, 800, 0.95, 0.1), p(900, 800, 0.95, 0.1)] },
+        { name: "rattle",            category: "PWM",      description: "Stiff loose-object rattle.",
+          pattern: [p(0, 1100, 0.25, 0.85)] },
+        { name: "humming",           category: "PWM",      description: "Smooth even sustained hum.",
+          pattern: [p(0, 1600, 0.45, 0.55)] },
+        { name: "stutterStep",       category: "PWM",      description: "Stop-go-stop bursts breaking up the texture.",
+          pattern: [p(0, 350, 0.4, 0.85), p(550, 350, 0.4, 0.85), p(1100, 350, 0.4, 0.85)] },
+
+        // Three-phase narratives
+        { name: "approachLinger",    category: "PWM",      description: "Distant texture grows close, then lingers.",
+          pattern: [p(0, 500, 0.05, 0.5), p(520, 400, 0.3, 0.8), p(940, 800, 0.6, 0.9)] },
+        { name: "lingerDepart",      category: "PWM",      description: "Heavy texture present, retreats, fades.",
+          pattern: [p(0, 800, 0.6, 0.9), p(820, 400, 0.3, 0.8), p(1240, 500, 0.05, 0.5)] },
+        { name: "passingTrain",      category: "PWM",      description: "Approaches, peaks, recedes — Doppler-like.",
+          pattern: [p(0, 500, 0.15, 0.45), p(520, 600, 0.6, 0.85), p(1140, 500, 0.15, 0.45)] },
+        { name: "windPattern",       category: "PWM",      description: "Gust, lull, larger gust.",
+          pattern: [p(0, 500, 0.4, 0.25), p(700, 400, 0.2, 0.2), p(1200, 700, 0.7, 0.3)] },
+
+        // Special grooves
+        { name: "pulseTriplet",      category: "PWM",      description: "Three pulse phrases with growing pauses.",
+          pattern: [p(0, 250, 0.4, 0.85), p(350, 250, 0.4, 0.85), p(800, 250, 0.4, 0.85)] },
+        { name: "pulseSwing",        category: "PWM",      description: "Short-long-short-long swing feel.",
+          pattern: [p(0, 200, 0.3, 0.85), p(250, 400, 0.5, 0.7), p(700, 200, 0.3, 0.85), p(950, 400, 0.5, 0.7)] },
+        { name: "pulseGallop",       category: "PWM",      description: "Da-da-DAH PWM gallop rhythm, repeated.",
+          pattern: [p(0, 150, 0.4, 0.9), p(180, 150, 0.4, 0.9), p(380, 300, 0.7, 0.7), p(800, 150, 0.4, 0.9), p(980, 150, 0.4, 0.9), p(1180, 300, 0.7, 0.7)] },
+
+        // Density modulation
+        { name: "tremoloLight",      category: "PWM",      description: "Light intensity oscillation around a steady base.",
+          pattern: [p(0, 200, 0.4, 0.6), p(210, 200, 0.2, 0.6), p(420, 200, 0.4, 0.6), p(630, 200, 0.2, 0.6), p(840, 200, 0.4, 0.6), p(1050, 200, 0.2, 0.6)] },
+        { name: "tremoloHeavy",      category: "PWM",      description: "Wide intensity swing — dramatic tremolo.",
+          pattern: [p(0, 250, 0.9, 0.6), p(260, 250, 0.1, 0.6), p(520, 250, 0.9, 0.6), p(780, 250, 0.1, 0.6), p(1040, 250, 0.9, 0.6)] },
+        { name: "amSlow",            category: "PWM",      description: "Slow amplitude-style modulation cycle.",
+          pattern: [p(0, 400, 0.2, 0.7), p(410, 400, 0.5, 0.7), p(820, 400, 0.8, 0.7), p(1230, 400, 0.5, 0.7), p(1640, 400, 0.2, 0.7)] },
+        { name: "amFast",            category: "PWM",      description: "Faster amplitude modulation cycle.",
+          pattern: [p(0, 150, 0.3, 0.8), p(160, 150, 0.7, 0.8), p(320, 150, 0.3, 0.8), p(480, 150, 0.7, 0.8), p(640, 150, 0.3, 0.8), p(800, 150, 0.7, 0.8), p(960, 150, 0.3, 0.8), p(1120, 150, 0.7, 0.8)] },
+
+        // Calibration / quick-test patterns
+        { name: "calibIntensitySteps", category: "PWM",    description: "Five flat intensity test patches, low to high.",
+          pattern: [p(0, 300, 0.0, 0.5), p(400, 300, 0.25, 0.5), p(800, 300, 0.5, 0.5), p(1200, 300, 0.75, 0.5), p(1600, 300, 1.0, 0.5)] },
+        { name: "calibFrequencySteps",category: "PWM",     description: "Five flat frequency test patches, low to high.",
+          pattern: [p(0, 300, 0.5, 0.0), p(400, 300, 0.5, 0.25), p(800, 300, 0.5, 0.5), p(1200, 300, 0.5, 0.75), p(1600, 300, 0.5, 1.0)] },
+        { name: "calibCornerSweep",   category: "PWM",     description: "Walks the four (i,f) corners of the PWM space.",
+          pattern: [p(0, 400, 0.0, 0.0), p(450, 400, 1.0, 0.0), p(900, 400, 0.0, 1.0), p(1350, 400, 1.0, 1.0)] },
+
+        // --- Mixed: combined c() + p() narratives ---
+        { name: "impactRingout",      category: "Mixed",   description: "Hard slam followed by a fizzy resonant tail.",
+          pattern: [c(0, 160), p(180, 700, 0.15, 0.65)] },
+        { name: "chargeRelease",      category: "Mixed",   description: "Building PWM whine resolving into one decisive tap.",
+          pattern: [p(0, 600, 0.2, 0.55), c(640, 130)] },
+        { name: "knockEcho",          category: "Mixed",   description: "Sharp knock, soft trailing reverberation.",
+          pattern: [c(0, 80), p(120, 500, 0.08, 0.55)] },
+        { name: "doublePunchBuzz",    category: "Mixed",   description: "Two punches and an aftershock buzz.",
+          pattern: [c(0, 100), c(180, 100), p(320, 500, 0.3, 0.85)] },
+        { name: "snareWithRoll",      category: "Mixed",   description: "Sharp snare hit and a tightening drumroll.",
+          pattern: [c(0, 60), p(120, 600, 0.1, 1.0)] },
+        { name: "kickThenHihats",     category: "Mixed",   description: "Kick drum and a flurry of high-hat-like pulses.",
+          pattern: [c(0, 90), p(150, 700, 0.05, 0.9)] },
+
+        // Pulse intro / continuous payoff
+        { name: "swooshAndSnap",      category: "Mixed",   description: "Whoosh in, decisive snap.",
+          pattern: [p(0, 300, 0.25, 0.75), c(330, 70)] },
+        { name: "buildUpHit",         category: "Mixed",   description: "Tense rising pulse, single massive hit.",
+          pattern: [p(0, 800, 0.3, 0.7), c(820, 220)] },
+        { name: "anticipationStrike", category: "Mixed",   description: "Slow sparse ticks accelerating into a hammer fall.",
+          pattern: [p(0, 1000, 0.05, 0.3), c(1040, 180)] },
+        { name: "fuseAndBoom",        category: "Mixed",   description: "Long sizzling fuse, sudden explosion.",
+          pattern: [p(0, 1200, 0.05, 0.75), c(1240, 260)] },
+        { name: "tightenAndTwist",    category: "Mixed",   description: "Tightening pulse texture into a final firm twist.",
+          pattern: [p(0, 700, 0.35, 0.5), c(730, 120)] },
+
+        // Continuous intro / pulse outro
+        { name: "tapAndFade",         category: "Mixed",   description: "Solid tap dissolving into a soft texture.",
+          pattern: [c(0, 90), p(120, 600, 0.1, 0.4)] },
+        { name: "thudAndRattle",      category: "Mixed",   description: "Heavy thud, loose-object rattle after.",
+          pattern: [c(0, 140), p(170, 700, 0.2, 0.85)] },
+        { name: "popAndDrizzle",      category: "Mixed",   description: "Sharp pop, scattered drizzle texture.",
+          pattern: [c(0, 50), p(80, 800, 0.05, 0.4)] },
+        { name: "slamAndShake",       category: "Mixed",   description: "Crushing slam triggers a violent shake.",
+          pattern: [c(0, 200), p(230, 900, 0.6, 0.85)] },
+        { name: "clickAndPurr",       category: "Mixed",   description: "Crisp click settling into a warm purr.",
+          pattern: [c(0, 35), p(70, 1200, 0.55, 0.25)] },
+
+        // Sandwich (c → p → c)
+        { name: "openHumClose",       category: "Mixed",   description: "Tap, sustained hum, closing tap.",
+          pattern: [c(0, 60), p(90, 900, 0.4, 0.45), c(1010, 60)] },
+        { name: "tapBuzzTap",         category: "Mixed",   description: "Tap, dense buzz interlude, closing tap.",
+          pattern: [c(0, 40), p(70, 500, 0.15, 0.95), c(590, 40)] },
+        { name: "punchTremorPunch",   category: "Mixed",   description: "Two heavy hits bracketing a tremor.",
+          pattern: [c(0, 130), p(160, 700, 0.5, 0.8), c(880, 130)] },
+        { name: "doorClickHumLock",   category: "Mixed",   description: "Latch click, motor hum, locking thunk.",
+          pattern: [c(0, 35), p(70, 400, 0.3, 0.55), c(490, 90)] },
+
+        // Sandwich (p → c → p)
+        { name: "rumbleSlamRumble",   category: "Mixed",   description: "Approach rumble, slam, departure rumble.",
+          pattern: [p(0, 500, 0.5, 0.45), c(520, 180), p(720, 500, 0.5, 0.45)] },
+        { name: "windBellWind",       category: "Mixed",   description: "Wind gust, single bell ring, returning gust.",
+          pattern: [p(0, 600, 0.3, 0.25), c(630, 80), p(750, 600, 0.3, 0.25)] },
+
+        // Texture + rhythmic accents
+        { name: "drumOverDrone",      category: "Mixed",   description: "Steady drone with sharp drum hits cutting across.",
+          pattern: [p(0, 1600, 0.4, 0.3), c(200, 90), c(700, 90), c(1200, 90)] },
+        { name: "tickingOverHum",     category: "Mixed",   description: "Clock-like ticks layered over a low hum.",
+          pattern: [p(0, 1800, 0.45, 0.18), c(400, 30), c(900, 30), c(1400, 30)] },
+        { name: "alarmedHeartbeat",   category: "Mixed",   description: "Pulse-textured background with a panicked heartbeat over it.",
+          pattern: [p(0, 1800, 0.2, 0.4), c(0, 60), c(150, 90), c(700, 60), c(850, 90), c(1400, 60), c(1550, 90)] },
+        { name: "footstepsInWind",    category: "Mixed",   description: "Continuous footsteps over sustained wind.",
+          pattern: [p(0, 1800, 0.3, 0.2), c(150, 60), c(600, 60), c(1050, 60), c(1500, 60)] },
+        { name: "raindropsOnRoof",    category: "Mixed",   description: "Distant rain hiss with occasional bigger drops.",
+          pattern: [p(0, 1800, 0.08, 0.5), c(280, 35), c(720, 35), c(1240, 35)] },
+        { name: "engineWithBackfire", category: "Mixed",   description: "Steady engine drone interrupted by a sharp backfire.",
+          pattern: [p(0, 1600, 0.25, 0.55), c(800, 150)] },
+
+        // Multi-phase narratives
+        { name: "stormApproach",      category: "Mixed",   description: "Soft rain, building rumble, thunderclap.",
+          pattern: [p(0, 600, 0.05, 0.4), p(620, 700, 0.3, 0.55), p(1320, 600, 0.6, 0.7), c(1940, 220)] },
+        { name: "trainAndWhistle",    category: "Mixed",   description: "Engine rumble, two whistle bursts, rumble returns.",
+          pattern: [p(0, 600, 0.35, 0.65), c(640, 180), c(870, 180), p(1080, 700, 0.35, 0.65)] },
+        { name: "phoneRingPickup",    category: "Mixed",   description: "Two long rings, pause, decisive pickup tap.",
+          pattern: [p(0, 400, 0.85, 0.95), p(600, 400, 0.85, 0.95), c(1300, 70)] },
+        { name: "missedCall",         category: "Mixed",   description: "Three rings each followed by silence; final regret tap.",
+          pattern: [p(0, 350, 0.85, 0.95), p(700, 350, 0.85, 0.95), p(1400, 350, 0.85, 0.95), c(2100, 90)] },
+        { name: "successWithSparkle", category: "Mixed",   description: "Ascending taps closed by a celebratory shimmer.",
+          pattern: [c(0, 40), c(120, 55), c(260, 75), p(360, 500, 0.1, 0.95)] },
+        { name: "errorWithGlitch",    category: "Mixed",   description: "Two error hits and a corrupting glitch tail.",
+          pattern: [c(0, 90), c(180, 90), p(300, 500, 0.3, 0.85)] },
+
+        // Game-style mixed
+        { name: "swordHitBlock",      category: "Mixed",   description: "Metal clash and a fast ringing buzz.",
+          pattern: [c(0, 80), p(110, 350, 0.15, 0.9)] },
+        { name: "spellChargeCast",    category: "Mixed",   description: "Two charge pulses, sharp release tap, lingering shimmer.",
+          pattern: [p(0, 500, 0.2, 0.5), p(520, 400, 0.4, 0.75), c(940, 120), p(1080, 600, 0.1, 0.9)] },
+        { name: "rocketIgnite",       category: "Mixed",   description: "Ignition tap, building thrust, sustained roar.",
+          pattern: [c(0, 70), p(110, 700, 0.3, 0.5), p(820, 900, 0.7, 0.9)] },
+        { name: "explosionAftermath", category: "Mixed",   description: "Massive blast, then debris settling.",
+          pattern: [c(0, 240), p(280, 900, 0.4, 0.6), c(900, 35), c(1050, 35), c(1180, 35)] },
+        { name: "teleportArrival",    category: "Mixed",   description: "Whooshing in, materializing tap, settling hum.",
+          pattern: [p(0, 500, 0.25, 0.85), c(530, 80), p(640, 600, 0.3, 0.25)] },
+        { name: "powerSurge",         category: "Mixed",   description: "Buildup buzz, hard peak, decaying buzz.",
+          pattern: [p(0, 600, 0.2, 0.7), c(620, 180), p(820, 600, 0.3, 0.4)] },
+
+        // UX / Affect mixed
+        { name: "calmGreeting",       category: "Mixed",   description: "Two gentle taps over a soft background swell.",
+          pattern: [p(0, 1500, 0.3, 0.18), c(200, 35), c(600, 35)] },
+        { name: "urgentBuzzAlert",    category: "Mixed",   description: "Tight buzz with two firm punctuation hits.",
+          pattern: [p(0, 700, 0.3, 0.95), c(200, 90), c(500, 90)] },
+        { name: "longPressFeedback",  category: "Mixed",   description: "Initial confirmation tap, sustained hold pulse.",
+          pattern: [c(0, 50), p(80, 1000, 0.4, 0.4)] },
+        { name: "scrubbingMedia",     category: "Mixed",   description: "Tactile sliding texture with frame-snap ticks.",
+          pattern: [p(0, 1400, 0.2, 0.7), c(300, 22), c(700, 22), c(1100, 22)] },
+        { name: "vibrationWithChirp", category: "Mixed",   description: "Sustained vibrate with a chirpy two-tap accent.",
+          pattern: [p(0, 1200, 0.35, 0.55), c(500, 35), c(610, 35)] },
+
+        // Sequencing / multi-event
+        { name: "morseInTexture",     category: "Mixed",   description: "Three morse-style taps embedded inside a soft drone.",
+          pattern: [p(0, 1800, 0.12, 0.25), c(200, 60), c(400, 60), c(600, 60)] },
+        { name: "footrace",           category: "Mixed",   description: "Starting gun, running tap cadence, finishing line whoosh.",
+          pattern: [c(0, 90), c(300, 35), c(450, 35), c(600, 35), c(750, 35), c(900, 35), p(1000, 400, 0.3, 0.75)] },
+        { name: "knockEnterClose",    category: "Mixed",   description: "Three knocks, door creak open, final close click.",
+          pattern: [c(0, 60), c(200, 60), c(400, 60), p(550, 600, 0.4, 0.18), c(1170, 45)] },
+        { name: "dialAndRing",        category: "Mixed",   description: "Dial-pad taps then two rings to the other side.",
+          pattern: [c(0, 30), c(120, 30), c(240, 30), c(360, 30), p(550, 350, 0.85, 0.95), p(1000, 350, 0.85, 0.95)] },
+        { name: "weaponReloadFire",   category: "Mixed",   description: "Magazine click, slide cycle, single firing tap.",
+          pattern: [c(0, 50), p(80, 300, 0.4, 0.7), c(400, 100)] },
+
+        // --- Wild: unusual, generative, long-form, polyrhythmic ---
+        { name: "chaosScatter",       category: "Wild",    description: "Pseudo-random scatter of 20 taps over 3 seconds.",
+          pattern: [
+            c(0, 22), c(73, 38), c(140, 25), c(218, 65), c(331, 22), c(409, 45),
+            c(518, 28), c(625, 80), c(742, 35), c(831, 22), c(945, 55), c(1080, 22),
+            c(1190, 70), c(1340, 30), c(1465, 22), c(1601, 90), c(1750, 25), c(1880, 40),
+            c(2020, 22), c(2210, 110)
+          ] },
+        { name: "polyrhythm3v4",      category: "Wild",    description: "3-against-4 cross rhythm over two seconds.",
+          pattern: [
+            c(0, 50), c(666, 50), c(1333, 50),
+            c(0, 35), c(500, 35), c(1000, 35), c(1500, 35),
+          ] },
+        { name: "polyrhythm5v7",      category: "Wild",    description: "5 evenly-spaced beats against 7 evenly-spaced ticks.",
+          pattern: [
+            c(0, 60), c(560, 60), c(1120, 60), c(1680, 60), c(2240, 60),
+            c(0, 25), c(400, 25), c(800, 25), c(1200, 25), c(1600, 25), c(2000, 25), c(2400, 25),
+          ] },
+
+        { name: "infiniteStaircase",  category: "Wild",    description: "Repeating ladder that always feels like it's climbing.",
+          pattern: [
+            p(0, 250, 0.1, 0.4), p(260, 250, 0.4, 0.55), p(520, 250, 0.7, 0.7), p(780, 250, 1.0, 0.85),
+            p(1050, 250, 0.1, 0.4), p(1310, 250, 0.4, 0.55), p(1570, 250, 0.7, 0.7), p(1830, 250, 1.0, 0.85),
+            p(2100, 250, 0.1, 0.4), p(2360, 250, 0.4, 0.55), p(2620, 250, 0.7, 0.7), p(2880, 250, 1.0, 0.85),
+          ] },
+
+        { name: "morphingDrone",      category: "Wild",    description: "Eight overlapping pulse layers drifting through (i,f) space.",
+          pattern: [
+            p(0, 2400, 0.1, 0.9),
+            p(300, 2100, 0.25, 0.75),
+            p(600, 1800, 0.4, 0.6),
+            p(900, 1500, 0.55, 0.45),
+            p(1200, 1200, 0.7, 0.3),
+            p(1500, 900, 0.85, 0.2),
+            p(1800, 600, 1.0, 0.1),
+          ] },
+
+        { name: "fractalCascade",     category: "Wild",    description: "Self-similar cluster of 4-bursts at three scales.",
+          pattern: [
+            c(0, 25), c(60, 25), c(120, 25), c(180, 25),
+            c(500, 25), c(560, 25), c(620, 25), c(680, 25),
+            c(1200, 25), c(1260, 25), c(1320, 25), c(1380, 25),
+            c(2200, 60), c(2400, 60), c(2600, 60), c(2800, 60),
+          ] },
+
+        { name: "morseSentence",      category: "Wild",    description: "HELLO WORLD spelled out in international morse.",
+          pattern: [
+            // H ····
+            c(0, 60), c(120, 60), c(240, 60), c(360, 60),
+            // E ·
+            c(540, 60),
+            // L ·−··
+            c(720, 60), c(840, 180), c(1080, 60), c(1200, 60),
+            // L ·−··
+            c(1380, 60), c(1500, 180), c(1740, 60), c(1860, 60),
+            // O −−−
+            c(2040, 180), c(2280, 180), c(2520, 180),
+            // (word gap)
+            // W ·−−
+            c(2960, 60), c(3080, 180), c(3320, 180),
+            // O −−−
+            c(3560, 180), c(3800, 180), c(4040, 180),
+            // R ·−·
+            c(4280, 60), c(4400, 180), c(4640, 60),
+            // L ·−··
+            c(4820, 60), c(4940, 180), c(5180, 60), c(5300, 60),
+            // D −··
+            c(5480, 180), c(5720, 60), c(5840, 60),
+          ] },
+
+        { name: "rorschach",          category: "Wild",    description: "Bilaterally symmetric tap sequence, mirrored at the midpoint.",
+          pattern: [
+            c(0, 30), c(120, 50), c(280, 80), c(450, 30), c(560, 110), c(800, 50),
+            c(950, 200),
+            c(1300, 50), c(1450, 110), c(1690, 30), c(1800, 80), c(1970, 50), c(2090, 30),
+          ] },
+
+        { name: "lcaPalindrome",      category: "Wild",    description: "Pattern that reads identically forwards and backwards.",
+          pattern: [
+            c(0, 30), c(80, 80), c(220, 30), c(330, 130), c(530, 30), c(620, 80), c(770, 30),
+          ] },
+
+        { name: "drunkWalk",          category: "Wild",    description: "Stumbling random-walk timing — each step a different size.",
+          pattern: [
+            c(0, 30), c(140, 75), c(310, 22), c(395, 130), c(620, 35), c(710, 60),
+            c(880, 22), c(1020, 95), c(1240, 30), c(1380, 110), c(1620, 35), c(1750, 22),
+            c(1900, 80), c(2080, 28),
+          ] },
+
+        { name: "tetrisLines",        category: "Wild",    description: "Four lines clearing — short rumble per row, then a celebration.",
+          pattern: [
+            p(0, 200, 0.4, 0.85), p(220, 200, 0.4, 0.85), p(440, 200, 0.4, 0.85), p(660, 200, 0.4, 0.85),
+            c(900, 220),
+          ] },
+
+        { name: "morseEcho",          category: "Wild",    description: "SOS in morse, immediately echoed at half intensity-cadence.",
+          pattern: [
+            c(0, 60), c(120, 60), c(240, 60),
+            c(420, 180), c(660, 180), c(900, 180),
+            c(1140, 60), c(1260, 60), c(1380, 60),
+            p(1600, 80, 0.1, 0.95), p(1700, 80, 0.1, 0.95), p(1800, 80, 0.1, 0.95),
+            p(1920, 240, 0.5, 0.95), p(2180, 240, 0.5, 0.95), p(2440, 240, 0.5, 0.95),
+            p(2700, 80, 0.1, 0.95), p(2800, 80, 0.1, 0.95), p(2900, 80, 0.1, 0.95),
+          ] },
+
+        { name: "conversation",       category: "Wild",    description: "Two voices — one heavy, one light — taking turns.",
+          pattern: [
+            c(0, 100), c(180, 100),
+            c(450, 25), c(520, 25), c(590, 25),
+            c(800, 100),
+            c(1020, 25), c(1090, 25),
+            c(1250, 100), c(1430, 100), c(1610, 100),
+            c(1900, 25), c(1960, 25), c(2020, 25), c(2080, 25),
+          ] },
+
+        { name: "questionAnswer",     category: "Wild",    description: "Rising questioning pulse, then a firm answering tap.",
+          pattern: [
+            p(0, 600, 0.15, 0.4), p(620, 400, 0.4, 0.7),
+            c(1200, 180),
+          ] },
+
+        { name: "stutterStorm",       category: "Wild",    description: "Glitchy stuttering bursts varying wildly in density.",
+          pattern: [
+            c(0, 25), c(50, 25),
+            p(150, 80, 0.1, 1.0),
+            c(280, 90),
+            p(420, 60, 0.5, 1.0),
+            c(540, 25), c(580, 25), c(620, 25), c(660, 25),
+            p(750, 100, 0.3, 1.0),
+            c(900, 200),
+            p(1150, 250, 0.05, 0.9),
+            c(1450, 50),
+          ] },
+
+        { name: "binaryClock",        category: "Wild",    description: "Tap on the 1s of binary 11010011 11010011.",
+          pattern: [
+            c(0, 40), c(140, 40), c(420, 40), c(700, 40), c(840, 40),
+            c(980, 40), c(1120, 40), c(1400, 40), c(1680, 40), c(1820, 40),
+          ] },
+
+        { name: "fractalRainfall",    category: "Wild",    description: "Layered rain at three temporal scales running simultaneously.",
+          pattern: [
+            p(0, 2400, 0.05, 0.9),
+            c(120, 25), c(380, 25), c(610, 25), c(845, 25), c(1080, 25), c(1320, 25), c(1545, 25), c(1790, 25), c(2030, 25), c(2270, 25),
+            c(450, 70), c(1100, 70), c(1750, 70),
+          ] },
+
+        { name: "rhythmGonewrong",    category: "Wild",    description: "Steady march that suddenly trips, recovers, trips again.",
+          pattern: [
+            c(0, 60), c(220, 60), c(440, 60),
+            c(560, 60), c(620, 60),
+            c(880, 60), c(1100, 60),
+            c(1180, 60),
+            c(1400, 60), c(1620, 60), c(1840, 60),
+          ] },
+
+        { name: "spiralIn",           category: "Wild",    description: "Pulses that shrink in spacing and grow in intensity simultaneously.",
+          pattern: [
+            p(0, 200, 0.1, 0.3),
+            p(280, 200, 0.25, 0.45),
+            p(540, 200, 0.4, 0.6),
+            p(780, 200, 0.55, 0.7),
+            p(1000, 200, 0.7, 0.8),
+            p(1200, 200, 0.85, 0.9),
+            p(1380, 200, 1.0, 1.0),
+            c(1600, 240),
+          ] },
+
+        { name: "spiralOut",          category: "Wild",    description: "Initial slam unfurls into ever-sparser softer pulses.",
+          pattern: [
+            c(0, 240),
+            p(260, 200, 1.0, 1.0),
+            p(480, 200, 0.85, 0.9),
+            p(700, 200, 0.7, 0.8),
+            p(940, 200, 0.55, 0.7),
+            p(1200, 200, 0.4, 0.6),
+            p(1480, 200, 0.25, 0.45),
+            p(1780, 200, 0.1, 0.3),
+          ] },
+
+        { name: "techno140bpm",       category: "Wild",    description: "Driving 140 BPM kick with off-beat hi-hat texture.",
+          pattern: [
+            // Kick on every quarter — 428 ms intervals
+            c(0, 70), c(428, 70), c(857, 70), c(1285, 70), c(1714, 70), c(2142, 70), c(2571, 70), c(3000, 70),
+            // Hi-hat texture on the off-beats
+            p(214, 100, 0.05, 1.0),
+            p(643, 100, 0.05, 1.0),
+            p(1071, 100, 0.05, 1.0),
+            p(1500, 100, 0.05, 1.0),
+            p(1928, 100, 0.05, 1.0),
+            p(2357, 100, 0.05, 1.0),
+            p(2785, 100, 0.05, 1.0),
+          ] },
+
+        { name: "swarmAttack",        category: "Wild",    description: "Insect swarm building, attacking, dispersing.",
+          pattern: [
+            p(0, 600, 0.1, 0.5),
+            p(620, 500, 0.2, 0.85),
+            p(1120, 800, 0.4, 1.0),
+            c(1300, 30), c(1480, 35), c(1660, 30), c(1820, 35),
+            p(1920, 500, 0.2, 0.7),
+            p(2420, 600, 0.05, 0.4),
+          ] },
+
+        { name: "loadingFinished",    category: "Wild",    description: "Looping progress ticks then a final success cluster.",
+          pattern: [
+            c(0, 30), c(220, 30), c(440, 30), c(660, 30), c(880, 30), c(1100, 30), c(1320, 30), c(1540, 30),
+            c(1820, 50), c(1940, 70), c(2080, 90), c(2240, 140),
+          ] },
+
+        { name: "doubleHelix",        category: "Wild",    description: "Two intertwining rhythmic strands at different speeds.",
+          pattern: [
+            // Strand A: slow heavy beats
+            c(0, 90), c(700, 90), c(1400, 90), c(2100, 90),
+            // Strand B: faster light beats offset
+            c(100, 30), c(450, 30), c(800, 30), c(1150, 30), c(1500, 30), c(1850, 30), c(2200, 30),
+          ] },
+
+        { name: "labyrinth",          category: "Wild",    description: "Winding asymmetric path of taps that never settles into a beat.",
+          pattern: [
+            c(0, 30), c(130, 30),
+            c(310, 30),
+            c(380, 30), c(440, 30),
+            c(620, 30),
+            c(820, 30), c(880, 30),
+            c(950, 30),
+            c(1180, 30), c(1240, 30),
+            c(1320, 30),
+            c(1580, 30),
+          ] },
+
+        { name: "twinPulsarStars",    category: "Wild",    description: "Two pulse generators at coprime periods drifting in and out of phase.",
+          pattern: [
+            // Period A = 200 ms
+            c(0, 25), c(200, 25), c(400, 25), c(600, 25), c(800, 25), c(1000, 25), c(1200, 25), c(1400, 25), c(1600, 25), c(1800, 25), c(2000, 25),
+            // Period B = 270 ms
+            c(0, 60), c(270, 60), c(540, 60), c(810, 60), c(1080, 60), c(1350, 60), c(1620, 60), c(1890, 60),
+          ] },
+
+        { name: "telegraphBattle",    category: "Wild",    description: "Two operators sending overlapping morse messages at different speeds.",
+          pattern: [
+            // Sender 1: ··−··−
+            c(0, 50), c(120, 50), c(240, 160), c(440, 50), c(560, 50), c(680, 160),
+            // Sender 2 (offset, faster): −·−·−·
+            c(75, 100), c(220, 30), c(290, 100), c(430, 30), c(500, 100), c(640, 30),
+          ] },
+
+        { name: "heartArrhythmia",    category: "Wild",    description: "Irregular skipped-beat heartbeat pattern.",
+          pattern: [
+            c(0, 50), c(120, 70),
+            c(420, 50), c(540, 70),
+            c(840, 50), c(960, 70),
+            // skipped beat — long gap
+            c(1500, 50), c(1620, 100),
+            c(1800, 50), c(1920, 70),
+          ] },
+
+        { name: "bigBang",            category: "Wild",    description: "Long silence, single massive blast, expanding aftermath texture.",
+          pattern: [
+            c(800, 280),
+            p(1100, 1500, 0.7, 0.85),
+            p(2620, 1200, 0.4, 0.55),
+            p(3840, 1000, 0.15, 0.35),
+          ] },
+
+        { name: "phaseShift",         category: "Wild",    description: "Two identical pulse trains, second begins slightly faster — they drift apart.",
+          pattern: [
+            c(0, 35), c(200, 35), c(400, 35), c(600, 35), c(800, 35), c(1000, 35), c(1200, 35), c(1400, 35), c(1600, 35), c(1800, 35),
+            c(0, 35), c(180, 35), c(360, 35), c(540, 35), c(720, 35), c(900, 35), c(1080, 35), c(1260, 35), c(1440, 35), c(1620, 35), c(1800, 35),
+          ] },
+
+        { name: "ecstaticBuildDrop",  category: "Wild",    description: "Long rising tension, deafening drop, four-on-the-floor groove.",
+          pattern: [
+            // Riser
+            p(0, 1800, 0.1, 0.4),
+            p(1000, 1200, 0.4, 0.7),
+            p(1800, 600, 0.7, 0.95),
+            // Drop
+            c(2400, 280),
+            // Groove
+            c(2800, 80), c(3200, 80), c(3600, 80), c(4000, 80),
+            p(2800, 1500, 0.2, 0.9),
+          ] },
+
+        { name: "epiphany",           category: "Wild",    description: "Hesitant ticks, accelerating realization, climactic warmth.",
+          pattern: [
+            c(0, 30),
+            c(800, 30), c(1500, 30),
+            c(2000, 30), c(2300, 30), c(2500, 30), c(2650, 30), c(2750, 30), c(2820, 30),
+            c(2900, 200),
+            p(3120, 1200, 0.4, 0.18),
+          ] },
+
+        // --- Dynamic: rapid (intensity, frequency) modulation within a single preset ---
+        { name: "flickerStorm",       category: "Dynamic", description: "Twelve short pulses, each (i,f) different — chaotic flicker.",
+          pattern: [
+            p(0, 120, 0.2, 0.3),
+            p(140, 120, 0.6, 0.85),
+            p(280, 120, 0.1, 0.95),
+            p(420, 120, 0.9, 0.15),
+            p(560, 120, 0.35, 0.55),
+            p(700, 120, 0.75, 0.7),
+            p(840, 120, 0.15, 0.4),
+            p(980, 120, 1.0, 0.95),
+            p(1120, 120, 0.05, 0.2),
+            p(1260, 120, 0.5, 0.8),
+            p(1400, 120, 0.25, 0.1),
+            p(1540, 120, 0.85, 0.5),
+          ] },
+
+        { name: "morphingSerpent",    category: "Dynamic", description: "Slithering — frequency and intensity wander continuously.",
+          pattern: [
+            p(0, 200, 0.4, 0.25),
+            p(220, 200, 0.5, 0.4),
+            p(440, 200, 0.55, 0.55),
+            p(660, 200, 0.5, 0.7),
+            p(880, 200, 0.4, 0.55),
+            p(1100, 200, 0.3, 0.4),
+            p(1320, 200, 0.25, 0.25),
+            p(1540, 200, 0.3, 0.15),
+            p(1760, 200, 0.4, 0.25),
+          ] },
+
+        { name: "danceFloor",         category: "Dynamic", description: "Eight beat slots each with a different texture flavor.",
+          pattern: [
+            p(0, 220, 0.7, 0.4),
+            p(250, 220, 0.2, 0.95),
+            p(500, 220, 0.5, 0.6),
+            p(750, 220, 0.85, 0.3),
+            p(1000, 220, 0.15, 0.95),
+            p(1250, 220, 0.6, 0.5),
+            p(1500, 220, 0.3, 0.85),
+            p(1750, 220, 0.9, 0.7),
+          ] },
+
+        { name: "rollercoasterRide",  category: "Dynamic", description: "Slow climb, free fall, banked turns, runout — every segment retunes.",
+          pattern: [
+            p(0, 400, 0.15, 0.2),       // climb start
+            p(420, 400, 0.25, 0.35),    // climbing
+            p(840, 400, 0.4, 0.5),      // near top
+            p(1260, 250, 0.05, 0.95),   // crest hover
+            p(1520, 400, 1.0, 0.95),    // drop
+            p(1940, 350, 0.6, 0.75),    // bottom curve
+            p(2300, 350, 0.4, 0.85),    // bank left
+            p(2660, 350, 0.4, 0.85),    // bank right
+            p(3020, 500, 0.25, 0.6),    // runout
+            p(3540, 600, 0.1, 0.3),     // brake decay
+          ] },
+
+        { name: "rapidDial",          category: "Dynamic", description: "Cycling through (i,f) presets quickly, like spinning a radio dial.",
+          pattern: [
+            p(0, 90, 0.1, 0.1),
+            p(100, 90, 0.3, 0.3),
+            p(200, 90, 0.5, 0.5),
+            p(300, 90, 0.7, 0.7),
+            p(400, 90, 0.9, 0.9),
+            p(500, 90, 0.7, 0.3),
+            p(600, 90, 0.3, 0.7),
+            p(700, 90, 0.9, 0.1),
+            p(800, 90, 0.1, 0.9),
+            p(900, 90, 0.5, 0.5),
+          ] },
+
+        { name: "rainShowerEvolving", category: "Dynamic", description: "Drizzle becomes downpour becomes drizzle — light and density both shift.",
+          pattern: [
+            p(0, 300, 0.05, 0.2),
+            p(320, 300, 0.08, 0.4),
+            p(640, 300, 0.12, 0.6),
+            p(960, 300, 0.18, 0.85),
+            p(1280, 300, 0.25, 1.0),    // peak downpour
+            p(1600, 300, 0.18, 0.85),
+            p(1920, 300, 0.12, 0.6),
+            p(2240, 300, 0.08, 0.4),
+            p(2560, 300, 0.05, 0.2),
+          ] },
+
+        { name: "windChanging",       category: "Dynamic", description: "Wind shifting between calm breeze and harsh gust.",
+          pattern: [
+            p(0, 400, 0.25, 0.15),
+            p(420, 300, 0.55, 0.35),
+            p(720, 200, 0.85, 0.7),    // gust
+            p(920, 300, 0.5, 0.45),
+            p(1240, 400, 0.2, 0.2),
+            p(1660, 250, 0.7, 0.6),    // another gust
+            p(1920, 500, 0.35, 0.25),
+          ] },
+
+        { name: "tinkeringMachine",   category: "Dynamic", description: "Mechanical part fiddling — short events of wildly different feel.",
+          pattern: [
+            p(0, 150, 0.5, 0.4),
+            p(180, 80, 0.1, 1.0),
+            p(280, 120, 0.7, 0.2),
+            p(420, 200, 0.3, 0.85),
+            p(640, 90, 1.0, 0.95),
+            p(760, 250, 0.15, 0.5),
+            p(1030, 120, 0.6, 0.3),
+            p(1170, 200, 0.4, 0.95),
+          ] },
+
+        { name: "drunkenOscillator",  category: "Dynamic", description: "Both axes jitter randomly around a centre.",
+          pattern: [
+            p(0, 150, 0.5, 0.5),
+            p(160, 150, 0.6, 0.4),
+            p(320, 150, 0.4, 0.55),
+            p(480, 150, 0.55, 0.65),
+            p(640, 150, 0.35, 0.45),
+            p(800, 150, 0.65, 0.5),
+            p(960, 150, 0.45, 0.6),
+            p(1120, 150, 0.55, 0.4),
+            p(1280, 150, 0.4, 0.5),
+            p(1440, 150, 0.6, 0.55),
+          ] },
+
+        { name: "morseExpressive",    category: "Dynamic", description: "SOS where each symbol uses a different (i,f) flavor.",
+          pattern: [
+            p(0, 80, 0.1, 0.95),
+            p(180, 80, 0.3, 0.95),
+            p(360, 80, 0.5, 0.95),
+            p(580, 240, 0.7, 0.85),
+            p(900, 240, 0.85, 0.7),
+            p(1220, 240, 1.0, 0.55),
+            p(1540, 80, 0.5, 0.95),
+            p(1720, 80, 0.3, 0.95),
+            p(1900, 80, 0.1, 0.95),
+          ] },
+
+        { name: "elevatorAscent",     category: "Dynamic", description: "Motor smoothly climbing — every segment slightly stronger and faster.",
+          pattern: [
+            p(0, 250, 0.2, 0.3),
+            p(260, 250, 0.3, 0.4),
+            p(520, 250, 0.4, 0.5),
+            p(780, 250, 0.5, 0.6),
+            p(1040, 250, 0.6, 0.7),
+            p(1300, 250, 0.7, 0.8),
+            p(1560, 250, 0.8, 0.9),
+            p(1820, 250, 0.9, 1.0),
+            c(2080, 90), // arrival
+          ] },
+
+        { name: "elevatorDescent",    category: "Dynamic", description: "Same motor, easing back down through eight (i,f) values.",
+          pattern: [
+            p(0, 250, 0.9, 1.0),
+            p(260, 250, 0.8, 0.9),
+            p(520, 250, 0.7, 0.8),
+            p(780, 250, 0.6, 0.7),
+            p(1040, 250, 0.5, 0.6),
+            p(1300, 250, 0.4, 0.5),
+            p(1560, 250, 0.3, 0.4),
+            p(1820, 250, 0.2, 0.3),
+            c(2080, 90),
+          ] },
+
+        { name: "morphLoop",          category: "Dynamic", description: "Cycles around the (i,f) square — corners traversed three times.",
+          pattern: [
+            p(0, 180, 0.1, 0.1), p(190, 180, 0.9, 0.1), p(380, 180, 0.9, 0.9), p(570, 180, 0.1, 0.9),
+            p(760, 180, 0.1, 0.1), p(950, 180, 0.9, 0.1), p(1140, 180, 0.9, 0.9), p(1330, 180, 0.1, 0.9),
+            p(1520, 180, 0.1, 0.1), p(1710, 180, 0.9, 0.1), p(1900, 180, 0.9, 0.9), p(2090, 180, 0.1, 0.9),
+          ] },
+
+        { name: "machineWakingUp",    category: "Dynamic", description: "Stuttering startup that gradually finds a steady texture.",
+          pattern: [
+            p(0, 80, 0.2, 0.4),
+            p(220, 80, 0.5, 0.7),
+            p(360, 60, 0.1, 0.3),
+            p(520, 120, 0.6, 0.85),
+            p(700, 80, 0.3, 0.5),
+            p(820, 150, 0.7, 0.9),
+            p(990, 200, 0.5, 0.7),
+            p(1210, 300, 0.6, 0.75),
+            p(1530, 500, 0.55, 0.7),
+            p(2050, 700, 0.55, 0.7),
+          ] },
+
+        { name: "machineWindingDown", category: "Dynamic", description: "Even texture losing energy in fits and starts.",
+          pattern: [
+            p(0, 700, 0.55, 0.7),
+            p(720, 500, 0.5, 0.65),
+            p(1240, 300, 0.4, 0.6),
+            p(1560, 250, 0.5, 0.5),
+            p(1830, 200, 0.3, 0.4),
+            p(2050, 150, 0.4, 0.3),
+            p(2220, 100, 0.2, 0.25),
+            p(2340, 80, 0.3, 0.15),
+            p(2440, 60, 0.1, 0.05),
+          ] },
+
+        { name: "fightingBoss",       category: "Dynamic", description: "Trading blows — your hits, their hits, ramping in danger.",
+          pattern: [
+            // You hit (sharp, brief)
+            p(0, 150, 0.5, 0.95),
+            // They hit (heavy, slow)
+            p(300, 250, 0.95, 0.4),
+            // You hit (faster, harder)
+            p(700, 150, 0.7, 0.95),
+            // They hit (stronger)
+            p(1000, 300, 1.0, 0.55),
+            // You hit (rapid combo)
+            p(1450, 80, 0.3, 1.0),
+            p(1550, 80, 0.4, 1.0),
+            p(1650, 80, 0.5, 1.0),
+            // They counter (devastating)
+            p(1800, 500, 1.0, 0.85),
+            c(2320, 200), // final stagger
+          ] },
+
+        { name: "languageOfBees",     category: "Dynamic", description: "Bee waggle-dance: alternating wags and walks with shifting parameters.",
+          pattern: [
+            p(0, 200, 0.3, 0.95),       // wag
+            p(220, 150, 0.15, 0.4),     // walk
+            p(380, 200, 0.4, 0.95),     // wag harder
+            p(600, 150, 0.2, 0.4),
+            p(760, 200, 0.5, 0.95),
+            p(980, 150, 0.15, 0.4),
+            p(1140, 200, 0.6, 0.95),
+            p(1360, 150, 0.2, 0.4),
+            p(1520, 200, 0.45, 0.95),
+          ] },
+
+        { name: "twoToneBuzzer",      category: "Dynamic", description: "Alternates between two distinct buzz characters — high vs low.",
+          pattern: [
+            p(0, 250, 0.1, 0.95),       // high tight
+            p(260, 250, 0.85, 0.25),    // low heavy
+            p(520, 250, 0.1, 0.95),
+            p(780, 250, 0.85, 0.25),
+            p(1040, 250, 0.1, 0.95),
+            p(1300, 250, 0.85, 0.25),
+            p(1560, 250, 0.1, 0.95),
+            p(1820, 250, 0.85, 0.25),
+          ] },
+
+        { name: "growingAnxiety",     category: "Dynamic", description: "Same rhythm repeats, but intensity and frequency creep upward each pass.",
+          pattern: [
+            // Pass 1 — calm
+            p(0, 120, 0.15, 0.3), p(160, 120, 0.15, 0.3), p(320, 120, 0.15, 0.3),
+            // Pass 2 — slightly faster, slightly harder
+            p(540, 120, 0.3, 0.5), p(690, 120, 0.3, 0.5), p(840, 120, 0.3, 0.5),
+            // Pass 3 — uncomfortable
+            p(1040, 120, 0.5, 0.7), p(1180, 120, 0.5, 0.7), p(1320, 120, 0.5, 0.7),
+            // Pass 4 — panic
+            p(1500, 120, 0.8, 0.9), p(1630, 120, 0.8, 0.9), p(1760, 120, 0.8, 0.9),
+            // Climax
+            c(1900, 240),
+          ] },
+
+        { name: "alienHeartbeat",     category: "Dynamic", description: "Heartbeat where each beat tries a different texture flavor.",
+          pattern: [
+            p(0, 80, 0.4, 0.5), p(110, 120, 0.6, 0.6),
+            p(540, 80, 0.5, 0.7), p(650, 120, 0.7, 0.4),
+            p(1080, 80, 0.3, 0.95), p(1190, 120, 0.8, 0.3),
+            p(1620, 80, 0.6, 0.4), p(1730, 120, 0.9, 0.6),
+          ] },
+
+        { name: "kaleidoscope",       category: "Dynamic", description: "Twelve segments rotating through extreme parameter combinations.",
+          pattern: [
+            p(0, 130, 0.0, 0.5),
+            p(140, 130, 0.5, 0.0),
+            p(280, 130, 1.0, 0.5),
+            p(420, 130, 0.5, 1.0),
+            p(560, 130, 0.25, 0.25),
+            p(700, 130, 0.75, 0.25),
+            p(840, 130, 0.75, 0.75),
+            p(980, 130, 0.25, 0.75),
+            p(1120, 130, 0.0, 0.0),
+            p(1260, 130, 1.0, 0.0),
+            p(1400, 130, 1.0, 1.0),
+            p(1540, 130, 0.0, 1.0),
+          ] },
+
+        { name: "expressiveSigh",     category: "Dynamic", description: "Three distinct sighs, each with its own emotional shape.",
+          pattern: [
+            // Resigned
+            p(0, 600, 0.6, 0.15),
+            // Frustrated
+            p(700, 500, 0.85, 0.4),
+            // Relieved
+            p(1300, 800, 0.4, 0.1),
+          ] },
+
+        { name: "shapeShifter",       category: "Dynamic", description: "Texture morphs every 200 ms — never settles into one feel.",
+          pattern: [
+            p(0, 200, 0.2, 0.4),
+            p(220, 200, 0.7, 0.4),
+            p(440, 200, 0.7, 0.9),
+            p(660, 200, 0.2, 0.9),
+            p(880, 200, 0.5, 0.1),
+            p(1100, 200, 0.95, 0.5),
+            p(1320, 200, 0.05, 0.95),
+            p(1540, 200, 0.4, 0.6),
+            p(1760, 200, 0.6, 0.2),
+          ] },
+
+        { name: "expressiveQuestion", category: "Dynamic", description: "Three rising phrases, each ending higher in (i,f) than the last.",
+          pattern: [
+            p(0, 150, 0.2, 0.3), p(170, 150, 0.4, 0.5),
+            p(500, 150, 0.3, 0.4), p(670, 150, 0.6, 0.7),
+            p(1000, 150, 0.4, 0.5), p(1170, 150, 0.9, 0.95),
+          ] },
+
+        { name: "pianoDynamics",      category: "Dynamic", description: "Piano-like dynamics — pp, mf, ff, ff, mf, pp.",
+          pattern: [
+            p(0, 200, 0.1, 0.4),        // pp
+            p(280, 200, 0.4, 0.55),     // mf
+            p(560, 200, 0.85, 0.7),     // ff
+            p(840, 200, 0.85, 0.7),     // ff
+            p(1120, 200, 0.4, 0.55),    // mf
+            p(1400, 200, 0.1, 0.4),     // pp
+          ] },
+
+        { name: "weatherTimelapse",   category: "Dynamic", description: "Calm → drizzle → storm → thunder → clearing — five distinct (i,f) eras.",
+          pattern: [
+            // Calm
+            p(0, 500, 0.05, 0.2),
+            // Drizzle
+            p(520, 500, 0.1, 0.55),
+            // Storm
+            p(1040, 500, 0.4, 0.85),
+            // Thunder
+            p(1560, 400, 0.95, 0.95),
+            c(1980, 240),
+            // Clearing
+            p(2240, 600, 0.2, 0.35),
+            p(2860, 500, 0.05, 0.2),
+          ] },
+
+        { name: "morphCipher",        category: "Dynamic", description: "Six short symbols, each a unique (i,f) — like a haptic alphabet.",
+          pattern: [
+            p(0, 120, 0.2, 0.2),
+            p(220, 120, 0.5, 0.4),
+            p(440, 120, 0.8, 0.6),
+            p(660, 120, 0.3, 0.8),
+            p(880, 120, 0.9, 0.95),
+            p(1100, 120, 0.1, 0.5),
+          ] },
+
+        { name: "stalkingPredator",   category: "Dynamic", description: "Slow heavy steps grow stealthier, then a lunge.",
+          pattern: [
+            p(0, 300, 0.9, 0.15),       // heavy step
+            p(800, 250, 0.7, 0.2),
+            p(1500, 200, 0.5, 0.3),
+            p(2100, 180, 0.3, 0.5),
+            p(2600, 150, 0.15, 0.8),    // stealth
+            p(2900, 100, 0.1, 0.95),
+            c(3050, 280),               // lunge
+          ] },
+
+        { name: "ufoFlyby",           category: "Dynamic", description: "Approach hum tightening up, doppler-style descent past.",
+          pattern: [
+            p(0, 400, 0.1, 0.3),
+            p(420, 350, 0.25, 0.55),
+            p(780, 300, 0.5, 0.8),
+            p(1100, 250, 0.85, 1.0),    // overhead
+            p(1360, 300, 0.5, 0.8),
+            p(1680, 350, 0.25, 0.55),
+            p(2050, 400, 0.1, 0.3),
+          ] },
+      ];
+
+      // --- Vote storage (localStorage) ---
+      const VOTE_STORAGE_KEY = "pulsar.presetVotes.v1";
+      let votes = {};
+      try {
+        const raw = localStorage.getItem(VOTE_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") votes = parsed;
+        }
+      } catch (err) {
+        console.warn("Could not load votes from localStorage:", err);
+      }
+
+      function persistVotes() {
+        try {
+          localStorage.setItem(VOTE_STORAGE_KEY, JSON.stringify(votes));
+        } catch (err) {
+          console.warn("Could not persist votes:", err);
+        }
+      }
+
+      function getVote(name) {
+        return Number.isFinite(votes[name]) ? votes[name] : 0;
+      }
+
+      function adjustVote(name, delta) {
+        const next = getVote(name) + delta;
+        if (next === 0) {
+          delete votes[name];
+        } else {
+          votes[name] = next;
+        }
+        persistVotes();
+      }
+
+      // --- Rendering ---
+      const grid = document.getElementById("grid");
+      const status = document.getElementById("status");
+      const searchInput = document.getElementById("search");
+      const categoryFilter = document.getElementById("category-filter");
+      const sortMode = document.getElementById("sort-mode");
+      const voteMinInput = document.getElementById("vote-min");
+      const voteMaxInput = document.getElementById("vote-max");
+      const supportChip = document.getElementById("support-chip");
+      const hasVibration = typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+      supportChip.textContent = hasVibration ? "Vibration: supported" : "Vibration: unsupported (log only)";
+
+      // Populate category filter
+      const categories = Array.from(new Set(PRESETS.map((p) => p.category))).sort();
+      for (const cat of categories) {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        categoryFilter.append(opt);
+      }
+
+      function patternDuration(pattern) {
+        let total = 0;
+        for (const entry of pattern) total = Math.max(total, entry.timestamp + entry.duration);
+        return total;
+      }
+
+      function makeViz(compiled, totalMs) {
+        const wrap = document.createElement("div");
+        wrap.className = "viz";
+        if (compiled.length === 0 || totalMs === 0) return wrap;
+        let t = 0;
+        let isVibe = true;
+        // The compiled array is [vibe, pause, vibe, pause, ...] unless it starts with 0
+        for (let i = 0; i < compiled.length; i++) {
+          const len = compiled[i];
+          if (i === 0 && len === 0) { isVibe = false; t += len; continue; }
+          if (isVibe && len > 0) {
+            const block = document.createElement("div");
+            block.style.left = (t / totalMs * 100) + "%";
+            block.style.width = Math.max(0.5, len / totalMs * 100) + "%";
+            wrap.append(block);
+          }
+          t += len;
+          isVibe = !isVibe;
+        }
+        return wrap;
+      }
+
+      function log(msg) {
+        const ts = new Date().toLocaleTimeString();
+        status.textContent = `[${ts}] ${msg}\n\n${status.textContent}`.trim();
+      }
+
+      function play(preset) {
+        const compiled = compile(preset.pattern);
+        if (hasVibration) {
+          const ok = navigator.vibrate(compiled);
+          log(`Play "${preset.name}" -> vibrate(${compiled.join(", ")}) = ${ok}`);
+        } else {
+          log(`(no vibration support) "${preset.name}" compiled = [${compiled.join(", ")}]`);
+        }
+      }
+
+      function showPattern(preset) {
+        const compiled = compile(preset.pattern);
+        log(`"${preset.name}" pattern:\n  source = ${JSON.stringify(preset.pattern)}\n  compiled = [${compiled.join(", ")}]`);
+      }
+
+      function parseVoteBound(raw) {
+        if (raw === "" || raw === null || raw === undefined) return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function buildVoteRow(preset) {
+        const row = document.createElement("div");
+        row.className = "vote-row";
+
+        const downBtn = document.createElement("button");
+        downBtn.type = "button";
+        downBtn.className = "secondary";
+        downBtn.textContent = "−";
+        downBtn.title = "Decrement vote";
+
+        const countEl = document.createElement("span");
+        countEl.className = "vote-count";
+
+        const upBtn = document.createElement("button");
+        upBtn.type = "button";
+        upBtn.textContent = "+";
+        upBtn.title = "Increment vote";
+
+        const refresh = () => {
+          const v = getVote(preset.name);
+          countEl.textContent = v > 0 ? `+${v}` : String(v);
+          countEl.classList.toggle("positive", v > 0);
+          countEl.classList.toggle("negative", v < 0);
+        };
+
+        downBtn.addEventListener("click", () => {
+          adjustVote(preset.name, -1);
+          refresh();
+          // If a vote filter is active, re-render so the card may drop out.
+          if (sortMode.value.startsWith("votes") || voteMinInput.value !== "" || voteMaxInput.value !== "") {
+            render();
+          }
+        });
+        upBtn.addEventListener("click", () => {
+          adjustVote(preset.name, +1);
+          refresh();
+          if (sortMode.value.startsWith("votes") || voteMinInput.value !== "" || voteMaxInput.value !== "") {
+            render();
+          }
+        });
+
+        refresh();
+        row.append(downBtn, countEl, upBtn);
+        return row;
+      }
+
+      function render() {
+        const q = searchInput.value.trim().toLowerCase();
+        const cat = categoryFilter.value;
+        const mode = sortMode.value;
+        const minVote = parseVoteBound(voteMinInput.value);
+        const maxVote = parseVoteBound(voteMaxInput.value);
+        grid.replaceChildren();
+
+        let list = PRESETS.filter((preset) => {
+          if (cat && preset.category !== cat) return false;
+          if (q) {
+            const hay = `${preset.name} ${preset.category} ${preset.description}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          const v = getVote(preset.name);
+          if (minVote !== null && v < minVote) return false;
+          if (maxVote !== null && v > maxVote) return false;
+          return true;
+        });
+
+        if (mode === "votes-desc") {
+          list = [...list].sort((a, b) => getVote(b.name) - getVote(a.name) || a.name.localeCompare(b.name));
+        } else if (mode === "votes-asc") {
+          list = [...list].sort((a, b) => getVote(a.name) - getVote(b.name) || a.name.localeCompare(b.name));
+        } else if (mode === "name") {
+          list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        for (const preset of list) {
+          const compiled = compile(preset.pattern);
+          const total = patternDuration(preset.pattern);
+          const segCount = preset.pattern.length;
+
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const head = document.createElement("div");
+          head.className = "card-head";
+          const name = document.createElement("strong");
+          name.textContent = preset.name;
+          const cat2 = document.createElement("span");
+          cat2.className = "category";
+          cat2.textContent = preset.category;
+          head.append(name, cat2);
+
+          const desc = document.createElement("p");
+          desc.className = "description";
+          desc.textContent = preset.description;
+
+          const viz = makeViz(compiled, total);
+
+          const stats = document.createElement("div");
+          stats.className = "stats";
+          stats.textContent = `${segCount} segment${segCount === 1 ? "" : "s"} · ${total} ms total · ${compiled.length} timing entries`;
+
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          const playBtn = document.createElement("button");
+          playBtn.type = "button";
+          playBtn.textContent = "Play";
+          playBtn.addEventListener("click", () => play(preset));
+          const patternBtn = document.createElement("button");
+          patternBtn.type = "button";
+          patternBtn.className = "secondary";
+          patternBtn.textContent = "Pattern";
+          patternBtn.addEventListener("click", () => showPattern(preset));
+          actions.append(playBtn, patternBtn);
+
+          card.append(head, desc, viz, stats, actions, buildVoteRow(preset));
+          grid.append(card);
+        }
+
+        if (list.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "footer-note";
+          empty.textContent = "No presets match the current filter.";
+          grid.append(empty);
+        }
+      }
+
+      async function copyVotesJson() {
+        const onlyVoted = {};
+        for (const [k, v] of Object.entries(votes)) {
+          if (Number.isFinite(v) && v !== 0) onlyVoted[k] = v;
+        }
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          totalPresets: PRESETS.length,
+          votedCount: Object.keys(onlyVoted).length,
+          votes: onlyVoted,
+        };
+        const json = JSON.stringify(payload, null, 2);
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(json);
+            log(`Copied votes JSON for ${Object.keys(onlyVoted).length} preset(s) to clipboard.`);
+          } else {
+            throw new Error("Clipboard API unavailable");
+          }
+        } catch (err) {
+          // Fallback: dump into the log so the user can copy from there.
+          log(`Clipboard unavailable (${err.message}). Votes JSON:\n${json}`);
+        }
+      }
+
+      function resetVotes() {
+        if (Object.keys(votes).length === 0) {
+          log("No votes to reset.");
+          return;
+        }
+        const confirmed = confirm(`Reset votes for ${Object.keys(votes).length} preset(s)?`);
+        if (!confirmed) return;
+        votes = {};
+        persistVotes();
+        render();
+        log("All votes reset.");
+      }
+
+      document.getElementById("stop-all").addEventListener("click", () => {
+        if (hasVibration) navigator.vibrate(0);
+        log("Stopped all haptics.");
+      });
+
+      searchInput.addEventListener("input", render);
+      categoryFilter.addEventListener("change", render);
+      sortMode.addEventListener("change", render);
+      voteMinInput.addEventListener("input", render);
+      voteMaxInput.addEventListener("input", render);
+      document.getElementById("copy-votes").addEventListener("click", copyVotesJson);
+      document.getElementById("reset-votes").addEventListener("click", resetVotes);
+
+      render();
+      const votedCount = Object.values(votes).filter((v) => Number.isFinite(v) && v !== 0).length;
+      log(`Loaded ${PRESETS.length} presets across ${categories.length} categories. Restored votes for ${votedCount} preset(s).`);
+    </script>
+  </body>
+</html>

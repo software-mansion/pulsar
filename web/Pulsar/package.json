@@ -1,0 +1,51 @@
+{
+  "name": "@pulsar/haptics",
+  "version": "0.1.0",
+  "description": "A TypeScript library for playing haptics on web devices",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/haptics.umd.js",
+  "module": "./dist/haptics.es.js",
+  "types": "./dist/haptics.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/haptics.d.ts",
+      "import": "./dist/haptics.es.js",
+      "require": "./dist/haptics.umd.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "example": "vite --host",
+    "build": "vite build && tsc --emitDeclarationOnly --declaration --declarationDir dist",
+    "test": "node --test --experimental-strip-types tests/*.test.js",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "clean": "rm -rf dist node_modules .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^6.1.6"
+  },
+  "keywords": [
+    "haptics",
+    "vibration",
+    "web",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pulsar-org/pulsar-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pulsar-org/pulsar-web/issues"
+  }
+}
