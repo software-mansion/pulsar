@@ -11,32 +11,31 @@ public class AudioSimulator: NSObject {
     #endif
   }()
 	private var audioContext: AVAudioEngine = AVAudioEngine()
-	private var offlineContext: AVAudioEngine?
-	private var currentSource: AVAudioPlayerNode?
 	private var playerNode: AVAudioPlayerNode = AVAudioPlayerNode()
 	private var filterNode: AVAudioUnitEQ = AVAudioUnitEQ(numberOfBands: 1)
-	private var isInitialized = false
 	private var isEngineConfigured = false
   private var shouldForceAudiblePlayback = false
-  private var playSound: Bool
 
-  // All AVAudioEngine / AVAudioPlayerNode / AVAudioSession operations run on this
-  // serial queue. Starting CoreAudio hardware (engine.start / playerNode.play) can
-  // block for several seconds, so it must never run on the main thread or the app
-  // hangs (the RN TurboModule invokes `play` on the main dispatch queue).
+  private let playSoundLock = NSLock()
+  private var _playSound: Bool
+  private var playSound: Bool {
+    get { playSoundLock.lock(); defer { playSoundLock.unlock() }; return _playSound }
+    set { playSoundLock.lock(); defer { playSoundLock.unlock() }; _playSound = newValue }
+  }
+
   private let audioQueue = DispatchQueue(label: "com.pulsar.audio", qos: .userInitiated)
 
 	public override init() {
     #if DEBUG
-      self.playSound = true
+      self._playSound = true
     #else
-      self.playSound = false
+      self._playSound = false
     #endif
 		super.init()
     if (isSimulatorDevice) {
-      self.playSound = true
+      self._playSound = true
     }
-    if (playSound) {
+    if (_playSound) {
       audioQueue.async { [weak self] in
         self?.configureAudioContext()
       }
@@ -57,9 +56,9 @@ public class AudioSimulator: NSObject {
 	}
 
   public func enableSound(_ value: Bool) {
+    self.playSound = value
     audioQueue.async { [weak self] in
       guard let self = self else { return }
-      self.playSound = value
       self.shouldForceAudiblePlayback = value
       if (!value) {
         self.playerNode.stop()
@@ -406,12 +405,7 @@ public class AudioSimulator: NSObject {
       guard let self = self, self.playSound else { return }
       self.configureAudioContext()
 
-      // The work below moved off the main thread, so it is no longer covered by
-      // the RNPulsarPerformSafely @try/@catch on the bridge. AVAudioPlayerNode's
-      // scheduleBuffer/play raise NSExceptions (which Swift cannot catch) when the
-      // engine graph isn't ready or the buffer format doesn't match the connection
-      // format, so guard those preconditions explicitly instead of relying on a
-      // catch that no longer applies.
+
       guard self.isEngineConfigured else { return }
 
       if self.playerNode.isPlaying { self.playerNode.stop() }
@@ -425,9 +419,6 @@ public class AudioSimulator: NSObject {
         }
       }
 
-      // Engine must be running before touching the player node, and the buffer
-      // must match the mono `sampleRate` format the graph was connected with
-      // (see configureAudioContext); otherwise scheduleBuffer raises.
       guard self.audioContext.isRunning,
             buffer.format.sampleRate == self.sampleRate,
             buffer.format.channelCount == 1 else {
@@ -447,6 +438,6 @@ public class AudioSimulator: NSObject {
 	}
 
 	public var isPlaying: Bool {
-		return playerNode.isPlaying
+		return audioQueue.sync { playerNode.isPlaying }
 	}
 }
