@@ -8,13 +8,17 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+// Version of the published `com.swmansion:pulsar-kmp` artifact to consume.
+// Ignored when USE_LOCAL_PULSAR_KMP=1 substitutes the local `:library` project.
+val pulsarKmpVersion = System.getenv("PULSAR_KMP_VERSION") ?: "0.0.2"
+
 kotlin {
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -22,17 +26,17 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export("com.swmansion:pulsar-kmp:1.0.0")
+            export("com.swmansion:pulsar-kmp:$pulsarKmpVersion")
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
-            api("com.swmansion:pulsar-kmp:1.0.0")
+            api("com.swmansion:pulsar-kmp:$pulsarKmpVersion")
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

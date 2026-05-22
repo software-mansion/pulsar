@@ -28,6 +28,7 @@ The iOS and Android SDKs are standalone native libraries. The React Native SDK i
 
 - **iOS:** `Pulsar.podspec` depends on the published `Pulsar-haptics` CocoaPod by default. For local development in the example app, set `USE_LOCAL_PULSAR_IOS=1` before `pod install` to use `iOS/Pulsar/` instead.
 - **Android:** `android/build.gradle` depends on the published `com.swmansion:pulsar` Maven artifact by default. For local development, set `USE_LOCAL_PULSAR_ANDROID=1` to compile against `Android/Pulsar/src/main/java/` instead.
+- **KMP:** `kmp/PulsarApp` depends on the published `com.swmansion:pulsar-kmp` Maven artifact by default. For local development against the Kotlin sources in `kmp/Pulsar`, set `USE_LOCAL_PULSAR_KMP=1` to substitute the local `:library` project via `includeBuild`. Override the consumed version with `PULSAR_KMP_VERSION`.
 
 When you change native SDK code in `iOS/` or `Android/`, publish or locally override the native package instead of copying shared sources into the RN package.
 
