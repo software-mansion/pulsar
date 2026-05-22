@@ -86,3 +86,6 @@ android/generated
 # React Native Nitro Modules
 nitrogen/
 .pnp.*
+
+# Vendored local Pulsar iOS sources (USE_LOCAL_PULSAR_IOS=1)
+deps/

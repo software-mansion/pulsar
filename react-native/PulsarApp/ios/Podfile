@@ -9,7 +9,6 @@ platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
-use_local_pulsar_ios = ENV['USE_LOCAL_PULSAR_IOS'] == '1'
 
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -18,13 +17,6 @@ end
 
 target 'example' do
   config = use_native_modules!
-
-  if use_local_pulsar_ios
-    Pod::UI.puts 'Using local Pulsar-haptics pod from iOS/Pulsar'.green
-    pod 'Pulsar-haptics', :path => '../../../iOS/Pulsar'
-  else
-    Pod::UI.puts 'Using published Pulsar-haptics pod from CocoaPods'.green
-  end
 
   use_react_native!(
     :path => config[:reactNativePath],

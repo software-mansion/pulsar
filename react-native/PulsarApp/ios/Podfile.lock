@@ -15,6 +15,7 @@ PODS:
     - fmt
     - glog
     - hermes-engine
+    - Pulsar-haptics (= 1.1.2)
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTRequired
@@ -36,6 +37,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - Pulsar-haptics (1.1.2)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -2864,6 +2866,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - Pulsar-haptics
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -3041,7 +3044,8 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: eb10572db306a79a59ba09d76b5fad04f97e7835
-  Pulsar: 5001b0c41c1b00a0c21df9444357e75283b3d5d4
+  Pulsar: 90ba2c56b66a3b7b4aec955c5be6d68daf282057
+  Pulsar-haptics: 1adbf9d10edc35c68aa03c0871cc6b9f2217d121
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
   RCTRequired: 7be34aabb0b77c3cefe644528df0fa0afad4e4d0
@@ -3118,6 +3122,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 5456bb010373068fc92221140921b09d126b116e
 
-PODFILE CHECKSUM: 3aa3b5f5253be927d355cf1499f60c53140eb9a3
+PODFILE CHECKSUM: ece9b884aacb528b5db66b2a64c635cc45f7cd28
 
 COCOAPODS: 1.16.2
