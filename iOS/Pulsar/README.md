@@ -19,8 +19,10 @@ A haptic feedback SDK for iOS, written in Swift. Pulsar provides ready-to-use ha
 ### Installation
 
 <!-- GENERATED:IOS_VERSION_START -->
-Latest available version: `1.1.1`
+Latest available version: `1.1.2`
 <!-- GENERATED:IOS_VERSION_END -->
+
+#### Swift Package Manager
 
 In Xcode, go to **File > Add Package Dependencies...** and use:
 
@@ -33,12 +35,28 @@ Or add Pulsar to your `Package.swift`:
 <!-- GENERATED:IOS_INSTALL_SNIPPET_START -->
 ```swift
 dependencies: [
-  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.1.1")
+  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.1.2")
 ]
 ```
 <!-- GENERATED:IOS_INSTALL_SNIPPET_END -->
 
 Then add `"Pulsar"` to your target dependencies.
+
+#### CocoaPods
+
+Add Pulsar to your `Podfile`:
+
+<!-- GENERATED:IOS_COCOAPODS_INSTALL_SNIPPET_START -->
+```ruby
+pod 'Pulsar-haptics', '~> 1.1.2'
+```
+<!-- GENERATED:IOS_COCOAPODS_INSTALL_SNIPPET_END -->
+
+Then run:
+
+```bash
+pod install
+```
 
 ### Preset example
 
@@ -121,7 +139,7 @@ npx skills add software-mansion-labs/skills
 
 ## License
 
-Pulsar library is licensed under [The MIT License](../../LICENSE).
+Pulsar library is licensed under [The MIT License](LICENSE).
 
 ## Try the Pulsar App
 

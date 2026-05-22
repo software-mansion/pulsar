@@ -10,7 +10,155 @@ import { POSTHOG_CONFIG } from '../../config';
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     posthog.init(apiKey, {
       api_host: apiHost || 'https://us.i.posthog.com',
-      defaults: '2026-01-30'
+      defaults: '2026-01-30',
+      opt_out_capturing_by_default: true,
+      persistence: 'localStorage+cookie'
     });
+
+    const consentState = { lastValue: null };
+
+    function readCookie(name) {
+      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
+      return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    function readGoogleConsent() {
+      const consentEntries = window.google_tag_data?.ics?.entries;
+      if (!consentEntries) {
+        return null;
+      }
+
+      const analyticsEntry = consentEntries.analytics_storage;
+      const candidateValues = [analyticsEntry?.update, analyticsEntry?.default];
+
+      if (candidateValues.some((value) => value === 'granted')) {
+        return true;
+      }
+
+      if (candidateValues.some((value) => value === 'denied')) {
+        return false;
+      }
+
+      return null;
+    }
+
+    function readCookiebotConsent() {
+      const cookieConsent = readCookie('CookieConsent');
+      if (!cookieConsent) {
+        return null;
+      }
+
+      try {
+        const parsed = JSON.parse(cookieConsent);
+        if (typeof parsed.statistics === 'boolean') {
+          return parsed.statistics;
+        }
+      } catch {
+        return null;
+      }
+
+      return null;
+    }
+
+    function readCookieScriptConsent() {
+      const cookieScript =
+        window.CookieScript?.instance ??
+        window.CookieScript?.Instance ??
+        window.CookieScript ??
+        null;
+
+      const currentState =
+        typeof cookieScript?.currentState === 'function' ? cookieScript.currentState() : null;
+
+      if (!currentState) {
+        return null;
+      }
+
+      if (currentState.action === 'reject') {
+        return false;
+      }
+
+      if (Array.isArray(currentState.categories)) {
+        return currentState.categories.includes('performance');
+      }
+
+      return currentState.action === 'accept' ? true : null;
+    }
+
+    function readCookieYesConsent() {
+      const cookieConsent = readCookie('cookieyes-consent');
+      if (!cookieConsent) {
+        return null;
+      }
+
+      const analyticsMatch = cookieConsent.match(/(?:^|,)analytics:(yes|no)(?:,|$)/i);
+      if (!analyticsMatch) {
+        return null;
+      }
+
+      return analyticsMatch[1].toLowerCase() === 'yes';
+    }
+
+    function readConsentDecision() {
+      const readers = [
+        readGoogleConsent,
+        readCookieScriptConsent,
+        readCookiebotConsent,
+        readCookieYesConsent,
+      ];
+
+      for (const readConsent of readers) {
+        const decision = readConsent();
+        if (typeof decision === 'boolean') {
+          return decision;
+        }
+      }
+
+      return null;
+    }
+
+    function syncPostHogConsent() {
+      const hasAnalyticsConsent = readConsentDecision();
+
+      if (hasAnalyticsConsent === consentState.lastValue || typeof hasAnalyticsConsent !== 'boolean') {
+        return;
+      }
+
+      consentState.lastValue = hasAnalyticsConsent;
+
+      if (hasAnalyticsConsent) {
+        posthog.opt_in_capturing();
+      } else {
+        posthog.opt_out_capturing();
+      }
+    }
+
+    const originalDataLayerPush = window.dataLayer?.push;
+    if (typeof originalDataLayerPush === 'function') {
+      window.dataLayer.push = function (...args) {
+        const result = originalDataLayerPush.apply(this, args);
+        queueMicrotask(syncPostHogConsent);
+        return result;
+      };
+    }
+
+    [
+      'CookieScriptLoaded',
+      'CookieScriptAccept',
+      'CookieScriptAcceptAll',
+      'CookieScriptReject',
+      'CookieScriptCategory-performance',
+      'CookiebotOnConsentReady',
+      'CookiebotOnAccept',
+      'CookiebotOnDecline',
+      'cookieyes_consent_update',
+      'OneTrustGroupsUpdated',
+      'consentChanged',
+    ].forEach((eventName) => {
+      window.addEventListener(eventName, syncPostHogConsent);
+    });
+
+    syncPostHogConsent();
   }
 </script>

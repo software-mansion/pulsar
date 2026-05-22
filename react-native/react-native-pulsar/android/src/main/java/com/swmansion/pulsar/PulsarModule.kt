@@ -94,7 +94,10 @@ class PulsarModule(reactContext: ReactApplicationContext) :
       0 -> RealtimeComposerStrategy.ENVELOPE
       1 -> RealtimeComposerStrategy.PRIMITIVE_TICK
       2 -> RealtimeComposerStrategy.PRIMITIVE_COMPLEX
-      3 -> RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES
+      3 -> enumValueOrFallback(
+        "ENVELOPE_WITH_DISCRETE_PRIMITIVES",
+        RealtimeComposerStrategy.ENVELOPE
+      )
       else -> return
     }
     realtimeComposer = pulsar.getRealtimeComposer(strategyEnum)
@@ -209,5 +212,13 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
   companion object {
     const val NAME = "RNPulsar"
+  }
+
+  private fun enumValueOrFallback(
+    name: String,
+    fallback: RealtimeComposerStrategy
+  ): RealtimeComposerStrategy {
+    return runCatching { java.lang.Enum.valueOf(RealtimeComposerStrategy::class.java, name) }
+      .getOrDefault(fallback)
   }
 }

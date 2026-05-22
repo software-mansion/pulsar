@@ -2,9 +2,9 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import { Icon } from './Icon';
 
 const handImage = require('@/assets/images/hand.png');
-const ellipseSvg = require('@/assets/images/ellipse.svg');
 
 const GLOBAL_DELAY = 1000;
 
@@ -16,20 +16,20 @@ export function StateTap({ children }: { children?: React.ReactNode }) {
       <Text style={styles.label}>Tap to trigger haptic impulse</Text>
 
       <View style={styles.circlesContainer} pointerEvents="none">
-        <Animated.View style={[styles.pulseAnimation, { animationDelay: GLOBAL_DELAY + 50 }]}>
-          <Image source={ellipseSvg} style={[styles.circle, { width: 60, height: 60 }]} contentFit="contain" />
+        <Animated.View style={[styles.pulseAnimation, styles.circle, { animationDelay: GLOBAL_DELAY + 50 }]}>
+          <Icon name="ellipse" size={60} />
         </Animated.View>
-        <Animated.View style={[styles.pulseAnimation, { animationDelay: GLOBAL_DELAY + 100 }]}>
-          <Image source={ellipseSvg} style={[styles.circle, { width: 90, height: 90 }]} contentFit="contain" />
+        <Animated.View style={[styles.pulseAnimation, styles.circle, { animationDelay: GLOBAL_DELAY + 100 }]}>
+          <Icon name="ellipse" size={90} />
         </Animated.View>
-        <Animated.View style={[styles.pulseAnimation, { animationDelay: GLOBAL_DELAY + 150 }]}>
-          <Image source={ellipseSvg} style={[styles.circle, { width: 120, height: 120 }]} contentFit="contain" />
+        <Animated.View style={[styles.pulseAnimation, styles.circle, { animationDelay: GLOBAL_DELAY + 150 }]}>
+          <Icon name="ellipse" size={120} />
         </Animated.View>
-        <Animated.View style={[styles.pulseAnimation, { animationDelay: GLOBAL_DELAY + 200 }]}>
-          <Image source={ellipseSvg} style={[styles.circle, { width: 150, height: 150 }]} contentFit="contain" />
+        <Animated.View style={[styles.pulseAnimation, styles.circle, { animationDelay: GLOBAL_DELAY + 200 }]}>
+          <Icon name="ellipse" size={150} />
         </Animated.View>
-        <Animated.View style={[styles.pulseAnimation, { animationDelay: GLOBAL_DELAY + 250 }]}>
-          <Image source={ellipseSvg} style={[styles.circle, { width: 180, height: 180 }]} contentFit="contain" />
+        <Animated.View style={[styles.pulseAnimation, styles.circle, { animationDelay: GLOBAL_DELAY + 250 }]}>
+          <Icon name="ellipse" size={180} />
         </Animated.View>
       </View>
 

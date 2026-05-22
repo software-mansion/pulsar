@@ -83,6 +83,22 @@ class HapticEngineWrapper(private val context: Context) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && vibrationService.hasAmplitudeControl()
     }
 
+    fun isEffectSupported(@SupportedVibrationEffect effect: Int): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return true
+        }
+
+        return vibrationService.areAllEffectsSupported(effect) != Vibrator.VIBRATION_EFFECT_SUPPORT_NO
+    }
+
+    fun isPrimitiveSupported(@SupportedVibrationPrimitive primitive: Int): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return false
+        }
+
+        return vibrationService.areAllPrimitivesSupported(primitive)
+    }
+
     fun isEnvelopeSupported(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
                 vibrationService.areEnvelopeEffectsSupported()
@@ -94,7 +110,7 @@ class HapticEngineWrapper(private val context: Context) {
     }
 
     fun getMinControlPointDurationMillis(): Long {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+        return if (isEnvelopeSupported()) {
             vibrator?.envelopeEffectInfo?.minControlPointDurationMillis ?: 15L
         } else {
             15L

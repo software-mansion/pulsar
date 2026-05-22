@@ -18,10 +18,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Settings, Presets, HapticSupport } from 'react-native-pulsar';
 import { BaseButton } from 'react-native-gesture-handler';
 import Button from '@/components/Button';
+import { Icon } from '@/components/Icon';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 const logo = require('@/assets/images/logo.png');
-const closeIcon = require('@/assets/images/x.svg');
 
 type ConnectionState = 
   | 'INITIAL'              // Checking if token exists
@@ -568,7 +568,7 @@ function HapticsSupportBanner({ level, onClose }: { level: HapticSupport; onClos
   return (
     <Card style={Margins.marginTop4X}>
       <TouchableOpacity onPress={onClose} style={styles.hapticsBannerClose}>
-        <Image source={closeIcon} style={styles.hapticsBannerCloseIcon} />
+        <Icon name="x" size={34} color="#001A72" />
       </TouchableOpacity>
       <ThemedText type="subtitle">Haptic support: {name}</ThemedText>
       <ThemedText style={Margins.marginTop2X}>{description}</ThemedText>
@@ -636,9 +636,5 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-  },
-  hapticsBannerCloseIcon: {
-    width: 34,
-    height: 34,
   },
 });

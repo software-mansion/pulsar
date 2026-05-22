@@ -23,11 +23,15 @@ class ImpulseCompositionHapticBuilder {
      * Returns null if the device API is below 30 — caller should fall back to envelope path.
      */
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createCompositionEffect(preset: PatternData): VibrationEffect? {
+    fun createCompositionEffect(preset: PatternData, engine: HapticEngineWrapper): VibrationEffect? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return null
 
         val impulses = preset.discretePattern.sortedBy { it.time }
         if (impulses.isEmpty()) return null
+
+        for (primitive in impulses.map { selectPrimitive(it.frequency) }.distinct()) {
+            if (!engine.isPrimitiveSupported(primitive)) return null
+        }
 
         val composition = VibrationEffect.startComposition()
         var prevTime = 0L
@@ -43,6 +47,7 @@ class ImpulseCompositionHapticBuilder {
         return composition.compose()
     }
 
+    @SupportedVibrationPrimitive
     @RequiresApi(Build.VERSION_CODES.R)
     private fun selectPrimitive(frequency: Float): Int {
         return when {

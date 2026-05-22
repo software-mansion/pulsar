@@ -5,61 +5,67 @@ import android.os.VibrationEffect
 import android.util.Log
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.haptics.SupportedVibrationPrimitive
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.types.Preset
 import com.swmansion.pulsar.types.PresetWithName
 
 class SystemPrimitivePresets(private val engine: HapticEngineWrapper) {
-    fun primitiveClick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_CLICK)
-        }
+    fun primitiveClick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_CLICK)
+    } else {
+        false
     }
-    fun primitiveThud() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_THUD)
-        }
+    fun primitiveThud(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_THUD)
+    } else {
+        false
     }
-    fun primitiveSpin() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_SPIN)
-        }
+    fun primitiveSpin(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_SPIN)
+    } else {
+        false
     }
-    fun primitiveQuickRise() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_QUICK_RISE)
-        }
+    fun primitiveQuickRise(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_QUICK_RISE)
+    } else {
+        false
     }
-    fun primitiveSlowRise() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_SLOW_RISE)
-        }
+    fun primitiveSlowRise(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_SLOW_RISE)
+    } else {
+        false
     }
-    fun primitiveQuickFall() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_QUICK_FALL)
-        }
+    fun primitiveQuickFall(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_QUICK_FALL)
+    } else {
+        false
     }
-    fun primitiveTick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_TICK)
-        }
+    fun primitiveTick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_TICK)
+    } else {
+        false
     }
-    fun primitiveLowTick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            playHaptic(VibrationEffect.Composition.PRIMITIVE_LOW_TICK)
-        }
+    fun primitiveLowTick(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        playHaptic(VibrationEffect.Composition.PRIMITIVE_LOW_TICK)
+    } else {
+        false
     }
 
-    private fun playHaptic(primitive: Int) {
+    private fun playHaptic(@SupportedVibrationPrimitive primitive: Int): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!engine.isPrimitiveSupported(primitive)) {
+                return false
+            }
             engine.vibrate(
                 VibrationEffect.startComposition()
                     .addPrimitive(primitive)
                     .compose()
             )
+            return true
         } else {
             Log.w("Pulsar", "Incompatible Android version. System primitive preset unsupported")
+            return false
         }
     }
 }
@@ -81,8 +87,7 @@ class SystemPrimitiveClickPreset(haptics: Pulsar, private val systemPresets: Sys
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveClick()
+        playSystemOrFallback { systemPresets.primitiveClick() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveClick" }
 }
@@ -103,8 +108,7 @@ class SystemPrimitiveThudPreset(haptics: Pulsar, private val systemPresets: Syst
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveThud()
+        playSystemOrFallback { systemPresets.primitiveThud() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveThud" }
 }
@@ -125,8 +129,7 @@ class SystemPrimitiveSpinPreset(haptics: Pulsar, private val systemPresets: Syst
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveSpin()
+        playSystemOrFallback { systemPresets.primitiveSpin() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveSpin" }
 }
@@ -147,8 +150,7 @@ class SystemPrimitiveQuickRisePreset(haptics: Pulsar, private val systemPresets:
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveQuickRise()
+        playSystemOrFallback { systemPresets.primitiveQuickRise() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveQuickRise" }
 }
@@ -169,8 +171,7 @@ class SystemPrimitiveSlowRisePreset(haptics: Pulsar, private val systemPresets: 
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveSlowRise()
+        playSystemOrFallback { systemPresets.primitiveSlowRise() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveSlowRise" }
 }
@@ -191,8 +192,7 @@ class SystemPrimitiveQuickFallPreset(haptics: Pulsar, private val systemPresets:
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveQuickFall()
+        playSystemOrFallback { systemPresets.primitiveQuickFall() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveQuickFall" }
 }
@@ -214,8 +214,7 @@ class SystemPrimitiveTickPreset(haptics: Pulsar, private val systemPresets: Syst
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveTick()
+        playSystemOrFallback { systemPresets.primitiveTick() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveTick" }
 }
@@ -237,8 +236,7 @@ class SystemPrimitiveLowTickPreset(haptics: Pulsar, private val systemPresets: S
         true
     ) {
     override fun play() {
-        super.play()
-        systemPresets.primitiveLowTick()
+        playSystemOrFallback { systemPresets.primitiveLowTick() }
     }
     companion object: PresetWithName { override val name = "SystemPrimitiveLowTick" }
 }

@@ -1,7 +1,9 @@
 name: Publish Flutter package to pub.dev
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'pulsar_haptics-flutter-[0-9]+.[0-9]+.[0-9]+*'
 
 permissions:
   contents: read

@@ -1,7 +1,7 @@
 import { StyleSheet, View, Share, TextInput, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
-import { Image } from 'expo-image';
+import { Icon } from '@/components/Icon';
 import Button from '@/components/Button';
 import { Link } from 'expo-router';
 import GesturePlayground, { type GesturePlaygroundHandle } from '../../components/GesturePlayground';
@@ -12,9 +12,6 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { MAX_RECORDING_DURATION_MS } from '@/hooks/usePatternRecorder';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-
-const infoIcon = require('@/assets/images/info.svg');
-const slidersIcon = require('@/assets/images/sliders.svg');
 
 const defaultEdges = {
   top: 'additive',
@@ -116,7 +113,7 @@ export default function PlaygroundScreen() {
             <Link.Trigger>
               <View style={styles.howItWorksButton}>
                 <ThemedText>How does it work?</ThemedText>
-                <Image source={infoIcon} style={styles.infoIcon} />
+                <Icon name="info" size={18} color="#001A72" />
               </View>
             </Link.Trigger>
           </Link>
@@ -129,7 +126,7 @@ export default function PlaygroundScreen() {
                 <ThemedText style={[styles.settingsLabel, { color: textColor }]}>
                   Realtime composer settings
                 </ThemedText>
-                <Image source={slidersIcon} style={styles.settingsIcon} />
+                <Icon name="sliders" size={20} color="#001A72" />
               </View>
             </Link.Trigger>
           </Link>
@@ -217,20 +214,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  infoIcon: {
-    width: 18,
-    height: 18,
-  },
   settingsRow: {
     paddingTop: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-  },
-  settingsIcon: {
-    width: 20,
-    height: 20,
   },
   settingsLabel: {
     fontSize: 15,

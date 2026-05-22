@@ -1,22 +1,22 @@
 {
   "ios": {
-    "version": "1.1.1",
+    "version": "1.1.2",
     "swiftPackageUrl": "https://github.com/software-mansion-labs/pulsar-ios"
   },
   "android": {
-    "version": "1.1.0",
+    "version": "1.1.1",
     "mavenCoordinate": "com.swmansion:pulsar"
   },
   "reactNative": {
-    "version": "1.4.0",
+    "version": "1.5.0",
     "packageName": "react-native-pulsar"
   },
   "kmp": {
-    "version": "0.0.2",
+    "version": "0.0.3",
     "mavenCoordinate": "com.swmansion:pulsar-kmp"
   },
   "flutter": {
-    "version": "0.0.1",
+    "version": "0.0.3",
     "packageName": "pulsar_haptics"
   }
 }

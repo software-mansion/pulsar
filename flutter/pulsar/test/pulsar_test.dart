@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pulsar_haptics/pulsar.dart';
+import 'package:pulsar_haptics/pulsar_method_channel.dart';
 
 class MockPulsarPlatform
     with MockPlatformInterfaceMixin
@@ -127,6 +128,33 @@ void main() {
     await pulsar.presets.balloonPop();
 
     expect(fakePlatform.lastPlayedPreset, 'balloonPop');
+
+    PulsarPlatform.instance = initialPlatform;
+  });
+
+  test(
+    'Pulsar sync presets fire-and-forget through the platform interface',
+    () {
+      final pulsar = Pulsar();
+      final fakePlatform = MockPulsarPlatform();
+      PulsarPlatform.instance = fakePlatform;
+
+      pulsar.presets.sync.balloonPop();
+
+      expect(fakePlatform.lastPlayedPreset, 'balloonPop');
+
+      PulsarPlatform.instance = initialPlatform;
+    },
+  );
+
+  test('PulsarPreset.playSync delegates to the platform interface', () async {
+    final fakePlatform = MockPulsarPlatform();
+    PulsarPlatform.instance = fakePlatform;
+
+    final preset = await Pulsar().presets.getByName('hammer');
+    preset!.playSync();
+
+    expect(fakePlatform.lastPlayedPreset, 'hammer');
 
     PulsarPlatform.instance = initialPlatform;
   });

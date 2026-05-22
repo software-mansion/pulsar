@@ -6,7 +6,7 @@ A haptic feedback SDK for Flutter. Pulsar gives you 150+ ready-to-play presets, 
 
 ## Features
 
-- **200+ built-in presets** – Expressive patterns (`hammer`, `dogBark`, `heartbeat`, `fanfare`…) plus system feedback (impact, notification, selection)
+- **150+ built-in presets** – Expressive patterns (`hammer`, `dogBark`, `heartbeat`, `fanfare`…) plus system feedback (impact, notification, selection)
 - **Pattern Composer** – Build custom haptics from discrete events and continuous amplitude/frequency envelopes
 - **Realtime Composer** – Live amplitude and frequency control for sliders, gestures, and continuously evolving feedback
 - **Adaptive presets** – Define iOS and Android variants in one object and let Pulsar pick the right one per platform
@@ -18,13 +18,13 @@ A haptic feedback SDK for Flutter. Pulsar gives you 150+ ready-to-play presets, 
 > **Note:** This package is published as **`pulsar_haptics`**, not `pulsar`. The shorter `pulsar` name on pub.dev was reserved by an unrelated author before this project was published and is not maintained by Software Mansion. Always depend on `pulsar_haptics`.
 
 <!-- GENERATED:FLUTTER_VERSION_START -->
-Latest available version: `0.0.1`
+Latest available version: `0.0.3`
 <!-- GENERATED:FLUTTER_VERSION_END -->
 
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_START -->
 ```yaml
 dependencies:
-  pulsar_haptics: ^0.0.1
+  pulsar_haptics: ^0.0.3
 ```
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_END -->
 
@@ -43,10 +43,12 @@ final pulsar = Pulsar();
 
 // Built-in expressive preset
 await pulsar.getPresets().hammer();
+pulsar.getSyncPresets().hammer();
 
 // System feedback
 await pulsar.getPresets().systemImpactMedium();
 await pulsar.getPresets().systemNotificationSuccess();
+pulsar.syncPresets.systemNotificationSuccess();
 ```
 
 ### Pattern composer example

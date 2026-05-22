@@ -8,7 +8,7 @@ const sentryPluginConfig = {
 export default {
   name: "PulsarApp",
   slug: "PulsarApp",
-  version: "1.0.5",
+  version: "1.0.7",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "pulsarapp",
@@ -29,7 +29,7 @@ export default {
     },
     predictiveBackGestureEnabled: false,
     package: "com.swmansion.pulsar.app",
-    versionCode: 5,
+    versionCode: 8,
     intentFilters: [
       {
         action: "VIEW",
@@ -70,6 +70,16 @@ export default {
       },
     ],
     "expo-localization",
+    [
+      "react-native-nano-icons",
+      {
+        iconSets: [
+          {
+            inputDir: "./assets/icons/pulsar-icons",
+          },
+        ],
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

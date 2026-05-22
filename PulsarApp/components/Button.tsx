@@ -1,24 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ViewProps, Dimensions, type ImageStyle, type StyleProp } from 'react-native';
+import { View, StyleSheet, Text, ViewProps, Dimensions, type ViewStyle, type StyleProp } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Presets } from 'react-native-pulsar';
-import { Image } from 'expo-image';
-
-const loaderIcon = require('../assets/images/loader.svg');
-const arrowIcon = require('@/assets/images/arrow.svg');
-const playIcon = require('@/assets/images/play.svg');
-const stopIcon = require('@/assets/images/stop.svg');
-const downloadIcon = require('@/assets/images/download.svg');
-const recordIcon = require('@/assets/images/record.svg');
-const squareIcon = require('@/assets/images/square.svg');
+import { Icon, IconName } from './Icon';
 
 const { width } = Dimensions.get('window');
 
 interface Props {
   label?: string;
   style?: ViewProps['style'];
-  iconStyle?: StyleProp<ImageStyle>;
+  iconStyle?: StyleProp<ViewStyle>;
   onClick?: () => void;
   onComplete?: () => void;
   state?: 'loading' | 'default';
@@ -29,7 +21,7 @@ interface Props {
   disableHaptics?: boolean;
 }
 
-type IconName = Exclude<NonNullable<Props['showIcon']>, 'none'>;
+type ButtonIconName = Extract<IconName, 'arrow' | 'play' | 'stop' | 'download' | 'record' | 'square'>;
 
 function Button({
   label,
@@ -66,16 +58,15 @@ function Button({
     return () => clearTimeout(timer);
   }, [enabled, isLoading, onComplete, pressed]);
 
-  const iconRenderers: Record<IconName, () => React.JSX.Element> = {
-    arrow: () => <Image source={arrowIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
-    play: () => <Image source={playIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
-    stop: () => <Image source={stopIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
-    download: () => <Image source={downloadIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
-    record: () => <Image source={recordIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
-    square: () => <Image source={squareIcon} style={[largeIcon ? styles.largeArrowIcon : styles.arrowIcon, iconStyle]} />,
-  };
+  const iconSize = largeIcon ? 22 : 18;
+  const iconWrapperStyle = largeIcon ? styles.largeArrowIcon : styles.arrowIcon;
+  const buttonIconColor = showIcon === 'record' ? '#FF6259' : '#001A72';
 
-  const renderIcon = showIcon === 'none' ? null : iconRenderers[showIcon]();
+  const renderIcon = showIcon === 'none' ? null : (
+    <View style={[iconWrapperStyle, iconStyle]}>
+      <Icon name={showIcon as ButtonIconName} size={iconSize} color={buttonIconColor} />
+    </View>
+  );
 
   const containerStyle = [
     styles.container,
@@ -89,11 +80,8 @@ function Button({
     <GestureDetector gesture={tap}>
       <Animated.View style={containerStyle} {...props}>
         {isLoading ? (
-          <Animated.View style={styles.rotateAnimation}>
-            <Image
-              source={loaderIcon}
-              style={styles.loader}
-            />
+          <Animated.View style={[styles.rotateAnimation, styles.loader]}>
+            <Icon name="loader" size={24} color="#001A72" />
           </Animated.View>
         ) : (
           <View style={[largeIcon ? styles.largeIconRow : styles.row, !enabled && styles.disabled]}>
@@ -141,11 +129,15 @@ const styles = StyleSheet.create({
     height: 18,
     marginLeft: 5,
     alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   largeArrowIcon: {
     width: 22,
     height: 22,
     alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   largeIconRow: {
     flexDirection: 'row',

@@ -17,15 +17,15 @@ interface PresetItem {
 }
 
 const PRESETS: PresetItem[] = [
-  { name: 'SystemImpactLight', displayName: '💫 Impact Light', play: Presets.System.ImpactLight },
-  { name: 'SystemImpactMedium', displayName: '⚡ Impact Medium', play: Presets.System.ImpactMedium },
-  { name: 'SystemImpactHeavy', displayName: '💥 Impact Heavy', play: Presets.System.ImpactHeavy },
-  { name: 'SystemImpactSoft', displayName: '🌸 Impact Soft', play: Presets.System.ImpactSoft },
-  { name: 'SystemImpactRigid', displayName: '🔨 Impact Rigid', play: Presets.System.ImpactRigid },
-  { name: 'SystemNotificationSuccess', displayName: '🔔 Notification Success', play: Presets.System.NotificationSuccess },
-  { name: 'SystemNotificationWarning', displayName: '⚠️ Notification Warning', play: Presets.System.NotificationWarning },
-  { name: 'SystemNotificationError', displayName: '🚨 Notification Error', play: Presets.System.NotificationError },
-  { name: 'SystemSelection', displayName: '🎯 Selection', play: Presets.System.Selection },
+  { name: 'SystemImpactLight', displayName: '💫 Impact Light', play: Presets.System.impactLight },
+  { name: 'SystemImpactMedium', displayName: '⚡ Impact Medium', play: Presets.System.impactMedium },
+  { name: 'SystemImpactHeavy', displayName: '💥 Impact Heavy', play: Presets.System.impactHeavy },
+  { name: 'SystemImpactSoft', displayName: '🌸 Impact Soft', play: Presets.System.impactSoft },
+  { name: 'SystemImpactRigid', displayName: '🔨 Impact Rigid', play: Presets.System.impactRigid },
+  { name: 'SystemNotificationSuccess', displayName: '🔔 Notification Success', play: Presets.System.notificationSuccess },
+  { name: 'SystemNotificationWarning', displayName: '⚠️ Notification Warning', play: Presets.System.notificationWarning },
+  { name: 'SystemNotificationError', displayName: '🚨 Notification Error', play: Presets.System.notificationError },
+  { name: 'SystemSelection', displayName: '🎯 Selection', play: Presets.System.selection },
 // CODEGEN_BEGIN_{example_app_preset_list}
   { name: 'Afterglow', displayName: '📳 Afterglow', play: Presets.afterglow },
   { name: 'Aftershock', displayName: '📳 Aftershock', play: Presets.aftershock },

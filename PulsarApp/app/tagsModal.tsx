@@ -4,10 +4,8 @@ import { ThemedText } from '@/components/themed-text';
 import { Tabs, Tab } from '@/components/Tabs';
 import { TagDescription } from '@/components/TagDescription';
 import { TagsInfo } from '@/constants/Tags';
-import { Image } from 'expo-image';
+import { Icon } from '@/components/Icon';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const closeIcon = require('@/assets/images/x.svg');
 
 export default function TagsModal() {
 
@@ -17,7 +15,7 @@ export default function TagsModal() {
         <View style={styles.header}>
           <ThemedText type="subtitle">Preset tags</ThemedText>
           <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-            <Image source={closeIcon} style={styles.closeIcon} />
+            <Icon name="x" size={30} color="#001A72" />
           </TouchableOpacity>
         </View>
         
@@ -60,10 +58,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingBottom: 5,
-  },
-  closeIcon: {
-    width: 30,
-    height: 30,
   },
   closeButton: {
     paddingTop: 8,

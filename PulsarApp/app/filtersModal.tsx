@@ -4,15 +4,12 @@ import { StyleSheet, View, Text, Pressable, ScrollView, Switch, Platform } from 
 import { ThemedText } from '@/components/themed-text';
 import Button from '@/components/Button';
 import { Colors } from '@/constants/theme';
-import { Image } from 'expo-image';
+import { Icon } from '@/components/Icon';
 import { TagsInfo } from '@/constants/Tags';
 import { useFilters } from '@/contexts/FilterContext';
 import { usePostHog } from 'posthog-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings } from 'react-native-pulsar';
-
-const closeIcon = require('@/assets/images/x.svg');
-const checkIcon = require('@/assets/images/check.svg');
 
 type FilterState = {
   [key: string]: boolean;
@@ -115,7 +112,7 @@ export default function FiltersModal() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.closeButton}>
-            <Image source={closeIcon} style={styles.closeIcon} />
+            <Icon name="x" size={30} color="#001A72" />
           </Pressable>
           <ThemedText style={styles.title}>Filters</ThemedText>
           <Pressable onPress={clearAll}>
@@ -241,7 +238,7 @@ function CheckboxItem({ label, checked, onToggle }: CheckboxItemProps) {
   return (
     <Pressable style={styles.checkboxContainer} onPress={onToggle}>
       <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-        {checked && <Image source={checkIcon} style={styles.checkmark} />}
+        {checked && <Icon name="check" size={16} color="#001A72" />}
       </View>
       <Text style={styles.checkboxLabel}>{label}</Text>
     </Pressable>
@@ -272,10 +269,6 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  closeIcon: {
-    width: 30,
-    height: 30,
   },
   title: {
     fontSize: 20,
@@ -325,10 +318,6 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: '#87CCE8',
     borderColor: '#001A72',
-  },
-  checkmark: {
-    height: 16,
-    width: 16,
   },
   checkboxLabel: {
     fontSize: 16,

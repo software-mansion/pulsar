@@ -19,6 +19,7 @@ const files = [
   'docs/src/content/docs/sdk/kmp.mdx',
   'docs/src/content/docs/sdk/flutter.mdx',
   'iOS/Pulsar/README.md',
+  'iOS/Pulsar/Pulsar-haptics.podspec',
   'Android/Pulsar/README.md',
   'react-native/react-native-pulsar/README.md',
   'kmp/Pulsar/README.md',
@@ -79,6 +80,22 @@ dependencies: [
 \`\`\``;
 }
 
+function getIosCocoaPodsSnippet() {
+  return `\`\`\`ruby
+pod 'Pulsar-haptics', '~> ${versions.ios.version}'
+\`\`\``;
+}
+
+function syncIosPodspecVersion(content) {
+  const pattern = /(s\.version\s*=\s*')([^']+)(')/;
+
+  if (!pattern.test(content)) {
+    throw new Error('Missing iOS podspec version assignment');
+  }
+
+  return content.replace(pattern, `$1${versions.ios.version}$3`);
+}
+
 function getAndroidVersionLine() {
   return `Latest available version: \`${versions.android.version}\``;
 }
@@ -133,6 +150,14 @@ for (const relativeFile of files) {
   ) {
     content = replaceGeneratedSection(content, 'IOS_VERSION', getIosVersionLine());
     content = replaceGeneratedSection(content, 'IOS_INSTALL_SNIPPET', getIosSnippet());
+  }
+
+  if (relativeFile === 'iOS/Pulsar/README.md') {
+    content = replaceGeneratedSection(content, 'IOS_COCOAPODS_INSTALL_SNIPPET', getIosCocoaPodsSnippet());
+  }
+
+  if (relativeFile === 'iOS/Pulsar/Pulsar-haptics.podspec') {
+    content = syncIosPodspecVersion(content);
   }
 
   if (
