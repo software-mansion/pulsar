@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pulsar-lottie"
+version = "0.1.0"
+description = "Auto-generate Pulsar haptic patterns from Lottie animations."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Pulsar"}]
+license = {text = "MIT"}
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "typer>=0.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+pulsar-lottie = "pulsar_lottie.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pulsar_lottie"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
