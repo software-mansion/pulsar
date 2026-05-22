@@ -1,7 +1,11 @@
 #import "Haptics.h"
 #import <UIKit/UIKit.h>
 #if __has_include(<Pulsar/Pulsar-Swift.h>)
+// Local sources mode (USE_LOCAL_PULSAR_IOS=1): Swift is compiled into the `Pulsar` module.
 #import <Pulsar/Pulsar-Swift.h>
+#elif __has_include(<Pulsar_haptics/Pulsar_haptics-Swift.h>)
+// Published pod mode (default): Swift ships in the `Pulsar-haptics` pod (`Pulsar_haptics` module).
+#import <Pulsar_haptics/Pulsar_haptics-Swift.h>
 #else
 #import "Pulsar-Swift.h"
 #endif
