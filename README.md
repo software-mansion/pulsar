@@ -12,6 +12,16 @@ A haptic feedback SDK for iOS, Android, React Native, and Kotlin Multiplatform. 
 - **Cross-platform** - Consistent API across iOS (Swift), Android (Kotlin), React Native (TypeScript), and Kotlin Multiplatform
 - **Worklet-compatible** - All React Native preset functions and hook methods work inside Reanimated worklets
 
+## Packages
+
+| Platform | Package |
+|----------|---------|
+| React Native | [![npm](https://img.shields.io/npm/v/react-native-pulsar)](https://www.npmjs.com/package/react-native-pulsar) |
+| iOS | [Swift Package](https://github.com/software-mansion-labs/pulsar-ios) |
+| Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
+| Kotlin Multiplatform | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) |
+| Flutter | [pub.dev](https://pub.dev/packages/pulsar_haptics) |
+
 ## Quick start
 
 ### React Native
@@ -122,39 +132,6 @@ import 'package:pulsar_haptics/pulsar.dart';
 final pulsar = Pulsar();
 await pulsar.getPresets().hammer();
 ```
-
-## Repository structure
-
-```
-pulsar/
-├── iOS/
-│   ├── Pulsar/         # iOS Swift SDK (Swift Package, iOS 13+)
-│   └── PulsarApp/      # iOS native demo app
-├── Android/
-│   ├── Pulsar/         # Android Kotlin SDK (Gradle library, API 24+)
-│   └── PulsarApp/      # Android native demo app
-├── react-native/
-│   └── react-native-pulsar/  # React Native Turbo Module
-│   └── PulsarApp/            # React Native native demo app
-├── kmp/
-│   ├── Pulsar/         # Kotlin Multiplatform SDK (Android + iOS targets)
-│   └── PulsarApp/      # Compose Multiplatform demo app
-├── flutter/
-│   ├── pulsar/         # Flutter plugin (Android + iOS)
-│   └── PulsarApp/      # Flutter demo app
-├── PulsarApp/          # React Native Expo showcase app
-└── docs/               # Documentation site (Astro/Starlight)
-```
-
-## Packages
-
-| Platform | Package |
-|----------|---------|
-| React Native | [![npm](https://img.shields.io/npm/v/react-native-pulsar)](https://www.npmjs.com/package/react-native-pulsar) |
-| iOS | [Swift Package](https://github.com/software-mansion-labs/pulsar-ios) |
-| Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
-| Kotlin Multiplatform | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) |
-| Flutter | [pub.dev](https://pub.dev/packages/pulsar_haptics) |
 
 ## Documentation
 
