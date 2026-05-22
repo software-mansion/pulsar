@@ -3,12 +3,15 @@ import arrowIcon from '../../assets/new_assets/arrow.svg';
 import infoIcon from '../../assets/new_assets/info.svg';
 import { Filters } from '../Filters/Filters';
 import { Preset } from '../Preset/Preset';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
 import { TagsModal } from '../TagsModal/TagsModal';
 import { TagsInfo } from './Tags';
 import { PresetsConfig } from '../../assets/presets/PresetsConfig';
-import { AndroidPresetsConfig, IOSPresetsConfig } from '../../assets/systemPresets/SystemPresetsConfig';
+import {
+  AndroidPresetsConfig,
+  IOSPresetsConfig,
+} from '../../assets/systemPresets/SystemPresetsConfig';
 import { NoResult } from '../NoResult/NoResult';
 import { ChartModal } from '../ChartModal/ChartModal';
 
@@ -32,12 +35,14 @@ export function PresetsList() {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const [compactLayout, setCompactLayout] = useState<boolean>(
-    () => typeof window !== 'undefined' && localStorage.getItem(COMPACT_LAYOUT_KEY) === 'true'
+    () => typeof window !== 'undefined' && localStorage.getItem(COMPACT_LAYOUT_KEY) === 'true',
   );
   const [soundEnabled, setSoundEnabled] = useState<boolean>(
-    () => typeof window === 'undefined' || localStorage.getItem(SOUND_ENABLED_KEY) !== 'false'
+    () => typeof window === 'undefined' || localStorage.getItem(SOUND_ENABLED_KEY) !== 'false',
   );
+  const [searchQuery, setSearchQuery] = useState('');
   const [favourites, setFavourites] = useState<Set<string>>(new Set());
+  const deferredQuery = useDeferredValue(searchQuery);
 
   useEffect(() => {
     try {
@@ -172,8 +177,24 @@ export function PresetsList() {
       result = result.filter((preset) => favourites.has(preset.data.name));
     }
 
+    if (deferredQuery.trim()) {
+      const query = deferredQuery.trim().toLowerCase();
+      result = result.filter(
+        (preset) =>
+          preset.data.name.toLowerCase().includes(query) ||
+          preset.data.description.toLowerCase().includes(query),
+      );
+    }
+
     return result;
-  }, [selectedTags, selectedTagsByGroup, activePresets, showFavouritesOnly, favourites]);
+  }, [
+    selectedTags,
+    selectedTagsByGroup,
+    activePresets,
+    showFavouritesOnly,
+    favourites,
+    deferredQuery,
+  ]);
 
   return (
     <div className={['not-content', style.presets].join(' ')}>
@@ -208,16 +229,59 @@ export function PresetsList() {
           Enable sound
         </label>
         <label className={style.compactToggle}>
-          <input type="checkbox" checked={showFavouritesOnly} onChange={(e) => setShowFavouritesOnly(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={showFavouritesOnly}
+            onChange={(e) => setShowFavouritesOnly(e.target.checked)}
+          />
           Show favourites only
         </label>
+      </div>
+
+      <div className={style.searchBlock}>
+        <label className={style.searchLabel} htmlFor="preset-search">
+          Find by name
+        </label>
+        <div className={style.searchContainer}>
+          <input
+            id="preset-search"
+            type="search"
+            className={style.searchInput}
+            placeholder="Search presets by name or description..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            autoCorrect="off"
+            spellCheck={false}
+            aria-label="Search presets by name or description"
+          />
+          {searchQuery.length > 0 && (
+            <button
+              type="button"
+              className={style.searchClear}
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear preset search"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {filteredPresets.length > 0 && (
         <div className={style.resultCount}>{filteredPresets.length} results</div>
       )}
 
-      {filteredPresets.length === 0 && <NoResult />}
+      {filteredPresets.length === 0 &&
+        (deferredQuery.trim() ? (
+          <div className={style.searchEmptyState}>
+            <div className={style.searchEmptyTitle}>No presets found</div>
+            <div className={style.searchEmptyDescription}>
+              Try a different search term or clear the search.
+            </div>
+          </div>
+        ) : (
+          <NoResult />
+        ))}
 
       {filteredPresets.map((preset) => (
         <Preset
@@ -233,16 +297,19 @@ export function PresetsList() {
       {showModal === 'tags' && <TagsModal onClose={() => setShowModal('no')} />}
       {showModal === 'chart' && <ChartModal onClose={() => setShowModal('no')} />}
 
-      {portalRoot && showScrollToTop && createPortal((
-        <button
-          type="button"
-          className={style.scrollToTopButton}
-          onClick={handleScrollToTop}
-          aria-label="Scroll to top"
-        >
-          <img src={arrowIcon.src} alt="" aria-hidden="true" />
-        </button>
-      ), portalRoot)}
+      {portalRoot &&
+        showScrollToTop &&
+        createPortal(
+          <button
+            type="button"
+            className={style.scrollToTopButton}
+            onClick={handleScrollToTop}
+            aria-label="Scroll to top"
+          >
+            <img src={arrowIcon.src} alt="" aria-hidden="true" />
+          </button>,
+          portalRoot,
+        )}
     </div>
   );
 }
