@@ -1,5 +1,5 @@
-import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
-import { PlatformPressable } from '@react-navigation/elements';
+import { BottomTabBarButtonProps } from 'expo-router/build/react-navigation/bottom-tabs';
+import { PlatformPressable } from 'expo-router/react-navigation';
 import { Presets } from 'react-native-pulsar';
 
 export function HapticTab(props: BottomTabBarButtonProps) {

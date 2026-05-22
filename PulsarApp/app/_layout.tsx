@@ -1,4 +1,4 @@
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from 'expo-router/react-navigation';
 import { isRunningInExpoGo } from 'expo';
 import { Stack, useNavigationContainerRef, usePathname, useGlobalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

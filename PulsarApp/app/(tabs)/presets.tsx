@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useBottomTabBarHeight } from 'expo-router/build/react-navigation/bottom-tabs';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Settings, HapticSupport } from 'react-native-pulsar';
 import { SafeAreaView } from 'react-native-safe-area-context';
