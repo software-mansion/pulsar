@@ -16,7 +16,7 @@ pulsar/
 │   ├── react-native-pulsar/  # React Native Turbo Module
 │   │   ├── src/              # TypeScript API
 │   │   ├── ios/              # ObjC/Swift bridge
-│   │   └── android/          # Kotlin bridge + Android SDK sources
+│   │   └── android/          # Kotlin bridge layer
 │   └── PulsarApp/            # React Native example app
 ├── PulsarApp/          # React Native Expo showcase app
 └── docs/               # Astro/Starlight documentation site
@@ -27,9 +27,9 @@ pulsar/
 The iOS and Android SDKs are standalone native libraries. The React Native SDK is a Turbo Module that integrates with each native implementation in a platform-appropriate way:
 
 - **iOS:** `Pulsar.podspec` depends on the published `Pulsar-haptics` CocoaPod by default. For local development in the example app, set `USE_LOCAL_PULSAR_IOS=1` before `pod install` to use `iOS/Pulsar/` instead.
-- **Android:** `android/src/main/java/com/swmansion/pulsar/` mirrors `Android/Pulsar/src/main/java/com/swmansion/pulsar/`, with `PulsarModule.kt` and `PulsarPackage.kt` added as the RN bridge layer
+- **Android:** `android/build.gradle` depends on the published `com.swmansion:pulsar` Maven artifact by default. For local development, set `USE_LOCAL_PULSAR_ANDROID=1` to compile against `Android/Pulsar/src/main/java/` instead.
 
-When you change Android SDK code in `Android/`, mirror those changes in the corresponding RN library path. For iOS, publish or locally override the native pod instead of copying Swift sources into the RN package.
+When you change native SDK code in `iOS/` or `Android/`, publish or locally override the native package instead of copying shared sources into the RN package.
 
 ## Development
 
@@ -82,7 +82,7 @@ npm run ios      # iOS simulator
 npm run android  # Android emulator
 ```
 
-For native changes (Swift/Kotlin), rebuild the app after running the above. For JS-only changes, Metro hot reload handles updates automatically. To test local iOS SDK changes without publishing a pod, run `USE_LOCAL_PULSAR_IOS=1 pod install` in `react-native/PulsarApp/ios`.
+For native changes (Swift/Kotlin), rebuild the app after running the above. For JS-only changes, Metro hot reload handles updates automatically. To test local native SDK changes without publishing, run `USE_LOCAL_PULSAR_IOS=1 pod install` in `react-native/PulsarApp/ios` or `USE_LOCAL_PULSAR_ANDROID=1 ./gradlew app:assembleDebug` in `react-native/PulsarApp/android`.
 
 ### React Native Expo showcase app
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # sync-native.sh
 # Compare and sync native haptics implementation between:
-#   - Android/Pulsar   ↔   react-native/react-native-pulsar/android
 #   - Android/Pulsar   →   flutter/Pulsar/android
 #   - iOS/Pulsar       →   flutter/Pulsar/ios
 #
@@ -19,14 +18,11 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 ANDROID_PLATFORM="$REPO_ROOT/Android/Pulsar/src/main/java/com/swmansion/pulsar"
-ANDROID_RN="$REPO_ROOT/react-native/react-native-pulsar/android/src/main/java/com/swmansion/pulsar"
 ANDROID_FLUTTER="$REPO_ROOT/flutter/Pulsar/android/src/main/kotlin/com/swmansion/pulsar"
 
 IOS_PLATFORM="$REPO_ROOT/iOS/Pulsar/Sources/Pulsar"
 IOS_FLUTTER="$REPO_ROOT/flutter/Pulsar/ios/Classes"
 
-# rsync --exclude flags for Android RN bridge files (never synced)
-ANDROID_EXCLUDES="--exclude=PulsarModule.kt --exclude=PulsarPackage.kt --exclude=PulsarReactNative.kt --exclude=ReactNativeActivityProvider.kt"
 ANDROID_FLUTTER_EXCLUDES="--exclude=PulsarPlugin.kt"
 IOS_FLUTTER_EXCLUDES="--exclude=PulsarPlugin.swift"
 
@@ -122,7 +118,6 @@ compare_dirs() {
 
 target_label() {
   case "$1" in
-    rn) echo "React Native" ;;
     flutter) echo "Flutter" ;;
     *) print_err "Unknown target: $1" >&2; exit 1 ;;
   esac
@@ -156,17 +151,11 @@ sync_dirs() {
 # ---------------------------------------------------------------------------
 
 compare_android() {
-  local target="${1:-rn}"
-  local direction="${2:-both}"  # "platform_to_target", "target_to_platform", "both"
+  local target="${1:-flutter}"
+  local direction="${2:-both}"  # "platform_to_target" or "both"
   local target_path target_display excludes has_reverse_sync
 
   case "$target" in
-    rn)
-      target_path="$ANDROID_RN"
-      target_display="react-native (android)"
-      excludes="$ANDROID_EXCLUDES"
-      has_reverse_sync=true
-      ;;
     flutter)
       target_path="$ANDROID_FLUTTER"
       target_display="flutter (android)"
@@ -180,11 +169,7 @@ compare_android() {
   esac
 
   print_section "Android — comparing shared implementation ($(target_label "$target"))"
-  if [[ "$target" == "rn" ]]; then
-    print_info "Excluded RN bridge files: PulsarModule.kt PulsarPackage.kt PulsarReactNative.kt"
-  else
-    print_info "Excluded Flutter bridge file: PulsarPlugin.kt"
-  fi
+  print_info "Excluded Flutter bridge file: PulsarPlugin.kt"
   print_info "Platform: $ANDROID_PLATFORM"
   print_info "Target:   $target_path"
   echo ""
@@ -214,11 +199,6 @@ sync_android() {
   local target_path target_display excludes
 
   case "$target" in
-    rn)
-      target_path="$ANDROID_RN"
-      target_display="react-native (android)"
-      excludes="$ANDROID_EXCLUDES"
-      ;;
     flutter)
       target_path="$ANDROID_FLUTTER"
       target_display="flutter (android)"
@@ -339,8 +319,12 @@ choose_platform() {
 choose_target() {
   local platform="$1"
   print_section "Choose sync target" >&2
-  if [[ "$platform" == "ios" ]]; then
-    print_info "iOS sync targets Flutter only; React Native uses the Pulsar-haptics pod." >&2
+  if [[ "$platform" == "ios" || "$platform" == "android" ]]; then
+    if [[ "$platform" == "ios" ]]; then
+      print_info "iOS sync targets Flutter only; React Native uses the Pulsar-haptics pod." >&2
+    else
+      print_info "Android sync targets Flutter only; React Native uses the com.swmansion:pulsar artifact." >&2
+    fi
     echo "  1) Flutter" >&2
     echo "" >&2
     read -r -p "  Enter choice [1]: " choice
@@ -365,42 +349,27 @@ choose_direction() {
   local target="$1"
 
   print_section "Choose source of truth" >&2
-  if [[ "$target" == "rn" ]]; then
-    echo "  1) Platform implementation  →  React Native  (Android/Pulsar or iOS/Pulsar is source)" >&2
-    echo "  2) React Native             →  Platform      (react-native-pulsar is source)" >&2
-    echo "" >&2
-    read -r -p "  Enter choice [1-2]: " choice
-    case "$choice" in
-      1) echo "platform_to_target" ;;
-      2) echo "target_to_platform" ;;
-      *) print_err "Invalid choice." >&2; exit 1 ;;
-    esac
-  else
-    print_info "Flutter sync uses native as source of truth." >&2
-    echo "  1) Platform implementation  →  Flutter  (recommended/default)" >&2
-    echo "" >&2
-    read -r -p "  Enter choice [1]: " choice
-    case "$choice" in
-      1|"") echo "platform_to_target" ;;
-      *) print_err "Invalid choice." >&2; exit 1 ;;
-    esac
-  fi
+  print_info "Flutter sync uses native as source of truth." >&2
+  echo "  1) Platform implementation  →  Flutter  (recommended/default)" >&2
+  echo "" >&2
+  read -r -p "  Enter choice [1]: " choice
+  case "$choice" in
+    1|"") echo "platform_to_target" ;;
+    *) print_err "Invalid choice." >&2; exit 1 ;;
+  esac
 }
 
 run_compare_only() {
   print_header "Pulsar Native Implementation — Diff Report"
 
-  local android_rn_ok=true
   local android_flutter_ok=true ios_flutter_ok=true
 
-  compare_android "rn" "both" || android_rn_ok=false
-  echo ""
   compare_android "flutter" "platform_to_target" || android_flutter_ok=false
   echo ""
   compare_ios "flutter" "platform_to_target" || ios_flutter_ok=false
 
   echo ""
-  if $android_rn_ok && $android_flutter_ok && $ios_flutter_ok; then
+  if $android_flutter_ok && $ios_flutter_ok; then
     print_ok "All implementations are in sync."
   else
     print_warn "Differences found. Run without --compare to sync."
@@ -414,17 +383,14 @@ run_interactive() {
 
   # Step 1: Show current diff
   echo -e "${BOLD}Step 1/3 — Current diff${NC}"
-  local android_rn_ok=true
   local android_flutter_ok=true ios_flutter_ok=true
 
-  compare_android "rn" "both" || android_rn_ok=false
-  echo ""
   compare_android "flutter" "platform_to_target" || android_flutter_ok=false
   echo ""
   compare_ios "flutter" "platform_to_target" || ios_flutter_ok=false
   echo ""
 
-  if $android_rn_ok && $android_flutter_ok && $ios_flutter_ok; then
+  if $android_flutter_ok && $ios_flutter_ok; then
     print_ok "All implementations are already in sync. Nothing to do."
     echo ""
     exit 0
@@ -499,8 +465,6 @@ usage() {
   echo "  ./scripts/sync-native.sh --help      Show this help"
   echo ""
   echo -e "${BOLD}What it syncs:${NC}"
-  echo "  Android:  Android/Pulsar/...pulsar/  ↔  react-native/.../pulsar/"
-  echo "            Excludes RN-only bridge files: PulsarModule.kt PulsarPackage.kt PulsarReactNative.kt"
   echo "  Android:  Android/Pulsar/...pulsar/  →  flutter/Pulsar/.../pulsar/"
   echo "            Excludes Flutter-only bridge file: PulsarPlugin.kt"
   echo "  iOS:      iOS/Pulsar/Sources/Pulsar/ →  flutter/Pulsar/ios/Classes/"

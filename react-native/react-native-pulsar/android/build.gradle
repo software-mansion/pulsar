@@ -25,6 +25,25 @@ def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["Pulsar_" + name]).toInteger()
 }
 
+def getStringPropertyOrEnv(name, defaultValue) {
+  def projectValue = rootProject.findProperty(name) ?: project.findProperty(name)
+  return (projectValue ?: System.getenv(name) ?: defaultValue).toString()
+}
+
+def useLocalPulsarAndroid = getStringPropertyOrEnv("USE_LOCAL_PULSAR_ANDROID", "0") == "1"
+def pulsarAndroidVersion = getStringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1")
+def localPulsarAndroidDir = new File(projectDir, "../../../Android/Pulsar")
+def localPulsarAndroidSourceDir = new File(localPulsarAndroidDir, "src/main/java")
+
+if (useLocalPulsarAndroid) {
+  if (!localPulsarAndroidSourceDir.exists()) {
+    throw new GradleException("USE_LOCAL_PULSAR_ANDROID=1 but local Pulsar Android sources were not found at ${localPulsarAndroidSourceDir}")
+  }
+  logger.lifecycle("Using local Pulsar Android sources from ${localPulsarAndroidSourceDir}")
+} else {
+  logger.lifecycle("Using published Pulsar Android artifact com.swmansion:pulsar:${pulsarAndroidVersion}")
+}
+
 android {
   namespace "com.swmansion.pulsar"
 
@@ -60,6 +79,9 @@ android {
         "generated/java",
         "generated/jni"
       ]
+      if (useLocalPulsarAndroid) {
+        java.srcDirs += [localPulsarAndroidSourceDir.absolutePath]
+      }
     }
   }
 }
@@ -74,5 +96,10 @@ def kotlin_version = getExtOrDefault("kotlinVersion")
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3"
+
+  if (useLocalPulsarAndroid) {
+    implementation "androidx.core:core-ktx:1.17.0"
+  } else {
+    implementation "com.swmansion:pulsar:$pulsarAndroidVersion"
+  }
 }
