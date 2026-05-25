@@ -33,9 +33,7 @@ export interface BindingMeta {
 
 export type Settings = {
   soundInEdit: boolean;
-  soundInPreview: boolean;
   compactLayout: boolean;
-  videoPreviewUrl: string; // url used for the prototype-mode video fill
   previewBaseUrl: string; // base url of the standalone live-preview web app
   // Optional manual file-key override, used when figma.fileKey is unavailable
   // (e.g. the plugin is not private / enablePrivatePluginApi is off).

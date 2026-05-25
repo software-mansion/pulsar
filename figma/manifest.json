@@ -12,8 +12,7 @@
   "networkAccess": {
     "allowedDomains": [
       "https://pulsar-server.swmansion.com",
-      "wss://pulsar-server.swmansion.com",
-      "https://commondatastorage.googleapis.com"
+      "wss://pulsar-server.swmansion.com"
     ]
   }
 }

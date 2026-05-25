@@ -15,12 +15,7 @@ const FAVOURITES_KEY = 'pulsar:favourites';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
-  soundInPreview: true,
   compactLayout: false,
-  // Sample MP4 with sound from Google's public test bucket — used as a stand-in
-  // until per-preset videos are generated.
-  videoPreviewUrl:
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
   // Base URL of the standalone live-preview web app (figma/preview). Override in
   // Settings to point at wherever you host/serve it.
   previewBaseUrl: 'https://docs.swmansion.com/figma-preview/',
@@ -108,33 +103,7 @@ function pushSelection() {
   postToUi({ type: 'selection', node: describeSelection() });
 }
 
-// Preview-mode video fill: when a preset is bound to a node that supports fills
-// (rectangles, frames, shapes), we attach a video fill so the prototype/preview
-// player can produce sound on tap. Figma exposes createVideoAsync for this.
-async function applyVideoFill(node: SceneNode, url: string) {
-  if (!('fills' in node)) return;
-  try {
-    const res = await fetch(url);
-    const buf = new Uint8Array(await res.arrayBuffer());
-    const video = await figma.createVideoAsync(buf);
-    const fills: Paint[] = [
-      { type: 'VIDEO', scaleMode: 'FILL', videoHash: video.hash } as unknown as Paint
-    ];
-    (node as any).fills = fills;
-  } catch (e) {
-    figma.notify(`Could not attach video fill: ${(e as Error).message}`);
-  }
-}
-
-function clearVideoFill(node: SceneNode) {
-  if (!('fills' in node)) return;
-  const fills = (node as any).fills as readonly Paint[];
-  if (!Array.isArray(fills)) return;
-  const next = fills.filter((f) => f.type !== 'VIDEO');
-  (node as any).fills = next;
-}
-
-async function bindToSelection(binding: BindingMeta, settings: Settings) {
+function bindToSelection(binding: BindingMeta) {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) {
     figma.notify('Select exactly one node to bind a preset.');
@@ -143,9 +112,6 @@ async function bindToSelection(binding: BindingMeta, settings: Settings) {
   const node = sel[0];
   node.setPluginData(BINDING_KEY, JSON.stringify(binding));
   node.setRelaunchData({ play: `Pulsar: ${binding.presetName}` });
-  if (settings.soundInPreview) {
-    await applyVideoFill(node as SceneNode, settings.videoPreviewUrl);
-  }
   figma.notify(`Bound "${binding.presetName}" to ${node.name}`);
   pushSelection();
 }
@@ -156,7 +122,6 @@ function unbindSelection() {
   const node = sel[0];
   node.setPluginData(BINDING_KEY, '');
   node.setRelaunchData({});
-  clearVideoFill(node as SceneNode);
   figma.notify('Preset unbound.');
   pushSelection();
 }
@@ -189,11 +154,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'request-selection':
       pushSelection();
       break;
-    case 'bind-preset': {
-      const settings = await loadSettings();
-      await bindToSelection(msg.binding, settings);
+    case 'bind-preset':
+      bindToSelection(msg.binding);
       break;
-    }
     case 'unbind-preset':
       unbindSelection();
       break;

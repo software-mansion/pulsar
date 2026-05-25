@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import QRCode from 'qrcode';
 import PRESETS from './presets-data';
 import type { CatalogEntry, SelectionInfo, Settings } from '../shared/types';
 import { onMessage, send } from './figmaBridge';
@@ -6,18 +7,16 @@ import Filters, { applyFilter, useFilterStateInit, type FilterState } from './co
 import PresetCard from './components/PresetCard';
 import PresetDetail from './components/PresetDetail';
 import SettingsPanel from './components/SettingsPanel';
+import LivePreviewPanel from './components/LivePreviewPanel';
 import PhonePanel, { broadcastToPhone } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
 import { playPreset, stopAll } from './audio/AudioPatternUtility';
 
-type Tab = 'presets' | 'phone' | 'settings';
+type Tab = 'presets' | 'phone' | 'preview' | 'settings';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
-  soundInPreview: true,
   compactLayout: false,
-  videoPreviewUrl:
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
   previewBaseUrl: 'https://docs.swmansion.com/figma-preview/',
   fileKeyOverride: ''
 };
@@ -31,6 +30,25 @@ function extractFileKey(input: string): string {
 // base64-encode a unicode-safe JSON string for stuffing into the preview URL hash.
 function encodePayload(payload: unknown): string {
   return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+
+// Clipboard inside the Figma plugin iframe: navigator.clipboard is often blocked,
+// so fall back to a temporary textarea + execCommand('copy').
+function copyToClipboard(text: string): boolean {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
 }
 
 export default function App() {
@@ -149,12 +167,46 @@ export default function App() {
       const payload = { fileKey, nodeId: m.presentNodeId, bindings };
       const base = (settings.previewBaseUrl || DEFAULT_SETTINGS.previewBaseUrl).replace(/#.*$/, '');
       const url = `${base}#data=${encodePayload(payload)}`;
-      send({ type: 'open-external', url });
+      if (previewActionRef.current === 'copy') {
+        const ok = copyToClipboard(url);
+        send({
+          type: 'notify',
+          message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
+        });
+      } else if (previewActionRef.current === 'qr') {
+        QRCode.toDataURL(url, { margin: 1, width: 240, errorCorrectionLevel: 'L' })
+          .then((dataUrl) => setShareQr(dataUrl))
+          .catch(() => {
+            setShareQr(null);
+            send({
+              type: 'notify',
+              message:
+                'Link too long to encode as a QR code. Use "Copy share link" instead, or reduce the number of bound nodes.'
+            });
+          });
+      } else {
+        send({ type: 'open-external', url });
+      }
     });
     return off;
   }, [settings.previewBaseUrl, settings.fileKeyOverride, presetById]);
 
-  const showInLivePreview = () => send({ type: 'request-preview-data' });
+  // Whether the pending preview-data response should open / copy / QR-encode the link.
+  const previewActionRef = useRef<'open' | 'copy' | 'qr'>('open');
+  const [shareQr, setShareQr] = useState<string | null>(null);
+  const showInLivePreview = () => {
+    previewActionRef.current = 'open';
+    send({ type: 'request-preview-data' });
+  };
+  const copyShareLink = () => {
+    previewActionRef.current = 'copy';
+    send({ type: 'request-preview-data' });
+  };
+  const showQrCode = () => {
+    previewActionRef.current = 'qr';
+    setShareQr(null);
+    send({ type: 'request-preview-data' });
+  };
 
   const filtered = useMemo(() => {
     const base = applyFilter(PRESETS, filter);
@@ -189,7 +241,7 @@ export default function App() {
           Pulsar
         </div>
         <div className="spacer" />
-        {(['presets', 'phone', 'settings'] as const).map((t) => (
+        {(['presets', 'phone', 'preview', 'settings'] as const).map((t) => (
           <span
             key={t}
             className={`tab ${tab === t ? 'active' : ''}`}
@@ -314,12 +366,20 @@ export default function App() {
         <PhonePanel token={hapticsToken} onTokenChange={setHapticsToken} />
       )}
 
-      {tab === 'settings' && (
-        <SettingsPanel
+      {tab === 'preview' && (
+        <LivePreviewPanel
           settings={settings}
           onChange={setSettings}
           onShowLivePreview={showInLivePreview}
+          onCopyShareLink={copyShareLink}
+          onShowQrCode={showQrCode}
+          qrDataUrl={shareQr}
+          onClearQr={() => setShareQr(null)}
         />
+      )}
+
+      {tab === 'settings' && (
+        <SettingsPanel settings={settings} onChange={setSettings} />
       )}
     </div>
   );

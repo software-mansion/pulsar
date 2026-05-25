@@ -1,8 +1,8 @@
 # Pulsar Haptics — Figma plugin
 
 Browse the Pulsar haptic preset catalogue, bind a preset to any Figma node, and
-hear it both while editing and inside a prototype preview. Optionally pair a
-phone to feel real haptics on the device.
+hear it while editing or in the standalone live-preview app (see `preview/`).
+Optionally pair a phone to feel real haptics on the device.
 
 ## Features
 
@@ -12,9 +12,9 @@ phone to feel real haptics on the device.
 - **Detail view** with SVG pattern visualization, raw JSON, and copy-pastable Swift / Kotlin / React Native / Flutter snippets.
 - **Bind to selection** — preset metadata is stored as plugin data on the node, with a relaunch button.
 - **Edit-mode playback** — selecting a bound node renders the preset to a WebAudio buffer (port of the docs `audio-player.ts`).
-- **Preview-mode playback** — binding attaches a video fill to the node so the prototype player produces sound on tap. Sample MP4 URL until per-preset videos exist.
+- **Live preview** — "Show in live preview" opens the current design in the standalone embed app (`preview/`), which plays bound haptics on tap. See [`preview/README.md`](preview/README.md).
 - **Phone pairing** — same `pulsar-server.swmansion.com` relay used by the docs site (QR + WebSocket, persistent token).
-- **Settings** — disable sound in edit / preview independently, change the preview video URL.
+- **Settings** — toggle edit-mode sound, set the live-preview app URL.
 - **Theme** — colors, radii, and the signature offset drop-shadow taken from the Pulsar docs CSS.
 
 ## Getting started
@@ -45,7 +45,8 @@ vite.main.config.ts     Main-thread bundle (figma sandbox)
 scripts/                Preset-index generator (reads ../pulsar)
 src/
   shared/types.ts       Messages + data types shared across both bundles
-  main/code.ts          Plugin main thread: storage, bindings, video fill
+  main/code.ts          Plugin main thread: storage, bindings, live-preview launch
+preview/                Standalone live-preview web app (Figma Embed API)
   ui/
     App.tsx             Tabs, selection, dispatch
     figmaBridge.ts      postMessage helpers
@@ -57,16 +58,14 @@ src/
 
 ## Playback per Figma mode
 
-| Mode      | Mechanism                                                                                                        |
-| --------- | ---------------------------------------------------------------------------------------------------------------- |
-| Edit      | Selecting a bound node fires `selectionchange` → main posts `play-preset` to the UI iframe → WebAudio render.    |
-| Prototype | The bound node has a video fill (`createVideoAsync`). Figma's prototype player plays the video (with sound) on tap. |
-| Phone     | If paired, the UI POSTs `/broadcast` with the preset name; the relay forwards via WebSocket to the Pulsar app.   |
-
-Each can be turned off independently in Settings.
+| Mode         | Mechanism                                                                                                          |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Edit         | Selecting a bound node fires `selectionchange` → main posts `play-preset` to the UI iframe → WebAudio render.    |
+| Live preview | "Show in live preview" exports the page's bindings to the `preview/` app, which embeds the prototype and plays the matching preset on `MOUSE_PRESS_OR_RELEASE`. |
+| Phone        | If paired, the UI POSTs `/broadcast` with the preset name; the relay forwards via WebSocket to the Pulsar app.   |
 
 ## Notes / limitations
 
 - Figma's plugin API has no direct "click in editor" hook — we proxy that with `selectionchange`.
-- Per-preset video files don't exist yet; a single sample MP4 from `commondatastorage.googleapis.com` is the placeholder. Override via Settings.
+- The live-preview app uses the Figma Embed API (`client-id` + registered embed origin). See [`preview/README.md`](preview/README.md).
 - The pairing flow mirrors the docs site exactly. `manifest.json` whitelists the two hosts.
