@@ -17,8 +17,21 @@ const DEFAULT_SETTINGS: Settings = {
   soundInPreview: true,
   compactLayout: false,
   videoPreviewUrl:
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  previewBaseUrl: 'https://docs.swmansion.com/figma-preview/',
+  fileKeyOverride: ''
 };
+
+// Accept either a raw file key or a full Figma URL and return the key.
+function extractFileKey(input: string): string {
+  const m = input.match(/figma\.com\/(?:file|design|proto)\/([A-Za-z0-9]+)/);
+  return (m ? m[1] : input).trim();
+}
+
+// base64-encode a unicode-safe JSON string for stuffing into the preview URL hash.
+function encodePayload(payload: unknown): string {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
 
 export default function App() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -101,6 +114,47 @@ export default function App() {
     });
     return off;
   }, [settings.soundInEdit, hapticsToken, presetById]);
+
+  // Build the live-preview URL once the main thread sends bound-node data, then
+  // hand it back to the main thread to open externally (figma.openExternal).
+  // Rebind on changes so it reads fresh presets/preview URL.
+  useEffect(() => {
+    const off = onMessage((m) => {
+      if (m.type !== 'preview-data') return;
+      const fileKey = m.fileKey ?? (settings.fileKeyOverride ? extractFileKey(settings.fileKeyOverride) : '');
+      if (!fileKey) {
+        send({
+          type: 'notify',
+          message:
+            'No file key available. Paste this file’s share URL in Settings → Live preview (File key override).'
+        });
+        return;
+      }
+      const bindings: Record<string, unknown> = {};
+      // Pass 1: fill descendants so a tap on a child layer (text/icon) resolves
+      // to its bound ancestor. Pass 2: explicit node bindings win over inherited.
+      for (const b of m.bindings) {
+        const data = b.customPattern ?? presetById.get(b.presetId)?.data;
+        if (!data) continue;
+        for (const descId of b.descendantIds) bindings[descId] = data;
+      }
+      for (const b of m.bindings) {
+        const data = b.customPattern ?? presetById.get(b.presetId)?.data;
+        if (data) bindings[b.nodeId] = data;
+      }
+      if (Object.keys(bindings).length === 0) {
+        send({ type: 'notify', message: 'No haptic bindings on this page yet.' });
+        return;
+      }
+      const payload = { fileKey, nodeId: m.presentNodeId, bindings };
+      const base = (settings.previewBaseUrl || DEFAULT_SETTINGS.previewBaseUrl).replace(/#.*$/, '');
+      const url = `${base}#data=${encodePayload(payload)}`;
+      send({ type: 'open-external', url });
+    });
+    return off;
+  }, [settings.previewBaseUrl, settings.fileKeyOverride, presetById]);
+
+  const showInLivePreview = () => send({ type: 'request-preview-data' });
 
   const filtered = useMemo(() => {
     const base = applyFilter(PRESETS, filter);
@@ -261,7 +315,11 @@ export default function App() {
       )}
 
       {tab === 'settings' && (
-        <SettingsPanel settings={settings} onChange={setSettings} />
+        <SettingsPanel
+          settings={settings}
+          onChange={setSettings}
+          onShowLivePreview={showInLivePreview}
+        />
       )}
     </div>
   );

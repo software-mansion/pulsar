@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pulsar · Live Preview</title>
+    <style>
+      :root {
+        --bg: #0e1116;
+        --panel: #171b22;
+        --border: #262c36;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --primary: #4da3ff;
+        --ok: #3fb950;
+        --error: #f85149;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      header .brand { font-weight: 700; color: var(--primary); }
+      header .status { color: var(--muted); flex: 1; }
+      header .pill {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 3px 10px;
+        color: var(--muted);
+      }
+      header .pill b { color: var(--text); }
+      main { flex: 1; display: flex; min-height: 0; }
+      #frame-wrap { flex: 1; position: relative; background: #0a0c10; }
+      #frame-wrap iframe { width: 100%; height: 100%; border: 0; }
+      #empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+      }
+      aside {
+        width: 300px;
+        border-left: 1px solid var(--border);
+        background: var(--panel);
+        display: flex;
+        flex-direction: column;
+      }
+      aside h2 {
+        margin: 0;
+        padding: 10px 14px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+      }
+      #log {
+        flex: 1;
+        overflow: auto;
+        padding: 8px 14px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+      .log-row { padding: 2px 0; color: var(--muted); white-space: pre-wrap; }
+      .log-ok { color: var(--ok); }
+      .log-error { color: var(--error); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="brand">Pulsar</span>
+      <span class="status" id="status">Initialising…</span>
+      <span class="pill"><b id="binding-count">0</b> bound</span>
+    </header>
+    <main>
+      <div id="frame-wrap">
+        <div id="empty">
+          No design loaded.<br />
+          Open one from the Figma plugin via <b>Settings → Show in live preview</b>.
+        </div>
+      </div>
+      <aside>
+        <h2>Event log</h2>
+        <div id="log"></div>
+      </aside>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

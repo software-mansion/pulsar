@@ -2,10 +2,12 @@ import type { Settings } from '../../shared/types';
 
 export default function SettingsPanel({
   settings,
-  onChange
+  onChange,
+  onShowLivePreview
 }: {
   settings: Settings;
   onChange: (next: Settings) => void;
+  onShowLivePreview: () => void;
 }) {
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
     onChange({ ...settings, [k]: v });
@@ -58,6 +60,34 @@ export default function SettingsPanel({
           value={settings.videoPreviewUrl}
           onChange={(e) => set('videoPreviewUrl', e.target.value)}
         />
+      </div>
+
+      <hr />
+
+      <div className="col" style={{ gap: 6 }}>
+        <div style={{ fontWeight: 600 }}>Live preview</div>
+        <div className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>
+          Base URL of the standalone preview web app (figma/preview). Opens the
+          current design in an embedded prototype and plays bound haptics on tap.
+        </div>
+        <input
+          type="url"
+          value={settings.previewBaseUrl}
+          onChange={(e) => set('previewBaseUrl', e.target.value)}
+        />
+        <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginTop: 4 }}>
+          File key override (optional) — paste this file’s share URL or key. Only
+          needed if the file key can’t be read automatically.
+        </div>
+        <input
+          type="text"
+          placeholder="https://www.figma.com/design/<key>/…"
+          value={settings.fileKeyOverride}
+          onChange={(e) => set('fileKeyOverride', e.target.value)}
+        />
+        <button className="primary" onClick={onShowLivePreview}>
+          Show in live preview
+        </button>
       </div>
     </div>
   );

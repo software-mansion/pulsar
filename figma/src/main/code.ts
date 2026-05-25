@@ -2,6 +2,7 @@
 import type {
   BindingMeta,
   MainToUi,
+  PreviewBinding,
   SelectionInfo,
   Settings,
   UiToMain
@@ -19,7 +20,11 @@ const DEFAULT_SETTINGS: Settings = {
   // Sample MP4 with sound from Google's public test bucket — used as a stand-in
   // until per-preset videos are generated.
   videoPreviewUrl:
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  // Base URL of the standalone live-preview web app (figma/preview). Override in
+  // Settings to point at wherever you host/serve it.
+  previewBaseUrl: 'https://docs.swmansion.com/figma-preview/',
+  fileKeyOverride: ''
 };
 
 figma.showUI(__html__, { width: 380, height: 640, themeColors: true });
@@ -50,6 +55,41 @@ function readBinding(node: BaseNode): BindingMeta | null {
   } catch {
     return null;
   }
+}
+
+// Collect every node on the current page that has a Pulsar binding, so the
+// standalone preview app can map embed click events (by node id) to a preset.
+async function collectPreviewBindings(): Promise<PreviewBinding[]> {
+  await figma.currentPage.loadAsync();
+  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: {} });
+  const out: PreviewBinding[] = [];
+  for (const node of nodes) {
+    const binding = readBinding(node);
+    if (!binding) continue;
+    const descendantIds =
+      'findAll' in node ? (node as ChildrenMixin & BaseNode).findAll(() => true).map((d) => d.id) : [];
+    out.push({
+      nodeId: node.id,
+      presetId: binding.presetId,
+      presetName: binding.presetName,
+      customPattern: binding.customPattern,
+      descendantIds
+    });
+  }
+  return out;
+}
+
+// The frame the preview should open on: the top-level frame ancestor of the
+// current selection, else the first top-level frame on the page.
+function pickPresentNodeId(): string | null {
+  const sel = figma.currentPage.selection[0];
+  if (sel) {
+    let n: BaseNode | null = sel;
+    while (n && n.parent && n.parent.type !== 'PAGE') n = n.parent;
+    if (n && n.type === 'FRAME') return n.id;
+  }
+  const topFrame = figma.currentPage.children.find((c) => c.type === 'FRAME');
+  return topFrame ? topFrame.id : null;
 }
 
 function describeSelection(): SelectionInfo | null {
@@ -165,6 +205,19 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'persist-favourites':
       await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);
+      break;
+    case 'request-preview-data': {
+      const bindings = await collectPreviewBindings();
+      postToUi({
+        type: 'preview-data',
+        fileKey: figma.fileKey ?? null,
+        presentNodeId: pickPresentNodeId(),
+        bindings
+      });
+      break;
+    }
+    case 'open-external':
+      figma.openExternal(msg.url);
       break;
     case 'notify':
       figma.notify(msg.message);
