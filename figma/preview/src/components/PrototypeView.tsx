@@ -10,7 +10,8 @@ export function PrototypeView({
   frame,
   elements,
   showHighlights,
-  activeId
+  activeId,
+  fullscreen = false
 }: {
   fileKey: string;
   nodeId: string | null;
@@ -18,13 +19,14 @@ export function PrototypeView({
   elements: ElementInfo[];
   showHighlights: boolean;
   activeId: string;
+  fullscreen?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const size = useElementSize(wrapRef);
   const src = useMemo(() => buildEmbedSrc(fileKey, nodeId), [fileKey, nodeId]);
 
   return (
-    <div className="frame-wrap" ref={wrapRef}>
+    <div className={`frame-wrap${fullscreen ? ' fullscreen' : ''}`} ref={wrapRef}>
       <iframe title="Figma prototype" src={src} allow="fullscreen" allowFullScreen />
       {showHighlights && frame && (
         <HighlightOverlay frame={frame} elements={elements} size={size} activeId={activeId} />

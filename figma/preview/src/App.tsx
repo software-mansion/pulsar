@@ -3,6 +3,7 @@ import type { PresetData } from './types';
 import { readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
+import { useFullscreen } from './lib/useFullscreen';
 import { playPreset, stopAll } from './audio/player';
 import { Header } from './components/Header';
 import { PrototypeView } from './components/PrototypeView';
@@ -84,10 +85,12 @@ export default function App() {
   );
   useFigmaMessages(handlers);
 
+  const { isFullscreen, enter: enterFullscreen, exit: exitFullscreen } = useFullscreen();
+
   if (!payload?.fileKey) {
     return (
       <>
-        <Header status={status} count={0} />
+        <Header status={status} count={0} onEnterFullscreen={enterFullscreen} />
         <main className="main">
           <div className="frame-wrap">
             <div className="empty">
@@ -102,12 +105,16 @@ export default function App() {
     );
   }
 
-  const showHighlights = highlightsOn && currentNodeId === presentedId;
+  // In fullscreen we show only the Figma content — no header, panel, highlights,
+  // or card chrome.
+  const showHighlights = highlightsOn && currentNodeId === presentedId && !isFullscreen;
 
   return (
     <>
-      <Header status={status} count={elements.length} />
-      <main className="main">
+      {!isFullscreen && (
+        <Header status={status} count={elements.length} onEnterFullscreen={enterFullscreen} />
+      )}
+      <main className={`main${isFullscreen ? ' fullscreen' : ''}`}>
         <PrototypeView
           fileKey={payload.fileKey}
           nodeId={payload.nodeId}
@@ -115,16 +122,32 @@ export default function App() {
           elements={elements}
           showHighlights={showHighlights}
           activeId={activeId}
+          fullscreen={isFullscreen}
         />
-        <HapticList
-          elements={elements}
-          highlightsOn={highlightsOn}
-          onToggleHighlights={setHighlightsOn}
-          activeId={activeId}
-          onActivate={setActiveId}
-          onPlay={playFromList}
-        />
+        {!isFullscreen && (
+          <HapticList
+            elements={elements}
+            highlightsOn={highlightsOn}
+            onToggleHighlights={setHighlightsOn}
+            activeId={activeId}
+            onActivate={setActiveId}
+            onPlay={playFromList}
+          />
+        )}
       </main>
+      {isFullscreen && (
+        <button className="exit-fs" onClick={exitFullscreen} title="Exit fullscreen (Esc)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M9 4H4v5M20 9V4h-5M9 20H4v-5M20 15v5h-5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
     </>
   );
 }
