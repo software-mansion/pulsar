@@ -30,8 +30,10 @@ const normalizeId = (id) => (id == null ? '' : String(id).replace(/:/g, '-'));
 function log(message, kind = 'info') {
   const row = document.createElement('div');
   row.className = `log-row log-${kind}`;
-  const time = new Date().toLocaleTimeString();
-  row.textContent = `[${time}] ${message}`;
+  const time = document.createElement('span');
+  time.className = 'time';
+  time.textContent = new Date().toLocaleTimeString();
+  row.append(time, document.createTextNode('  ' + message));
   els.log.prepend(row);
 }
 

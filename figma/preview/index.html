@@ -4,86 +4,148 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pulsar · Live Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      /* Pulsar docs-inspired theme tokens (mirrors docs/src/styles/index.css). */
       :root {
-        --bg: #0e1116;
-        --panel: #171b22;
-        --border: #262c36;
-        --text: #e6edf3;
-        --muted: #8b949e;
-        --primary: #4da3ff;
-        --ok: #3fb950;
-        --error: #f85149;
+        --color-primary: #001a72;
+        --color-blue-10: #e1f3fa;
+        --color-blue-20: #b5e1f1;
+        --color-blue-30: #87cce8;
+        --color-blue-50: #38acdd;
+        --color-blue-60: #2b85ab;
+        --color-yellow-60: #ffe780;
+
+        --bg: #fbfeff;
+        --surface: #ffffff;
+        --text: var(--color-primary);
+        --muted: #5a6a8a;
+        --border: var(--color-blue-20);
+        --accent: var(--color-blue-50);
+
+        --radius-sm: 2px;
+        --radius: 4px;
+        --shadow-card: -3px 3px 0 var(--color-blue-50);
+
+        --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter,
+          system-ui, sans-serif;
+        --fs-2xs: 11px;
+        --fs-xs: 12px;
+        --fs-sm: 13px;
+        --fs-md: 14px;
+        --fs-lg: 16px;
+        --fs-xl: 20px;
       }
+
       * { box-sizing: border-box; }
       html, body { height: 100%; margin: 0; }
       body {
         background: var(--bg);
         color: var(--text);
-        font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: var(--font-sans);
+        font-size: var(--fs-sm);
+        -webkit-font-smoothing: antialiased;
         display: flex;
         flex-direction: column;
       }
+
       header {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-        border-bottom: 1px solid var(--border);
+        gap: 12px;
+        padding: 12px 20px;
+        background: var(--surface);
+        border-bottom: 2px solid var(--border);
       }
-      header .brand { font-weight: 700; color: var(--primary); }
-      header .status { color: var(--muted); flex: 1; }
+      header .brand {
+        font-weight: 700;
+        font-size: var(--fs-xl);
+        color: var(--color-primary);
+        letter-spacing: -0.01em;
+      }
+      header .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-blue-50); }
+      header .status { color: var(--muted); flex: 1; font-size: var(--fs-sm); }
       header .pill {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        padding: 3px 10px;
+        background: var(--color-blue-10);
+        border: 1px solid var(--color-blue-20);
+        border-radius: 20px;
+        padding: 4px 12px;
         color: var(--muted);
+        font-size: var(--fs-xs);
+        font-weight: 500;
       }
-      header .pill b { color: var(--text); }
-      main { flex: 1; display: flex; min-height: 0; }
-      #frame-wrap { flex: 1; position: relative; background: #0a0c10; }
-      #frame-wrap iframe { width: 100%; height: 100%; border: 0; }
+      header .pill b { color: var(--color-primary); font-weight: 700; }
+
+      main { flex: 1; display: flex; min-height: 0; padding: 16px; gap: 16px; }
+
+      #frame-wrap {
+        flex: 1;
+        position: relative;
+        background: var(--surface);
+        border: 2px solid var(--color-blue-50);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+      }
+      #frame-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
       #empty {
         position: absolute;
         inset: 0;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 6px;
         padding: 24px;
         text-align: center;
         color: var(--muted);
+        background: var(--color-blue-10);
       }
+      #empty .big { font-size: var(--fs-lg); font-weight: 600; color: var(--color-primary); }
+
       aside {
-        width: 300px;
-        border-left: 1px solid var(--border);
-        background: var(--panel);
+        width: 320px;
+        flex-shrink: 0;
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
         display: flex;
         flex-direction: column;
+        overflow: hidden;
       }
       aside h2 {
         margin: 0;
-        padding: 10px 14px;
-        font-size: 12px;
+        padding: 12px 16px;
+        font-size: var(--fs-xs);
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.06em;
         color: var(--muted);
+        background: var(--color-blue-10);
         border-bottom: 1px solid var(--border);
       }
-      #log {
-        flex: 1;
-        overflow: auto;
-        padding: 8px 14px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 12px;
+      #log { flex: 1; overflow: auto; padding: 8px 0; scrollbar-width: thin; }
+      .log-row {
+        padding: 5px 16px;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: var(--fs-xs);
+        color: var(--muted);
+        border-bottom: 1px solid var(--color-blue-10);
+        white-space: pre-wrap;
+        word-break: break-word;
       }
-      .log-row { padding: 2px 0; color: var(--muted); white-space: pre-wrap; }
-      .log-ok { color: var(--ok); }
-      .log-error { color: var(--error); }
+      .log-row .time { color: var(--color-blue-60); }
+      .log-ok { color: var(--color-primary); font-weight: 500; }
+      .log-error { color: #c0392b; }
     </style>
   </head>
   <body>
     <header>
+      <span class="dot"></span>
       <span class="brand">Pulsar</span>
       <span class="status" id="status">Initialising…</span>
       <span class="pill"><b id="binding-count">0</b> bound</span>
@@ -91,8 +153,8 @@
     <main>
       <div id="frame-wrap">
         <div id="empty">
-          No design loaded.<br />
-          Open one from the Figma plugin via <b>Settings → Show in live preview</b>.
+          <div class="big">No design loaded</div>
+          <div>Open one from the Figma plugin via <b>Preview → Show in live preview</b>.</div>
         </div>
       </div>
       <aside>
