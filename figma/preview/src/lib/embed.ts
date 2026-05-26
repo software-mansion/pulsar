@@ -16,9 +16,11 @@ export function buildEmbedSrc(
     'embed-host': location.hostname || 'localhost',
     'client-id': CLIENT_ID,
     'hide-ui': '1',
-    // scaling=contain fits the content within the viewport (no crop, letterboxed).
+    // contain: fit the whole frame inside the iframe (letterboxed), so nothing is
+    // cropped. The iframe itself fills the container; the overlay maps using the
+    // same fit-and-center rule (see HighlightOverlay.boxStyle).
     scaling: 'contain',
-    // Device bezel on desktop; bare frame on mobile so it fills the small screen.
+    // Device bezel on desktop; bare frame on mobile.
     'device-frame': deviceFrame ? 'true' : 'false'
   });
   if (nodeId) params.set('node-id', normalizeId(nodeId));
