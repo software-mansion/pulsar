@@ -149,22 +149,40 @@ export default function App() {
         return;
       }
       const bindings: Record<string, unknown> = {};
+      // owner maps every node id (a bound node and its descendants) to the bound
+      // node it belongs to, so a tap on a child resolves to the right element.
+      const owner: Record<string, string> = {};
       // Pass 1: fill descendants so a tap on a child layer (text/icon) resolves
       // to its bound ancestor. Pass 2: explicit node bindings win over inherited.
       for (const b of m.bindings) {
         const data = b.customPattern ?? presetById.get(b.presetId)?.data;
         if (!data) continue;
-        for (const descId of b.descendantIds) bindings[descId] = data;
+        for (const descId of b.descendantIds) {
+          bindings[descId] = data;
+          owner[descId] = b.nodeId;
+        }
       }
+      // One entry per bound node, for the panel list + on-canvas highlights.
+      const elements = [];
       for (const b of m.bindings) {
         const data = b.customPattern ?? presetById.get(b.presetId)?.data;
-        if (data) bindings[b.nodeId] = data;
+        if (!data) continue;
+        bindings[b.nodeId] = data;
+        owner[b.nodeId] = b.nodeId;
+        elements.push({ id: b.nodeId, name: b.nodeName, presetName: b.presetName, box: b.box });
       }
-      if (Object.keys(bindings).length === 0) {
+      if (elements.length === 0) {
         send({ type: 'notify', message: 'No haptic bindings on this page yet.' });
         return;
       }
-      const payload = { fileKey, nodeId: m.presentNodeId, bindings };
+      const payload = {
+        fileKey,
+        nodeId: m.presentNodeId,
+        frame: m.presentNodeBox,
+        elements,
+        owner,
+        bindings
+      };
       const base = (settings.previewBaseUrl || DEFAULT_SETTINGS.previewBaseUrl).replace(/#.*$/, '');
       const url = `${base}#data=${encodePayload(payload)}`;
       if (previewActionRef.current === 'copy') {

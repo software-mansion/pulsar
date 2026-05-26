@@ -42,11 +42,22 @@ export type Settings = {
 
 // One bound node, as forwarded from the main thread to the UI when building the
 // live-preview payload. The UI resolves presetId -> full PresetData before launch.
+// Axis-aligned bounding box in absolute canvas coordinates.
+export interface NodeBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface PreviewBinding {
   nodeId: string;
+  nodeName: string;
   presetId: string;
   presetName: string;
   customPattern?: PresetData;
+  // Absolute bounding box, used to position on-canvas highlights in the preview.
+  box: NodeBox | null;
   // Ids of every descendant of the bound node. A tap in the embed usually lands
   // on a child layer (text/icon), so we map those to the same preset too.
   descendantIds: string[];
@@ -74,6 +85,7 @@ export type MainToUi =
       type: 'preview-data';
       fileKey: string | null;
       presentNodeId: string | null;
+      presentNodeBox: NodeBox | null;
       bindings: PreviewBinding[];
     };
 

@@ -2,6 +2,7 @@
 import type {
   BindingMeta,
   MainToUi,
+  NodeBox,
   PreviewBinding,
   SelectionInfo,
   Settings,
@@ -52,6 +53,11 @@ function readBinding(node: BaseNode): BindingMeta | null {
   }
 }
 
+function boxOf(node: BaseNode): NodeBox | null {
+  const b = (node as SceneNode).absoluteBoundingBox;
+  return b ? { x: b.x, y: b.y, w: b.width, h: b.height } : null;
+}
+
 // Collect every node on the current page that has a Pulsar binding, so the
 // standalone preview app can map embed click events (by node id) to a preset.
 async function collectPreviewBindings(): Promise<PreviewBinding[]> {
@@ -65,9 +71,11 @@ async function collectPreviewBindings(): Promise<PreviewBinding[]> {
       'findAll' in node ? (node as ChildrenMixin & BaseNode).findAll(() => true).map((d) => d.id) : [];
     out.push({
       nodeId: node.id,
+      nodeName: node.name,
       presetId: binding.presetId,
       presetName: binding.presetName,
       customPattern: binding.customPattern,
+      box: boxOf(node),
       descendantIds
     });
   }
@@ -76,15 +84,15 @@ async function collectPreviewBindings(): Promise<PreviewBinding[]> {
 
 // The frame the preview should open on: the top-level frame ancestor of the
 // current selection, else the first top-level frame on the page.
-function pickPresentNodeId(): string | null {
+function pickPresentNode(): SceneNode | null {
   const sel = figma.currentPage.selection[0];
   if (sel) {
     let n: BaseNode | null = sel;
     while (n && n.parent && n.parent.type !== 'PAGE') n = n.parent;
-    if (n && n.type === 'FRAME') return n.id;
+    if (n && n.type === 'FRAME') return n as SceneNode;
   }
   const topFrame = figma.currentPage.children.find((c) => c.type === 'FRAME');
-  return topFrame ? topFrame.id : null;
+  return (topFrame as SceneNode) ?? null;
 }
 
 function describeSelection(): SelectionInfo | null {
@@ -171,10 +179,12 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'request-preview-data': {
       const bindings = await collectPreviewBindings();
+      const present = pickPresentNode();
       postToUi({
         type: 'preview-data',
         fileKey: figma.fileKey ?? null,
-        presentNodeId: pickPresentNodeId(),
+        presentNodeId: present ? present.id : null,
+        presentNodeBox: present ? boxOf(present) : null,
         bindings
       });
       break;
