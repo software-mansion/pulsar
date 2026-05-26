@@ -1,18 +1,41 @@
 // Renders a Pulsar haptic preset to a WebAudio buffer and plays it.
-// Plain-JS port of figma/src/ui/audio/AudioPatternUtility.ts so the standalone
-// preview app can run with no build step. Keep the two in sync.
+// TS port of the docs/plugin AudioPatternUtility — keep in sync with
+// figma/src/ui/audio/AudioPatternUtility.ts.
+import type { PresetData } from '../types';
+
+type DiscreteAudioConfig = {
+  oscillator: {
+    frequency: { initial: number; final: number; decay_time: number };
+    envelope: {
+      attack: number;
+      decay: number;
+      sustain_level: number;
+      sustain_duration: number;
+      release: number;
+    };
+    waveform: string;
+  };
+  timestamp: number;
+  volume: number;
+};
+
+type ContinuousAudioConfig = {
+  type: string;
+  data: {
+    amplitude: { time: number; value: number }[];
+    frequency: { time: number; value: number }[];
+  };
+};
 
 export class AudioPatternUtility {
-  constructor() {
-    this.audioContext = null;
-    this.offlineContext = null;
-    this.renderedBuffer = null;
-    this.currentSource = null;
-    this.sampleRate = 44100;
-    this.isInitialized = false;
-  }
+  private audioContext: AudioContext | null = null;
+  private offlineContext: OfflineAudioContext | null = null;
+  private renderedBuffer: AudioBuffer | null = null;
+  private currentSource: AudioBufferSourceNode | null = null;
+  private readonly sampleRate = 44100;
+  private isInitialized = false;
 
-  async parsePattern(chartData) {
+  async parsePattern(chartData: PresetData) {
     this.renderedBuffer = null;
     await this.initAudioContext();
     await this.renderPattern({
@@ -21,7 +44,7 @@ export class AudioPatternUtility {
     });
   }
 
-  async play() {
+  async play(): Promise<void> {
     if (!this.renderedBuffer || !this.audioContext) {
       throw new Error('No audio buffer to play. Call parsePattern() first.');
     }
@@ -30,8 +53,8 @@ export class AudioPatternUtility {
     this.currentSource.buffer = this.renderedBuffer;
     this.currentSource.connect(this.audioContext.destination);
     this.currentSource.start();
-    return new Promise((resolve) => {
-      this.currentSource.onended = () => {
+    return new Promise<void>((resolve) => {
+      this.currentSource!.onended = () => {
         this.currentSource = null;
         resolve();
       };
@@ -47,28 +70,25 @@ export class AudioPatternUtility {
     }
   }
 
-  isPlaying() {
-    return this.currentSource !== null;
-  }
-
-  async initAudioContext() {
+  private async initAudioContext() {
     if (!this.isInitialized) {
-      const Ctor = window.AudioContext || window.webkitAudioContext;
+      const Ctor: typeof AudioContext =
+        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.audioContext = new Ctor();
       this.isInitialized = true;
     }
-    if (this.audioContext.state === 'suspended') {
-      await this.audioContext.resume();
+    if (this.audioContext!.state === 'suspended') {
+      await this.audioContext!.resume();
     }
   }
 
-  generateDiscreteAudioConfig(chartData) {
-    const out = [];
+  private generateDiscreteAudioConfig(chartData: PresetData): DiscreteAudioConfig[] {
+    const out: DiscreteAudioConfig[] = [];
     const sources = 3;
     const minF = 60;
     const maxF = 440;
-    const alignVolume = (x) => 0.1 / sources + (0.9 / sources) * x;
-    const norm = (v) => minF + (maxF - minF) * v;
+    const alignVolume = (x: number) => 0.1 / sources + (0.9 / sources) * x;
+    const norm = (v: number) => minF + (maxF - minF) * v;
 
     for (const bar of chartData.discretePattern) {
       const base = norm(bar.frequency);
@@ -105,9 +125,9 @@ export class AudioPatternUtility {
     return out;
   }
 
-  generateContinuousAudioConfig(chartData) {
-    const norm = (x) => 80 + (230 - 80) * x;
-    const make = (ampMod, freqMod, type) => ({
+  private generateContinuousAudioConfig(chartData: PresetData): ContinuousAudioConfig[] {
+    const norm = (x: number) => 80 + (230 - 80) * x;
+    const make = (ampMod: number, freqMod: number, type: string): ContinuousAudioConfig => ({
       type,
       data: {
         amplitude: chartData.continuousPattern.amplitude.map((p) => ({
@@ -123,7 +143,10 @@ export class AudioPatternUtility {
     return [make(0.6, 0.8, 'sine'), make(0.2, 0.4, 'triangle'), make(0.5, 1, 'sine')];
   }
 
-  async renderPattern(data) {
+  private async renderPattern(data: {
+    discreteData: DiscreteAudioConfig[];
+    continuousData: ContinuousAudioConfig[];
+  }) {
     const [continuousDuration, , totalDuration] = this.calculateTotalDuration(data);
     this.offlineContext = new OfflineAudioContext(1, totalDuration, this.sampleRate);
     const ctx = this.offlineContext;
@@ -146,7 +169,10 @@ export class AudioPatternUtility {
     return this.renderedBuffer;
   }
 
-  calculateTotalDuration(data) {
+  private calculateTotalDuration(data: {
+    discreteData: DiscreteAudioConfig[];
+    continuousData: ContinuousAudioConfig[];
+  }): [number, number, number] {
     const amp = data.continuousData[0]?.data.amplitude ?? [];
     const continuousDuration = (amp.length > 0 ? amp[amp.length - 1].time : 0) / 1000 + 0.01;
     let discreteDuration = 0;
@@ -160,14 +186,14 @@ export class AudioPatternUtility {
     return [continuousDuration, discreteDuration, total];
   }
 
-  makeDiscrete(c, target) {
-    const ctx = this.offlineContext;
+  private makeDiscrete(c: DiscreteAudioConfig, target: AudioNode) {
+    const ctx = this.offlineContext!;
     const { oscillator, timestamp, volume } = c;
     const start = timestamp / 1000;
     const env = oscillator.envelope;
 
     const osc = ctx.createOscillator();
-    osc.type = oscillator.waveform;
+    osc.type = oscillator.waveform as OscillatorType;
 
     const { initial, final, decay_time } = oscillator.frequency;
     if (decay_time > 0 && initial !== final) {
@@ -203,11 +229,11 @@ export class AudioPatternUtility {
     osc.stop(start + dur);
   }
 
-  makeContinuous(c, duration, target) {
+  private makeContinuous(c: ContinuousAudioConfig, duration: number, target: AudioNode) {
     if (c.data.amplitude.length === 0 || c.data.frequency.length === 0) return;
-    const ctx = this.offlineContext;
+    const ctx = this.offlineContext!;
 
-    const valueAt = (arr, time) => {
+    const valueAt = (arr: { time: number; value: number }[], time: number) => {
       time *= 1000;
       if (time < arr[0].time) return arr[0].value;
       if (time > arr[arr.length - 1].time) return arr[arr.length - 1].value;
@@ -225,7 +251,7 @@ export class AudioPatternUtility {
     };
 
     const osc = ctx.createOscillator();
-    osc.type = c.type;
+    osc.type = c.type as OscillatorType;
     const gain = ctx.createGain();
 
     for (let i = 0; i <= duration; i += 0.01) {
@@ -237,20 +263,4 @@ export class AudioPatternUtility {
     osc.start(0);
     osc.stop(duration);
   }
-}
-
-// Convenience: parse + play a preset by its data, caching the rendered buffer.
-const cache = new Map();
-export async function playPreset(id, data) {
-  let util = cache.get(id);
-  if (!util) {
-    util = new AudioPatternUtility();
-    await util.parsePattern(data);
-    cache.set(id, util);
-  }
-  await util.play();
-}
-
-export function stopAll() {
-  for (const u of cache.values()) u.stop();
 }

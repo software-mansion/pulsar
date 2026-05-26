@@ -1,49 +1,84 @@
 # Pulsar Live Preview
 
-A standalone, build-free web app that embeds a Figma prototype (via the
-[Figma Embed API](https://developers.figma.com/docs/embeds/embed-api/)) and plays
-the **audio haptics** bound to a node when you tap it — the same WebAudio engine
-the plugin uses in edit mode.
+A standalone **Vite + React + TypeScript** app that embeds a Figma prototype (via
+the [Figma Embed API](https://developers.figma.com/docs/embeds/embed-api/)),
+highlights every element that has a haptic bound, lists those haptics in a side
+panel, and plays the **audio haptics** on tap — the same WebAudio engine the
+plugin uses in edit mode.
 
 ## How it works
 
-1. In the Figma plugin, open **Settings → Show in live preview**.
+1. In the Figma plugin, open the **Preview** tab → **Show in live preview**.
 2. The plugin collects every node on the current page that has a Pulsar binding,
    resolves each to its preset pattern, and opens this app with the data in the
-   URL hash: `#data=<base64( { fileKey, nodeId, bindings } )>`.
+   URL hash: `#data=<base64( PreviewPayload )>` (file key, presented frame box,
+   per-element name/box, descendant→element map, and node→preset patterns).
 3. This app builds the embed iframe and listens for the embed's
    `MOUSE_PRESS_OR_RELEASE` events. When the clicked `targetNodeId` matches a
-   bound node, it plays that preset's audio.
+   bound node, it plays that preset's audio and highlights the element.
+
+On-canvas highlight boxes are positioned by mapping each node's absolute box onto
+the embed using `contain` scaling. They line up on the initially-presented frame
+and hide automatically after the prototype navigates to a different frame.
 
 Node ids are normalised (`:` → `-`) so plugin node ids and embed node ids match.
 
+## Project structure
+
+```
+preview/
+  package.json            Own dependencies (deployed independently of the plugin)
+  vite.config.ts          base: './', dev server on :5173
+  index.html              Vite entry (mounts #root)
+  src/
+    main.tsx              React bootstrap
+    App.tsx               State + embed event wiring
+    types.ts              PresetData, NodeBox, ElementInfo, PreviewPayload
+    styles.css            Pulsar docs-inspired theme
+    lib/
+      ids.ts              normalizeId
+      payload.ts          readPayload (decode URL hash)
+      embed.ts            CLIENT_ID, origins, buildEmbedSrc, event types
+      useFigmaMessages.ts postMessage subscription hook
+      useElementSize.ts   ResizeObserver size hook
+    audio/
+      AudioPatternUtility.ts  WebAudio render engine (TS port)
+      player.ts               playPreset / stopAll cache
+    components/
+      Header.tsx
+      PrototypeView.tsx   iframe + highlight overlay
+      HighlightOverlay.tsx
+      HapticList.tsx
+```
+
+This is a **self-contained package** with its own `package.json` and
+`node_modules`, deployed independently of the Figma plugin.
+
 ## Requirements
 
-- **OAuth client id** — set in [`app.js`](app.js) as `CLIENT_ID`. Already set to
-  the project's id (`2EUn8wVWgJHsMsjlcRB9nQ`).
+- **OAuth client id** — set in [`src/lib/embed.ts`](src/lib/embed.ts) as
+  `CLIENT_ID` (the project's id `2EUn8wVWgJHsMsjlcRB9nQ`).
 - **Embed origin** — the host serving this app must be registered as an *embed
   origin* on that OAuth app, or the embed will refuse to send events. The app
   sends the current `location.hostname` as `embed-host`. Register
-  `docs.swmansion.com` for production (and `localhost` / `127.0.0.1` for local
-  dev) in your Figma OAuth app settings.
+  `docs.swmansion.com` for production (and `localhost` for local dev) in your
+  Figma OAuth app settings.
 
-## Hosting
-
-Deployed at `https://docs.swmansion.com/figma-preview/` (the plugin's default
-preview base URL). Serve the contents of this folder (`index.html`, `app.js`,
-`audioPattern.js`) under that path; no build step is required.
-
-## Running locally
-
-Any static server works (the app is a single HTML file + two ES modules):
+## Commands (run from `figma/preview/`)
 
 ```bash
-cd figma/preview
-npx serve -l 5173      # or: python3 -m http.server 5173
+npm install        # first time only
+npm run dev        # Vite dev server on http://localhost:5173
+npm run build      # typecheck + production build → dist/ (base: './')
+npm run preview    # serve the production build locally
 ```
 
-Then in the plugin's **Settings → Live preview**, set the base URL to match
-(default `http://localhost:5173/`) and click **Show in live preview**.
+`build` uses a relative asset base, so the contents of `dist/` can be hosted
+under any subpath (e.g. `https://docs.swmansion.com/figma-preview/`, the plugin's
+default preview base URL).
+
+For local dev, set the plugin's **Preview → Preview app URL** to
+`http://localhost:5173/` and click **Show in live preview**.
 
 > A first tap may be needed to satisfy the browser's audio autoplay policy; the
 > WebAudio context resumes on the first user gesture.
