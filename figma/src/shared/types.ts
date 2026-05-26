@@ -63,6 +63,15 @@ export interface PreviewBinding {
   descendantIds: string[];
 }
 
+// A bound component, for the "Bound" tab list.
+export interface BoundItem {
+  nodeId: string;
+  nodeName: string;
+  nodeType: string;
+  presetId: string;
+  presetName: string;
+}
+
 // Messages: UI -> Main
 export type UiToMain =
   | { type: 'ui-ready' }
@@ -73,6 +82,8 @@ export type UiToMain =
   | { type: 'persist-haptics-token'; token: string | null }
   | { type: 'persist-favourites'; favourites: string[] }
   | { type: 'request-preview-data' }
+  | { type: 'request-bound-list' }
+  | { type: 'focus-node'; nodeId: string }
   | { type: 'open-external'; url: string }
   | { type: 'notify'; message: string };
 
@@ -81,6 +92,7 @@ export type MainToUi =
   | { type: 'init'; settings: Settings; hapticsToken: string | null; favourites: string[] }
   | { type: 'selection'; node: SelectionInfo | null }
   | { type: 'play-preset'; presetId: string } // emitted when a bound node is clicked in editor
+  | { type: 'bound-list'; items: BoundItem[] }
   | {
       type: 'preview-data';
       fileKey: string | null;

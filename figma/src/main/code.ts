@@ -1,6 +1,7 @@
 // Figma plugin main thread. Runs in the figma sandbox; talks to the UI iframe via postMessage.
 import type {
   BindingMeta,
+  BoundItem,
   MainToUi,
   NodeBox,
   PreviewBinding,
@@ -80,6 +81,44 @@ async function collectPreviewBindings(): Promise<PreviewBinding[]> {
     });
   }
   return out;
+}
+
+// Light list of bound components for the "Bound" tab (no boxes/descendants).
+async function collectBoundItems(): Promise<BoundItem[]> {
+  await figma.currentPage.loadAsync();
+  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: {} });
+  const out: BoundItem[] = [];
+  for (const node of nodes) {
+    const binding = readBinding(node);
+    if (!binding) continue;
+    out.push({
+      nodeId: node.id,
+      nodeName: node.name,
+      nodeType: node.type,
+      presetId: binding.presetId,
+      presetName: binding.presetName
+    });
+  }
+  return out;
+}
+
+// Select a bound node, bring it into view and flash a selection so the user can
+// see which component the preset is attached to.
+async function focusNode(nodeId: string) {
+  const node = await figma.getNodeByIdAsync(nodeId);
+  if (!node || node.type === 'PAGE' || node.type === 'DOCUMENT' || node.removed) {
+    figma.notify('That component no longer exists.');
+    return;
+  }
+  // Make sure its page is current (documents can have multiple pages).
+  let p: BaseNode | null = node.parent;
+  while (p && p.type !== 'PAGE') p = p.parent;
+  if (p && p.type === 'PAGE' && p.id !== figma.currentPage.id) {
+    await figma.setCurrentPageAsync(p as PageNode);
+  }
+  const scene = node as SceneNode;
+  figma.currentPage.selection = [scene];
+  figma.viewport.scrollAndZoomIntoView([scene]);
 }
 
 // The frame the preview should open on: the top-level frame ancestor of the
@@ -189,6 +228,14 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       });
       break;
     }
+    case 'request-bound-list': {
+      const items = await collectBoundItems();
+      postToUi({ type: 'bound-list', items });
+      break;
+    }
+    case 'focus-node':
+      await focusNode(msg.nodeId);
+      break;
     case 'open-external':
       figma.openExternal(msg.url);
       break;

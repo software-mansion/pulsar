@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import PRESETS from './presets-data';
-import type { CatalogEntry, SelectionInfo, Settings } from '../shared/types';
+import type { BoundItem, CatalogEntry, SelectionInfo, Settings } from '../shared/types';
 import { onMessage, send } from './figmaBridge';
 import Filters, { applyFilter, useFilterStateInit, type FilterState } from './components/Filters';
 import PresetCard from './components/PresetCard';
 import PresetDetail from './components/PresetDetail';
 import SettingsPanel from './components/SettingsPanel';
 import LivePreviewPanel from './components/LivePreviewPanel';
+import BoundComponentsPanel from './components/BoundComponentsPanel';
 import PhonePanel, { broadcastToPhone } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
 import { playPreset, stopAll } from './audio/AudioPatternUtility';
 
-type Tab = 'presets' | 'phone' | 'preview' | 'settings';
+type Tab = 'presets' | 'bound' | 'phone' | 'preview' | 'settings';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
@@ -62,6 +63,7 @@ export default function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [favourites, setFavourites] = useState<Set<string>>(new Set());
   const [favouritesOnly, setFavouritesOnly] = useState(false);
+  const [boundItems, setBoundItems] = useState<BoundItem[]>([]);
 
   const presetById = useMemo(() => {
     const m = new Map<string, CatalogEntry>();
@@ -78,6 +80,7 @@ export default function App() {
         setFavourites(new Set(m.favourites));
       }
       if (m.type === 'selection') setSelection(m.node);
+      if (m.type === 'bound-list') setBoundItems(m.items);
       // play-preset is handled in a separate effect that re-binds when
       // settings/token change, so it always reads fresh values.
     });
@@ -249,6 +252,26 @@ export default function App() {
     });
   };
 
+  const refreshBoundList = () => send({ type: 'request-bound-list' });
+
+  // Refresh the bound list when opening the tab, and whenever the selection (and
+  // thus a possible bind/unbind) changes while it's open.
+  useEffect(() => {
+    if (tab === 'bound') refreshBoundList();
+  }, [tab, selection]);
+
+  // Click a bound component: hear its preset (always, since it's an explicit
+  // action) and jump to + highlight it on the canvas.
+  const selectBoundItem = (item: BoundItem) => {
+    const entry = presetById.get(item.presetId);
+    if (entry) {
+      stopAll();
+      playPreset(entry.id, entry.data).catch(() => {});
+      if (hapticsToken) broadcastToPhone(hapticsToken, entry.data.name);
+    }
+    send({ type: 'focus-node', nodeId: item.nodeId });
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <div
@@ -259,7 +282,7 @@ export default function App() {
           Pulsar
         </div>
         <div className="spacer" />
-        {(['presets', 'phone', 'preview', 'settings'] as const).map((t) => (
+        {(['presets', 'bound', 'phone', 'preview', 'settings'] as const).map((t) => (
           <span
             key={t}
             className={`tab ${tab === t ? 'active' : ''}`}
@@ -377,6 +400,14 @@ export default function App() {
           }
           canPlayOnPhone={!!hapticsToken}
           onBind={() => bindEntry(openEntry)}
+        />
+      )}
+
+      {tab === 'bound' && (
+        <BoundComponentsPanel
+          items={boundItems}
+          onRefresh={refreshBoundList}
+          onSelect={selectBoundItem}
         />
       )}
 
