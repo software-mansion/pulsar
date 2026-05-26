@@ -7,12 +7,19 @@ export const CLIENT_ID = '2EUn8wVWgJHsMsjlcRB9nQ';
 // Origins the embed posts events from. We accept www + embed subdomains.
 export const FIGMA_ORIGINS = ['https://www.figma.com', 'https://embed.figma.com'];
 
-export function buildEmbedSrc(fileKey: string, nodeId: string | null): string {
+export function buildEmbedSrc(
+  fileKey: string,
+  nodeId: string | null,
+  deviceFrame: boolean
+): string {
   const params = new URLSearchParams({
     'embed-host': location.hostname || 'localhost',
     'client-id': CLIENT_ID,
     'hide-ui': '1',
-    scaling: 'contain'
+    // scaling=contain fits the content within the viewport (no crop, letterboxed).
+    scaling: 'contain',
+    // Device bezel on desktop; bare frame on mobile so it fills the small screen.
+    'device-frame': deviceFrame ? 'true' : 'false'
   });
   if (nodeId) params.set('node-id', normalizeId(nodeId));
   return `https://embed.figma.com/proto/${fileKey}/preview?${params.toString()}`;

@@ -11,7 +11,8 @@ export function PrototypeView({
   elements,
   showHighlights,
   activeId,
-  fullscreen = false
+  fullscreen = false,
+  deviceFrame
 }: {
   fileKey: string;
   nodeId: string | null;
@@ -20,10 +21,14 @@ export function PrototypeView({
   showHighlights: boolean;
   activeId: string;
   fullscreen?: boolean;
+  deviceFrame: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const size = useElementSize(wrapRef);
-  const src = useMemo(() => buildEmbedSrc(fileKey, nodeId), [fileKey, nodeId]);
+  const src = useMemo(
+    () => buildEmbedSrc(fileKey, nodeId, deviceFrame),
+    [fileKey, nodeId, deviceFrame]
+  );
 
   return (
     <div className={`frame-wrap${fullscreen ? ' fullscreen' : ''}`} ref={wrapRef}>

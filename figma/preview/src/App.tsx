@@ -4,6 +4,7 @@ import { readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
 import { useFullscreen } from './lib/useFullscreen';
+import { useIsMobile } from './lib/useIsMobile';
 import { playPreset, stopAll } from './audio/player';
 import { Header } from './components/Header';
 import { PrototypeView } from './components/PrototypeView';
@@ -86,6 +87,9 @@ export default function App() {
   useFigmaMessages(handlers);
 
   const { isFullscreen, enter: enterFullscreen, exit: exitFullscreen } = useFullscreen();
+  const isMobile = useIsMobile();
+  // On mobile we always run fullscreen (content fills the screen, no chrome).
+  const fullscreen = isFullscreen || isMobile;
 
   if (!payload?.fileKey) {
     return (
@@ -107,14 +111,14 @@ export default function App() {
 
   // In fullscreen we show only the Figma content — no header, panel, highlights,
   // or card chrome.
-  const showHighlights = highlightsOn && currentNodeId === presentedId && !isFullscreen;
+  const showHighlights = highlightsOn && currentNodeId === presentedId && !fullscreen;
 
   return (
     <>
-      {!isFullscreen && (
+      {!fullscreen && (
         <Header status={status} count={elements.length} onEnterFullscreen={enterFullscreen} />
       )}
-      <main className={`main${isFullscreen ? ' fullscreen' : ''}`}>
+      <main className={`main${fullscreen ? ' fullscreen' : ''}`}>
         <PrototypeView
           fileKey={payload.fileKey}
           nodeId={payload.nodeId}
@@ -122,9 +126,10 @@ export default function App() {
           elements={elements}
           showHighlights={showHighlights}
           activeId={activeId}
-          fullscreen={isFullscreen}
+          fullscreen={fullscreen}
+          deviceFrame={!isMobile}
         />
-        {!isFullscreen && (
+        {!fullscreen && (
           <HapticList
             elements={elements}
             highlightsOn={highlightsOn}
@@ -135,7 +140,8 @@ export default function App() {
           />
         )}
       </main>
-      {isFullscreen && (
+      {/* Manual fullscreen on desktop can be exited; mobile fullscreen is implicit. */}
+      {isFullscreen && !isMobile && (
         <button className="exit-fs" onClick={exitFullscreen} title="Exit fullscreen (Esc)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
