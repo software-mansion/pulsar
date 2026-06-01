@@ -3,6 +3,7 @@ import type { ElementInfo, NodeBox } from '../types';
 import { buildEmbedSrc } from '../lib/embed';
 import { useElementSize } from '../lib/useElementSize';
 import { HighlightOverlay } from './HighlightOverlay';
+import { PrototypeLoader } from './PrototypeLoader';
 
 export function PrototypeView({
   fileKey,
@@ -12,7 +13,8 @@ export function PrototypeView({
   showHighlights,
   activeId,
   fullscreen = false,
-  deviceFrame
+  deviceFrame,
+  loaded
 }: {
   fileKey: string;
   nodeId: string | null;
@@ -22,6 +24,7 @@ export function PrototypeView({
   activeId: string;
   fullscreen?: boolean;
   deviceFrame: boolean;
+  loaded: boolean;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const size = useElementSize(stageRef);
@@ -38,6 +41,7 @@ export function PrototypeView({
           <HighlightOverlay frame={frame} elements={elements} size={size} activeId={activeId} />
         )}
       </div>
+      <PrototypeLoader loaded={loaded} />
     </div>
   );
 }

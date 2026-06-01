@@ -6,7 +6,8 @@ export function HapticList({
   onToggleHighlights,
   activeId,
   onActivate,
-  onPlay
+  onPlay,
+  onShowDetails
 }: {
   elements: ElementInfo[];
   highlightsOn: boolean;
@@ -14,6 +15,7 @@ export function HapticList({
   activeId: string;
   onActivate: (id: string) => void;
   onPlay: (id: string) => void;
+  onShowDetails: (id: string) => void;
 }) {
   return (
     <aside className="aside">
@@ -40,8 +42,22 @@ export function HapticList({
               onMouseLeave={() => onActivate('')}
               onClick={() => onPlay(el.id)}
             >
-              <div className="el-haptic">{el.presetName}</div>
-              <div className="el-name">{el.name}</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="el-haptic">{el.presetName}</div>
+                  <div className="el-name">{el.name}</div>
+                </div>
+                <button
+                  className="details-btn"
+                  title="Show preset details"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShowDetails(el.id);
+                  }}
+                >
+                  ⋯
+                </button>
+              </div>
             </div>
           ))
         )}

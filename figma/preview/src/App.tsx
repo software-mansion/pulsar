@@ -9,6 +9,7 @@ import { playPreset, stopAll } from './audio/player';
 import { Header } from './components/Header';
 import { PrototypeView } from './components/PrototypeView';
 import { HapticList } from './components/HapticList';
+import { PresetDetailsModal } from './components/PresetDetailsModal';
 
 const ACTIVE_MS = 900;
 const TAP_DEBOUNCE_MS = 250;
@@ -38,6 +39,8 @@ export default function App() {
   const [currentNodeId, setCurrentNodeId] = useState(presentedId);
   const [highlightsOn, setHighlightsOn] = useState(true);
   const [activeId, setActiveId] = useState('');
+  const [detailsId, setDetailsId] = useState<string>('');
+  const [loaded, setLoaded] = useState(false);
 
   const activeTimer = useRef<number | undefined>(undefined);
   const lastPlayed = useRef(new Map<string, number>());
@@ -68,7 +71,10 @@ export default function App() {
 
   const handlers = useMemo(
     () => ({
-      onInitialLoad: () => setStatus('Tap a highlighted element to feel its haptic.'),
+      onInitialLoad: () => {
+        setStatus('Tap a highlighted element to feel its haptic.');
+        setLoaded(true);
+      },
       onPresentedNodeChanged: (id: string) => setCurrentNodeId(normalizeId(id)),
       onLoginScreen: () => setStatus('This file requires Figma login to embed.'),
       onMousePressOrRelease: (targetNodeId: string) => {
@@ -128,6 +134,7 @@ export default function App() {
           activeId={activeId}
           fullscreen={fullscreen}
           deviceFrame={!isMobile}
+          loaded={loaded}
         />
         {!fullscreen && (
           <HapticList
@@ -137,9 +144,18 @@ export default function App() {
             activeId={activeId}
             onActivate={setActiveId}
             onPlay={playFromList}
+            onShowDetails={setDetailsId}
           />
         )}
       </main>
+      {detailsId && bindings.get(detailsId) && (
+        <PresetDetailsModal
+          data={bindings.get(detailsId)!}
+          elementName={elements.find((e) => e.id === detailsId)?.name}
+          onClose={() => setDetailsId('')}
+        />
+      )}
+
       {/* Manual fullscreen on desktop can be exited; mobile fullscreen is implicit. */}
       {isFullscreen && !isMobile && (
         <button className="exit-fs" onClick={exitFullscreen} title="Exit fullscreen (Esc)">

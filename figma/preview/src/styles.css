@@ -112,6 +112,45 @@ body {
 .frame-wrap.fullscreen .stage { width: 100%; height: 100%; }
 .stage iframe { display: block; width: 100%; height: 100%; border: 0; }
 
+/* Prototype loader -------------------------------------------------------- */
+.loader {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(251, 254, 255, 0.92);
+  transition: opacity 380ms ease;
+}
+.loader.fading { opacity: 0; pointer-events: none; }
+.loader-card { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.loader-ring { position: relative; }
+.loader-ring svg {
+  display: block;
+  animation: loader-spin 1.6s linear infinite;
+}
+@keyframes loader-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.loader-pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+.loader-label {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
 /* Minimal exit affordance in fullscreen — faint until hovered. */
 .exit-fs {
   position: fixed;
@@ -235,7 +274,7 @@ body {
   cursor: pointer;
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
-.el-row:active { transform: translate(-1px, 1px); box-shadow: -1px 1px 0 var(--color-blue-50); }
+.el-row:active { transform: translate(-1px, 1px); box-shadow: -2px 2px 0 var(--color-blue-50); }
 .el-row.active {
   background: #fff;
   border-color: var(--color-primary);
@@ -267,3 +306,120 @@ body {
 }
 .el-row.active .el-haptic::before { background: var(--color-yellow-60); }
 .empty-note { color: var(--muted); font-size: var(--fs-xs); padding: 8px 2px; }
+
+/* Per-row details (⋯) button. Sits above the row's click handler. */
+.details-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--muted);
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.details-btn:hover { background: var(--surface); border-color: var(--color-blue-20); color: var(--color-primary); }
+
+/* Modal — covers the whole viewport, with a docs-style card. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 26, 114, 0.35);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+}
+.modal-card {
+  background: var(--surface);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-body { padding: 16px; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.modal-close {
+  background: transparent;
+  border: 0;
+  padding: 4px 8px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted);
+  border-radius: var(--radius);
+}
+.modal-close:hover { background: var(--color-blue-10); color: var(--color-primary); }
+
+/* Tabs for language selection inside the modal. */
+.tab {
+  padding: 4px 2px 8px;
+  margin-right: 14px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: capitalize;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.tab.active { color: var(--color-primary); border-bottom-color: var(--color-blue-50); }
+
+/* Tag pill (docs style). */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-blue-20);
+  margin: 0 4px 4px 0;
+}
+
+/* Code block (JSON / SDK snippet). */
+pre.code {
+  background: var(--color-blue-10);
+  padding: 8px;
+  border-radius: var(--radius);
+  margin: 0;
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--fs-xs);
+}
+
+/* Docs-style button (used inside the modal). */
+button.docs-btn {
+  font-family: inherit;
+  cursor: pointer;
+  border: 2px solid var(--color-blue-50);
+  background: var(--surface);
+  color: var(--color-primary);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+  transition: transform 60ms ease, box-shadow 60ms ease;
+}
+button.docs-btn:active { transform: translate(-1px, 1px); box-shadow: -2px 2px 0 var(--color-blue-50); }
+
+.spacer { flex: 1; }

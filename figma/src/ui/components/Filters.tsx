@@ -4,6 +4,7 @@ import type { CatalogEntry } from '../../shared/types';
 // Tag grouping mirrors the docs `TagsInfo`. Within a group selections are OR'd;
 // across groups they are AND'd.
 const TAG_GROUPS: { groupName: string; tags: string[] }[] = [
+  { groupName: 'Source', tags: ['Custom'] },
   { groupName: 'Intensity', tags: ['Gentle', 'Substantial', 'Bold'] },
   { groupName: 'Sharpness', tags: ['Soft', 'Flexible', 'Rigid'] },
   { groupName: 'Shape', tags: ['Peak', 'Impulses', 'Solid', 'Bumps', 'Saw', 'Pattern', 'Ramp'] },
@@ -115,7 +116,7 @@ export default function Filters({
               checked={favouritesOnly}
               onChange={(e) => onFavouritesOnlyChange(e.target.checked)}
             />
-            <span className="star" style={{ color: 'var(--color-yellow-60)' }}>★</span>
+            <span className="star" style={{ color: 'var(--color-primary)' }}>★</span>
             Show favourites only
           </label>
 
@@ -177,7 +178,8 @@ export function applyFilter(entries: CatalogEntry[], state: FilterState): Catalo
       return false;
     });
   } else {
-    active = entries.filter((e) => e.category === 'user');
+    // Default dataset: user presets plus any user-created custom presets.
+    active = entries.filter((e) => e.category === 'user' || e.category === 'custom');
   }
 
   // 2. Tag groups: OR within group, AND across groups.

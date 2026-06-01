@@ -37,9 +37,9 @@ export default function PresetDetail({
   };
 
   return (
-    <div className="col" style={{ padding: 12, height: '100%' }}>
+    <div className="col scroll" style={{ padding: 12, flex: 1, minHeight: 0 }}>
       <div className="row">
-        <button className="ghost" onClick={onClose}>← Back</button>
+        <button className="ghost" onClick={onClose} title="Close (Esc)">✕</button>
         <div className="spacer" />
         <button className="ghost" onClick={onPlay}>▶ Play</button>
         {canPlayOnPhone && (

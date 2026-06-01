@@ -2,6 +2,7 @@
 import type {
   BindingMeta,
   BoundItem,
+  CatalogEntry,
   MainToUi,
   NodeBox,
   PreviewBinding,
@@ -14,6 +15,7 @@ const BINDING_KEY = 'pulsar:binding';
 const SETTINGS_KEY = 'pulsar:settings';
 const TOKEN_KEY = 'pulsar:hapticsToken';
 const FAVOURITES_KEY = 'pulsar:favourites';
+const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
@@ -42,6 +44,11 @@ async function loadToken(): Promise<string | null> {
 async function loadFavourites(): Promise<string[]> {
   const raw = await figma.clientStorage.getAsync(FAVOURITES_KEY);
   return Array.isArray(raw) ? raw : [];
+}
+
+async function loadCustomPresets(): Promise<CatalogEntry[]> {
+  const raw = await figma.clientStorage.getAsync(CUSTOM_PRESETS_KEY);
+  return Array.isArray(raw) ? (raw as CatalogEntry[]) : [];
 }
 
 function readBinding(node: BaseNode): BindingMeta | null {
@@ -189,12 +196,13 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken, favourites] = await Promise.all([
+      const [settings, hapticsToken, favourites, customPresets] = await Promise.all([
         loadSettings(),
         loadToken(),
-        loadFavourites()
+        loadFavourites(),
+        loadCustomPresets()
       ]);
-      postToUi({ type: 'init', settings, hapticsToken, favourites });
+      postToUi({ type: 'init', settings, hapticsToken, favourites, customPresets });
       pushSelection();
       break;
     }
@@ -215,6 +223,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'persist-favourites':
       await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);
+      break;
+    case 'persist-custom-presets':
+      await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
       break;
     case 'request-preview-data': {
       const bindings = await collectPreviewBindings();

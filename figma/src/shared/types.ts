@@ -19,10 +19,13 @@ export interface PresetData {
 
 export interface CatalogEntry {
   id: string;
-  category: 'user' | 'system';
+  category: 'user' | 'system' | 'custom';
   platform: 'ios' | 'android' | null;
   data: PresetData;
 }
+
+// Tag applied to user-supplied custom presets so they can be filtered.
+export const CUSTOM_TAG = 'Custom';
 
 export interface BindingMeta {
   presetId: string;
@@ -81,6 +84,7 @@ export type UiToMain =
   | { type: 'persist-settings'; settings: Settings }
   | { type: 'persist-haptics-token'; token: string | null }
   | { type: 'persist-favourites'; favourites: string[] }
+  | { type: 'persist-custom-presets'; presets: CatalogEntry[] }
   | { type: 'request-preview-data' }
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
@@ -89,7 +93,13 @@ export type UiToMain =
 
 // Messages: Main -> UI
 export type MainToUi =
-  | { type: 'init'; settings: Settings; hapticsToken: string | null; favourites: string[] }
+  | {
+      type: 'init';
+      settings: Settings;
+      hapticsToken: string | null;
+      favourites: string[];
+      customPresets: CatalogEntry[];
+    }
   | { type: 'selection'; node: SelectionInfo | null }
   | { type: 'play-preset'; presetId: string } // emitted when a bound node is clicked in editor
   | { type: 'bound-list'; items: BoundItem[] }

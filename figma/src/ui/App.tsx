@@ -6,14 +6,14 @@ import { onMessage, send } from './figmaBridge';
 import Filters, { applyFilter, useFilterStateInit, type FilterState } from './components/Filters';
 import PresetCard from './components/PresetCard';
 import PresetDetail from './components/PresetDetail';
-import SettingsPanel from './components/SettingsPanel';
 import LivePreviewPanel from './components/LivePreviewPanel';
 import BoundComponentsPanel from './components/BoundComponentsPanel';
+import AddCustomPreset from './components/AddCustomPreset';
 import PhonePanel, { broadcastToPhone } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
 import { playPreset, stopAll } from './audio/AudioPatternUtility';
 
-type Tab = 'presets' | 'bound' | 'phone' | 'preview' | 'settings';
+type Tab = 'presets' | 'bound' | 'phone' | 'preview';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
@@ -64,12 +64,16 @@ export default function App() {
   const [favourites, setFavourites] = useState<Set<string>>(new Set());
   const [favouritesOnly, setFavouritesOnly] = useState(false);
   const [boundItems, setBoundItems] = useState<BoundItem[]>([]);
+  const [customPresets, setCustomPresets] = useState<CatalogEntry[]>([]);
+
+  // Custom presets first, then the bundled catalogue.
+  const allPresets = useMemo(() => [...customPresets, ...PRESETS], [customPresets]);
 
   const presetById = useMemo(() => {
     const m = new Map<string, CatalogEntry>();
-    for (const p of PRESETS) m.set(p.id, p);
+    for (const p of allPresets) m.set(p.id, p);
     return m;
-  }, []);
+  }, [allPresets]);
 
   // Wire up the bridge once.
   useEffect(() => {
@@ -78,6 +82,7 @@ export default function App() {
         setSettings(m.settings);
         setHapticsToken(m.hapticsToken);
         setFavourites(new Set(m.favourites));
+        setCustomPresets(m.customPresets ?? []);
       }
       if (m.type === 'selection') setSelection(m.node);
       if (m.type === 'bound-list') setBoundItems(m.items);
@@ -115,6 +120,23 @@ export default function App() {
     }
     send({ type: 'persist-favourites', favourites: [...favourites] });
   }, [favourites]);
+
+  // Persist custom presets on change, skipping the first render so we don't
+  // clobber what `init` loaded.
+  const [didInitCustom, setDidInitCustom] = useState(false);
+  useEffect(() => {
+    if (!didInitCustom) {
+      setDidInitCustom(true);
+      return;
+    }
+    send({ type: 'persist-custom-presets', presets: customPresets });
+  }, [customPresets]);
+
+  const addCustomPreset = (entry: CatalogEntry) => setCustomPresets((prev) => [entry, ...prev]);
+  const updateCustomPreset = (id: string, entry: CatalogEntry) =>
+    setCustomPresets((prev) => prev.map((e) => (e.id === id ? entry : e)));
+  const removeCustomPreset = (id: string) =>
+    setCustomPresets((prev) => prev.filter((e) => e.id !== id));
 
   const toggleFavourite = (id: string) => {
     setFavourites((prev) => {
@@ -230,9 +252,9 @@ export default function App() {
   };
 
   const filtered = useMemo(() => {
-    const base = applyFilter(PRESETS, filter);
+    const base = applyFilter(allPresets, filter);
     return favouritesOnly ? base.filter((e) => favourites.has(e.id)) : base;
-  }, [filter, favouritesOnly, favourites]);
+  }, [allPresets, filter, favouritesOnly, favourites]);
   const openEntry = openId ? presetById.get(openId) ?? null : null;
 
   const playEntry = async (e: CatalogEntry) => {
@@ -248,9 +270,25 @@ export default function App() {
   const bindEntry = (e: CatalogEntry) => {
     send({
       type: 'bind-preset',
-      binding: { presetId: e.id, presetName: e.data.name }
+      // Inline the pattern for custom presets so a binding survives even if the
+      // custom preset is later removed from the list.
+      binding: {
+        presetId: e.id,
+        presetName: e.data.name,
+        ...(e.category === 'custom' ? { customPattern: e.data } : {})
+      }
     });
   };
+
+  // Escape closes the open preset-info modal.
+  useEffect(() => {
+    if (!openId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenId(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [openId]);
 
   const refreshBoundList = () => send({ type: 'request-bound-list' });
 
@@ -282,7 +320,7 @@ export default function App() {
           Pulsar
         </div>
         <div className="spacer" />
-        {(['presets', 'bound', 'phone', 'preview', 'settings'] as const).map((t) => (
+        {(['presets', 'bound', 'phone', 'preview'] as const).map((t) => (
           <span
             key={t}
             className={`tab ${tab === t ? 'active' : ''}`}
@@ -296,14 +334,14 @@ export default function App() {
         ))}
       </div>
 
-      {(tab !== 'presets' || !!openEntry) && (
+      {tab !== 'presets' && (
         <SelectionBar
           selection={selection}
           onUnbind={() => send({ type: 'unbind-preset' })}
         />
       )}
 
-      {tab === 'presets' && !openEntry && (
+      {tab === 'presets' && (
         <div
           className="scroll"
           style={{ flex: 1 }}
@@ -320,8 +358,26 @@ export default function App() {
             favouritesOnly={favouritesOnly}
             onFavouritesOnlyChange={setFavouritesOnly}
           />
+          <AddCustomPreset
+            customPresets={customPresets}
+            onAdd={addCustomPreset}
+            onUpdate={updateCustomPreset}
+            onRemove={removeCustomPreset}
+          />
           <div className="row" style={{ padding: '4px 8px', gap: 6, marginTop: 8 }}>
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{filtered.length} results</span>
+            <label
+              className="row"
+              style={{ gap: 4, marginLeft: 8, fontSize: 'var(--fs-xs)', cursor: 'pointer', userSelect: 'none' }}
+              title="Play audio when selecting a bound node in the editor"
+            >
+              <input
+                type="checkbox"
+                checked={settings.soundInEdit}
+                onChange={(e) => setSettings({ ...settings, soundInEdit: e.target.checked })}
+              />
+              Sound
+            </label>
             <div className="spacer" />
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>Layout:</span>
             <button
@@ -390,17 +446,21 @@ export default function App() {
         </button>
       )}
 
-      {tab === 'presets' && openEntry && (
-        <PresetDetail
-          entry={openEntry}
-          onClose={() => setOpenId(null)}
-          onPlay={() => playEntry(openEntry)}
-          onPlayOnPhone={() =>
-            hapticsToken && broadcastToPhone(hapticsToken, openEntry.data.name)
-          }
-          canPlayOnPhone={!!hapticsToken}
-          onBind={() => bindEntry(openEntry)}
-        />
+      {openEntry && (
+        <div className="modal-backdrop" onClick={() => setOpenId(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <PresetDetail
+              entry={openEntry}
+              onClose={() => setOpenId(null)}
+              onPlay={() => playEntry(openEntry)}
+              onPlayOnPhone={() =>
+                hapticsToken && broadcastToPhone(hapticsToken, openEntry.data.name)
+              }
+              canPlayOnPhone={!!hapticsToken}
+              onBind={() => bindEntry(openEntry)}
+            />
+          </div>
+        </div>
       )}
 
       {tab === 'bound' && (
@@ -427,9 +487,6 @@ export default function App() {
         />
       )}
 
-      {tab === 'settings' && (
-        <SettingsPanel settings={settings} onChange={setSettings} />
-      )}
     </div>
   );
 }

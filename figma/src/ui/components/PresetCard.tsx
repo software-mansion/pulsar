@@ -1,6 +1,9 @@
 import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
 
+const formatDuration = (ms: number) =>
+  ms >= 1000 ? `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)} s` : `${Math.round(ms)} ms`;
+
 export default function PresetCard({
   entry,
   compact,
@@ -50,7 +53,7 @@ export default function PresetCard({
             {isBound && <span className="bound-badge" style={{ marginLeft: 6 }}>● bound</span>}
           </div>
           <div className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>
-            {data.tags.slice(0, 4).join(' · ')}
+            {[...data.tags.slice(0, 4), formatDuration(data.duration)].join(' · ')}
           </div>
         </div>
         {favButton}
@@ -87,7 +90,14 @@ export default function PresetCard({
         </div>
       )}
       <Visualization data={data} />
-      <div className="row" style={{ marginTop: 8 }}>
+      <div className="row" style={{ marginTop: 6 }}>
+        <span
+          className="muted"
+          style={{ fontSize: 'var(--fs-2xs)' }}
+          title="Pattern duration"
+        >
+          {formatDuration(data.duration)}
+        </span>
         <div className="spacer" />
         <button className="ghost" onClick={onOpen}>Details</button>
         <button className="primary" onClick={onBind}>Bind</button>
