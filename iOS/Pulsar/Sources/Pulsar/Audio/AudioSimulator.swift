@@ -10,9 +10,10 @@ public class AudioSimulator: NSObject {
       return false
     #endif
   }()
-	private var audioContext: AVAudioEngine = AVAudioEngine()
-	private var playerNode: AVAudioPlayerNode = AVAudioPlayerNode()
-	private var filterNode: AVAudioUnitEQ = AVAudioUnitEQ(numberOfBands: 1)
+
+	private var audioContext: AVAudioEngine?
+	private var playerNode: AVAudioPlayerNode?
+	private var filterNode: AVAudioUnitEQ?
 	private var isEngineConfigured = false
   private var shouldForceAudiblePlayback = false
 
@@ -35,11 +36,6 @@ public class AudioSimulator: NSObject {
     if (isSimulatorDevice) {
       self._playSound = true
     }
-    if (_playSound) {
-      audioQueue.async { [weak self] in
-        self?.configureAudioContext()
-      }
-    }
 	}
 
 	public func parsePattern(from data: PatternData) -> AVAudioPCMBuffer? {
@@ -61,8 +57,8 @@ public class AudioSimulator: NSObject {
       guard let self = self else { return }
       self.shouldForceAudiblePlayback = value
       if (!value) {
-        self.playerNode.stop()
-        self.audioContext.pause()
+        self.playerNode?.stop()
+        self.audioContext?.pause()
         self.deactivateAudioSession()
       } else {
         self.updateAudioSessionCategory()
@@ -74,6 +70,13 @@ public class AudioSimulator: NSObject {
 		guard !isEngineConfigured else { return }
 
     updateAudioSessionCategory()
+
+		let audioContext = self.audioContext ?? AVAudioEngine()
+		let playerNode = self.playerNode ?? AVAudioPlayerNode()
+		let filterNode = self.filterNode ?? AVAudioUnitEQ(numberOfBands: 1)
+		self.audioContext = audioContext
+		self.playerNode = playerNode
+		self.filterNode = filterNode
 
 		// Setup audio engine: Player -> Filter(lowpass) -> MainMixer
 		audioContext.attach(playerNode)
@@ -405,39 +408,40 @@ public class AudioSimulator: NSObject {
       guard let self = self, self.playSound else { return }
       self.configureAudioContext()
 
+      guard self.isEngineConfigured,
+            let audioContext = self.audioContext,
+            let playerNode = self.playerNode else { return }
 
-      guard self.isEngineConfigured else { return }
-
-      if self.playerNode.isPlaying { self.playerNode.stop() }
-      if !self.audioContext.isRunning {
+      if playerNode.isPlaying { playerNode.stop() }
+      if !audioContext.isRunning {
         do {
           try AVAudioSession.sharedInstance().setActive(true)
-          try self.audioContext.start()
+          try audioContext.start()
         } catch {
           print("Failed to start audio engine: \(error)")
           return
         }
       }
 
-      guard self.audioContext.isRunning,
+      guard audioContext.isRunning,
             buffer.format.sampleRate == self.sampleRate,
             buffer.format.channelCount == 1 else {
         print("Skipping playback: engine not running or buffer format mismatch")
         return
       }
 
-      self.playerNode.scheduleBuffer(buffer, at: nil, options: [])
-      self.playerNode.play()
+      playerNode.scheduleBuffer(buffer, at: nil, options: [])
+      playerNode.play()
     }
 	}
 
 	public func stop() {
     audioQueue.async { [weak self] in
-      self?.playerNode.stop()
+      self?.playerNode?.stop()
     }
 	}
 
 	public var isPlaying: Bool {
-		return audioQueue.sync { playerNode.isPlaying }
+		return audioQueue.sync { playerNode?.isPlaying ?? false }
 	}
 }
