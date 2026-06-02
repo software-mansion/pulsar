@@ -6,23 +6,15 @@ public class HapticEngineWrapper {
   private var engine: CHHapticEngine?
   private var initialized = false
   private(set) var isHapticsEnabled = true
-  // App-active state is resolved lazily on first use so that constructing the
-  // wrapper does not require the main thread (UIApplication.shared can only be
-  // read from the main thread). Once observed, it is kept up to date via the
-  // lifecycle observers registered lazily alongside engine creation.
-  private var isAppActiveCache: Bool?
-  private var lifecycleObserversRegistered = false
+  private var isAppActiveCache = false
+  private var appLifecycleTrackingBootstrapped = false
   private var playerRegistry: [Int: CHHapticPatternPlayer] = [:]
   private var playerCreationOrder: [Int] = []
   private let playerLimit = 20
   private var nextPlayerId = 0
   private var cachedRealtimePlayer: CHHapticAdvancedPatternPlayer?
 
-  public init() {
-    // Intentionally empty: do NOT touch CoreHaptics, UIApplication or
-    // NotificationCenter here. The engine is started lazily on first use to
-    // keep app startup cheap. See `startEngine()` / `ensureLifecycleObservers()`.
-  }
+  public init() {}
 
   deinit {
     if !initialized { return }
@@ -41,8 +33,11 @@ public extension HapticEngineWrapper {
 
     if !isHapticsEnabled {
       stopHaptics()
-    } else if canPlayHaptics() && !initialized {
-      startEngine()
+    } else {
+      bootstrapAppLifecycleTrackingIfNeeded()
+      if canPlayHaptics() && !initialized {
+        startEngine()
+      }
     }
   }
 
@@ -58,6 +53,7 @@ public extension HapticEngineWrapper {
   }
 
   func createPlayer(pattern: CHHapticPattern?) -> Int? {
+    bootstrapAppLifecycleTrackingIfNeeded()
     guard canPlayHaptics() else { return nil }
 
     startEngine()
@@ -67,6 +63,7 @@ public extension HapticEngineWrapper {
   }
 
   func getRealtimePlayer() -> CHHapticAdvancedPatternPlayer? {
+    bootstrapAppLifecycleTrackingIfNeeded()
     guard canPlayHaptics() else { return nil }
 
     startEngine()
@@ -80,6 +77,7 @@ public extension HapticEngineWrapper {
   }
 
   func playPlayer(id: Int, pattern: CHHapticPattern? = nil) {
+    bootstrapAppLifecycleTrackingIfNeeded()
     guard canPlayHaptics() else { return }
 
     if let player = playerRegistry[id] {
@@ -123,23 +121,8 @@ extension HapticEngineWrapper {
     isHapticsEnabled && isAppActive() && isHapticsSupported()
   }
 
-  /// Lazily resolves the cached UIApplication state. The first read must happen
-  /// on the main thread; subsequent reads use the cache updated by lifecycle
-  /// observers (registered lazily by `ensureLifecycleObservers()`).
   func isAppActive() -> Bool {
-    if let cached = isAppActiveCache {
-      return cached
-    }
-    let resolved: Bool
-    if Thread.isMainThread {
-      resolved = UIApplication.shared.applicationState == .active
-    } else {
-      resolved = DispatchQueue.main.sync {
-        UIApplication.shared.applicationState == .active
-      }
-    }
-    isAppActiveCache = resolved
-    return resolved
+    return isAppActiveCache
   }
 
   func isHapticsSupported() -> Bool {
@@ -214,17 +197,27 @@ private extension HapticEngineWrapper {
       try createEngineIfNeeded()
       try engine?.start()
       initialized = true
-      ensureLifecycleObservers()
     } catch {
       print("Error starting engine: \(error.localizedDescription)")
       engine = nil
     }
   }
 
-  func ensureLifecycleObservers() {
-    guard !lifecycleObserversRegistered else { return }
-    lifecycleObserversRegistered = true
+  func bootstrapAppLifecycleTrackingIfNeeded() {
+    guard !appLifecycleTrackingBootstrapped else { return }
+    appLifecycleTrackingBootstrapped = true
+    seedAppActiveCache()
     registerAppLifecycleObservers()
+  }
+
+  func seedAppActiveCache() {
+    if Thread.isMainThread {
+      isAppActiveCache = UIApplication.shared.applicationState == .active
+    } else {
+      isAppActiveCache = DispatchQueue.main.sync {
+        UIApplication.shared.applicationState == .active
+      }
+    }
   }
 
   func createEngineIfNeeded() throws {
