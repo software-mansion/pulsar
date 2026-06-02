@@ -34,11 +34,6 @@ import kotlin.native.Platform
 internal class IOSAudioSimulator {
     private val sampleRate = 22_050.0
     private val isSimulatorDevice = NSProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] != null
-    // AVAudioEngine / AVAudioPlayerNode / AVAudioUnitEQ each pull in AVFAudio
-    // class realization and the AudioToolbox AudioUnit component registry on
-    // first allocation. Keeping these nullable and constructing them lazily in
-    // configureAudioContext() avoids paying that cost on cold start in release
-    // builds where playSound is false and the graph is never used.
     private var audioContext: AVAudioEngine? = null
     private var playerNode: AVAudioPlayerNode? = null
     private var filterNode: AVAudioUnitEQ? = null
