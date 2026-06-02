@@ -155,7 +155,7 @@ function BalloonCell({ index }: { index: number }) {
       if (current > 0 && current < shakeThreshold) {
         const amplitude = interpolate(current, [0, shakeThreshold], [ampMin, ampMid], Extrapolation.CLAMP);
         const frequency = interpolate(current, [0, shakeThreshold], [freqHigh, freqLow], Extrapolation.CLAMP);
-        composer.set(amplitude, frequency);
+        composer.set(amplitude, frequency, true);
       }
 
       // Enter shake zone: stop continuous haptic, let shakeOffset drive impulses

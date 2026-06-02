@@ -20,10 +20,24 @@ internal class IOSRealtimeComposerHandle(
 ) : RealtimeComposerHandle {
     private var isPlaying = false
 
-    override fun set(amplitude: Float, frequency: Float) {
+    override fun start() {
+        if (!engine.isHapticsEnabled) return
+        if (isPlaying) return
+        val player = engine.getRealtimePlayer() ?: return
+        isPlaying = true
+        runCatching { player.startAtTime(0.0, error = null) }
+            .onFailure {
+                isPlaying = false
+                log("Error starting realtime player: ${it.message}")
+            }
+    }
+
+    override fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean) {
         if (!engine.isHapticsEnabled) return
         if (!isPlaying) {
-            start(amplitude, frequency)
+            if (!startIfNeeded) return
+            start()
+            if (!isPlaying) return
         }
         val player = engine.getRealtimePlayer() ?: return
         val parameters = listOf(
@@ -64,16 +78,4 @@ internal class IOSRealtimeComposerHandle(
     }
 
     override fun isActive(): Boolean = isPlaying
-
-    private fun start(amplitude: Float = 0f, frequency: Float = 0f) {
-        if (isPlaying) return
-        val player = engine.getRealtimePlayer() ?: return
-        isPlaying = true
-        set(amplitude, frequency)
-        runCatching { player.startAtTime(0.0, error = null) }
-            .onFailure {
-                isPlaying = false
-                log("Error starting realtime player: ${it.message}")
-            }
-    }
 }

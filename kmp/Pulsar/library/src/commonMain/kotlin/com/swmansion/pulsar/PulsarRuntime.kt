@@ -269,7 +269,9 @@ interface PatternComposerHandle {
 }
 
 interface RealtimeComposerHandle {
-    fun set(amplitude: Float, frequency: Float)
+    fun start()
+    fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean)
+    fun set(amplitude: Float, frequency: Float) = set(amplitude, frequency, false)
     fun playDiscrete(amplitude: Float, frequency: Float)
     fun stop()
     fun isActive(): Boolean

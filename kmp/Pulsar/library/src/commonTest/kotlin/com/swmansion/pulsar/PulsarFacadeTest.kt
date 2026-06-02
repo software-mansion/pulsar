@@ -47,7 +47,9 @@ class PulsarFacadeTest {
         composer.playPattern(PatternData())
         composer.playAudioOnly()
         composer.stop()
+        realtime.start()
         realtime.set(0.6f, 0.4f)
+        configuredRealtime.start()
         configuredRealtime.set(0.3f, 0.9f)
         realtime.playDiscrete(1f, 0.5f)
         realtime.stop()
@@ -430,9 +432,15 @@ private class FakePatternHandle : PatternComposerHandle {
 private class FakeRealtimeHandle : RealtimeComposerHandle {
     var lastSet: Pair<Float, Float>? = null
     var lastDiscrete: Pair<Float, Float>? = null
+    var started = false
     var stopped = false
 
-    override fun set(amplitude: Float, frequency: Float) {
+    override fun start() {
+        started = true
+    }
+
+    override fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean) {
+        if (startIfNeeded && !started) start()
         lastSet = amplitude to frequency
     }
 
@@ -444,5 +452,5 @@ private class FakeRealtimeHandle : RealtimeComposerHandle {
         stopped = true
     }
 
-    override fun isActive(): Boolean = false
+    override fun isActive(): Boolean = started && !stopped
 }
