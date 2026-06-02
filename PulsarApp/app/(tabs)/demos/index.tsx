@@ -63,6 +63,7 @@ export default function DemosScreen() {
           <View style={styles.list}>
             {demos.map((demo) => (
               <Link
+                style={styles.linkOverride}
                 key={demo.slug}
                 href={`/demos/${demo.slug}` as any}
                 onPress={() => {
@@ -104,6 +105,9 @@ const styles = StyleSheet.create({
   list: {
     marginTop: 20,
     gap: 12,
+  },
+  linkOverride: {
+    overflow: undefined,
   },
   card: {
     backgroundColor: "white",
