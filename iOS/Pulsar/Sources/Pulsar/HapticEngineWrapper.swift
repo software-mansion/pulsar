@@ -217,17 +217,8 @@ private extension HapticEngineWrapper {
   }
 
   func seedAppActiveCache() {
-    if Thread.isMainThread {
-      isAppActiveCache = MainActor.assumeIsolated {
-        UIApplication.shared.applicationState == .active
-      }
-    } else {
-      isAppActiveCache = DispatchQueue.main.sync {
-        MainActor.assumeIsolated {
-          UIApplication.shared.applicationState == .active
-        }
-      }
-    }
+    let read = { MainActor.assumeIsolated { UIApplication.shared.applicationState == .active } }
+    isAppActiveCache = Thread.isMainThread ? read() : DispatchQueue.main.sync(execute: read)
   }
 
   func createEngineIfNeeded() throws {
@@ -247,8 +238,15 @@ private extension HapticEngineWrapper {
     // single thread; otherwise the BG handler can race with a main-thread
     // call into createPlayer / playPlayer / stopHaptics and crash on a
     // concurrent Dictionary mutation.
+    //
+    // Use `DispatchQueue.main.async` rather than `Task { @MainActor }` so the
+    // handler bodies stay strictly ordered FIFO with the rest of the main
+    // queue's work (e.g. RN bridge calls dispatched on `main` from
+    // `Haptics.mm`). Capturing `self` into the GCD closure is allowed under
+    // Swift 6 because the class is `@unchecked Sendable`; no actor hop is
+    // needed because the stored properties touched here are non-isolated.
     engine?.stoppedHandler = { [weak self] _ in
-      Task { @MainActor [weak self] in
+      DispatchQueue.main.async { [weak self] in
         guard let self else { return }
         self.initialized = false
         self.clearPlayerState(stopPlayers: false)
@@ -256,7 +254,7 @@ private extension HapticEngineWrapper {
     }
 
     engine?.resetHandler = { [weak self] in
-      Task { @MainActor [weak self] in
+      DispatchQueue.main.async { [weak self] in
         guard let self else { return }
         self.initialized = false
         self.clearPlayerState(stopPlayers: false)
