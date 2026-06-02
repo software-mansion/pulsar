@@ -19,7 +19,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
-      await impactFeedbackGenerator.impactOccurred()
+      await impactFeedbackGenerator?.impactOccurred()
     }
   }
 
@@ -47,7 +47,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
-      await impactFeedbackGenerator.impactOccurred()
+      await impactFeedbackGenerator?.impactOccurred()
     }
   }
 
@@ -75,7 +75,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
-      await impactFeedbackGenerator.impactOccurred()
+      await impactFeedbackGenerator?.impactOccurred()
     }
   }
 
@@ -103,7 +103,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
-      await impactFeedbackGenerator.impactOccurred()
+      await impactFeedbackGenerator?.impactOccurred()
     }
   }
 
@@ -131,7 +131,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [impactFeedbackGenerator = self.impactFeedbackGenerator] in
-      await impactFeedbackGenerator.impactOccurred()
+      await impactFeedbackGenerator?.impactOccurred()
     }
   }
 
@@ -160,7 +160,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
-      await feedbackGenerator.notificationOccurred(.success)
+      await feedbackGenerator?.notificationOccurred(.success)
     }
   }
 
@@ -189,7 +189,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
-      await feedbackGenerator.notificationOccurred(.warning)
+      await feedbackGenerator?.notificationOccurred(.warning)
     }
   }
 
@@ -220,7 +220,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
-      await feedbackGenerator.notificationOccurred(.error)
+      await feedbackGenerator?.notificationOccurred(.error)
     }
   }
 
@@ -248,7 +248,7 @@ import Foundation
     guard isEnabled else { return }
     super.play()
     Task { [feedbackGenerator = self.feedbackGenerator] in
-      await feedbackGenerator.selectionChanged()
+      await feedbackGenerator?.selectionChanged()
     }
   }
 
