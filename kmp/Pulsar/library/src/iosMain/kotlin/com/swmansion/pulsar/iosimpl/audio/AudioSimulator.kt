@@ -19,6 +19,7 @@ import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.AVAudioUnitEQ
 import platform.AVFAudio.AVAudioUnitEQFilterTypeLowPass
 import platform.AVFAudio.AVAudioUnitEQFilterParameters
+import platform.AVFAudio.setActive
 import platform.Foundation.NSProcessInfo
 import platform.posix.memcpy
 import kotlin.math.PI
@@ -80,7 +81,7 @@ internal class IOSAudioSimulator {
         }
 
         val pcmBuffer = buffer.toPcmBuffer(sampleRate) ?: return
-        playerNode.scheduleBuffer(pcmBuffer)
+        playerNode.scheduleBuffer(pcmBuffer, completionHandler = null)
         playerNode.play()
     }
 
@@ -143,9 +144,9 @@ internal class IOSAudioSimulator {
 
     private fun resolveAudioSessionCategory(): String {
         return if (isSimulatorDevice || shouldForceAudiblePlayback) {
-            AVAudioSessionCategoryPlayback
+            AVAudioSessionCategoryPlayback ?: ""
         } else {
-            AVAudioSessionCategoryAmbient
+            AVAudioSessionCategoryAmbient ?: ""
         }
     }
 
