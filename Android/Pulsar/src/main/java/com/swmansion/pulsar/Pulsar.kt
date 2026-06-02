@@ -81,6 +81,7 @@ open class Pulsar(protected var context: Context) {
     }
 
     fun stopHaptics() {
+        realtimeComposer?.stop()
         engine.stop()
     }
 

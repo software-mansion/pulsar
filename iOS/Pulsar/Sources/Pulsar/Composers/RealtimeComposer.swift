@@ -4,6 +4,13 @@ import CoreHaptics
 public class RealtimeComposer: NSObject {
   private var engine: HapticEngineWrapper!
   private var isPlaying = false
+  /// Sticky "stopped" latch. Once [stop] runs, [set] and [playDiscrete] are
+  /// no-ops until [reset] clears it. Load-bearing: a single stray UI-runtime
+  /// `set` arriving after the JS-side teardown would otherwise auto-start a
+  /// fresh 100-second `CHHapticAdvancedPatternPlayer` with no caller left to
+  /// stop it — the user-visible "haptic keeps playing after Back" bug.
+  private var isStopped = false
+  private let stateLock = NSLock()
 
   public init(engine: HapticEngineWrapper) {
     self.engine = engine
@@ -18,6 +25,14 @@ public class RealtimeComposer: NSObject {
     guard let player = engine?.getRealtimePlayer() else { return }
     isPlaying = true
     set(amplitude: amplitude, frequency: frequency)
+    // Re-check the latch immediately before kicking off the long-lived player:
+    // a concurrent stop() could have flipped isStopped between the guard above
+    // and here, and player.start would otherwise leave a 100s player running.
+    stateLock.lock()
+    let stopped = isStopped
+    if stopped { isPlaying = false }
+    stateLock.unlock()
+    if stopped { return }
     do {
       try player.start(atTime: 0)
     } catch {
@@ -26,6 +41,10 @@ public class RealtimeComposer: NSObject {
   }
 
   @objc public func set(amplitude: Float, frequency: Float) {
+    stateLock.lock()
+    let stopped = isStopped
+    stateLock.unlock()
+    if stopped { return }
     guard engine.isHapticsEnabled else { return }
     if (!isPlaying) {
       start(amplitude: amplitude, frequency: frequency)
@@ -44,20 +63,38 @@ public class RealtimeComposer: NSObject {
   }
 
   @objc public func stop() {
-    guard isPlaying else { return }
+    stateLock.lock()
+    isStopped = true
+    let wasPlaying = isPlaying
+    isPlaying = false
+    stateLock.unlock()
+    guard wasPlaying else { return }
+    // Use peekRealtimePlayer (side-effect-free) instead of getRealtimePlayer:
+    // the latter calls startEngine() + creates a fresh player if there is no
+    // cached one, which would re-arm the engine just to stop a player that
+    // never existed.
     do {
-      try engine?.getRealtimePlayer()?.stop(atTime: 0)
+      try engine?.peekRealtimePlayer()?.stop(atTime: 0)
     } catch {
       print("Error stopping realtime player: \(error.localizedDescription)")
     }
-    isPlaying = false
   }
 
   @objc public var isActive: Bool {
     return isPlaying
   }
 
+  @objc public func resetLatch() {
+    stateLock.lock()
+    isStopped = false
+    stateLock.unlock()
+  }
+
   @objc public func playDiscrete(amplitude: Float = 1.0, frequency: Float = 0.5) {
+    stateLock.lock()
+    let stopped = isStopped
+    stateLock.unlock()
+    if stopped { return }
     guard engine.isHapticsEnabled else { return }
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
 

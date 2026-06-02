@@ -7,6 +7,7 @@ export interface Composer {
   playDiscrete(amplitude: number, frequency: number): void;
   set(amplitude: number, frequency: number): void;
   stop(): void;
+  reset(): void;
 }
 
 export type PositionTransform = (x: number, y: number) => Position;

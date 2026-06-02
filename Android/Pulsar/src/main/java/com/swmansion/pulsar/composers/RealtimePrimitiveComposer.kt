@@ -25,6 +25,12 @@ open class RealtimePrimitiveComposer(
     }
 
     private val isPlaying = AtomicBoolean(false)
+    /**
+     * Sticky "stopped" latch — see RealtimeEnvelopeComposer for rationale.
+     * A stray [set] arriving after [stop] would otherwise re-launch the Handler
+     * loop with nothing left to cancel it.
+     */
+    private val isStopped = AtomicBoolean(false)
     @Volatile private var currentAmplitude = 0.0f
     @Volatile private var currentFrequency = 0.0f
     @Volatile private var currentIntervalMs: Long = 50L
@@ -43,6 +49,7 @@ open class RealtimePrimitiveComposer(
     }
 
     override fun set(amplitude: Float, frequency: Float) {
+        if (isStopped.get()) return
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
         currentIntervalMs = (minIntervalMs + (1 - frequency) * (maxIntervalMs - minIntervalMs)).toLong()
@@ -53,6 +60,7 @@ open class RealtimePrimitiveComposer(
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {
+        if (isStopped.get()) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }
@@ -61,16 +69,21 @@ open class RealtimePrimitiveComposer(
     }
 
     override fun stop() {
-        if (!isPlaying.compareAndSet(true, false)) return
-
+        // Latch unconditionally so a stop-while-idle still blocks future auto-starts.
+        isStopped.set(true)
+        isPlaying.set(false)
         handler.removeCallbacks(loopRunnable)
         engine.stop()
     }
 
     override fun isActive(): Boolean = isPlaying.get()
 
+    override fun reset() {
+        isStopped.set(false)
+    }
+
     private fun loop() {
-        if (!isPlaying.get() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (!isPlaying.get() || isStopped.get() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }
 

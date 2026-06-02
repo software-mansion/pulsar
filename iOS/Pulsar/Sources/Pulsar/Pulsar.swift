@@ -51,6 +51,10 @@ import UIKit
   }
   
   @objc public func stopHaptics() {
+    // Latch the realtime composer first so any subsequent stray `set` from a
+    // worklet that's mid-bridge can't auto-start a fresh 100s player after we
+    // tear down the engine. Mirrors Android Pulsar.kt.stopHaptics.
+    realtimeComposer.stop()
     engine.stopHaptics()
   }
   

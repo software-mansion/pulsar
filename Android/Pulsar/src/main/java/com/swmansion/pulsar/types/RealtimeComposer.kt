@@ -34,4 +34,11 @@ interface RealtimeComposable {
     fun playDiscrete(amplitude: Float, frequency: Float)
     fun stop()
     fun isActive(): Boolean
+
+    /**
+     * Clear the sticky "stopped" latch installed by [stop] so the composer is willing
+     * to auto-start again on the next [set] / [playDiscrete]. Call this when a screen
+     * (re)gains focus before driving haptics, otherwise [set] will silently no-op.
+     */
+    fun reset()
 }

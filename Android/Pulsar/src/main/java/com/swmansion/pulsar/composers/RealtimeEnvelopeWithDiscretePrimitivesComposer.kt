@@ -10,6 +10,7 @@ class RealtimeEnvelopeWithDiscretePrimitivesComposer(
 ) : RealtimeEnvelopeComposer(engine) {
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {
+        if (isComposerStopped()) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }

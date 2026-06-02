@@ -76,6 +76,14 @@ public extension HapticEngineWrapper {
     return player
   }
 
+  /// Side-effect-free accessor for callers that only want to stop a player they
+  /// already started (e.g. `RealtimeComposer.stop`). Using `getRealtimePlayer`
+  /// for this would re-bootstrap the engine and create a fresh 100s player just
+  /// to immediately stop it.
+  func peekRealtimePlayer() -> CHHapticAdvancedPatternPlayer? {
+    return cachedRealtimePlayer
+  }
+
   func playPlayer(id: Int, pattern: CHHapticPattern? = nil) {
     bootstrapAppLifecycleTrackingIfNeeded()
     guard canPlayHaptics() else { return }

@@ -210,6 +210,10 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     return realtimeComposer.isActive()
   }
 
+  override fun RealtimeComposer_reset() {
+    realtimeComposer.reset()
+  }
+
   companion object {
     const val NAME = "RNPulsar"
   }

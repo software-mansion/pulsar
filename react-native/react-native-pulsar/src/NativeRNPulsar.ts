@@ -40,6 +40,13 @@ export interface Spec extends TurboModule {
   RealtimeComposer_stop(): void;
   RealtimeComposer_isActive(): boolean;
   RealtimeComposer_playDiscrete(amplitude: number, frequency: number): void;
+  /**
+   * Clears the realtime composer's sticky stopped-latch installed by
+   * `RealtimeComposer_stop` / `Pulsar_stopHaptics`. Call this when a screen
+   * (re)gains focus and is about to drive haptics — otherwise subsequent
+   * `set`/`playDiscrete` will silently no-op.
+   */
+  RealtimeComposer_reset(): void;
 
   PatternComposer_parsePattern(data: Pattern): number;
   PatternComposer_play(patternId: number): void;

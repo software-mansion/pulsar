@@ -217,4 +217,10 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
   return [realtimeComposer_ isActive] ? @1 : @0;
 }
 
+- (void)RealtimeComposer_reset {
+  if (realtimeComposer_) {
+    [realtimeComposer_ resetLatch];
+  }
+}
+
 @end

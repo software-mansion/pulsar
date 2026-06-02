@@ -33,4 +33,8 @@ class RealtimeComposer(
     override fun isActive(): Boolean {
         return delegate.isActive()
     }
+
+    override fun reset() {
+        delegate.reset()
+    }
 }
