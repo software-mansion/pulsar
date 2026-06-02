@@ -1,23 +1,30 @@
 import { useCallback, useEffect } from 'react';
 import Pulsar from './NativeRNPulsar';
 
-// workaround for RN prototype caching issue 
+// workaround for RN prototype caching issue
+Pulsar.RealtimeComposer_start;
 Pulsar.RealtimeComposer_set;
 Pulsar.RealtimeComposer_playDiscrete;
 Pulsar.RealtimeComposer_stop;
 Pulsar.RealtimeComposer_isActive;
 
 export type RealtimeComposer = {
-  set: (amplitude: number, frequency: number) => void;
+  start: () => void;
+  set: (amplitude: number, frequency: number, startIfNeeded?: boolean) => void;
   playDiscrete: (amplitude: number, frequency: number) => void;
   stop: () => void;
   isActive: () => boolean;
 };
 
 export default function useRealtimeComposer(): RealtimeComposer {
-  const set = useCallback((amplitude: number, frequency: number) => {
+  const start = useCallback(() => {
     'worklet';
-    Pulsar.RealtimeComposer_set(amplitude, frequency);
+    Pulsar.RealtimeComposer_start();
+  }, []);
+
+  const set = useCallback((amplitude: number, frequency: number, startIfNeeded: boolean = false) => {
+    'worklet';
+    Pulsar.RealtimeComposer_set(amplitude, frequency, startIfNeeded);
   }, []);
 
   const playDiscrete = useCallback((amplitude: number, frequency: number) => {
@@ -37,5 +44,5 @@ export default function useRealtimeComposer(): RealtimeComposer {
 
   useEffect(() => stop, [stop]);
 
-  return { set, playDiscrete, stop, isActive };
+  return { start, set, playDiscrete, stop, isActive };
 }

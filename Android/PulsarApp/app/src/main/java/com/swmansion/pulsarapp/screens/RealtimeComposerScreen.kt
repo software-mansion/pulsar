@@ -141,6 +141,7 @@ fun RealtimeComposerScreen() {
                                 isActive = true
                                 frequency = (offset.x / size.width).coerceIn(0f, 1f)
                                 amplitude = (1f - (offset.y / size.height)).coerceIn(0f, 1f)
+                                realtimeComposer.start()
                                 realtimeComposer.set(amplitude, frequency)
                             },
                             onDrag = { change, _ ->

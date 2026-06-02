@@ -168,11 +168,7 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(null)
             }
 
-            "RealtimeComposer_set" -> {
-                val amplitude = call.argument<Double>("amplitude")?.toFloat()
-                    ?: return result.error("INVALID_ARGS", "amplitude required", null)
-                val frequency = call.argument<Double>("frequency")?.toFloat()
-                    ?: return result.error("INVALID_ARGS", "frequency required", null)
+            "RealtimeComposer_start" -> {
                 val strategyIndex = call.argument<Int>("strategy")
                 val strategy = if (strategyIndex != null) {
                     RealtimeComposerStrategy.entries.getOrNull(strategyIndex)
@@ -180,7 +176,24 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 } else {
                     null
                 }
-                p.getRealtimeComposer(strategy).set(amplitude, frequency)
+                p.getRealtimeComposer(strategy).start()
+                result.success(null)
+            }
+
+            "RealtimeComposer_set" -> {
+                val amplitude = call.argument<Double>("amplitude")?.toFloat()
+                    ?: return result.error("INVALID_ARGS", "amplitude required", null)
+                val frequency = call.argument<Double>("frequency")?.toFloat()
+                    ?: return result.error("INVALID_ARGS", "frequency required", null)
+                val startIfNeeded = call.argument<Boolean>("startIfNeeded") ?: false
+                val strategyIndex = call.argument<Int>("strategy")
+                val strategy = if (strategyIndex != null) {
+                    RealtimeComposerStrategy.entries.getOrNull(strategyIndex)
+                        ?: return result.error("INVALID_ARGS", "invalid strategy", null)
+                } else {
+                    null
+                }
+                p.getRealtimeComposer(strategy).set(amplitude, frequency, startIfNeeded)
                 result.success(null)
             }
 

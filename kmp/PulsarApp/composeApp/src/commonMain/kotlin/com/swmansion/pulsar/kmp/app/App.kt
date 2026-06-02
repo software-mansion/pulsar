@@ -118,7 +118,11 @@ fun App() {
                         value = amplitude,
                         onValueChange = {
                             amplitude = it
-                            pulsar?.getRealtimeComposer()?.set(amplitude = amplitude, frequency = frequency)
+                            pulsar?.getRealtimeComposer()?.set(
+                                amplitude = amplitude,
+                                frequency = frequency,
+                                startIfNeeded = true,
+                            )
                             status = "Updated realtime haptics."
                         },
                         enabled = pulsar != null,
@@ -128,7 +132,11 @@ fun App() {
                         value = frequency,
                         onValueChange = {
                             frequency = it
-                            pulsar?.getRealtimeComposer()?.set(amplitude = amplitude, frequency = frequency)
+                            pulsar?.getRealtimeComposer()?.set(
+                                amplitude = amplitude,
+                                frequency = frequency,
+                                startIfNeeded = true,
+                            )
                             status = "Updated realtime haptics."
                         },
                         enabled = pulsar != null,

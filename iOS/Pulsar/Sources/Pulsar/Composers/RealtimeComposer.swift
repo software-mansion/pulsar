@@ -13,22 +13,28 @@ public class RealtimeComposer: NSObject {
     stop()
   }
 
-  private func start(amplitude: Float = 0.0, frequency: Float = 0.0) {
+  @objc public func start() {
+    guard engine.isHapticsEnabled else { return }
     guard !isPlaying else { return }
     guard let player = engine?.getRealtimePlayer() else { return }
     isPlaying = true
-    set(amplitude: amplitude, frequency: frequency)
     do {
       try player.start(atTime: 0)
     } catch {
+      isPlaying = false
       print("Error starting realtime player: \(error.localizedDescription)")
     }
   }
 
   @objc public func set(amplitude: Float, frequency: Float) {
+    set(amplitude: amplitude, frequency: frequency, startIfNeeded: false)
+  }
+
+  @objc public func set(amplitude: Float, frequency: Float, startIfNeeded: Bool) {
     guard engine.isHapticsEnabled else { return }
-    if (!isPlaying) {
-      start(amplitude: amplitude, frequency: frequency)
+    if !isPlaying {
+      guard startIfNeeded else { return }
+      start()
     }
     guard isPlaying, let player = engine?.getRealtimePlayer() else { return }
 

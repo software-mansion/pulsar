@@ -35,6 +35,7 @@ export const useComposedGesture = (
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
+      composer.start();
       recordEvent('pan', 0, 0);
     })
     .onUpdate((e) => {

@@ -187,13 +187,23 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
 
 // RealtimeComposer -----------------------------------------------------------------
 
-- (void)RealtimeComposer_set:(double)amplitude frequency:(double)frequency {
+- (void)RealtimeComposer_start {
+  if (!RNPulsarIsAppActive()) {
+    return;
+  }
+
+  RNPulsarPerformSafely(@"RealtimeComposer_start", ^{
+    [realtimeComposer_ start];
+  });
+}
+
+- (void)RealtimeComposer_set:(double)amplitude frequency:(double)frequency startIfNeeded:(BOOL)startIfNeeded {
   if (!RNPulsarIsAppActive()) {
     return;
   }
 
   RNPulsarPerformSafely(@"RealtimeComposer_set", ^{
-    [realtimeComposer_ setWithAmplitude:amplitude frequency:frequency];
+    [realtimeComposer_ setWithAmplitude:amplitude frequency:frequency startIfNeeded:startIfNeeded];
   });
 }
 

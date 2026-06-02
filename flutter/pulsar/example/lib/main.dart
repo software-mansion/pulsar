@@ -159,7 +159,9 @@ class _RealtimeSliderState extends State<_RealtimeSlider> {
   Future<void> _onChanged(double value) async {
     setState(() => _amplitude = value);
     try {
-      await widget.pulsar.getRealtimeComposer().set(_amplitude, 0.5);
+      await widget.pulsar
+          .getRealtimeComposer()
+          .set(_amplitude, 0.5, startIfNeeded: true);
       if (!mounted) return;
       setState(() => _active = true);
     } on PlatformException {

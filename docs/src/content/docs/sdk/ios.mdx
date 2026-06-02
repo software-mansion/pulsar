@@ -558,12 +558,20 @@ let realtime = pulsar.getRealtimeComposer()
 
 ### Methods
 
-#### `set(amplitude:frequency:)`
+#### `start()`
 
-Updates the ongoing haptic with new amplitude and frequency values. Automatically starts playback if it is not already active. Values are clamped to the 0-1 range.
+Starts the realtime composer so that subsequent `set(amplitude:frequency:)` calls play. `set(...)` requires `start()` first — calls made before `start()` or after `stop()` are silent no-ops. After `stop()`, call `start()` again before the next `set(...)`.
 
 ```swift
-func set(amplitude: Float, frequency: Float)
+func start()
+```
+
+#### `set(amplitude:frequency:startIfNeeded:)`
+
+Updates the ongoing haptic with new amplitude and frequency values. Values are clamped to the 0-1 range. Has no effect until `start()` has been called; becomes a no-op again after `stop()`. Pass `startIfNeeded: true` to auto-start the composer when it is not already active — defaults to `false`, preserving the no-op-when-inactive behavior.
+
+```swift
+func set(amplitude: Float, frequency: Float, startIfNeeded: Bool = false)
 ```
 
 #### `playDiscrete(amplitude:frequency:)`
@@ -597,18 +605,22 @@ var isActive: Bool { get }
 ```swift
 let realtime = pulsar.getRealtimeComposer()
 
-// Start a continuous haptic
-realtime.set(amplitude: 0.5, frequency: 0.8)
+// Begin a continuous haptic — required before set(...) will play
+realtime.start()
 
-// Update parameters over time
+// Update parameters over time as the gesture progresses
+realtime.set(amplitude: 0.5, frequency: 0.8)
 realtime.set(amplitude: 1.0, frequency: 0.3)
 
 // Play a one-off discrete event
 realtime.playDiscrete(amplitude: 0.7, frequency: 0.5)
 
-// Stop
+// End the continuous haptic. After this the composer is inactive
+// again — call start() before the next set(...).
 realtime.stop()
 ```
+
+> **Note:** `set(amplitude:frequency:)` requires `start()` first. Calls before `start()` or after `stop()` are silent no-ops. Pair `start()` with the beginning of a gesture (e.g. a drag's begin phase) and `stop()` with its end, or pass `startIfNeeded: true` to `set(...)` to opt into auto-start when no clear begin hook is available.
 
 ---
 

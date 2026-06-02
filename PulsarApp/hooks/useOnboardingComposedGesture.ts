@@ -30,6 +30,9 @@ export const useOnboardingComposedGesture = (
     });
 
   const onboardingPanGesture = Gesture.Pan()
+    .onStart(() => {
+      composer.start();
+    })
     .onUpdate((e) => {
       const normalized = normalizePosition(e.x, e.y);
       composer.set(normalized.y, normalized.x);

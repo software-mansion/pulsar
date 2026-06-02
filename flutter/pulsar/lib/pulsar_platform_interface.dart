@@ -79,9 +79,13 @@ abstract class PulsarPlatform extends PlatformInterface {
 
   // ── RealtimeComposer ────────────────────────────────────────────────────────
 
+  Future<void> realtimeStart({RealtimeComposerStrategy? strategy}) =>
+      throw UnimplementedError('realtimeStart() not implemented');
+
   Future<void> realtimeSet(
     double amplitude,
     double frequency, {
+    bool startIfNeeded = false,
     RealtimeComposerStrategy? strategy,
   }) => throw UnimplementedError('realtimeSet() not implemented');
 

@@ -194,8 +194,12 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
   // RealtimeComposer -----------------------------------------------------------------
 
-  override fun RealtimeComposer_set(amplitude: Double, frequency: Double) {
-    realtimeComposer.set(amplitude.toFloat(), frequency.toFloat())
+  override fun RealtimeComposer_start() {
+    realtimeComposer.start()
+  }
+
+  override fun RealtimeComposer_set(amplitude: Double, frequency: Double, startIfNeeded: Boolean) {
+    realtimeComposer.set(amplitude.toFloat(), frequency.toFloat(), startIfNeeded)
   }
 
   override fun RealtimeComposer_playDiscrete(amplitude: Double, frequency: Double) {

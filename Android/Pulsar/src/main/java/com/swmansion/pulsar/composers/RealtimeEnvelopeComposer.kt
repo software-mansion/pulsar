@@ -29,17 +29,19 @@ open class RealtimeEnvelopeComposer(
     private var schedulerJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    private fun start() {
-        isPlaying.set(true)
+    override fun start() {
+        if (!isPlaying.compareAndSet(false, true)) return
         scheduleSequentialHaptics()
     }
 
-    override fun set(amplitude: Float, frequency: Float) {
+    override fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean) {
+        if (!isPlaying.get()) {
+            if (!startIfNeeded) return
+            start()
+            if (!isPlaying.get()) return
+        }
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
-        if (!isPlaying.get()) {
-            start()
-        }
     }
 
     open override fun playDiscrete(amplitude: Float, frequency: Float) {
