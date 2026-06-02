@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.reactnative
 
 import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule

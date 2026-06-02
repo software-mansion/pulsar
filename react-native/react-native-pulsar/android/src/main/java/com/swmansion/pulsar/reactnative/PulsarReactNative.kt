@@ -1,7 +1,8 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.reactnative
 
 import android.content.Context
 import com.facebook.react.bridge.ReactApplicationContext
+import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.presets.PresetsWrapper
 
 class PulsarReactNative(context: Context) : Pulsar(context) {
