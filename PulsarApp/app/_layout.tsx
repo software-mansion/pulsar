@@ -90,6 +90,7 @@ function RootLayout() {
                     <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags', headerShown: false }} />
                     <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
                     <Stack.Screen name="playgroundSettingsModal" options={{ presentation: 'modal', title: 'Playground settings', headerShown: false }} />
+                    <Stack.Screen name="figma" options={{ title: 'Figma' }} />
                   </Stack>
                   <StatusBar style="auto" />
                 </ThemeProvider>

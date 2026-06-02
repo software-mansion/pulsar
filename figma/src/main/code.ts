@@ -14,15 +14,13 @@ import type {
 const BINDING_KEY = 'pulsar:binding';
 const SETTINGS_KEY = 'pulsar:settings';
 const TOKEN_KEY = 'pulsar:hapticsToken';
+const PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
   compactLayout: false,
-  // Base URL of the standalone live-preview web app (figma/preview). Override in
-  // Settings to point at wherever you host/serve it.
-  previewBaseUrl: 'https://docs.swmansion.com/figma-preview/',
   fileKeyOverride: ''
 };
 
@@ -39,6 +37,10 @@ async function loadSettings(): Promise<Settings> {
 
 async function loadToken(): Promise<string | null> {
   return (await figma.clientStorage.getAsync(TOKEN_KEY)) ?? null;
+}
+
+async function loadPreviewToken(): Promise<string | null> {
+  return (await figma.clientStorage.getAsync(PREVIEW_TOKEN_KEY)) ?? null;
 }
 
 async function loadFavourites(): Promise<string[]> {
@@ -128,17 +130,61 @@ async function focusNode(nodeId: string) {
   figma.viewport.scrollAndZoomIntoView([scene]);
 }
 
-// The frame the preview should open on: the top-level frame ancestor of the
-// current selection, else the first top-level frame on the page.
+// Node types Figma can embed as a top-level prototype frame.
+const FRAME_LIKE_TYPES: ReadonlyArray<NodeType> = [
+  'FRAME',
+  'COMPONENT',
+  'COMPONENT_SET',
+  'INSTANCE'
+];
+
+function isFrameLike(node: BaseNode | null): node is SceneNode {
+  return !!node && (FRAME_LIKE_TYPES as ReadonlyArray<string>).includes(node.type);
+}
+
+// Walk up from `node` to the nearest frame-like ancestor. Sections, groups,
+// and other wrappers are skipped so a frame inside a SECTION still resolves
+// to the frame itself rather than the section.
+function nearestFrameLikeAncestor(node: BaseNode): SceneNode | null {
+  let n: BaseNode | null = node;
+  while (n && n.type !== 'PAGE') {
+    if (isFrameLike(n)) return n;
+    n = n.parent;
+  }
+  return null;
+}
+
+// Recursively look for a frame-like node, descending into SECTIONs (which can
+// nest). Anything else is treated as a leaf for our purposes.
+function firstFrameLikeIn(node: SceneNode): SceneNode | null {
+  const type: NodeType = node.type;
+  if ((FRAME_LIKE_TYPES as ReadonlyArray<string>).includes(type)) return node;
+  if (type === 'SECTION') {
+    for (const child of (node as SectionNode).children) {
+      const found = firstFrameLikeIn(child);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// The frame the preview should open on. Priority:
+//   1. Nearest frame-like ancestor of the current selection — so when there
+//      are several frames in the file, the one the user is working in wins.
+//   2. First frame-like node on the page, descending into SECTIONs.
+// Figma's embed API only takes one node id, so we must pick one here; the
+// editor can't defer this to itself.
 function pickPresentNode(): SceneNode | null {
   const sel = figma.currentPage.selection[0];
   if (sel) {
-    let n: BaseNode | null = sel;
-    while (n && n.parent && n.parent.type !== 'PAGE') n = n.parent;
-    if (n && n.type === 'FRAME') return n as SceneNode;
+    const fromSelection = nearestFrameLikeAncestor(sel);
+    if (fromSelection) return fromSelection;
   }
-  const topFrame = figma.currentPage.children.find((c) => c.type === 'FRAME');
-  return (topFrame as SceneNode) ?? null;
+  for (const child of figma.currentPage.children) {
+    const found = firstFrameLikeIn(child as SceneNode);
+    if (found) return found;
+  }
+  return null;
 }
 
 function describeSelection(): SelectionInfo | null {
@@ -196,13 +242,14 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken, favourites, customPresets] = await Promise.all([
+      const [settings, hapticsToken, previewToken, favourites, customPresets] = await Promise.all([
         loadSettings(),
         loadToken(),
+        loadPreviewToken(),
         loadFavourites(),
         loadCustomPresets()
       ]);
-      postToUi({ type: 'init', settings, hapticsToken, favourites, customPresets });
+      postToUi({ type: 'init', settings, hapticsToken, previewToken, favourites, customPresets });
       pushSelection();
       break;
     }
@@ -220,6 +267,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'persist-haptics-token':
       await figma.clientStorage.setAsync(TOKEN_KEY, msg.token);
+      break;
+    case 'persist-preview-token':
+      await figma.clientStorage.setAsync(PREVIEW_TOKEN_KEY, msg.token);
       break;
     case 'persist-favourites':
       await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);

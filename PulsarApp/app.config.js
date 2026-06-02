@@ -39,6 +39,10 @@ export default {
             scheme: "pulsarapp",
             host: "connect",
           },
+          {
+            scheme: "pulsarapp",
+            host: "figma",
+          },
         ],
         category: ["BROWSABLE", "DEFAULT"],
       },

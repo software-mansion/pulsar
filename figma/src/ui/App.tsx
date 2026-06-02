@@ -18,9 +18,15 @@ type Tab = 'presets' | 'bound' | 'phone' | 'preview';
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
   compactLayout: false,
-  previewBaseUrl: 'https://docs.swmansion.com/figma-preview/',
   fileKeyOverride: ''
 };
+
+// Live-preview web app URL. Pinned at build time: localhost while developing
+// the plugin (vite dev → import.meta.env.DEV === true), production host
+// otherwise. No longer user-configurable.
+const PREVIEW_BASE_URL = import.meta.env.DEV
+  ? 'http://localhost:5173/'
+  : 'https://docs.swmansion.com/figma-preview/';
 
 // Accept either a raw file key or a full Figma URL and return the key.
 function extractFileKey(input: string): string {
@@ -28,9 +34,37 @@ function extractFileKey(input: string): string {
   return (m ? m[1] : input).trim();
 }
 
-// base64-encode a unicode-safe JSON string for stuffing into the preview URL hash.
-function encodePayload(payload: unknown): string {
-  return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+// Pulsar backend that stores the preview payload by token. Kept in sync with
+// PhonePanel.API_SERVER_URL.
+const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
+
+// POST the preview payload to the server and return a short token to embed in
+// the share URL instead of the (potentially huge) base64 blob.
+async function createFigmaProjectToken(payload: unknown): Promise<string> {
+  const res = await fetch(`${API_SERVER_URL}/figma-project`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ config: payload })
+  });
+  if (!res.ok) throw new Error(`Server responded ${res.status}`);
+  const data = (await res.json()) as { success: boolean; token?: string; error?: string };
+  if (!data.success || !data.token) throw new Error(data.error || 'No token returned');
+  return data.token;
+}
+
+// PUT the payload at an existing token. Returns false on 404 (token gone from
+// the server — caller should re-create), throws on any other error.
+async function updateFigmaProjectToken(token: string, payload: unknown): Promise<boolean> {
+  const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ config: payload })
+  });
+  if (res.status === 404) return false;
+  if (!res.ok) throw new Error(`Server responded ${res.status}`);
+  const data = (await res.json()) as { success: boolean; error?: string };
+  if (!data.success) throw new Error(data.error || 'Update failed');
+  return true;
 }
 
 // Clipboard inside the Figma plugin iframe: navigator.clipboard is often blocked,
@@ -55,6 +89,15 @@ function copyToClipboard(text: string): boolean {
 export default function App() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [hapticsToken, setHapticsToken] = useState<string | null>(null);
+  // Server-side project token. Persisted via the main thread so a single
+  // project row is reused across share clicks instead of creating a new row
+  // every time. Kept in a ref so the preview-data handler always sees the
+  // latest value without re-binding the bridge subscription.
+  const [previewToken, setPreviewToken] = useState<string | null>(null);
+  const previewTokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    previewTokenRef.current = previewToken;
+  }, [previewToken]);
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
   const [tab, setTab] = useState<Tab>('presets');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -81,6 +124,7 @@ export default function App() {
       if (m.type === 'init') {
         setSettings(m.settings);
         setHapticsToken(m.hapticsToken);
+        setPreviewToken(m.previewToken ?? null);
         setFavourites(new Set(m.favourites));
         setCustomPresets(m.customPresets ?? []);
       }
@@ -164,6 +208,9 @@ export default function App() {
   useEffect(() => {
     const off = onMessage((m) => {
       if (m.type !== 'preview-data') return;
+      // Wrap in an async IIFE so we can await the token round-trip without
+      // refactoring the bridge subscription itself.
+      void (async () => {
       const fileKey = m.fileKey ?? (settings.fileKeyOverride ? extractFileKey(settings.fileKeyOverride) : '');
       if (!fileKey) {
         send({
@@ -208,8 +255,41 @@ export default function App() {
         owner,
         bindings
       };
-      const base = (settings.previewBaseUrl || DEFAULT_SETTINGS.previewBaseUrl).replace(/#.*$/, '');
-      const url = `${base}#data=${encodePayload(payload)}`;
+      // Strip any existing query/hash so we don't duplicate or stack tokens
+      // when the user has manually visited the preview before.
+      const base = PREVIEW_BASE_URL.replace(/[?#].*$/, '');
+      let token: string;
+      try {
+        const existing = previewTokenRef.current;
+        if (existing) {
+          // Reuse the persisted token: update the row in place. If the server
+          // no longer knows about it (404 → returns false), fall through to a
+          // fresh create.
+          const updated = await updateFigmaProjectToken(existing, payload);
+          if (updated) {
+            token = existing;
+          } else {
+            token = await createFigmaProjectToken(payload);
+            send({ type: 'persist-preview-token', token });
+            setPreviewToken(token);
+          }
+        } else {
+          token = await createFigmaProjectToken(payload);
+          send({ type: 'persist-preview-token', token });
+          setPreviewToken(token);
+        }
+      } catch (err) {
+        send({
+          type: 'notify',
+          message: `Could not upload preview data: ${(err as Error).message}`
+        });
+        return;
+      }
+      const url = `${base}?token=${encodeURIComponent(token)}`;
+      // The QR is scanned by a phone with PulsarApp installed. Encode the
+      // app's deep-link scheme instead of the web URL so it routes straight
+      // into the in-app Figma WebView screen.
+      const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(token)}`;
       if (previewActionRef.current === 'copy') {
         const ok = copyToClipboard(url);
         send({
@@ -217,22 +297,27 @@ export default function App() {
           message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
         });
       } else if (previewActionRef.current === 'qr') {
-        QRCode.toDataURL(url, { margin: 1, width: 240, errorCorrectionLevel: 'L' })
-          .then((dataUrl) => setShareQr(dataUrl))
-          .catch(() => {
-            setShareQr(null);
-            send({
-              type: 'notify',
-              message:
-                'Link too long to encode as a QR code. Use "Copy share link" instead, or reduce the number of bound nodes.'
-            });
+        try {
+          const dataUrl = await QRCode.toDataURL(appDeepLink, {
+            margin: 1,
+            width: 240,
+            errorCorrectionLevel: 'L'
           });
+          setShareQr(dataUrl);
+        } catch {
+          setShareQr(null);
+          send({
+            type: 'notify',
+            message: 'Could not generate a QR code for the share link.'
+          });
+        }
       } else {
         send({ type: 'open-external', url });
       }
+      })();
     });
     return off;
-  }, [settings.previewBaseUrl, settings.fileKeyOverride, presetById]);
+  }, [settings.fileKeyOverride, presetById]);
 
   // Whether the pending preview-data response should open / copy / QR-encode the link.
   const previewActionRef = useRef<'open' | 'copy' | 'qr'>('open');

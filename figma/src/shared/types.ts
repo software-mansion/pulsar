@@ -37,7 +37,6 @@ export interface BindingMeta {
 export type Settings = {
   soundInEdit: boolean;
   compactLayout: boolean;
-  previewBaseUrl: string; // base url of the standalone live-preview web app
   // Optional manual file-key override, used when figma.fileKey is unavailable
   // (e.g. the plugin is not private / enablePrivatePluginApi is off).
   fileKeyOverride: string;
@@ -83,6 +82,7 @@ export type UiToMain =
   | { type: 'request-selection' }
   | { type: 'persist-settings'; settings: Settings }
   | { type: 'persist-haptics-token'; token: string | null }
+  | { type: 'persist-preview-token'; token: string | null }
   | { type: 'persist-favourites'; favourites: string[] }
   | { type: 'persist-custom-presets'; presets: CatalogEntry[] }
   | { type: 'request-preview-data' }
@@ -97,6 +97,7 @@ export type MainToUi =
       type: 'init';
       settings: Settings;
       hapticsToken: string | null;
+      previewToken: string | null;
       favourites: string[];
       customPresets: CatalogEntry[];
     }

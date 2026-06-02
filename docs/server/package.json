@@ -16,7 +16,9 @@
     "dev": "nodemon"
   },
   "dependencies": {
+    "@types/pg": "^8.20.0",
     "express": "^5.1.0",
+    "pg": "^8.21.0",
     "ws": "^8.18.2"
   },
   "devDependencies": {

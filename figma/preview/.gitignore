@@ -1,0 +1,10 @@
+# Local env files contain machine/deploy-specific values and must not land on
+# public GitHub. Vite loads them automatically; only .env.example is committed.
+.env
+.env.local
+.env.*.local
+
+node_modules
+dist
+*.log
+.DS_Store

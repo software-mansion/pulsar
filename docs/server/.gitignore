@@ -4,9 +4,10 @@ dist/
 # dependencies
 node_modules/
 
-# environment variables
+# environment variables (real values — never commit)
 .env
-.env.production
+.env.*
+!.env.example
 
 # macOS-specific files
 .DS_Store

@@ -29,15 +29,6 @@ export default function LivePreviewPanel({
       </p>
 
       <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginTop: 4 }}>
-        Preview app URL
-      </div>
-      <input
-        type="url"
-        value={settings.previewBaseUrl}
-        onChange={(e) => set('previewBaseUrl', e.target.value)}
-      />
-
-      <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginTop: 4 }}>
         File key override (optional) — paste this file’s share URL or key. Only
         needed if the file key can’t be read automatically.
       </div>

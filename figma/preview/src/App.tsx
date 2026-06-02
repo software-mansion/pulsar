@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import type { PresetData } from './types';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { PresetData, PreviewPayload } from './types';
 import { readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
@@ -15,7 +15,22 @@ const ACTIVE_MS = 900;
 const TAP_DEBOUNCE_MS = 250;
 
 export default function App() {
-  const payload = useMemo(readPayload, []);
+  // Payload now arrives asynchronously (token → server fetch). Hold null while
+  // the request is in flight; the empty-state UI handles both "no payload yet"
+  // and "no payload at all".
+  const [payload, setPayload] = useState<PreviewPayload | null>(null);
+  const [payloadLoaded, setPayloadLoaded] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    readPayload().then((p) => {
+      if (cancelled) return;
+      setPayload(p);
+      setPayloadLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Derived lookup maps (stable across renders).
   const { bindings, ownerMap, presentedId } = useMemo(() => {
@@ -33,10 +48,30 @@ export default function App() {
     [payload]
   );
 
-  const [status, setStatus] = useState(
-    payload?.fileKey ? 'Loading prototype…' : 'Waiting for a design — open one from the Pulsar plugin.'
-  );
+  const [status, setStatus] = useState('Waiting for a design — open one from the Pulsar plugin.');
+  // Once we know the payload state, refresh the status accordingly. Done in an
+  // effect so the user briefly sees "loading" while the token fetch is in
+  // flight rather than a flash of the empty state.
+  useEffect(() => {
+    if (!payloadLoaded) {
+      if (new URLSearchParams(location.search).has('token')) {
+        setStatus('Loading preview…');
+      }
+      return;
+    }
+    setStatus(
+      payload?.fileKey
+        ? 'Loading prototype…'
+        : 'Waiting for a design — open one from the Pulsar plugin.'
+    );
+  }, [payloadLoaded, payload]);
   const [currentNodeId, setCurrentNodeId] = useState(presentedId);
+  // Sync currentNodeId when the payload arrives later (async token fetch). The
+  // useState initializer above only runs once with whatever presentedId was on
+  // first render, which is the empty string before the fetch resolves.
+  useEffect(() => {
+    setCurrentNodeId(presentedId);
+  }, [presentedId]);
   const [highlightsOn, setHighlightsOn] = useState(true);
   const [activeId, setActiveId] = useState('');
   const [detailsId, setDetailsId] = useState<string>('');
@@ -51,14 +86,37 @@ export default function App() {
     activeTimer.current = window.setTimeout(() => setActiveId(''), ACTIVE_MS);
   }, []);
 
+  // When the preview is loaded inside the PulsarApp WebView the URL carries
+  // `?host=app`. In that mode we skip the in-page audio fallback and instead
+  // postMessage the preset name to the native host, which plays the real
+  // device haptic via react-native-pulsar.
+  const isAppHost = useMemo(
+    () =>
+      new URLSearchParams(location.search).get('host') === 'app' &&
+      typeof (window as any).ReactNativeWebView !== 'undefined',
+    []
+  );
+
   const play = useCallback(
     (id: string) => {
       const data = bindings.get(id);
       if (!data) return;
+      if (isAppHost) {
+        try {
+          (window as any).ReactNativeWebView.postMessage(
+            JSON.stringify({ type: 'play-preset', presetName: data.name })
+          );
+        } catch {
+          // If the bridge isn't there for some reason, fall through to audio.
+          stopAll();
+          playPreset(data).catch(() => {});
+        }
+        return;
+      }
       stopAll();
       playPreset(data).catch(() => {});
     },
-    [bindings]
+    [bindings, isAppHost]
   );
 
   const playFromList = useCallback(
