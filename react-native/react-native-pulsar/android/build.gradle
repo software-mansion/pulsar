@@ -45,17 +45,13 @@ if (useLocalPulsarAndroid) {
 }
 
 android {
-  namespace "com.swmansion.pulsar"
+  namespace "com.swmansion.pulsar.reactnative"
 
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
-  }
-
-  buildFeatures {
-    buildConfig true
   }
 
   buildTypes {
@@ -80,7 +76,14 @@ android {
         "generated/jni"
       ]
       if (useLocalPulsarAndroid) {
-        java.srcDirs += [localPulsarAndroidSourceDir.absolutePath]
+        // Local Pulsar Android sources + a shim BuildConfig so their
+        // `import com.swmansion.pulsar.BuildConfig` resolves (this
+        // module's namespace is com.swmansion.pulsar.reactnative, so
+        // AGP's generated BuildConfig lives at a different package).
+        java.srcDirs += [
+          localPulsarAndroidSourceDir.absolutePath,
+          "src/localPulsar/java"
+        ]
       }
     }
   }
