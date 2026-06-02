@@ -228,17 +228,30 @@ private extension HapticEngineWrapper {
   }
 
   func setupEngineHandlers() {
+    // CoreHaptics invokes these handlers from an internal background queue.
+    // All other state in this object (engine, initialized, playerRegistry,
+    // playerCreationOrder, cachedRealtimePlayer) is read & written from the
+    // main thread — public methods run on the RN module's main methodQueue,
+    // and UIApplication.* notifications post on main. Hop the handler bodies
+    // to main so that all mutations of shared state remain serialized on a
+    // single thread; otherwise the BG handler can race with a main-thread
+    // call into createPlayer / playPlayer / stopHaptics and crash on a
+    // concurrent Dictionary mutation.
     engine?.stoppedHandler = { [weak self] _ in
-      guard let self else { return }
-      self.initialized = false
-      self.clearPlayerState(stopPlayers: false)
+      DispatchQueue.main.async {
+        guard let self else { return }
+        self.initialized = false
+        self.clearPlayerState(stopPlayers: false)
+      }
     }
 
     engine?.resetHandler = { [weak self] in
-      guard let self else { return }
-      self.initialized = false
-      self.clearPlayerState(stopPlayers: false)
-      self.engine = nil
+      DispatchQueue.main.async {
+        guard let self else { return }
+        self.initialized = false
+        self.clearPlayerState(stopPlayers: false)
+        self.engine = nil
+      }
     }
   }
 }
