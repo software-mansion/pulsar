@@ -2,7 +2,11 @@ import Foundation
 import CoreHaptics
 import SwiftUI
 
-public class HapticEngineWrapper {
+public final class HapticEngineWrapper: @unchecked Sendable {
+  // `@unchecked Sendable` is justified: all stored state is mutated only on
+  // the main thread (see `setupEngineHandlers()` comment for details). The
+  // conformance lets us capture `self` into the main-actor closures used to
+  // serialize CoreHaptics callbacks back onto the main thread.
   private var engine: CHHapticEngine?
   private var initialized = false
   private(set) var isHapticsEnabled = true
@@ -167,7 +171,9 @@ private extension HapticEngineWrapper {
   }
 
   @objc func appWillEnterForeground() {
-    updatePlaybackAvailability(for: UIApplication.shared.applicationState)
+    // UIApplication lifecycle notifications are posted on the main thread.
+    let state = MainActor.assumeIsolated { UIApplication.shared.applicationState }
+    updatePlaybackAvailability(for: state)
   }
 
   @objc func appDidBecomeActive() {
@@ -212,10 +218,14 @@ private extension HapticEngineWrapper {
 
   func seedAppActiveCache() {
     if Thread.isMainThread {
-      isAppActiveCache = UIApplication.shared.applicationState == .active
+      isAppActiveCache = MainActor.assumeIsolated {
+        UIApplication.shared.applicationState == .active
+      }
     } else {
       isAppActiveCache = DispatchQueue.main.sync {
-        UIApplication.shared.applicationState == .active
+        MainActor.assumeIsolated {
+          UIApplication.shared.applicationState == .active
+        }
       }
     }
   }
@@ -238,7 +248,7 @@ private extension HapticEngineWrapper {
     // call into createPlayer / playPlayer / stopHaptics and crash on a
     // concurrent Dictionary mutation.
     engine?.stoppedHandler = { [weak self] _ in
-      DispatchQueue.main.async {
+      Task { @MainActor [weak self] in
         guard let self else { return }
         self.initialized = false
         self.clearPlayerState(stopPlayers: false)
@@ -246,7 +256,7 @@ private extension HapticEngineWrapper {
     }
 
     engine?.resetHandler = { [weak self] in
-      DispatchQueue.main.async {
+      Task { @MainActor [weak self] in
         guard let self else { return }
         self.initialized = false
         self.clearPlayerState(stopPlayers: false)
