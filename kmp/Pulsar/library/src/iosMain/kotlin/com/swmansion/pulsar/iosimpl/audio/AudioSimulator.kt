@@ -34,9 +34,14 @@ import kotlin.native.Platform
 internal class IOSAudioSimulator {
     private val sampleRate = 22_050.0
     private val isSimulatorDevice = NSProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] != null
-    private val audioContext = AVAudioEngine()
-    private val playerNode = AVAudioPlayerNode()
-    private val filterNode = AVAudioUnitEQ(numberOfBands = 1u)
+    // AVAudioEngine / AVAudioPlayerNode / AVAudioUnitEQ each pull in AVFAudio
+    // class realization and the AudioToolbox AudioUnit component registry on
+    // first allocation. Keeping these nullable and constructing them lazily in
+    // configureAudioContext() avoids paying that cost on cold start in release
+    // builds where playSound is false and the graph is never used.
+    private var audioContext: AVAudioEngine? = null
+    private var playerNode: AVAudioPlayerNode? = null
+    private var filterNode: AVAudioUnitEQ? = null
     private var isEngineConfigured = false
     private var playSound = isSimulatorDevice || Platform.isDebugBinary
     private var shouldForceAudiblePlayback = false
@@ -55,7 +60,7 @@ internal class IOSAudioSimulator {
         shouldForceAudiblePlayback = value
         if (!value) {
             stop()
-            audioContext.pause()
+            audioContext?.pause()
             deactivateAudioSession()
         } else {
             updateAudioSessionCategory()
@@ -66,6 +71,9 @@ internal class IOSAudioSimulator {
     fun play(buffer: IOSAudioBuffer?) {
         if (buffer == null || !playSound || buffer.samples.isEmpty()) return
         configureAudioContext()
+
+        val audioContext = this.audioContext ?: return
+        val playerNode = this.playerNode ?: return
 
         if (playerNode.playing) {
             playerNode.stop()
@@ -85,16 +93,25 @@ internal class IOSAudioSimulator {
     }
 
     fun stop() {
-        playerNode.stop()
+        playerNode?.stop()
     }
 
     val isPlaying: Boolean
-        get() = playerNode.playing
+        get() = playerNode?.playing ?: false
 
     private fun configureAudioContext() {
         if (isEngineConfigured) return
 
         updateAudioSessionCategory()
+
+        // Lazily allocate the AVFoundation graph on first use — see field
+        // comment for the cold-start cost we avoid by deferring this.
+        val audioContext = this.audioContext ?: AVAudioEngine()
+        val playerNode = this.playerNode ?: AVAudioPlayerNode()
+        val filterNode = this.filterNode ?: AVAudioUnitEQ(numberOfBands = 1u)
+        this.audioContext = audioContext
+        this.playerNode = playerNode
+        this.filterNode = filterNode
 
         audioContext.attachNode(playerNode)
         (filterNode.bands.firstOrNull() as? AVAudioUnitEQFilterParameters)?.let { band ->
