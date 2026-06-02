@@ -41,11 +41,16 @@ RCT_EXPORT_MODULE()
 
 + (BOOL)requiresMainQueueSetup
 {
-  return YES;
+  // Module construction does no UI / CoreHaptics / AVAudio work, so we don't
+  // need to block the main queue during bridge setup. Methods that need to
+  // run on the main thread still dispatch via `methodQueue` below.
+  return NO;
 }
 
 - (dispatch_queue_t)methodQueue
 {
+  // Methods read UIApplication state and drive CoreHaptics / AVAudio APIs that
+  // are most reliable on the main queue, so keep method dispatch there.
   return dispatch_get_main_queue();
 }
 

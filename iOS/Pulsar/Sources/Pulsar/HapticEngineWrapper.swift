@@ -6,7 +6,12 @@ public class HapticEngineWrapper {
   private var engine: CHHapticEngine?
   private var initialized = false
   private(set) var isHapticsEnabled = true
-  private var isAppActive: Bool
+  // App-active state is resolved lazily on first use so that constructing the
+  // wrapper does not require the main thread (UIApplication.shared can only be
+  // read from the main thread). Once observed, it is kept up to date via the
+  // lifecycle observers registered lazily alongside engine creation.
+  private var isAppActiveCache: Bool?
+  private var lifecycleObserversRegistered = false
   private var playerRegistry: [Int: CHHapticPatternPlayer] = [:]
   private var playerCreationOrder: [Int] = []
   private let playerLimit = 20
@@ -14,21 +19,9 @@ public class HapticEngineWrapper {
   private var cachedRealtimePlayer: CHHapticAdvancedPatternPlayer?
 
   public init() {
-    isAppActive = UIApplication.shared.applicationState == .active
-
-    guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
-      print("Error: Device doesn't support haptics")
-      return
-    }
-
-    do {
-      engine = try CHHapticEngine()
-      setupEngineHandlers()
-      startEngine()
-      registerAppLifecycleObservers()
-    } catch {
-      print("Error starting engine: \(error.localizedDescription)")
-    }
+    // Intentionally empty: do NOT touch CoreHaptics, UIApplication or
+    // NotificationCenter here. The engine is started lazily on first use to
+    // keep app startup cheap. See `startEngine()` / `ensureLifecycleObservers()`.
   }
 
   deinit {
@@ -123,11 +116,30 @@ public extension HapticEngineWrapper {
 extension HapticEngineWrapper {
 
   func updatePlaybackAvailability(for state: UIApplication.State) {
-    isAppActive = state == .active
+    isAppActiveCache = state == .active
   }
 
   func canPlayHaptics() -> Bool {
-    isHapticsEnabled && isAppActive && isHapticsSupported()
+    isHapticsEnabled && isAppActive() && isHapticsSupported()
+  }
+
+  /// Lazily resolves the cached UIApplication state. The first read must happen
+  /// on the main thread; subsequent reads use the cache updated by lifecycle
+  /// observers (registered lazily by `ensureLifecycleObservers()`).
+  func isAppActive() -> Bool {
+    if let cached = isAppActiveCache {
+      return cached
+    }
+    let resolved: Bool
+    if Thread.isMainThread {
+      resolved = UIApplication.shared.applicationState == .active
+    } else {
+      resolved = DispatchQueue.main.sync {
+        UIApplication.shared.applicationState == .active
+      }
+    }
+    isAppActiveCache = resolved
+    return resolved
   }
 
   func isHapticsSupported() -> Bool {
@@ -202,10 +214,17 @@ private extension HapticEngineWrapper {
       try createEngineIfNeeded()
       try engine?.start()
       initialized = true
+      ensureLifecycleObservers()
     } catch {
       print("Error starting engine: \(error.localizedDescription)")
       engine = nil
     }
+  }
+
+  func ensureLifecycleObservers() {
+    guard !lifecycleObserversRegistered else { return }
+    lifecycleObserversRegistered = true
+    registerAppLifecycleObservers()
   }
 
   func createEngineIfNeeded() throws {
