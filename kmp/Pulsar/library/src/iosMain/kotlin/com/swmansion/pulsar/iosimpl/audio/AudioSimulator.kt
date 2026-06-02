@@ -104,8 +104,6 @@ internal class IOSAudioSimulator {
 
         updateAudioSessionCategory()
 
-        // Lazily allocate the AVFoundation graph on first use — see field
-        // comment for the cold-start cost we avoid by deferring this.
         val audioContext = this.audioContext ?: AVAudioEngine()
         val playerNode = this.playerNode ?: AVAudioPlayerNode()
         val filterNode = this.filterNode ?: AVAudioUnitEQ(numberOfBands = 1u)
