@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'Pulsar-haptics'
-  s.version          = '1.1.2'
+  s.version          = '1.1.3'
   s.summary          = 'A haptic feedback SDK for iOS, written in Swift.'
   s.description      = <<-DESC
 Pulsar provides ready-to-use haptic presets, a pattern composer for custom
