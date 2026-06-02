@@ -24,9 +24,12 @@ open class Pulsar(protected var context: Context) {
         }
     private var realtimeComposer: RealtimeComposer? = null
 
-    open fun getPresets(): PresetsWrapper {
+    protected open fun createPresets(): PresetsWrapper =
+        PresetsWrapper(this, ActivityProvider(context as Activity), engine)
+
+    fun getPresets(): PresetsWrapper {
         if (_presets == null) {
-            _presets = PresetsWrapper(this, ActivityProvider(context as Activity), engine)
+            _presets = createPresets()
         }
         return _presets!!
     }
