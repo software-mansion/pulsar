@@ -21,6 +21,8 @@ import platform.UIKit.UIApplicationDidEnterBackgroundNotification
 import platform.UIKit.UIApplicationWillEnterForegroundNotification
 import platform.UIKit.UIApplicationWillResignActiveNotification
 import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalForeignApi::class)
@@ -183,14 +185,26 @@ internal class IOSHapticEngineWrapper {
     }
 
     private fun setupEngineHandlers() {
+        // CoreHaptics invokes these handlers from an internal background queue.
+        // Every other path through this object (public API on the RN module's
+        // main methodQueue, UIApplication.* notifications) mutates shared
+        // state — engine, initialized, playerRegistry, playerCreationOrder,
+        // cachedRealtimePlayer — on the main thread. Hop the handler bodies
+        // to main so a CoreHaptics-triggered callback cannot race with a
+        // concurrent createPlayer / playPlayer / stopHaptics and corrupt the
+        // player registry.
         engine?.stoppedHandler = {
-            initialized = false
-            clearPlayerState(stopPlayers = false)
+            dispatch_async(dispatch_get_main_queue()) {
+                initialized = false
+                clearPlayerState(stopPlayers = false)
+            }
         }
         engine?.resetHandler = {
-            initialized = false
-            clearPlayerState(stopPlayers = false)
-            engine = null
+            dispatch_async(dispatch_get_main_queue()) {
+                initialized = false
+                clearPlayerState(stopPlayers = false)
+                engine = null
+            }
         }
     }
 
