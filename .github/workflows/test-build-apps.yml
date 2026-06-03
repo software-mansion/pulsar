@@ -449,32 +449,25 @@ jobs:
   # ------------------------------------------------------------------
   # iOS: Flutter
   # ------------------------------------------------------------------
-  # `continue-on-error: true` because of an upstream blocker on the
-  # published Pulsar-ios package.
+  # Flutter 3.32+ defaults to SPM. The plugin Package.swift (after PR
+  # #55) declares the Pulsar Swift Package as a dependency by URL —
+  # pointing at the published Pulsar-ios 1.1.4 tag on GitHub. The
+  # published 1.1.4 still ships `swift-tools-version: 6.1` and the
+  # actor-isolation issues in SystemPresetsImpl.swift that the local
+  # `iOS/Pulsar/Package.swift` works around by pinning
+  # `swiftLanguageModes: [.v5]` — and that pin isn't part of the 1.1.4
+  # tag, so a remote SPM fetch would still hit the Swift 6 errors.
   #
-  # PR #55 fixed the SPM resolution path (plugin Package.swift now
-  # declares Pulsar as a dep and the import is conditional). With that
-  # in place, Flutter SPM successfully resolves and downloads pulsar-ios
-  # 1.1.4 from GitHub. But the *published* 1.1.4 still ships
-  # `swift-tools-version: 6.1` and the SystemPresetsImpl.swift call
-  # sites that construct UIImpactFeedbackGenerator from synchronous
-  # nonisolated contexts — i.e. exactly the same Swift 6 strict-
-  # concurrency errors the local `iOS/Pulsar/Package.swift` works
-  # around by pinning `swiftLanguageModes: [.v5]`. That pin lives only
-  # in the local source tree; it isn't part of the 1.1.4 tag, so a
-  # remote SPM fetch can't see it.
-  #
-  # Local-sources iOS jobs (ios-native, ios-rn) are unaffected because
-  # they consume `iOS/Pulsar` via SPM-relative-path / Podfile.
-  #
-  # Unblocks once a new Pulsar-ios release is published with either
-  # `swiftLanguageModes: [.v5]` or proper actor-isolation fixes in
-  # SystemPresetsImpl.swift. After that, drop `continue-on-error` here.
+  # Workaround for CI only: patch the plugin's Package.swift to swap
+  # the remote URL dependency for a path dependency at `iOS/Pulsar`.
+  # SPM then builds against the local sources (which carry the Swift 5
+  # mode pin). The patch is local to the runner workspace and never
+  # commits; the published plugin manifest is untouched, so downstream
+  # consumers still resolve the published Pulsar-ios from GitHub.
   ios-flutter:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_flutter }}
     runs-on: macos-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -497,6 +490,33 @@ jobs:
             echo "::error::No pulsar_haptics import found in flutter/PulsarApp/lib." >&2
             exit 1
           fi
+
+      # See the comment block above the job header. We rewrite the remote
+      # SPM URL dependency to a path dep pointing at the local iOS/Pulsar
+      # tree (which has the Swift 5 language mode pin). The `name:
+      # "pulsar-ios"` alias is required so the existing target dependency
+      # `.product(name: "Pulsar", package: "pulsar-ios")` still resolves.
+      - name: Patch plugin SPM dep to local iOS/Pulsar sources
+        run: |
+          set -euo pipefail
+          MANIFEST=flutter/pulsar/ios/pulsar_haptics/Package.swift
+          if ! grep -q 'url: "https://github.com/software-mansion-labs/pulsar-ios"' "$MANIFEST"; then
+            echo "::error::Expected remote pulsar-ios SPM dep not found in $MANIFEST — manifest may have changed upstream." >&2
+            exit 1
+          fi
+          python3 - "$MANIFEST" <<'PY'
+          import re, sys, pathlib
+          p = pathlib.Path(sys.argv[1])
+          src = p.read_text()
+          pattern = r'\.package\(url: "https://github\.com/software-mansion-labs/pulsar-ios", from: "[^"]+"\),?'
+          replacement = '.package(name: "pulsar-ios", path: "../../../../iOS/Pulsar"),'
+          new, n = re.subn(pattern, replacement, src)
+          if n != 1:
+              sys.exit(f"Expected exactly one match, got {n}")
+          p.write_text(new)
+          PY
+          echo "Patched dep in $MANIFEST:"
+          grep -nE '\.package\(' "$MANIFEST"
 
       - name: Flutter pub get
         working-directory: flutter/PulsarApp
