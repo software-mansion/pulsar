@@ -449,32 +449,19 @@ jobs:
   # ------------------------------------------------------------------
   # iOS: Flutter
   # ------------------------------------------------------------------
-  # The Flutter iOS build is currently broken upstream and runs with
-  # `continue-on-error: true` so it doesn't fail the overall workflow.
+  # Flutter 3.32+ defaults to SPM. The plugin Package.swift now declares
+  # the Pulsar Swift Package as a dependency and the plugin source uses
+  # a conditional import (`#if canImport(Pulsar_haptics) / #elseif
+  # canImport(Pulsar)`), so the SPM and CocoaPods paths both resolve.
   #
-  # Root cause: `flutter/pulsar/ios/Classes/PulsarPlugin.swift` does
-  #   `import Pulsar_haptics`
-  # which is the *CocoaPods*-generated module name for the `Pulsar-haptics`
-  # pod. The plugin also ships an SPM `flutter/pulsar/ios/pulsar_haptics/
-  # Package.swift` that does NOT declare any dependency providing that
-  # module. Flutter 3.32+ defaults to SPM and treats the plugin as
-  # SPM-only as soon as it sees the Package.swift — so the import has no
-  # source and the build fails with "No such module 'Pulsar_haptics'".
-  #
-  # Disabling SPM (`flutter config --no-enable-swift-package-manager`)
-  # makes Flutter refuse the plugin outright ("only compatible with Swift
-  # Package Manager"), so we can't simply opt out either.
-  #
-  # The real fix lives in the plugin source — add the `Pulsar` Swift
-  # Package as an SPM dependency and use a conditional import that
-  # resolves to either `Pulsar` (SPM) or `Pulsar_haptics` (CocoaPods).
-  # That belongs in its own PR, separate from the CI workflow. Until
-  # then, this job runs for visibility but does not gate the workflow.
+  # The Podfile-based `USE_LOCAL_PULSAR_IOS=1` override only flows through
+  # CocoaPods, which Flutter SPM integration bypasses — so this job
+  # validates the integration against the published Pulsar-haptics
+  # package. ios-native and ios-rn still cover the local-sources path.
   ios-flutter:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_flutter }}
     runs-on: macos-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
