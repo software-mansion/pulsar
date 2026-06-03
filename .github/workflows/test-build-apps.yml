@@ -459,21 +459,9 @@ jobs:
   #
   # CI-only workaround: rewrite the plugin manifest in-place to swap
   # the remote URL dependency for a path dep pointing at the local
-  # iOS/Pulsar tree, using an absolute path (`$GITHUB_WORKSPACE/iOS/
-  # Pulsar`).
-  #
-  # Why absolute rather than relative. Flutter SPM integration mirrors
-  # each plugin under a symlinked location at
-  #     <App>/ios/Flutter/ephemeral/Packages/.packages/<plugin>
-  # and SPM resolves `.package(path: ...)` relative to that *symlinked*
-  # directory rather than the symlink target — and the depth of that
-  # symlinked tree has varied across Flutter versions (3.41 vs 3.44.1
-  # exposed different layouts). An absolute path side-steps the
-  # symlink-resolution rules entirely. Earlier runs (#26888646589,
-  # #26889073660, #26889500031, #26893930310) all tried relative paths
-  # and failed with SPM's misleading "cyclic dependency between
-  # packages FlutterGeneratedPluginSwiftPackage -> pulsar_haptics ->
-  # pulsar_haptics" wording — actually a path-not-found.
+  # iOS/Pulsar tree — routed through a uniquely-named symlink in
+  # `$RUNNER_TEMP` to avoid an SPM identity collision (see the comment
+  # on the patch step for the gory details).
   ios-flutter:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_flutter }}
@@ -501,9 +489,23 @@ jobs:
             exit 1
           fi
 
-      # See the comment block above the job header for the rationale —
-      # in particular for why this uses an absolute path instead of a
-      # relative one.
+      # See the comment block above the job header for the rationale.
+      #
+      # Why we point the path dep at a uniquely-named symlink instead of
+      # `iOS/Pulsar` directly. Flutter 3.44.1's plugin SPM integration
+      # mirrors the plugin under `<App>/ios/Flutter/ephemeral/Packages/
+      # .packages/pulsar` — the *podspec* name (`flutter/pulsar/ios/
+      # pulsar.podspec` is named `pulsar`), not the Dart name
+      # (`pulsar_haptics`). Pointing the path dep at `iOS/Pulsar`
+      # collides with that symlink's last path component on macOS's
+      # case-insensitive filesystem under SPM tools-5.9: SPM derives
+      # the same identity `pulsar` from both and reports a self-cycle
+      # with the misleading "cyclic dependency between packages
+      # FlutterGeneratedPluginSwiftPackage -> pulsar_haptics ->
+      # pulsar_haptics requires tools-version 6.0 or later" wording.
+      # The `name:` alias on the dep isn't honored as a tie-breaker
+      # under tools-5.9. Route through `$RUNNER_TEMP/pulsar-sdk-source`
+      # so the resolved path ends in a unique component.
       - name: Patch plugin SPM dep to local iOS/Pulsar sources
         env:
           PULSAR_ABS_PATH: ${{ github.workspace }}/iOS/Pulsar
@@ -518,22 +520,26 @@ jobs:
             echo "::error::Expected local Pulsar sources at $PULSAR_ABS_PATH but the directory does not exist." >&2
             exit 1
           fi
-          python3 - "$MANIFEST" <<'PY'
+          SDK_LINK="${RUNNER_TEMP}/pulsar-sdk-source"
+          ln -sfn "$PULSAR_ABS_PATH" "$SDK_LINK"
+          echo "Symlinked $SDK_LINK -> $(readlink "$SDK_LINK")"
+          SDK_LINK="$SDK_LINK" python3 - "$MANIFEST" <<'PY'
           import os, re, sys, pathlib
           p = pathlib.Path(sys.argv[1])
-          abs_path = os.environ['PULSAR_ABS_PATH']
+          sdk_link = os.environ['SDK_LINK']
           src = p.read_text()
-          # Swap remote URL dep for a path dep at the absolute location
-          # of the local iOS/Pulsar tree. Keep the `name: "pulsar-ios"`
-          # alias so the existing target dependency
-          # `.product(name: "Pulsar", package: "pulsar-ios")` still
-          # resolves. Do NOT bump swift-tools-version — that would flip
-          # the plugin's own sources into Swift 6 mode and the plugin
-          # code is not yet clean under strict concurrency
+          # Swap remote URL dep for a path dep that ends in a unique
+          # component — see the comment block on the step above for
+          # why. Keep the `name: "pulsar-ios"` alias so the existing
+          # target dependency `.product(name: "Pulsar", package:
+          # "pulsar-ios")` still resolves. Do NOT bump
+          # swift-tools-version — that would flip the plugin's own
+          # sources into Swift 6 mode and the plugin code is not yet
+          # clean under strict concurrency
           # (`FlutterMethodNotImplemented` isn't Sendable).
           src, n = re.subn(
               r'\.package\(url: "https://github\.com/software-mansion-labs/pulsar-ios", from: "[^"]+"\),?',
-              f'.package(name: "pulsar-ios", path: "{abs_path}"),',
+              f'.package(name: "pulsar-ios", path: "{sdk_link}"),',
               src,
           )
           if n != 1:
@@ -546,27 +552,6 @@ jobs:
       - name: Flutter pub get
         working-directory: flutter/PulsarApp
         run: flutter pub get
-
-      # Diagnostic dump — what Flutter SPM integration actually generated.
-      # Helps explain the "cyclic dependency ... requires tools-version 6.0
-      # or later" error on CI even when local builds (Xcode 26 / Flutter
-      # 3.41) succeed against the same patched plugin manifest.
-      - name: Diag — dump Flutter SPM tree
-        working-directory: flutter/PulsarApp
-        run: |
-          set -x
-          echo "=== Flutter version ==="
-          flutter --version
-          echo "=== ephemeral tree ==="
-          find ios/Flutter/ephemeral -maxdepth 6 \( -type d -o -type l -o -name 'Package.swift' \) -print
-          echo "=== symlinks ==="
-          find ios/Flutter/ephemeral -type l -exec sh -c 'echo "$1 -> $(readlink "$1")"' _ {} \;
-          echo "=== plugin Package.swift (patched) ==="
-          cat ../pulsar/ios/pulsar_haptics/Package.swift
-          echo "=== iOS/Pulsar Package.swift ==="
-          cat "${GITHUB_WORKSPACE}/iOS/Pulsar/Package.swift"
-          echo "=== FlutterGeneratedPluginSwiftPackage Package.swift ==="
-          find ios/Flutter/ephemeral -name 'Package.swift' -path '*FlutterGeneratedPluginSwiftPackage*' -exec cat {} \;
 
       - name: Build Flutter iOS PulsarApp (no codesign)
         working-directory: flutter/PulsarApp
