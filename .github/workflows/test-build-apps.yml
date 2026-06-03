@@ -412,6 +412,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # The iosApp "Compile Kotlin Framework" build phase hard-codes
+      # JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+      # and overwrites whatever JAVA_HOME the runner has. Install Homebrew's
+      # openjdk@17 so that path exists.
+      - name: Install Homebrew openjdk@17 (for hard-coded JAVA_HOME in iosApp)
+        run: brew install openjdk@17
+
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
@@ -462,13 +469,6 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # Force Flutter to use CocoaPods integration instead of Swift Package
-      # Manager — the Pulsar Podfile sets up `pod 'Pulsar-haptics', :path => ...`
-      # under USE_LOCAL_PULSAR_IOS=1, but SPM bypasses Podfile and breaks the
-      # local override.
-      - name: Disable Flutter SPM integration
-        run: flutter config --no-enable-swift-package-manager
-
       - name: Verify Pulsar invocation in app sources
         run: |
           if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
@@ -480,19 +480,16 @@ jobs:
         working-directory: flutter/PulsarApp
         run: flutter pub get
 
-      - name: Install pods (using local Pulsar iOS sources)
-        working-directory: flutter/PulsarApp/ios
-        env:
-          USE_LOCAL_PULSAR_IOS: '1'
-        run: pod install
-
-      # Build for the iOS Simulator SDK so we don't need a signing identity.
-      # `flutter build ios --release --simulator` is not supported, so a release
-      # variant is built for device with `--no-codesign`.
+      # The flutter/pulsar plugin declares an iOS Package.swift, so Flutter 3.32+
+      # marks it as Swift-Package-Manager-only — disabling SPM makes the build
+      # refuse outright. We therefore keep Flutter's SPM integration enabled and
+      # let it resolve the published Pulsar-haptics package. The Podfile-based
+      # `USE_LOCAL_PULSAR_IOS=1` override cannot flow through SPM, so this job
+      # validates the integration against the published iOS SDK rather than the
+      # local sources. The other iOS jobs (ios-native, ios-rn) still cover the
+      # local-sources path.
       - name: Build Flutter iOS PulsarApp (no codesign)
         working-directory: flutter/PulsarApp
-        env:
-          USE_LOCAL_PULSAR_IOS: '1'
         run: |
           if [[ "${{ matrix.build_type }}" == "release" ]]; then
             flutter build ios --release --no-codesign

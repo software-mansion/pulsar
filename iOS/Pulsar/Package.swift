@@ -22,5 +22,10 @@ let package = Package(
             name: "PulsarTests",
             dependencies: ["Pulsar"]
         ),
-    ]
+    ],
+    // Pin to Swift 5 language mode. Several call sites (e.g. SystemPresetsImpl
+    // constructing UIImpactFeedbackGenerator) invoke main-actor-isolated APIs
+    // from synchronous nonisolated contexts and don't yet build cleanly under
+    // Swift 6's strict concurrency checking.
+    swiftLanguageModes: [.v5]
 )
