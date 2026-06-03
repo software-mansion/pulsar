@@ -458,23 +458,22 @@ jobs:
   # would still hit the strict-concurrency errors.
   #
   # CI-only workaround: rewrite the plugin manifest in-place to swap
-  # the remote URL dependency for a path dep that points at the local
-  # iOS/Pulsar tree.
+  # the remote URL dependency for a path dep pointing at the local
+  # iOS/Pulsar tree, using an absolute path (`$GITHUB_WORKSPACE/iOS/
+  # Pulsar`).
   #
-  # Path-depth detail. Flutter SPM integration mirrors the plugin
-  # under a symlinked location at
+  # Why absolute rather than relative. Flutter SPM integration mirrors
+  # each plugin under a symlinked location at
   #     <App>/ios/Flutter/ephemeral/Packages/.packages/<plugin>
   # and SPM resolves `.package(path: ...)` relative to that *symlinked*
-  # directory, not the symlink target. So the relative path has to go
-  # up enough levels to escape the ephemeral tree before walking back
-  # down to iOS/Pulsar — eight `..` segments, not the four that point
-  # at iOS/Pulsar from the real source location. With the wrong depth,
-  # older SPM (Xcode 16.x) reports the resolution failure as a
-  # misleading "cyclic dependency between packages
-  # FlutterGeneratedPluginSwiftPackage -> pulsar_haptics ->
-  # pulsar_haptics" — three earlier runs (#26888646589, #26889073660,
-  # #26889500031) chased that wording before the symlink-relative
-  # depth was identified locally on Xcode 26.
+  # directory rather than the symlink target — and the depth of that
+  # symlinked tree has varied across Flutter versions (3.41 vs 3.44.1
+  # exposed different layouts). An absolute path side-steps the
+  # symlink-resolution rules entirely. Earlier runs (#26888646589,
+  # #26889073660, #26889500031, #26893930310) all tried relative paths
+  # and failed with SPM's misleading "cyclic dependency between
+  # packages FlutterGeneratedPluginSwiftPackage -> pulsar_haptics ->
+  # pulsar_haptics" wording — actually a path-not-found.
   ios-flutter:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_flutter }}
@@ -502,10 +501,12 @@ jobs:
             exit 1
           fi
 
-      # See the comment block above the job header for the rationale and
-      # for *why* the relative path has eight `..` levels instead of the
-      # four that would point at iOS/Pulsar from the real plugin source.
+      # See the comment block above the job header for the rationale —
+      # in particular for why this uses an absolute path instead of a
+      # relative one.
       - name: Patch plugin SPM dep to local iOS/Pulsar sources
+        env:
+          PULSAR_ABS_PATH: ${{ github.workspace }}/iOS/Pulsar
         run: |
           set -euo pipefail
           MANIFEST=flutter/pulsar/ios/pulsar_haptics/Package.swift
@@ -513,20 +514,26 @@ jobs:
             echo "::error::Expected remote pulsar-ios SPM dep not found in $MANIFEST — manifest may have changed upstream." >&2
             exit 1
           fi
+          if [[ ! -d "$PULSAR_ABS_PATH" ]]; then
+            echo "::error::Expected local Pulsar sources at $PULSAR_ABS_PATH but the directory does not exist." >&2
+            exit 1
+          fi
           python3 - "$MANIFEST" <<'PY'
-          import re, sys, pathlib
+          import os, re, sys, pathlib
           p = pathlib.Path(sys.argv[1])
+          abs_path = os.environ['PULSAR_ABS_PATH']
           src = p.read_text()
-          # Swap remote URL dep for a path dep at iOS/Pulsar, going up
-          # enough levels to escape Flutter's ephemeral symlinked tree.
-          # Keep the `name: "pulsar-ios"` alias so the existing target
-          # dependency `.product(name: "Pulsar", package: "pulsar-ios")`
-          # still resolves. Do NOT bump swift-tools-version — that would
-          # flip the plugin's own sources into Swift 6 mode and the
-          # plugin code is not yet clean under strict concurrency.
+          # Swap remote URL dep for a path dep at the absolute location
+          # of the local iOS/Pulsar tree. Keep the `name: "pulsar-ios"`
+          # alias so the existing target dependency
+          # `.product(name: "Pulsar", package: "pulsar-ios")` still
+          # resolves. Do NOT bump swift-tools-version — that would flip
+          # the plugin's own sources into Swift 6 mode and the plugin
+          # code is not yet clean under strict concurrency
+          # (`FlutterMethodNotImplemented` isn't Sendable).
           src, n = re.subn(
               r'\.package\(url: "https://github\.com/software-mansion-labs/pulsar-ios", from: "[^"]+"\),?',
-              '.package(name: "pulsar-ios", path: "../../../../../../../../iOS/Pulsar"),',
+              f'.package(name: "pulsar-ios", path: "{abs_path}"),',
               src,
           )
           if n != 1:
