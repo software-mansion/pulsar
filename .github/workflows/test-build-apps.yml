@@ -162,7 +162,7 @@ jobs:
         working-directory: react-native/react-native-pulsar
         run: |
           npm ci
-          npm run prepare
+          npm run build
 
       - name: Install example app deps
         working-directory: react-native/PulsarApp
@@ -212,12 +212,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build local KMP library (Android target)
-        working-directory: kmp/Pulsar
-        env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
-        run: ./gradlew :library:assembleDebug
-
       - name: Verify Pulsar invocation in app sources
         run: |
           if ! grep -qrE "com\.swmansion\.pulsar\.kmp|Pulsar\.create\(" kmp/PulsarApp/composeApp/src; then
@@ -225,6 +219,9 @@ jobs:
             exit 1
           fi
 
+      # kmp/PulsarApp's settings.gradle.kts uses includeBuild("../Pulsar") with a
+      # dependency substitution, so assembling the composeApp transitively builds
+      # the local KMP library — no separate library-assemble step needed.
       - name: Build KMP Android PulsarApp (composeApp)
         working-directory: kmp/PulsarApp
         env:
@@ -262,12 +259,6 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Build local Flutter plugin Android artifact
-        working-directory: flutter/pulsar/example/android
-        env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
-        run: ./gradlew assembleDebug
-
       - name: Verify Pulsar invocation in app sources
         run: |
           if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
@@ -279,6 +270,8 @@ jobs:
         working-directory: flutter/PulsarApp
         run: flutter pub get
 
+      # Building the PulsarApp APK transitively builds the flutter/pulsar plugin
+      # against the local Android/Pulsar sources (via USE_LOCAL_PULSAR_ANDROID).
       - name: Build Flutter Android PulsarApp
         working-directory: flutter/PulsarApp
         env:
@@ -307,10 +300,6 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
-      - name: Build local Pulsar iOS Swift Package
-        working-directory: iOS/Pulsar
-        run: swift build
-
       - name: Verify Pulsar invocation in app sources
         run: |
           if ! grep -qrE "import Pulsar|Pulsar\(\)" iOS/PulsarApp/PulsarApp; then
@@ -322,6 +311,9 @@ jobs:
         working-directory: iOS/PulsarApp
         run: xcodebuild -resolvePackageDependencies -project PulsarApp.xcodeproj
 
+      # xcodebuild compiles the SPM-resolved Pulsar package for the iOS Simulator
+      # SDK, so we don't need (and can't run) `swift build` here — that defaults
+      # to the host platform where UIKit isn't available.
       - name: Build iOS native PulsarApp
         working-directory: iOS/PulsarApp
         run: |
@@ -368,7 +360,7 @@ jobs:
         working-directory: react-native/react-native-pulsar
         run: |
           npm ci
-          npm run prepare
+          npm run build
 
       - name: Install example app JS deps
         working-directory: react-native/PulsarApp
@@ -423,10 +415,6 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
-      - name: Build local KMP library (iOS targets)
-        working-directory: kmp/Pulsar
-        run: ./gradlew :library:linkDebugFrameworkIosSimulatorArm64
-
       - name: Verify Pulsar invocation in app sources
         run: |
           if ! grep -qrE "com\.swmansion\.pulsar\.kmp|Pulsar\.create\(" kmp/PulsarApp/composeApp/src; then
@@ -434,10 +422,10 @@ jobs:
             exit 1
           fi
 
-      - name: Assemble shared framework for iOS app
-        working-directory: kmp/PulsarApp
-        run: ./gradlew :composeApp:embedAndSignAppleFrameworkForXcode || ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
-
+      # The shared framework lives on :composeApp (not :library). The iosApp
+      # Xcode project has a "Compile Kotlin Framework" build phase that invokes
+      # Gradle, so xcodebuild end-to-end is sufficient — no separate framework
+      # link task needed up-front.
       - name: Build KMP iOS PulsarApp
         working-directory: kmp/PulsarApp/iosApp
         run: |
@@ -474,6 +462,13 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # Force Flutter to use CocoaPods integration instead of Swift Package
+      # Manager — the Pulsar Podfile sets up `pod 'Pulsar-haptics', :path => ...`
+      # under USE_LOCAL_PULSAR_IOS=1, but SPM bypasses Podfile and breaks the
+      # local override.
+      - name: Disable Flutter SPM integration
+        run: flutter config --no-enable-swift-package-manager
+
       - name: Verify Pulsar invocation in app sources
         run: |
           if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
@@ -491,6 +486,9 @@ jobs:
           USE_LOCAL_PULSAR_IOS: '1'
         run: pod install
 
+      # Build for the iOS Simulator SDK so we don't need a signing identity.
+      # `flutter build ios --release --simulator` is not supported, so a release
+      # variant is built for device with `--no-codesign`.
       - name: Build Flutter iOS PulsarApp (no codesign)
         working-directory: flutter/PulsarApp
         env:
