@@ -547,6 +547,27 @@ jobs:
         working-directory: flutter/PulsarApp
         run: flutter pub get
 
+      # Diagnostic dump — what Flutter SPM integration actually generated.
+      # Helps explain the "cyclic dependency ... requires tools-version 6.0
+      # or later" error on CI even when local builds (Xcode 26 / Flutter
+      # 3.41) succeed against the same patched plugin manifest.
+      - name: Diag — dump Flutter SPM tree
+        working-directory: flutter/PulsarApp
+        run: |
+          set -x
+          echo "=== Flutter version ==="
+          flutter --version
+          echo "=== ephemeral tree ==="
+          find ios/Flutter/ephemeral -maxdepth 6 \( -type d -o -type l -o -name 'Package.swift' \) -print
+          echo "=== symlinks ==="
+          find ios/Flutter/ephemeral -type l -exec sh -c 'echo "$1 -> $(readlink "$1")"' _ {} \;
+          echo "=== plugin Package.swift (patched) ==="
+          cat ../pulsar/ios/pulsar_haptics/Package.swift
+          echo "=== iOS/Pulsar Package.swift ==="
+          cat "${GITHUB_WORKSPACE}/iOS/Pulsar/Package.swift"
+          echo "=== FlutterGeneratedPluginSwiftPackage Package.swift ==="
+          find ios/Flutter/ephemeral -name 'Package.swift' -path '*FlutterGeneratedPluginSwiftPackage*' -exec cat {} \;
+
       - name: Build Flutter iOS PulsarApp (no codesign)
         working-directory: flutter/PulsarApp
         run: |
