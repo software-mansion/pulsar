@@ -491,11 +491,18 @@ jobs:
             exit 1
           fi
 
-      # See the comment block above the job header. We rewrite the remote
-      # SPM URL dependency to a path dep pointing at the local iOS/Pulsar
-      # tree (which has the Swift 5 language mode pin). The `name:
-      # "pulsar-ios"` alias is required so the existing target dependency
-      # `.product(name: "Pulsar", package: "pulsar-ios")` still resolves.
+      # See the comment block above the job header. Two in-place edits:
+      #   1. Swap the remote SPM URL dependency for a path dep pointing at
+      #      the local iOS/Pulsar tree (which has the Swift 5 language
+      #      mode pin). The `name: "pulsar-ios"` alias keeps the existing
+      #      `.product(name: "Pulsar", package: "pulsar-ios")` target
+      #      dependency resolvable.
+      #   2. Bump `swift-tools-version` from 5.9 → 6.0. The local
+      #      iOS/Pulsar manifest is tools-6.1 (it needs that for the
+      #      `swiftLanguageModes:` API), and SPM refuses to let a tools-
+      #      5.9 consumer depend on a tools-6.x package — it reports that
+      #      as a "cyclic dependency ... requires tools-version 6.0 or
+      #      later", which is the actual blocker, not a real cycle.
       - name: Patch plugin SPM dep to local iOS/Pulsar sources
         run: |
           set -euo pipefail
@@ -508,14 +515,28 @@ jobs:
           import re, sys, pathlib
           p = pathlib.Path(sys.argv[1])
           src = p.read_text()
-          pattern = r'\.package\(url: "https://github\.com/software-mansion-labs/pulsar-ios", from: "[^"]+"\),?'
-          replacement = '.package(name: "pulsar-ios", path: "../../../../iOS/Pulsar"),'
-          new, n = re.subn(pattern, replacement, src)
-          if n != 1:
-              sys.exit(f"Expected exactly one match, got {n}")
-          p.write_text(new)
+          # 1. Bump tools-version so the consumer can depend on iOS/Pulsar
+          #    (which is tools-6.1 because of swiftLanguageModes:).
+          src, n_tools = re.subn(
+              r'^// swift-tools-version: 5\.\d+',
+              '// swift-tools-version: 6.0',
+              src,
+              flags=re.MULTILINE,
+          )
+          if n_tools != 1:
+              sys.exit(f"Expected exactly one tools-version line, got {n_tools}")
+          # 2. Swap remote URL dep for path dep.
+          src, n_dep = re.subn(
+              r'\.package\(url: "https://github\.com/software-mansion-labs/pulsar-ios", from: "[^"]+"\),?',
+              '.package(name: "pulsar-ios", path: "../../../../iOS/Pulsar"),',
+              src,
+          )
+          if n_dep != 1:
+              sys.exit(f"Expected exactly one dep match, got {n_dep}")
+          p.write_text(src)
           PY
-          echo "Patched dep in $MANIFEST:"
+          echo "Patched $MANIFEST:"
+          head -1 "$MANIFEST"
           grep -nE '\.package\(' "$MANIFEST"
 
       - name: Flutter pub get
