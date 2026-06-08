@@ -1,19 +1,28 @@
 ---
-deploy_production:
-  stage: deploy
+.deploy_base:
   image: registry.swmansion.com/infra/ansible-ci-helper:latest
-  variables:
-    ENV: "production"
-  before_script: []
-  script:
-    - cp ${SSH_PROD_RSA} /root/.ssh/id_rsa
+  stage: deploy
+  interruptible: true
+  retry: 2
+  before_script:
+    - cat ${SSH_DEPLOY_KEY} | base64 --decode > /root/.ssh/id_rsa
     - git clone git@gl.swmansion.com:devops/internal-infrastructure/ansible
     - cd ansible
+  script:
     - ansible-playbook
-      --vault-id=${MARKETING_TOOLS_PROD_VAULT_PASS}
+      --vault-id=${ANSIBLE_VAULT_PASS}
+      --extra-vars "version=${CI_COMMIT_SHORT_SHA}"
       --tags=update-pulsar-server
       -l marketing-tools
-      -i inventories/swm/${ENV}.yml
+      -i inventories/swm/${CI_ENVIRONMENT_NAME}.yml
       marketing-tools.yml
+
+
+deploy_production:
+  extends: .deploy_base
+  environment: production
+  variables:
+    SSH_DEPLOY_KEY: $SSH_DEPLOY_KEY_PROD
+    ANSIBLE_VAULT_PASS: $ANSIBLE_VAULT_PASS_PROD
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
