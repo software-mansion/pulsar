@@ -1,6 +1,10 @@
 import Flutter
 import UIKit
+#if canImport(Pulsar_haptics)
 import Pulsar_haptics
+#elseif canImport(Pulsar)
+import Pulsar
+#endif
 
 public class PulsarPlugin: NSObject, FlutterPlugin {
   private let pulsar = Pulsar()
