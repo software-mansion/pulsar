@@ -1,0 +1,48 @@
+name: build-android-kmp
+
+# Reusable: build the KMP composeApp on Android against the local Pulsar
+# Android sources. The kmp/PulsarApp settings.gradle.kts uses
+# includeBuild("../Pulsar") with a dependency substitution, so assembling
+# the composeApp transitively builds the local KMP library — no separate
+# library-assemble step needed. Called from test-build-apps.yml.
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: 'debug | release'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Verify Pulsar invocation in app sources
+        run: |
+          if ! grep -qrE "com\.swmansion\.pulsar\.kmp|Pulsar\.create\(" kmp/PulsarApp/composeApp/src; then
+            echo "::error::No Pulsar KMP invocation found in kmp/PulsarApp/composeApp sources." >&2
+            exit 1
+          fi
+
+      - name: Build KMP Android PulsarApp (composeApp)
+        working-directory: kmp/PulsarApp
+        env:
+          USE_LOCAL_PULSAR_ANDROID: '1'
+        run: |
+          if [[ "${{ inputs.build_type }}" == "release" ]]; then
+            ./gradlew :composeApp:assembleRelease
+          else
+            ./gradlew :composeApp:assembleDebug
+          fi

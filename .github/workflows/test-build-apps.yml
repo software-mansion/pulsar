@@ -11,6 +11,11 @@ name: Test Build Apps
 #      (USE_LOCAL_PULSAR_ANDROID / USE_LOCAL_PULSAR_IOS).
 #   4. Verify the app source actually invokes the Pulsar API.
 #   5. Build the app and fail if the build does not succeed.
+#
+# The per-cell build steps live in `.github/workflows/_build-<plat>-<fw>.yml`
+# reusable workflows. This file is just the dispatcher: inputs, the setup
+# job, and one job per (platform x framework) that calls the matching
+# reusable workflow with `build_type` as a matrix axis.
 
 on:
   workflow_dispatch:
@@ -93,471 +98,94 @@ jobs:
             exit 1
           fi
 
-  # ------------------------------------------------------------------
-  # Android: Native (Kotlin)
-  # ------------------------------------------------------------------
+  # --- Android jobs ------------------------------------------------------
+
   android-native:
     needs: setup
     if: ${{ inputs.platform_android && inputs.framework_native }}
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
+    uses: ./.github/workflows/_build-android-native.yml
+    with:
+      build_type: ${{ matrix.build_type }}
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Build local Pulsar Android library
-        working-directory: Android/PulsarApp
-        run: ./gradlew :Pulsar:assembleDebug
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "import com\.swmansion\.pulsar|Pulsar\(" Android/PulsarApp/app/src/main; then
-            echo "::error::No Pulsar invocation found in Android/PulsarApp/app sources." >&2
-            exit 1
-          fi
-
-      - name: Build Android native PulsarApp
-        working-directory: Android/PulsarApp
-        run: |
-          if [[ "${{ matrix.build_type }}" == "release" ]]; then
-            ./gradlew :app:assembleRelease
-          else
-            ./gradlew :app:assembleDebug
-          fi
-
-  # ------------------------------------------------------------------
-  # Android: React Native bridge + example app
-  # ------------------------------------------------------------------
   android-rn:
     needs: setup
     if: ${{ inputs.platform_android && inputs.framework_rn }}
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
+    uses: ./.github/workflows/_build-android-rn.yml
+    with:
+      build_type: ${{ matrix.build_type }}
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install RN library deps and build TS output
-        working-directory: react-native/react-native-pulsar
-        run: |
-          npm ci
-          npm run build
-
-      - name: Install example app deps
-        working-directory: react-native/PulsarApp
-        run: npm ci
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "from ['\"]react-native-pulsar['\"]" react-native/PulsarApp/src react-native/PulsarApp/App.tsx; then
-            echo "::error::No react-native-pulsar import found in RN PulsarApp sources." >&2
-            exit 1
-          fi
-
-      - name: Build local Pulsar Android library (via RN bridge module)
-        working-directory: react-native/PulsarApp/android
-        env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
-        run: ./gradlew :react-native-pulsar:assembleDebug
-
-      - name: Build React Native Android example app
-        working-directory: react-native/PulsarApp/android
-        env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
-        run: |
-          if [[ "${{ matrix.build_type }}" == "release" ]]; then
-            ./gradlew :app:assembleRelease
-          else
-            ./gradlew :app:assembleDebug
-          fi
-
-  # ------------------------------------------------------------------
-  # Android: Kotlin Multiplatform
-  # ------------------------------------------------------------------
   android-kmp:
     needs: setup
     if: ${{ inputs.platform_android && inputs.framework_kmp }}
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
+    uses: ./.github/workflows/_build-android-kmp.yml
+    with:
+      build_type: ${{ matrix.build_type }}
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "com\.swmansion\.pulsar\.kmp|Pulsar\.create\(" kmp/PulsarApp/composeApp/src; then
-            echo "::error::No Pulsar KMP invocation found in kmp/PulsarApp/composeApp sources." >&2
-            exit 1
-          fi
-
-      # kmp/PulsarApp's settings.gradle.kts uses includeBuild("../Pulsar") with a
-      # dependency substitution, so assembling the composeApp transitively builds
-      # the local KMP library — no separate library-assemble step needed.
-      - name: Build KMP Android PulsarApp (composeApp)
-        working-directory: kmp/PulsarApp
-        env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
-        run: |
-          if [[ "${{ matrix.build_type }}" == "release" ]]; then
-            ./gradlew :composeApp:assembleRelease
-          else
-            ./gradlew :composeApp:assembleDebug
-          fi
-
-  # ------------------------------------------------------------------
-  # Android: Flutter
-  # ------------------------------------------------------------------
   android-flutter:
     needs: setup
     if: ${{ inputs.platform_android && inputs.framework_flutter }}
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
+    uses: ./.github/workflows/_build-android-flutter.yml
+    with:
+      build_type: ${{ matrix.build_type }}
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+  # --- iOS jobs ----------------------------------------------------------
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
-            echo "::error::No pulsar_haptics import found in flutter/PulsarApp/lib." >&2
-            exit 1
-          fi
-
-      - name: Flutter pub get
-        working-directory: flutter/PulsarApp
-        run: flutter pub get
-
-      # Building the PulsarApp APK transitively builds the flutter/pulsar plugin
-      # against the local Android/Pulsar sources (via USE_LOCAL_PULSAR_ANDROID).
-      - name: Build Flutter Android PulsarApp
-        working-directory: flutter/PulsarApp
-        env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
-        run: |
-          if [[ "${{ matrix.build_type }}" == "release" ]]; then
-            flutter build apk --release
-          else
-            flutter build apk --debug
-          fi
-
-  # ------------------------------------------------------------------
-  # iOS: Native (Swift)
-  # ------------------------------------------------------------------
   ios-native:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_native }}
-    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
+    uses: ./.github/workflows/_build-ios-native.yml
+    with:
+      build_type: ${{ matrix.build_type }}
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "import Pulsar|Pulsar\(\)" iOS/PulsarApp/PulsarApp; then
-            echo "::error::No Pulsar invocation found in iOS/PulsarApp sources." >&2
-            exit 1
-          fi
-
-      - name: Resolve Swift packages
-        working-directory: iOS/PulsarApp
-        run: xcodebuild -resolvePackageDependencies -project PulsarApp.xcodeproj
-
-      # xcodebuild compiles the SPM-resolved Pulsar package for the iOS Simulator
-      # SDK, so we don't need (and can't run) `swift build` here — that defaults
-      # to the host platform where UIKit isn't available.
-      - name: Build iOS native PulsarApp
-        working-directory: iOS/PulsarApp
-        run: |
-          CONFIG=$( [[ "${{ matrix.build_type }}" == "release" ]] && echo "Release" || echo "Debug" )
-          xcodebuild \
-            -project PulsarApp.xcodeproj \
-            -scheme PulsarApp \
-            -configuration "$CONFIG" \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO \
-            build
-
-  # ------------------------------------------------------------------
-  # iOS: React Native bridge + example app
-  # ------------------------------------------------------------------
   ios-rn:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_rn }}
-    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
+    uses: ./.github/workflows/_build-ios-rn.yml
+    with:
+      build_type: ${{ matrix.build_type }}
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Setup Ruby (for CocoaPods)
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: react-native/PulsarApp
-
-      - name: Install RN library deps and build TS output
-        working-directory: react-native/react-native-pulsar
-        run: |
-          npm ci
-          npm run build
-
-      - name: Install example app JS deps
-        working-directory: react-native/PulsarApp
-        run: npm ci
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "from ['\"]react-native-pulsar['\"]" react-native/PulsarApp/src react-native/PulsarApp/App.tsx; then
-            echo "::error::No react-native-pulsar import found in RN PulsarApp sources." >&2
-            exit 1
-          fi
-
-      - name: Install pods (using local Pulsar iOS sources)
-        working-directory: react-native/PulsarApp/ios
-        env:
-          USE_LOCAL_PULSAR_IOS: '1'
-        run: bundle exec pod install
-
-      - name: Build React Native iOS example app
-        working-directory: react-native/PulsarApp/ios
-        run: |
-          CONFIG=$( [[ "${{ matrix.build_type }}" == "release" ]] && echo "Release" || echo "Debug" )
-          xcodebuild \
-            -workspace example.xcworkspace \
-            -scheme example \
-            -configuration "$CONFIG" \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO \
-            build
-
-  # ------------------------------------------------------------------
-  # iOS: Kotlin Multiplatform
-  # ------------------------------------------------------------------
   ios-kmp:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_kmp }}
-    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
+    uses: ./.github/workflows/_build-ios-kmp.yml
+    with:
+      build_type: ${{ matrix.build_type }}
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      # The iosApp "Compile Kotlin Framework" build phase hard-codes
-      # JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
-      # and overwrites whatever JAVA_HOME the runner has. Install Homebrew's
-      # openjdk@17 so that path exists.
-      - name: Install Homebrew openjdk@17 (for hard-coded JAVA_HOME in iosApp)
-        run: brew install openjdk@17
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "com\.swmansion\.pulsar\.kmp|Pulsar\.create\(" kmp/PulsarApp/composeApp/src; then
-            echo "::error::No Pulsar KMP invocation found in kmp/PulsarApp/composeApp sources." >&2
-            exit 1
-          fi
-
-      # The shared framework lives on :composeApp (not :library). The iosApp
-      # Xcode project has a "Compile Kotlin Framework" build phase that invokes
-      # Gradle, so xcodebuild end-to-end is sufficient — no separate framework
-      # link task needed up-front.
-      - name: Build KMP iOS PulsarApp
-        working-directory: kmp/PulsarApp/iosApp
-        run: |
-          CONFIG=$( [[ "${{ matrix.build_type }}" == "release" ]] && echo "Release" || echo "Debug" )
-          xcodebuild \
-            -project iosApp.xcodeproj \
-            -scheme iosApp \
-            -configuration "$CONFIG" \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO \
-            build
-
-  # ------------------------------------------------------------------
-  # iOS: Flutter
-  # ------------------------------------------------------------------
-  # The plugin's published Package.swift depends on Pulsar-ios by URL
-  # pinned to `from: "1.1.4"`. Every published tag (1.1.0–1.1.4) ships
-  # `swift-tools-version: 6.1` and the unfixed Swift 6 actor-isolation
-  # issues in SystemPresetsImpl.swift that the local iOS/Pulsar
-  # manifest works around by pinning `swiftLanguageModes: [.v5]`. The
-  # pin lives only in the local source tree, so a remote SPM fetch
-  # would still hit the strict-concurrency errors.
-  #
-  # CI-only workaround: rewrite the plugin manifest in-place to swap
-  # the remote URL dependency for a path dep pointing at the local
-  # iOS/Pulsar tree — routed through a uniquely-named symlink in
-  # `$RUNNER_TEMP` to avoid an SPM identity collision (see the comment
-  # on the patch step for the gory details).
   ios-flutter:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_flutter }}
-    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
         build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Verify Pulsar invocation in app sources
-        run: |
-          if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
-            echo "::error::No pulsar_haptics import found in flutter/PulsarApp/lib." >&2
-            exit 1
-          fi
-
-      # See the comment block above the job header for the rationale.
-      #
-      # Why we point the path dep at a uniquely-named symlink instead of
-      # `iOS/Pulsar` directly. Flutter 3.44.1's plugin SPM integration
-      # mirrors the plugin under `<App>/ios/Flutter/ephemeral/Packages/
-      # .packages/pulsar` — the *podspec* name (`flutter/pulsar/ios/
-      # pulsar.podspec` is named `pulsar`), not the Dart name
-      # (`pulsar_haptics`). Pointing the path dep at `iOS/Pulsar`
-      # collides with that symlink's last path component on macOS's
-      # case-insensitive filesystem under SPM tools-5.9: SPM derives
-      # the same identity `pulsar` from both and reports a self-cycle
-      # with the misleading "cyclic dependency between packages
-      # FlutterGeneratedPluginSwiftPackage -> pulsar_haptics ->
-      # pulsar_haptics requires tools-version 6.0 or later" wording.
-      # The `name:` alias on the dep isn't honored as a tie-breaker
-      # under tools-5.9. Route through `$RUNNER_TEMP/pulsar-sdk-source`
-      # so the resolved path ends in a unique component.
-      - name: Patch plugin SPM dep to local iOS/Pulsar sources
-        env:
-          PULSAR_ABS_PATH: ${{ github.workspace }}/iOS/Pulsar
-        run: |
-          set -euo pipefail
-          MANIFEST=flutter/pulsar/ios/pulsar_haptics/Package.swift
-          if ! grep -q 'url: "https://github.com/software-mansion-labs/pulsar-ios"' "$MANIFEST"; then
-            echo "::error::Expected remote pulsar-ios SPM dep not found in $MANIFEST — manifest may have changed upstream." >&2
-            exit 1
-          fi
-          if [[ ! -d "$PULSAR_ABS_PATH" ]]; then
-            echo "::error::Expected local Pulsar sources at $PULSAR_ABS_PATH but the directory does not exist." >&2
-            exit 1
-          fi
-          SDK_LINK="${RUNNER_TEMP}/pulsar-sdk-source"
-          ln -sfn "$PULSAR_ABS_PATH" "$SDK_LINK"
-          echo "Symlinked $SDK_LINK -> $(readlink "$SDK_LINK")"
-          SDK_LINK="$SDK_LINK" python3 - "$MANIFEST" <<'PY'
-          import os, re, sys, pathlib
-          p = pathlib.Path(sys.argv[1])
-          sdk_link = os.environ['SDK_LINK']
-          src = p.read_text()
-          # Swap remote URL dep for a path dep that ends in a unique
-          # component — see the comment block on the step above for
-          # why. Keep the `name: "pulsar-ios"` alias so the existing
-          # target dependency `.product(name: "Pulsar", package:
-          # "pulsar-ios")` still resolves. Do NOT bump
-          # swift-tools-version — that would flip the plugin's own
-          # sources into Swift 6 mode and the plugin code is not yet
-          # clean under strict concurrency
-          # (`FlutterMethodNotImplemented` isn't Sendable).
-          src, n = re.subn(
-              r'\.package\(url: "https://github\.com/software-mansion-labs/pulsar-ios", from: "[^"]+"\),?',
-              f'.package(name: "pulsar-ios", path: "{sdk_link}"),',
-              src,
-          )
-          if n != 1:
-              sys.exit(f"Expected exactly one dep match, got {n}")
-          p.write_text(src)
-          PY
-          echo "Patched dep in $MANIFEST:"
-          grep -nE '\.package\(|\.product\(' "$MANIFEST"
-
-      - name: Flutter pub get
-        working-directory: flutter/PulsarApp
-        run: flutter pub get
-
-      - name: Build Flutter iOS PulsarApp (no codesign)
-        working-directory: flutter/PulsarApp
-        run: |
-          if [[ "${{ matrix.build_type }}" == "release" ]]; then
-            flutter build ios --release --no-codesign
-          else
-            flutter build ios --debug --no-codesign --simulator
-          fi
+    uses: ./.github/workflows/_build-ios-flutter.yml
+    with:
+      build_type: ${{ matrix.build_type }}

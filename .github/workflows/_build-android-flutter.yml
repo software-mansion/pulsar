@@ -1,0 +1,57 @@
+name: build-android-flutter
+
+# Reusable: build the Flutter PulsarApp APK against the local Pulsar
+# Android sources (via USE_LOCAL_PULSAR_ANDROID). Building the PulsarApp
+# APK transitively builds the flutter/pulsar plugin. Called from
+# test-build-apps.yml.
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: 'debug | release'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Verify Pulsar invocation in app sources
+        run: |
+          if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
+            echo "::error::No pulsar_haptics import found in flutter/PulsarApp/lib." >&2
+            exit 1
+          fi
+
+      - name: Flutter pub get
+        working-directory: flutter/PulsarApp
+        run: flutter pub get
+
+      - name: Build Flutter Android PulsarApp
+        working-directory: flutter/PulsarApp
+        env:
+          USE_LOCAL_PULSAR_ANDROID: '1'
+        run: |
+          if [[ "${{ inputs.build_type }}" == "release" ]]; then
+            flutter build apk --release
+          else
+            flutter build apk --debug
+          fi
