@@ -1,0 +1,73 @@
+name: build-ios-rn
+
+# Reusable: build the React Native PulsarApp on iOS Simulator against the
+# local Pulsar iOS sources (via USE_LOCAL_PULSAR_IOS, which flips the pod
+# install to the local podspec). Called from test-build-apps.yml.
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: 'debug | release'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Ruby (for CocoaPods)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: react-native/PulsarApp
+
+      - name: Install RN library deps and build TS output
+        working-directory: react-native/react-native-pulsar
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install example app JS deps
+        working-directory: react-native/PulsarApp
+        run: npm ci
+
+      - name: Verify Pulsar invocation in app sources
+        run: |
+          if ! grep -qrE "from ['\"]react-native-pulsar['\"]" react-native/PulsarApp/src react-native/PulsarApp/App.tsx; then
+            echo "::error::No react-native-pulsar import found in RN PulsarApp sources." >&2
+            exit 1
+          fi
+
+      - name: Install pods (using local Pulsar iOS sources)
+        working-directory: react-native/PulsarApp/ios
+        env:
+          USE_LOCAL_PULSAR_IOS: '1'
+        run: bundle exec pod install
+
+      - name: Build React Native iOS example app
+        working-directory: react-native/PulsarApp/ios
+        run: |
+          CONFIG=$( [[ "${{ inputs.build_type }}" == "release" ]] && echo "Release" || echo "Debug" )
+          xcodebuild \
+            -workspace example.xcworkspace \
+            -scheme example \
+            -configuration "$CONFIG" \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build

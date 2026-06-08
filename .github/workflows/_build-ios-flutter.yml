@@ -1,0 +1,114 @@
+name: build-ios-flutter
+
+# Reusable: build the Flutter PulsarApp on iOS Simulator against the local
+# Pulsar Swift Package. Called from test-build-apps.yml.
+#
+# The plugin's published Package.swift depends on Pulsar-ios by URL pinned
+# to `from: "1.1.4"`. We rewrite that to a path dep pointing at the local
+# iOS/Pulsar tree — routed through a uniquely-named symlink in
+# `$RUNNER_TEMP` to avoid an SPM identity collision (see the comment on
+# the patch step for the gory details).
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: 'debug | release'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Verify Pulsar invocation in app sources
+        run: |
+          if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
+            echo "::error::No pulsar_haptics import found in flutter/PulsarApp/lib." >&2
+            exit 1
+          fi
+
+      # Why we point the path dep at a uniquely-named symlink instead of
+      # `iOS/Pulsar` directly. Flutter 3.44.1's plugin SPM integration
+      # mirrors the plugin under `<App>/ios/Flutter/ephemeral/Packages/
+      # .packages/pulsar` — the *podspec* name (`flutter/pulsar/ios/
+      # pulsar.podspec` is named `pulsar`), not the Dart name
+      # (`pulsar_haptics`). Pointing the path dep at `iOS/Pulsar`
+      # collides with that symlink's last path component on macOS's
+      # case-insensitive filesystem under SPM tools-5.9: SPM derives
+      # the same identity `pulsar` from both and reports a self-cycle
+      # with the misleading "cyclic dependency between packages
+      # FlutterGeneratedPluginSwiftPackage -> pulsar_haptics ->
+      # pulsar_haptics requires tools-version 6.0 or later" wording.
+      # The `name:` alias on the dep isn't honored as a tie-breaker
+      # under tools-5.9. Route through `$RUNNER_TEMP/pulsar-sdk-source`
+      # so the resolved path ends in a unique component.
+      - name: Patch plugin SPM dep to local iOS/Pulsar sources
+        env:
+          PULSAR_ABS_PATH: ${{ github.workspace }}/iOS/Pulsar
+        run: |
+          set -euo pipefail
+          MANIFEST=flutter/pulsar/ios/pulsar_haptics/Package.swift
+          if ! grep -q 'url: "https://github.com/software-mansion-labs/pulsar-ios"' "$MANIFEST"; then
+            echo "::error::Expected remote pulsar-ios SPM dep not found in $MANIFEST — manifest may have changed upstream." >&2
+            exit 1
+          fi
+          if [[ ! -d "$PULSAR_ABS_PATH" ]]; then
+            echo "::error::Expected local Pulsar sources at $PULSAR_ABS_PATH but the directory does not exist." >&2
+            exit 1
+          fi
+          SDK_LINK="${RUNNER_TEMP}/pulsar-sdk-source"
+          ln -sfn "$PULSAR_ABS_PATH" "$SDK_LINK"
+          echo "Symlinked $SDK_LINK -> $(readlink "$SDK_LINK")"
+          SDK_LINK="$SDK_LINK" python3 - "$MANIFEST" <<'PY'
+          import os, re, sys, pathlib
+          p = pathlib.Path(sys.argv[1])
+          sdk_link = os.environ['SDK_LINK']
+          src = p.read_text()
+          # Swap remote URL dep for a path dep that ends in a unique
+          # component — see the comment block on the step above for
+          # why. Keep the `name: "pulsar-ios"` alias so the existing
+          # target dependency `.product(name: "Pulsar", package:
+          # "pulsar-ios")` still resolves. Do NOT bump
+          # swift-tools-version — that would flip the plugin's own
+          # sources into Swift 6 mode and the plugin code is not yet
+          # clean under strict concurrency
+          # (`FlutterMethodNotImplemented` isn't Sendable).
+          src, n = re.subn(
+              r'\.package\(url: "https://github\.com/software-mansion-labs/pulsar-ios", from: "[^"]+"\),?',
+              f'.package(name: "pulsar-ios", path: "{sdk_link}"),',
+              src,
+          )
+          if n != 1:
+              sys.exit(f"Expected exactly one dep match, got {n}")
+          p.write_text(src)
+          PY
+          echo "Patched dep in $MANIFEST:"
+          grep -nE '\.package\(|\.product\(' "$MANIFEST"
+
+      - name: Flutter pub get
+        working-directory: flutter/PulsarApp
+        run: flutter pub get
+
+      - name: Build Flutter iOS PulsarApp (no codesign)
+        working-directory: flutter/PulsarApp
+        run: |
+          if [[ "${{ inputs.build_type }}" == "release" ]]; then
+            flutter build ios --release --no-codesign
+          else
+            flutter build ios --debug --no-codesign --simulator
+          fi

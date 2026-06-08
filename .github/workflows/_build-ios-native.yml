@@ -1,0 +1,52 @@
+name: build-ios-native
+
+# Reusable: build the iOS native (Swift) PulsarApp against the local Pulsar
+# Swift Package (resolved via the .xcodeproj's SPM relative-path reference).
+# xcodebuild compiles the SPM-resolved package for the iOS Simulator SDK,
+# so we don't need (and can't run) `swift build` here — that defaults to
+# the host platform where UIKit isn't available. Called from
+# test-build-apps.yml.
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: 'debug | release'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Verify Pulsar invocation in app sources
+        run: |
+          if ! grep -qrE "import Pulsar|Pulsar\(\)" iOS/PulsarApp/PulsarApp; then
+            echo "::error::No Pulsar invocation found in iOS/PulsarApp sources." >&2
+            exit 1
+          fi
+
+      - name: Resolve Swift packages
+        working-directory: iOS/PulsarApp
+        run: xcodebuild -resolvePackageDependencies -project PulsarApp.xcodeproj
+
+      - name: Build iOS native PulsarApp
+        working-directory: iOS/PulsarApp
+        run: |
+          CONFIG=$( [[ "${{ inputs.build_type }}" == "release" ]] && echo "Release" || echo "Debug" )
+          xcodebuild \
+            -project PulsarApp.xcodeproj \
+            -scheme PulsarApp \
+            -configuration "$CONFIG" \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
