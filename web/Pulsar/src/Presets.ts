@@ -33,29 +33,22 @@ export type PresetPlaybackResult = {
   usedAudioFallback: boolean;
 };
 
-class Presets {
+class Preset {
+  public readonly pattern: HapticPattern;
   private readonly audioGenerator = new AudioGenerator();
+  private readonly composer = new PatternComposer();
+  private renderedAudio: AudioBuffer | null = null;
+  private audioPrepared = false;
 
-  public list() {
-    return Object.keys(BUILTIN_PRESETS) as PresetName[];
+  constructor(pattern: HapticPattern) {
+    this.pattern = pattern;
+    this.composer.parse(pattern);
   }
 
-  public has(name: string): name is PresetName {
-    return name in BUILTIN_PRESETS;
-  }
-
-  public get(name: string) {
-    return this.clonePattern(this.requirePreset(name));
-  }
-
-  public async play(name: string): Promise<PresetPlaybackResult> {
+  public async play(): Promise<PresetPlaybackResult> {
     this.audioGenerator.stop();
 
-    const pattern = this.get(name);
-    const composer = new PatternComposer();
-    composer.parse(pattern);
-
-    const didPlayHaptics = composer.play();
+    const didPlayHaptics = this.composer.play();
     const shouldUseAudioFallback = !didPlayHaptics && Settings.isSoundEnabled();
 
     if (!shouldUseAudioFallback) {
@@ -66,42 +59,67 @@ class Presets {
       };
     }
 
-    const renderedBuffer = await this.audioGenerator.parse(pattern);
-    const didPlayAudio = renderedBuffer ? await this.audioGenerator.play() : false;
+    if (!this.audioPrepared) {
+      this.renderedAudio = await this.audioGenerator.parse(this.pattern);
+      this.audioPrepared = true;
+    }
+
+    const didPlayAudio = this.renderedAudio ? await this.audioGenerator.play() : false;
 
     return {
       haptics: didPlayHaptics,
       audio: didPlayAudio,
-      usedAudioFallback: renderedBuffer !== null,
+      usedAudioFallback: this.renderedAudio !== null,
     };
   }
 
   public stop() {
-    const didStopHaptics = Settings.stopHaptics();
-    const didStopAudio = this.audioGenerator.stop();
+    return this.audioGenerator.stop();
+  }
+}
 
-    return didStopHaptics || didStopAudio;
+class Presets {
+  private readonly presets: Record<PresetName, Preset>;
+  private currentlyPlaying: Preset | null = null;
+
+  constructor() {
+    const entries = Object.entries(BUILTIN_PRESETS) as [PresetName, HapticPattern][];
+    this.presets = Object.fromEntries(
+      entries.map(([name, pattern]) => [name, new Preset(pattern)]),
+    ) as Record<PresetName, Preset>;
   }
 
-  private requirePreset(name: string) {
+  public list() {
+    return Object.keys(this.presets) as PresetName[];
+  }
+
+  public has(name: string): name is PresetName {
+    return name in this.presets;
+  }
+
+  public get(name: string): Preset {
     if (!this.has(name)) {
       throw new Error(`Unknown haptic preset: ${String(name)}`);
     }
 
-    return BUILTIN_PRESETS[name];
+    return this.presets[name];
   }
 
-  private clonePattern(pattern: HapticPattern) {
-    return pattern.map((entry) =>
-      entry.type === "line"
-        ? {
-            ...entry,
-            intensity: entry.intensity.map((point) => ({ ...point })),
-            frequency: entry.frequency.map((point) => ({ ...point })),
-          }
-        : { ...entry }
-    );
+  public async play(name: string): Promise<PresetPlaybackResult> {
+    this.currentlyPlaying?.stop();
+
+    const preset = this.get(name);
+    this.currentlyPlaying = preset;
+
+    return preset.play();
+  }
+
+  public stop() {
+    const didStopHaptics = Settings.stopHaptics();
+    const didStopAudio = this.currentlyPlaying?.stop() ?? false;
+
+    return didStopHaptics || didStopAudio;
   }
 }
 
-export { BUILTIN_PRESETS, Presets };
+export { BUILTIN_PRESETS, Preset, Presets };

@@ -11,15 +11,14 @@ test("list returns the builtin preset names", () => {
   assert.deepEqual(presets.list(), ["tap", "doubleTap", "success", "warning", "heartbeat"]);
 });
 
-test("get returns a cloned pattern for the requested preset", () => {
+test("get returns the same shared Preset instance for the requested name", () => {
   const presets = new Presets();
 
   const first = presets.get("tap");
   const second = presets.get("tap");
 
-  assert.notEqual(first, second);
-  assert.notEqual(first[0], second[0]);
-  assert.deepEqual(first, [{ type: "continuous", timestamp: 0, duration: 35 }]);
+  assert.equal(first, second);
+  assert.deepEqual(first.pattern, [{ type: "continuous", timestamp: 0, duration: 35 }]);
 });
 
 test("play uses haptics as the primary path when vibration is available", async () => {
