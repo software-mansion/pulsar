@@ -1,30 +1,8 @@
 import { AudioGenerator } from "./AudioGenerator.ts";
+import { BUILTIN_PRESETS, type PresetDefinition } from "./builtin-presets.ts";
 import { PatternComposer } from "./PatternComposer.ts";
 import Settings from "./Settings.ts";
 import type { HapticPattern } from "./types.ts";
-
-const BUILTIN_PRESETS = {
-  tap: [{ type: "continuous", timestamp: 0, duration: 35 }],
-  doubleTap: [
-    { type: "continuous", timestamp: 0, duration: 30 },
-    { type: "continuous", timestamp: 90, duration: 30 },
-  ],
-  success: [
-    { type: "continuous", timestamp: 0, duration: 40 },
-    { type: "continuous", timestamp: 90, duration: 55 },
-    { type: "continuous", timestamp: 180, duration: 90 },
-  ],
-  warning: [
-    { type: "pulse", timestamp: 0, duration: 240, intensity: 0.35, frequency: 0.9 },
-    { type: "continuous", timestamp: 320, duration: 120 },
-  ],
-  heartbeat: [
-    { type: "continuous", timestamp: 0, duration: 45 },
-    { type: "continuous", timestamp: 120, duration: 70 },
-    { type: "continuous", timestamp: 420, duration: 45 },
-    { type: "continuous", timestamp: 540, duration: 70 },
-  ],
-} satisfies Record<string, HapticPattern>;
 
 export type PresetName = keyof typeof BUILTIN_PRESETS;
 export type PresetPlaybackResult = {
@@ -34,15 +12,21 @@ export type PresetPlaybackResult = {
 };
 
 class Preset {
+  public readonly name: string;
+  public readonly category: string;
+  public readonly description: string;
   public readonly pattern: HapticPattern;
   private readonly audioGenerator = new AudioGenerator();
   private readonly composer = new PatternComposer();
   private renderedAudio: AudioBuffer | null = null;
   private audioPrepared = false;
 
-  constructor(pattern: HapticPattern) {
-    this.pattern = pattern;
-    this.composer.parse(pattern);
+  constructor(name: string, definition: PresetDefinition) {
+    this.name = name;
+    this.category = definition.category;
+    this.description = definition.description;
+    this.pattern = definition.pattern;
+    this.composer.parse(this.pattern);
   }
 
   public async play(): Promise<PresetPlaybackResult> {
@@ -83,14 +67,18 @@ class Presets {
   private currentlyPlaying: Preset | null = null;
 
   constructor() {
-    const entries = Object.entries(BUILTIN_PRESETS) as [PresetName, HapticPattern][];
+    const entries = Object.entries(BUILTIN_PRESETS) as [PresetName, PresetDefinition][];
     this.presets = Object.fromEntries(
-      entries.map(([name, pattern]) => [name, new Preset(pattern)]),
+      entries.map(([name, definition]) => [name, new Preset(name, definition)]),
     ) as Record<PresetName, Preset>;
   }
 
   public list() {
     return Object.keys(this.presets) as PresetName[];
+  }
+
+  public all(): Preset[] {
+    return Object.values(this.presets);
   }
 
   public has(name: string): name is PresetName {

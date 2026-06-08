@@ -1300,7 +1300,7 @@
       }
 
       function loadPreset(name) {
-        segments = clonePattern(presets.get(name).map((entry, index) => ({
+        segments = clonePattern(presets.get(name).pattern.map((entry, index) => ({
           ...entry,
           id: createId(),
           lane: index % laneCount,

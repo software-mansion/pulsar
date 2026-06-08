@@ -5,10 +5,13 @@ import { AudioGenerator } from "../src/AudioGenerator.ts";
 import { Presets } from "../src/Presets.ts";
 import Settings from "../src/Settings.ts";
 
-test("list returns the builtin preset names", () => {
+test("list includes the core builtin preset names", () => {
   const presets = new Presets();
+  const names = presets.list();
 
-  assert.deepEqual(presets.list(), ["tap", "doubleTap", "success", "warning", "heartbeat"]);
+  for (const expected of ["tap", "doubleTap", "success", "warning", "heartbeat"]) {
+    assert.ok(names.includes(expected), `expected list to include "${expected}"`);
+  }
 });
 
 test("get returns the same shared Preset instance for the requested name", () => {
@@ -18,7 +21,9 @@ test("get returns the same shared Preset instance for the requested name", () =>
   const second = presets.get("tap");
 
   assert.equal(first, second);
-  assert.deepEqual(first.pattern, [{ type: "continuous", timestamp: 0, duration: 35 }]);
+  assert.equal(first.name, "tap");
+  assert.equal(first.category, "UI");
+  assert.deepEqual(first.pattern, [{ type: "continuous", timestamp: 0, duration: 30 }]);
 });
 
 test("play uses haptics as the primary path when vibration is available", async () => {

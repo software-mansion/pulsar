@@ -388,9 +388,9 @@
 
     <script type="module">
       import Pulsar from "./src/index.ts";
-      import { PRESETS } from "./presets-gallery-data.js";
 
       const pulsar = new Pulsar();
+      const PRESETS = pulsar.getPresets().all();
       const composer = pulsar.getPatternComposer();
       const compile = (pattern) => composer.parse(pattern);
 
