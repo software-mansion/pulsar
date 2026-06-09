@@ -1,4 +1,4 @@
-import Pulsar, { PatternComposer, Preset } from "@pulsar/haptics";
+import Pulsar, { PatternComposer, Preset } from "pulsar-haptics";
 
 const pulsar = new Pulsar();
 const presets = pulsar.getPresets();

@@ -9,7 +9,7 @@
     "preview": "vite preview --host"
   },
   "dependencies": {
-    "@pulsar/haptics": "file:../Pulsar"
+    "pulsar-haptics": "file:../Pulsar"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
