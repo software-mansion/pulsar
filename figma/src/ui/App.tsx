@@ -46,9 +46,14 @@ async function createFigmaProjectToken(payload: unknown): Promise<string> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ config: payload })
   });
-  if (!res.ok) throw new Error(`Server responded ${res.status}`);
-  const data = (await res.json()) as { success: boolean; token?: string; error?: string };
-  if (!data.success || !data.token) throw new Error(data.error || 'No token returned');
+  const data = (await res.json().catch(() => null)) as
+    | { success: boolean; token?: string; error?: string; detail?: string }
+    | null;
+  if (!res.ok) {
+    const msg = data?.error ?? `Server responded ${res.status}`;
+    throw new Error(data?.detail ? `${msg} (${data.detail})` : msg);
+  }
+  if (!data?.success || !data.token) throw new Error(data?.error || 'No token returned');
   return data.token;
 }
 
@@ -61,9 +66,14 @@ async function updateFigmaProjectToken(token: string, payload: unknown): Promise
     body: JSON.stringify({ config: payload })
   });
   if (res.status === 404) return false;
-  if (!res.ok) throw new Error(`Server responded ${res.status}`);
-  const data = (await res.json()) as { success: boolean; error?: string };
-  if (!data.success) throw new Error(data.error || 'Update failed');
+  const data = (await res.json().catch(() => null)) as
+    | { success: boolean; error?: string; detail?: string }
+    | null;
+  if (!res.ok) {
+    const msg = data?.error ?? `Server responded ${res.status}`;
+    throw new Error(data?.detail ? `${msg} (${data.detail})` : msg);
+  }
+  if (!data?.success) throw new Error(data?.error || 'Update failed');
   return true;
 }
 

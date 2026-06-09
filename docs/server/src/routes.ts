@@ -59,7 +59,11 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
         res.json({ success: true, token });
       } catch (err) {
         console.error('createFigmaProject failed:', err);
-        res.status(500).json({ success: false, error: 'Failed to create figma project' });
+        res.status(500).json({
+          success: false,
+          error: 'Failed to create figma project',
+          detail: (err as Error)?.message,
+        });
       }
     },
   );
@@ -83,7 +87,11 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
         res.json({ success: true });
       } catch (err) {
         console.error('updateFigmaProject failed:', err);
-        res.status(500).json({ success: false, error: 'Failed to update figma project' });
+        res.status(500).json({
+          success: false,
+          error: 'Failed to update figma project',
+          detail: (err as Error)?.message,
+        });
       }
     },
   );
@@ -106,7 +114,11 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
       res.json({ success: true, config: parsed });
     } catch (err) {
       console.error('getFigmaProject failed:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch figma project' });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch figma project',
+        detail: (err as Error)?.message,
+      });
     }
   });
 

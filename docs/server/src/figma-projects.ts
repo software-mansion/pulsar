@@ -1,11 +1,27 @@
-import { Pool } from 'pg';
+import { Pool, PoolConfig } from 'pg';
 import crypto from 'crypto';
 import { DATABASE_URL } from './config';
 
-// Single shared pool for the lifetime of the process. Neon requires TLS.
+// SSL is opt-in: managed providers (Neon, RDS, etc.) need it, but self-hosted
+// Postgres on the same private network typically does not — and forcing TLS
+// against a server that doesn't speak it makes the connection fail outright.
+// Enable by setting DATABASE_SSL=1/true/require (rejectUnauthorized=false to
+// tolerate managed providers' chains without bundling root certs).
+function buildSslOption(): PoolConfig['ssl'] {
+  const flag = (process.env.DATABASE_SSL ?? '').toLowerCase().trim();
+  if (flag === '1' || flag === 'true' || flag === 'require' || flag === 'yes') {
+    return { rejectUnauthorized: false };
+  }
+  return undefined;
+}
+
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: buildSslOption(),
+});
+
+pool.on('error', (err) => {
+  console.error('pg pool error:', err);
 });
 
 let initPromise: Promise<void> | null = null;
