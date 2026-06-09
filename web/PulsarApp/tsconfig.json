@@ -13,7 +13,12 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "pulsar-haptics": ["../Pulsar/src/index.ts"]
+    }
   },
   "include": ["src", "../Pulsar/src"]
 }
