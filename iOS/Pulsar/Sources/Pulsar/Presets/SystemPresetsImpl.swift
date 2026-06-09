@@ -1,6 +1,21 @@
 import UIKit
 import Foundation
 
+@inline(__always)
+private func makeMainActorPreparedGenerator<G: UIFeedbackGenerator>(
+  _ build: @MainActor () -> G
+) -> G {
+  precondition(
+    Thread.isMainThread,
+    "Pulsar system presets must be constructed on the main thread (UIFeedbackGenerator is @MainActor-isolated)."
+  )
+  return MainActor.assumeIsolated {
+    let generator = build()
+    generator.prepare()
+    return generator
+  }
+}
+
 @objc public class SystemImpactLightPreset : Player, Preset {
   public static let name: String = "SystemImpactLight"
   private var impactFeedbackGenerator: UIImpactFeedbackGenerator!
@@ -11,8 +26,7 @@ import Foundation
       [0, 0.55, 0.4]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
-    self.impactFeedbackGenerator.prepare()
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .light) }
   }
 
   @objc public override func play() {
@@ -39,8 +53,7 @@ import Foundation
       [0, 0.7, 0.3]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
-    self.impactFeedbackGenerator.prepare()
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .medium) }
   }
 
   @objc public override func play() {
@@ -67,8 +80,7 @@ import Foundation
       [0, 1, 0.45]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .heavy)
-    self.impactFeedbackGenerator.prepare()
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .heavy) }
   }
 
   @objc public override func play() {
@@ -95,8 +107,7 @@ import Foundation
       [0, 0.6, 0.1]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .soft)
-    self.impactFeedbackGenerator.prepare()
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .soft) }
   }
 
   @objc public override func play() {
@@ -123,8 +134,7 @@ import Foundation
       [0, 0.8, 0.95]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .rigid)
-    self.impactFeedbackGenerator.prepare()
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .rigid) }
   }
 
   @objc public override func play() {
@@ -152,8 +162,7 @@ import Foundation
       [150, 1, 1]
     ])
 //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = UINotificationFeedbackGenerator()
-    self.feedbackGenerator.prepare()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UINotificationFeedbackGenerator() }
   }
 
   @objc public override func play() {
@@ -181,8 +190,7 @@ import Foundation
       [150, 0.6, 0.9]
     ])
   //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = UINotificationFeedbackGenerator()
-    self.feedbackGenerator.prepare()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UINotificationFeedbackGenerator() }
   }
 
   @objc public override func play() {
@@ -212,8 +220,7 @@ import Foundation
       [250, 0.8, 0.4]
     ])
 //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = UINotificationFeedbackGenerator()
-    self.feedbackGenerator.prepare()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UINotificationFeedbackGenerator() }
   }
 
   @objc public override func play() {
@@ -240,8 +247,7 @@ import Foundation
       [0, 0.4, 0.7]
     ])
 //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = UISelectionFeedbackGenerator()
-    self.feedbackGenerator.prepare()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UISelectionFeedbackGenerator() }
   }
 
   @objc public override func play() {

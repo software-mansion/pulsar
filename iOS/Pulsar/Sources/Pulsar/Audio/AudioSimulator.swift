@@ -1,7 +1,7 @@
 import Foundation
-import AVFoundation
+@preconcurrency import AVFoundation
 
-public class AudioSimulator: NSObject {
+public final class AudioSimulator: NSObject, @unchecked Sendable {
 	private let sampleRate: Double = 22050
   private let isSimulatorDevice: Bool = {
     #if targetEnvironment(simulator)
