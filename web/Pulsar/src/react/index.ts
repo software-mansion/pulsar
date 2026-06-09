@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AudioGenerator, type AudioBufferInfo } from "../AudioGenerator.ts";
 import { PatternComposer } from "../PatternComposer.ts";
 import { Presets, type PresetName, type PresetPlaybackResult } from "../Presets.ts";
 import Pulsar from "../Pulsar.ts";
@@ -138,5 +139,45 @@ export function useRealtimeComposer(): RealtimeComposerHandle {
   return { set, stop, isPlaying, getCurrentValues };
 }
 
-export { PatternComposer, Presets, Pulsar, RealtimeComposer, Settings };
-export type { HapticPattern, PresetName, PresetPlaybackResult };
+export type AudioGeneratorHandle = {
+  parse: (pattern: HapticPattern) => Promise<AudioBuffer | null>;
+  play: () => Promise<boolean>;
+  stop: () => boolean;
+  isPlaying: () => boolean;
+  getBufferInfo: () => AudioBufferInfo | null;
+};
+
+/**
+ * Owns an AudioGenerator for the component's lifetime. Pass a `pattern` to
+ * auto-render its audio simulation on mount and re-render whenever it changes;
+ * or omit and call `parse()` manually.
+ *
+ * Audio is stopped automatically on unmount.
+ */
+export function useAudioGenerator(pattern?: HapticPattern): AudioGeneratorHandle {
+  const generatorRef = useRef<AudioGenerator | null>(null);
+  if (generatorRef.current === null) {
+    generatorRef.current = new AudioGenerator();
+  }
+  const generator = generatorRef.current;
+
+  const parse = useCallback((next: HapticPattern) => generator.parse(next), [generator]);
+  const play = useCallback(() => generator.play(), [generator]);
+  const stop = useCallback(() => generator.stop(), [generator]);
+  const isPlaying = useCallback(() => generator.isPlaying(), [generator]);
+  const getBufferInfo = useCallback(() => generator.getBufferInfo(), [generator]);
+
+  useEffect(() => {
+    if (pattern) {
+      void generator.parse(pattern);
+    }
+    return () => {
+      generator.stop();
+    };
+  }, [pattern, generator]);
+
+  return { parse, play, stop, isPlaying, getBufferInfo };
+}
+
+export { AudioGenerator, PatternComposer, Presets, Pulsar, RealtimeComposer, Settings };
+export type { AudioBufferInfo, HapticPattern, PresetName, PresetPlaybackResult };

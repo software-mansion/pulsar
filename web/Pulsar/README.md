@@ -59,6 +59,27 @@ composer.parse([
 composer.play();
 ```
 
+### Audio simulation of a pattern
+
+Render a haptic pattern into an audible `AudioBuffer` — useful as a fallback on devices without a vibration motor, or as a standalone sound effect generator.
+
+```ts
+import { AudioGenerator, type HapticPattern } from 'pulsar-haptics';
+
+const audio = new AudioGenerator();
+const pattern: HapticPattern = [
+  { type: 'continuous', timestamp: 0, duration: 40 },
+  { type: 'continuous', timestamp: 90, duration: 90 },
+];
+
+const buffer = await audio.parse(pattern);
+if (buffer) {
+  await audio.play();
+}
+```
+
+`AudioGenerator` can be used completely independently of the Vibration API.
+
 ### Realtime (gesture-driven) haptics
 
 ```ts
@@ -86,6 +107,7 @@ window.addEventListener('pointerup', () => realtime.stop());
 | `useHapticsSupport()` | `boolean` (SSR-safe) | feature gating in UI |
 | `usePatternComposer(pattern?)` | `{ play, stop, parse, getPattern, isParsed }` | one-shot custom patterns; auto-parses on mount |
 | `useRealtimeComposer()` | `{ set, stop, isPlaying, getCurrentValues }` | continuous gesture-driven haptics; auto-stops on unmount |
+| `useAudioGenerator(pattern?)` | `{ parse, play, stop, isPlaying, getBufferInfo }` | render a pattern to audio and play it back; auto-stops on unmount |
 
 Pattern + realtime composers are owned per-component and automatically stopped on unmount.
 

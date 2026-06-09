@@ -7,6 +7,7 @@ import Settings from "./Settings.ts";
 
 export default Pulsar;
 export { AudioGenerator, PatternComposer, Preset, Presets, Pulsar, RealtimeComposer, Settings };
+export type { AudioBufferInfo } from "./AudioGenerator.ts";
 export type {
   HapticContinuousSegment,
   HapticLineSegment,
