@@ -1,51 +1,78 @@
 {
-  "name": "@pulsar/haptics",
+  "name": "pulsar-haptics",
   "version": "0.1.0",
-  "description": "A TypeScript library for playing haptics on web devices",
+  "description": "A TypeScript library for playing haptics on web devices — works in vanilla JS, React, and any modern framework.",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/haptics.umd.js",
+  "main": "./dist/haptics.cjs",
   "module": "./dist/haptics.es.js",
-  "types": "./dist/haptics.d.ts",
+  "browser": "./dist/haptics.es.js",
+  "unpkg": "./dist/haptics.iife.js",
+  "jsdelivr": "./dist/haptics.iife.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/haptics.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/haptics.es.js",
-      "require": "./dist/haptics.umd.js"
-    }
+      "require": "./dist/haptics.cjs",
+      "default": "./dist/haptics.es.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react.es.js",
+      "require": "./dist/react.cjs",
+      "default": "./dist/react.es.js"
+    },
+    "./package.json": "./package.json"
   },
+  "sideEffects": false,
   "files": [
     "dist",
-    "src",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "dev": "vite build --watch",
     "example": "vite --host",
-    "build": "vite build && tsc --emitDeclarationOnly --declaration --declarationDir dist",
+    "build": "vite build && vite build --config vite.react.config.ts && tsc -p tsconfig.build.json --emitDeclarationOnly --declaration --declarationDir dist && node scripts/rewrite-dts-extensions.mjs",
     "test": "node --test --experimental-strip-types tests/*.test.js",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "clean": "rm -rf dist node_modules .turbo *.tsbuildinfo"
+    "clean": "rm -rf dist node_modules .turbo *.tsbuildinfo",
+    "prepublishOnly": "npm run clean && npm install && npm run build"
   },
-  "dependencies": {
-    "tslib": "^2.6.2"
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-test-renderer": "^18.3.0",
+    "react": "^18.3.0",
+    "react-test-renderer": "^18.3.0",
     "typescript": "^5.9.2",
     "vite": "^6.1.6"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "haptics",
     "vibration",
     "web",
-    "typescript"
+    "typescript",
+    "react",
+    "vanilla-js"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/pulsar-org/pulsar-web.git"
+    "url": "https://github.com/pulsar-org/pulsar-haptics.git"
   },
   "bugs": {
-    "url": "https://github.com/pulsar-org/pulsar-web/issues"
+    "url": "https://github.com/pulsar-org/pulsar-haptics/issues"
   }
 }

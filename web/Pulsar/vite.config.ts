@@ -5,26 +5,25 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'Haptics',
-      formats: ['umd', 'es'],
+      name: 'Pulsar',
+      formats: ['es', 'cjs', 'umd', 'iife'],
       fileName: (format) => {
-        if (format === 'umd') {
-          return 'haptics.umd.js'
+        switch (format) {
+          case 'es': return 'haptics.es.js'
+          case 'cjs': return 'haptics.cjs'
+          case 'umd': return 'haptics.umd.js'
+          case 'iife': return 'haptics.iife.js'
+          default: return `haptics.${format}.js`
         }
-        return 'haptics.es.js'
       }
     },
     sourcemap: true,
     minify: true,
-    target: 'ESNext',
+    target: 'es2020',
     rollupOptions: {
       output: {
-        exports: 'named',
-        globals: {
-          tslib: 'tslib'
-        }
-      },
-      external: ['tslib']
+        exports: 'named'
+      }
     }
   },
   resolve: {

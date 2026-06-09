@@ -1,0 +1,338 @@
+:root {
+  color-scheme: dark;
+  --bg: #0c0f14;
+  --panel: #161b22;
+  --panel-border: #2a313c;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #ff7a59;
+  --accent-soft: rgba(255, 122, 89, 0.16);
+  --success: #2ea043;
+  --danger: #f85149;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#app {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 4px;
+}
+
+header h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+header .support-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+header .support-badge.unsupported {
+  background: rgba(248, 81, 73, 0.16);
+  color: var(--danger);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.panel h2 {
+  font-size: 14px;
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+button {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+  font-weight: 500;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #11151c;
+  font-weight: 600;
+}
+
+button.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.toggle input {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+
+.log {
+  background: #0a0d12;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  max-height: 140px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--muted);
+}
+
+.preset-search {
+  width: 100%;
+  background: #0a0d12;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.preset-search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.preset-category {
+  display: grid;
+  gap: 6px;
+}
+
+.preset-category-title {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}
+
+.preset-button {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: #0a0d12;
+}
+
+.preset-button .description {
+  font-size: 11px;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pattern-svg {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin-top: 8px;
+  background: rgba(255, 122, 89, 0.04);
+  border-radius: 4px;
+}
+
+.pad {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background:
+    radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--accent-soft) 0%, transparent 60%),
+    linear-gradient(135deg, #0a0d12 0%, #131820 100%);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  touch-action: none;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.pad-axes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
+}
+
+.pad-axes::before,
+.pad-axes::after {
+  content: "";
+  border-color: var(--panel-border);
+  border-style: dashed;
+}
+
+.pad-axes::before {
+  grid-column: 1 / -1;
+  border-bottom: 1px dashed var(--panel-border);
+}
+
+.pad-axes::after {
+  grid-row: 1 / -1;
+  grid-column: 1;
+  border-right: 1px dashed var(--panel-border);
+}
+
+.pad-cursor {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 40px var(--accent);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.1s;
+  pointer-events: none;
+  left: 50%;
+  top: 50%;
+}
+
+.pad.active .pad-cursor {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.pad-label {
+  position: absolute;
+  color: var(--muted);
+  font-size: 11px;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pad-label.x {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.pad-label.y {
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: left center;
+}
+
+.pad-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pad-values strong {
+  display: block;
+  color: var(--text);
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.api-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.api-card {
+  background: #0a0d12;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.api-card code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.api-card .desc {
+  font-size: 12px;
+  color: var(--muted);
+}
