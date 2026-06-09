@@ -7,38 +7,33 @@ import Foundation
 // is reached only from the React Native / Flutter bridge entry points; both bridges
 // dispatch onto the main thread, so we can safely call into `@MainActor` synchronously
 // via `MainActor.assumeIsolated` to satisfy isolation requirements without cascading
-// `@MainActor` through the public PresetsWrapper API.
+// `@MainActor` through the public `PresetsWrapper` API.
 //
-// The helpers below return freshly constructed generators rather than mutating `self`
-// inside the `@MainActor` closure. That keeps Swift 6's region-based isolation happy:
-// the returned generator is transferred out of the MainActor region (no other live
-// reference exists at the construction site) and then stored into a non-isolated
-// property of the preset.
+// `makeMainActorPreparedGenerator` returns a freshly constructed generator rather than
+// mutating `self` inside the `@MainActor` closure. That keeps Swift 6's region-based
+// isolation happy: the returned generator is transferred out of the MainActor region
+// (no other live reference exists at the construction site) and then stored into a
+// non-isolated property of the preset.
+//
+// Defense in depth: `MainActor.assumeIsolated` in release builds may silently allow
+// off-main-thread callers and corrupt UIKit state. `PresetsWrapper`'s public API
+// (`preloadPresetByName`, `getByName`, ...) carries no `@MainActor` constraint, so a
+// third-party SPM consumer could call us from a background queue at app startup. The
+// explicit `Thread.isMainThread` precondition turns that misuse into a deterministic
+// crash with a clear message in both Debug and Release.
 
 @inline(__always)
-private func makeImpactGenerator(_ style: UIImpactFeedbackGenerator.FeedbackStyle) -> UIImpactFeedbackGenerator {
-  MainActor.assumeIsolated {
-    let g = UIImpactFeedbackGenerator(style: style)
-    g.prepare()
-    return g
-  }
-}
-
-@inline(__always)
-private func makeNotificationGenerator() -> UINotificationFeedbackGenerator {
-  MainActor.assumeIsolated {
-    let g = UINotificationFeedbackGenerator()
-    g.prepare()
-    return g
-  }
-}
-
-@inline(__always)
-private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
-  MainActor.assumeIsolated {
-    let g = UISelectionFeedbackGenerator()
-    g.prepare()
-    return g
+private func makeMainActorPreparedGenerator<G: UIFeedbackGenerator>(
+  _ build: @MainActor () -> G
+) -> G {
+  precondition(
+    Thread.isMainThread,
+    "Pulsar system presets must be constructed on the main thread (UIFeedbackGenerator is @MainActor-isolated)."
+  )
+  return MainActor.assumeIsolated {
+    let generator = build()
+    generator.prepare()
+    return generator
   }
 }
 
@@ -52,7 +47,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [0, 0.55, 0.4]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = makeImpactGenerator(.light)
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .light) }
   }
 
   @objc public override func play() {
@@ -79,7 +74,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [0, 0.7, 0.3]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = makeImpactGenerator(.medium)
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .medium) }
   }
 
   @objc public override func play() {
@@ -106,7 +101,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [0, 1, 0.45]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = makeImpactGenerator(.heavy)
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .heavy) }
   }
 
   @objc public override func play() {
@@ -133,7 +128,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [0, 0.6, 0.1]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = makeImpactGenerator(.soft)
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .soft) }
   }
 
   @objc public override func play() {
@@ -160,7 +155,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [0, 0.8, 0.95]
     ])
 //CODEGEN_END_{system_preset}
-    self.impactFeedbackGenerator = makeImpactGenerator(.rigid)
+    self.impactFeedbackGenerator = makeMainActorPreparedGenerator { UIImpactFeedbackGenerator(style: .rigid) }
   }
 
   @objc public override func play() {
@@ -188,7 +183,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [150, 1, 1]
     ])
 //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = makeNotificationGenerator()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UINotificationFeedbackGenerator() }
   }
 
   @objc public override func play() {
@@ -216,7 +211,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [150, 0.6, 0.9]
     ])
   //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = makeNotificationGenerator()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UINotificationFeedbackGenerator() }
   }
 
   @objc public override func play() {
@@ -246,7 +241,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [250, 0.8, 0.4]
     ])
 //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = makeNotificationGenerator()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UINotificationFeedbackGenerator() }
   }
 
   @objc public override func play() {
@@ -273,7 +268,7 @@ private func makeSelectionGenerator() -> UISelectionFeedbackGenerator {
       [0, 0.4, 0.7]
     ])
 //CODEGEN_END_{system_preset}
-    self.feedbackGenerator = makeSelectionGenerator()
+    self.feedbackGenerator = makeMainActorPreparedGenerator { UISelectionFeedbackGenerator() }
   }
 
   @objc public override func play() {
