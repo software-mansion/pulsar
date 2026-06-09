@@ -1,7 +1,20 @@
 import Foundation
-import AVFoundation
+// AVFoundation's audio types (AVAudioEngine, AVAudioPlayerNode, AVAudioUnitEQ,
+// AVAudioPCMBuffer, AVAudioSession, ...) predate Swift 6 Sendable annotations and
+// are not declared Sendable. Using `@preconcurrency` lets the package import them
+// from the Swift 6 language mode without triggering Sendable-related errors when
+// these types cross our serial `audioQueue` boundary. All actual cross-thread state
+// in this class is serialized either by the queue or by `NSLock`; see the
+// `@unchecked Sendable` rationale below.
+@preconcurrency import AVFoundation
 
-public class AudioSimulator: NSObject {
+public final class AudioSimulator: NSObject, @unchecked Sendable {
+  // `@unchecked Sendable` rationale: every mutable stored property is either
+  // protected by `playSoundLock` (`_playSound`) or is only mutated inside the
+  // serial `audioQueue` (`audioContext`, `playerNode`, `filterNode`,
+  // `isEngineConfigured`, `shouldForceAudiblePlayback`). The remaining stored
+  // values are `let` constants. This matches the pattern used in
+  // `HapticEngineWrapper`.
 	private let sampleRate: Double = 22050
   private let isSimulatorDevice: Bool = {
     #if targetEnvironment(simulator)
