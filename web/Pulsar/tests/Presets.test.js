@@ -207,7 +207,8 @@ test("play(A) then play(B) stops A's audio fallback when B starts", async () => 
       // — which calls source.stop() on A's still-live BufferSource.
       const secondPlay = presets.play("doubleTap");
 
-      // A's first source should be stopped now, even before we drain the rest.
+      // A's first source should be stopped synchronously when B's
+      // currentlyPlaying.stop() ran.
       const audioContexts = getAudioContexts();
       assert.ok(audioContexts.length >= 1, "expected at least one AudioContext");
       const aSources = audioContexts[0].createdSources;
@@ -218,12 +219,32 @@ test("play(A) then play(B) stops A's audio fallback when B starts", async () => 
         "A's first BufferSource should have been stopped when play(B) ran",
       );
 
-      // Fire onended for any live sources so the pending promises resolve.
-      for (const ctx of audioContexts) {
-        for (const source of ctx.createdSources) {
-          if (source.onended) source.onended();
-        }
+      // Drain B's parse/play microtasks too, so its source is created and we
+      // can fire onended for everything still pending. Without this, the
+      // Promise.all below would hang because B's play() promise never resolves.
+      for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
       }
+      // Fire onended for any source that hasn't ended yet (autoEndOnStart was
+      // disabled), so the pending presetA.play()/presetB.play() promises
+      // resolve.
+      const fireAll = () => {
+        for (const ctx of getAudioContexts()) {
+          for (const source of ctx.createdSources) {
+            if (source.onended && !source.stopped) {
+              const handler = source.onended;
+              source.onended = null;
+              handler();
+            } else if (source.onended) {
+              const handler = source.onended;
+              source.onended = null;
+              handler();
+            }
+          }
+        }
+      };
+      fireAll();
+
       // Now drain both promises so the test doesn't leak.
       const [resultA, resultB] = await Promise.all([firstPlay, secondPlay]);
 
