@@ -1,5 +1,5 @@
 import { AudioGenerator } from "./AudioGenerator.ts";
-import { BUILTIN_PRESETS, type PresetDefinition } from "./builtin-presets.ts";
+import { BUILTIN_PRESETS } from "./builtin-presets.ts";
 import { PatternComposer } from "./PatternComposer.ts";
 import Settings from "./Settings.ts";
 import type { HapticPattern } from "./types.ts";
@@ -13,19 +13,15 @@ export type PresetPlaybackResult = {
 
 class Preset {
   public readonly name: string;
-  public readonly category: string;
-  public readonly description: string;
   public readonly pattern: HapticPattern;
   private readonly audioGenerator = new AudioGenerator();
   private readonly composer = new PatternComposer();
   private renderedAudio: AudioBuffer | null = null;
   private audioPrepared = false;
 
-  constructor(name: string, definition: PresetDefinition) {
+  constructor(name: string, pattern: HapticPattern) {
     this.name = name;
-    this.category = definition.category;
-    this.description = definition.description;
-    this.pattern = definition.pattern;
+    this.pattern = pattern;
     this.composer.parse(this.pattern);
   }
 
@@ -67,9 +63,9 @@ class Presets {
   private currentlyPlaying: Preset | null = null;
 
   constructor() {
-    const entries = Object.entries(BUILTIN_PRESETS) as [PresetName, PresetDefinition][];
+    const entries = Object.entries(BUILTIN_PRESETS) as [PresetName, HapticPattern][];
     this.presets = Object.fromEntries(
-      entries.map(([name, definition]) => [name, new Preset(name, definition)]),
+      entries.map(([name, pattern]) => [name, new Preset(name, pattern)]),
     ) as Record<PresetName, Preset>;
   }
 

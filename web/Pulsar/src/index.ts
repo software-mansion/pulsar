@@ -17,4 +17,3 @@ export type {
   ParsedPattern,
 } from "./types.ts";
 export type { PresetName, PresetPlaybackResult } from "./Presets.ts";
-export type { PresetDefinition } from "./builtin-presets.ts";

@@ -22,7 +22,6 @@ test("get returns the same shared Preset instance for the requested name", () =>
 
   assert.equal(first, second);
   assert.equal(first.name, "tap");
-  assert.equal(first.category, "UI");
   assert.deepEqual(first.pattern, [{ type: "continuous", timestamp: 0, duration: 30 }]);
 });
 
