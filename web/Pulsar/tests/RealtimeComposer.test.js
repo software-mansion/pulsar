@@ -30,13 +30,16 @@ test("set starts a realtime PWM loop with the expected pattern", () => {
   globalThis.clearTimeout = () => {};
 
   try {
+    // intensity 0 is silence: vibrate() must NOT be called (vibrate(0) would
+    // cancel an unrelated in-progress vibration), but the cycle still runs
+    // and waits out the pause so the next tick can pick up new values.
     const result = composer.set(0, 1);
 
     assert.equal(result, true);
     assert.equal(composer.isPlaying(), true);
-    assert.deepEqual(vibrateCalls, [20]);
+    assert.deepEqual(vibrateCalls, []);
     assert.equal(scheduled.length, 1);
-    assert.equal(scheduled[0].delay, 40);
+    assert.equal(scheduled[0].delay, 20);
   } finally {
     Object.defineProperty(globalThis, "navigator", {
       configurable: true,
@@ -47,7 +50,12 @@ test("set starts a realtime PWM loop with the expected pattern", () => {
   }
 });
 
-test("set during playback restarts the loop with the new parameters", () => {
+test("set during playback updates parameters in-place without restarting the loop", () => {
+  // The realtime composer is designed to be called at high frequency (e.g. on
+  // every pointermove). Restarting the PWM cycle on each call would clear the
+  // pending pause and immediately trigger another vibrate(), starving the loop
+  // so that only shot length is ever perceived. Instead, set() should update
+  // the stored values and let the running tick read them on the next cycle.
   const composer = new RealtimeComposer();
   const vibrateCalls = [];
   const clearedHandles = [];
@@ -77,18 +85,25 @@ test("set during playback restarts the loop with the new parameters", () => {
   };
 
   try {
+    // intensity 0 = silence: first set() schedules a pause-only cycle.
     composer.set(0, 1);
-    const firstHandle = scheduled[0];
 
     const result = composer.set(1, 0);
 
     assert.equal(result, true);
     assert.equal(composer.isPlaying(), true);
-    assert.deepEqual(vibrateCalls, [20, 200]);
-    assert.deepEqual(clearedHandles, [firstHandle]);
+    // First set() was silence (no vibrate); the second set() does not restart
+    // the loop, so still no vibrate calls and no extra timeouts scheduled.
+    assert.deepEqual(vibrateCalls, []);
+    assert.deepEqual(clearedHandles, []);
+    assert.equal(scheduled.length, 1);
+    assert.deepEqual(composer.getCurrentValues(), { intensity: 1, frequency: 0 });
+
+    // When the originally scheduled tick fires, it picks up the latest values.
+    scheduled[0].callback();
+    assert.deepEqual(vibrateCalls, [200]);
     assert.equal(scheduled.length, 2);
     assert.equal(scheduled[1].delay, 400);
-    assert.deepEqual(composer.getCurrentValues(), { intensity: 1, frequency: 0 });
   } finally {
     Object.defineProperty(globalThis, "navigator", {
       configurable: true,
@@ -131,9 +146,10 @@ test("scheduled ticks keep replaying while realtime playback is active", () => {
     const firstScheduledTick = scheduled[0];
     firstScheduledTick.callback();
 
-    assert.deepEqual(vibrateCalls, [110, 110]);
+    // shotLength = lerp(60, 200, 0.5) = 130, pauseLength = lerp(200, 20, 0.5) = 110
+    assert.deepEqual(vibrateCalls, [130, 130]);
     assert.equal(scheduled.length, 2);
-    assert.equal(scheduled[1].delay, 220);
+    assert.equal(scheduled[1].delay, 240);
   } finally {
     Object.defineProperty(globalThis, "navigator", {
       configurable: true,
@@ -182,7 +198,7 @@ test("stop clears the scheduled loop and cancels the active vibration", () => {
     assert.equal(result, true);
     assert.equal(composer.isPlaying(), false);
     assert.deepEqual(clearedHandles, [scheduledHandle]);
-    assert.deepEqual(vibrateCalls, [110, 0]);
+    assert.deepEqual(vibrateCalls, [130, 0]);
   } finally {
     Object.defineProperty(globalThis, "navigator", {
       configurable: true,

@@ -1,4 +1,4 @@
-import Pulsar, { Preset } from "@pulsar/haptics";
+import Pulsar, { PatternComposer, Preset } from "@pulsar/haptics";
 
 const pulsar = new Pulsar();
 const presets = pulsar.getPresets();
@@ -240,103 +240,47 @@ const renderPresets = (filter: string) => {
 
 type PatternEntry = Preset["pattern"][number];
 
+// Visualize the actual `navigator.vibrate()` timeline that the composer will emit,
+// rather than redrawing the high-level segments. This matches what is actually played.
 const renderPatternSvg = (pattern: PatternEntry[]) => {
-  if (pattern.length === 0) {
-    return `<svg class="pattern-svg" viewBox="0 0 100 24" preserveAspectRatio="none"></svg>`;
-  }
-
-  const totalDuration = pattern.reduce(
-    (max, entry) => Math.max(max, entry.timestamp + entry.duration),
-    0,
-  );
-  if (totalDuration <= 0) {
-    return `<svg class="pattern-svg" viewBox="0 0 100 24" preserveAspectRatio="none"></svg>`;
-  }
+  const composer = new PatternComposer();
+  const parsed = composer.parse(pattern);
 
   const width = 100;
   const height = 24;
   const baseline = height - 2;
+
+  if (parsed.length === 0) {
+    return `<svg class="pattern-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none"></svg>`;
+  }
+
+  const totalDuration = parsed.reduce((sum, ms) => sum + ms, 0);
+  if (totalDuration <= 0) {
+    return `<svg class="pattern-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none"></svg>`;
+  }
+
   const scale = (ms: number) => (ms / totalDuration) * width;
-
   const shapes: string[] = [];
+  let cursor = 0;
 
-  for (const entry of pattern) {
-    const x = scale(entry.timestamp);
-    const w = Math.max(0.6, scale(entry.duration));
-
-    if (entry.type === "continuous") {
+  // navigator.vibrate convention: alternating ON, OFF, ON, OFF... starting with ON.
+  for (let i = 0; i < parsed.length; i += 1) {
+    const ms = parsed[i]!;
+    const isOn = i % 2 === 0;
+    if (isOn && ms > 0) {
+      const x = scale(cursor);
+      const w = Math.max(0.5, scale(ms));
       shapes.push(
-        `<rect x="${x}" y="2" width="${w}" height="${baseline - 2}" rx="1" fill="var(--accent)" opacity="0.85" />`,
-      );
-      continue;
-    }
-
-    if (entry.type === "pulse") {
-      const intensity = clamp01(entry.intensity ?? 0.5);
-      const frequency = clamp01(entry.frequency ?? 0.5);
-      const barHeight = (baseline - 4) * (0.35 + intensity * 0.65);
-      const ticks = Math.max(2, Math.round(2 + frequency * 10));
-      const tickWidth = w / (ticks * 2);
-      for (let i = 0; i < ticks; i += 1) {
-        const tx = x + i * tickWidth * 2;
-        shapes.push(
-          `<rect x="${tx}" y="${baseline - barHeight}" width="${Math.max(0.4, tickWidth)}" height="${barHeight}" fill="var(--accent)" opacity="0.85" />`,
-        );
-      }
-      continue;
-    }
-
-    if (entry.type === "line") {
-      const segments = 24;
-      const points: string[] = [];
-      for (let i = 0; i <= segments; i += 1) {
-        const t = (i / segments) * entry.duration;
-        const value = sampleAt(entry.intensity, t, entry.duration);
-        const px = x + (i / segments) * w;
-        const py = baseline - (baseline - 2) * value;
-        points.push(`${px.toFixed(2)},${py.toFixed(2)}`);
-      }
-      shapes.push(
-        `<polyline points="${points.join(" ")}" fill="none" stroke="var(--accent)" stroke-width="1.2" opacity="0.9" />`,
+        `<rect x="${x.toFixed(2)}" y="2" width="${w.toFixed(2)}" height="${baseline - 2}" rx="1" fill="var(--accent)" opacity="0.9" />`,
       );
     }
+    cursor += ms;
   }
 
   return `<svg class="pattern-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
     <line x1="0" y1="${baseline}" x2="${width}" y2="${baseline}" stroke="var(--panel-border)" stroke-width="0.5" />
     ${shapes.join("")}
   </svg>`;
-};
-
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
-
-const sampleAt = (
-  points: { time: number; value: number }[],
-  time: number,
-  duration: number,
-) => {
-  if (points.length === 0) {
-    return 0.5;
-  }
-  const sorted = [...points].sort((a, b) => a.time - b.time);
-  if (time <= sorted[0]!.time) {
-    return clamp01(sorted[0]!.value);
-  }
-  const last = sorted[sorted.length - 1]!;
-  if (time >= last.time || time >= duration) {
-    return clamp01(last.value);
-  }
-  for (let i = 0; i < sorted.length - 1; i += 1) {
-    const a = sorted[i]!;
-    const b = sorted[i + 1]!;
-    if (time >= a.time && time <= b.time) {
-      const span = b.time - a.time;
-      if (span <= 0) return clamp01(b.value);
-      const progress = (time - a.time) / span;
-      return clamp01(a.value + (b.value - a.value) * progress);
-    }
-  }
-  return clamp01(last.value);
 };
 
 search.addEventListener("input", () => renderPresets(search.value));

@@ -108,7 +108,7 @@ test("disabling haptics stops an active realtime composer", () => {
     Settings.enableHaptics(false);
 
     assert.equal(composer.isPlaying(), false);
-    assert.deepEqual(vibrateCalls, [110, 0]);
+    assert.deepEqual(vibrateCalls, [130, 0]);
     assert.equal(clearedHandles.length, 1);
   } finally {
     Settings.enableHaptics(true);
