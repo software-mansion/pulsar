@@ -1,34 +1,7 @@
 import Foundation
-// AVFoundation's audio types (AVAudioEngine, AVAudioPlayerNode, AVAudioUnitEQ,
-// AVAudioPCMBuffer, AVAudioSession, ...) predate Swift 6 Sendable annotations and
-// are not declared Sendable. Using `@preconcurrency` lets the package import them
-// from the Swift 6 language mode without triggering Sendable-related errors when
-// these types cross our serial `audioQueue` boundary. All actual cross-thread state
-// in this class is serialized either by the queue or by `NSLock`; see the
-// `@unchecked Sendable` rationale below.
 @preconcurrency import AVFoundation
 
 public final class AudioSimulator: NSObject, @unchecked Sendable {
-  // `@unchecked Sendable` rationale, by category of stored state:
-  //
-  //  * `audioContext`, `playerNode`, `filterNode`, `isEngineConfigured`,
-  //    `shouldForceAudiblePlayback` — engine state. Only mutated inside the
-  //    serial `audioQueue` (see `enableSound`, `configureAudioContext`,
-  //    `play(buffer:)`, `stop`). Reads also happen on the queue, or in the
-  //    `audioQueue.sync` `isPlaying` getter.
-  //  * `_playSound` — guarded by `playSoundLock` for all post-init reads/
-  //    writes. The init body assigns it directly, which is safe because the
-  //    instance is not yet shared with any other thread.
-  //  * `sampleRate`, `isSimulatorDevice`, `playSoundLock`, `audioQueue` —
-  //    `let` constants.
-  //
-  // The `parsePattern`/`renderPattern` pipeline that synthesises the
-  // `AVAudioPCMBuffer` runs synchronously on the caller's thread and is
-  // pure & reentrant (it reads only its arguments and `let`-constant state,
-  // and the only field it touches is `playSound` via the lock). It is
-  // therefore safe to invoke concurrently from multiple threads.
-  //
-  // This matches the threading model used in `HapticEngineWrapper`.
 	private let sampleRate: Double = 22050
   private let isSimulatorDevice: Bool = {
     #if targetEnvironment(simulator)
@@ -469,9 +442,6 @@ public final class AudioSimulator: NSObject, @unchecked Sendable {
 	}
 
 	public var isPlaying: Bool {
-		// `audioQueue.sync` would deadlock if called from inside an `audioQueue`
-		// block; callers must invoke this from outside the queue. No current
-		// code path re-enters from the queue.
 		return audioQueue.sync { playerNode?.isPlaying ?? false }
 	}
 }

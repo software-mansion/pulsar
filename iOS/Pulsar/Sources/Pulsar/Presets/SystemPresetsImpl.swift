@@ -1,27 +1,6 @@
 import UIKit
 import Foundation
 
-// UIKit feedback generators (UIImpactFeedbackGenerator, UINotificationFeedbackGenerator,
-// UISelectionFeedbackGenerator) are `@MainActor`-isolated under Swift 6. Presets in
-// this file are constructed lazily via `PresetsWrapper.getCacheablePreset(_:)`, which
-// is reached only from the React Native / Flutter bridge entry points; both bridges
-// dispatch onto the main thread, so we can safely call into `@MainActor` synchronously
-// via `MainActor.assumeIsolated` to satisfy isolation requirements without cascading
-// `@MainActor` through the public `PresetsWrapper` API.
-//
-// `makeMainActorPreparedGenerator` returns a freshly constructed generator rather than
-// mutating `self` inside the `@MainActor` closure. That keeps Swift 6's region-based
-// isolation happy: the returned generator is transferred out of the MainActor region
-// (no other live reference exists at the construction site) and then stored into a
-// non-isolated property of the preset.
-//
-// Defense in depth: `MainActor.assumeIsolated` in release builds may silently allow
-// off-main-thread callers and corrupt UIKit state. `PresetsWrapper`'s public API
-// (`preloadPresetByName`, `getByName`, ...) carries no `@MainActor` constraint, so a
-// third-party SPM consumer could call us from a background queue at app startup. The
-// explicit `Thread.isMainThread` precondition turns that misuse into a deterministic
-// crash with a clear message in both Debug and Release.
-
 @inline(__always)
 private func makeMainActorPreparedGenerator<G: UIFeedbackGenerator>(
   _ build: @MainActor () -> G
