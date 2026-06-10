@@ -259,7 +259,13 @@ export default function App() {
         if (!data) continue;
         bindings[b.nodeId] = data;
         owner[b.nodeId] = b.nodeId;
-        elements.push({ id: b.nodeId, name: b.nodeName, presetName: b.presetName, box: b.box });
+        elements.push({
+          id: b.nodeId,
+          name: b.nodeName,
+          presetName: b.presetName,
+          box: b.box,
+          frameId: b.frameId
+        });
       }
       if (elements.length === 0) {
         send({ type: 'notify', message: 'No haptic bindings on this page yet.' });
@@ -271,7 +277,8 @@ export default function App() {
         frame: m.presentNodeBox,
         elements,
         owner,
-        bindings
+        bindings,
+        frames: m.frames
       };
       // Strip any existing query/hash so we don't duplicate or stack tokens
       // when the user has manually visited the preview before.

@@ -1,3 +1,4 @@
+/// <reference types="@figma/plugin-typings" />
 // Figma plugin main thread. Runs in the figma sandbox; talks to the UI iframe via postMessage.
 import type {
   BindingMeta,
@@ -12,6 +13,14 @@ import type {
 } from '../shared/types';
 
 const BINDING_KEY = 'pulsar:binding';
+// Per-instance opt-out marker. Setting BINDING_KEY to '' on a component
+// instance only removes the instance's own override — Figma then falls back
+// to the main component's plugin data, so the instance keeps appearing bound.
+// We need a way to say "this one instance is unbound" without touching the
+// master (which would unbind every sibling instance). Setting this key on
+// the instance is per-instance because it has no value on the master, so
+// inheritance never overrides it.
+const BINDING_NEGATED_KEY = 'pulsar:binding-negated';
 const SETTINGS_KEY = 'pulsar:settings';
 const TOKEN_KEY = 'pulsar:hapticsToken';
 const PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
@@ -55,10 +64,22 @@ async function loadCustomPresets(): Promise<CatalogEntry[]> {
 }
 
 function readBinding(node: BaseNode): BindingMeta | null {
+  // Honour the per-instance opt-out flag before reading the binding. An
+  // instance with this flag set keeps inheriting BINDING_KEY from its
+  // component master via Figma's plugin-data inheritance, but should be
+  // treated as unbound for the purposes of our lists and overlays.
+  if (node.getPluginData(BINDING_NEGATED_KEY)) return null;
   const raw = node.getPluginData(BINDING_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as BindingMeta;
+    const parsed = JSON.parse(raw) as Partial<BindingMeta>;
+    // Reject anything that's not a real binding — empty objects, half-written
+    // payloads, or data left behind by an older plugin version. Without this
+    // the bound-list could show ghost entries with undefined preset names.
+    if (!parsed || typeof parsed.presetId !== 'string' || parsed.presetId.length === 0) {
+      return null;
+    }
+    return parsed as BindingMeta;
   } catch {
     return null;
   }
@@ -71,15 +92,32 @@ function boxOf(node: BaseNode): NodeBox | null {
 
 // Collect every node on the current page that has a Pulsar binding, so the
 // standalone preview app can map embed click events (by node id) to a preset.
-async function collectPreviewBindings(): Promise<PreviewBinding[]> {
+// Also returns a `frames` map (frameId → absolute box) covering every distinct
+// frame-like ancestor of those bound nodes, so the preview can reposition its
+// highlight overlay after Figma navigates between frames.
+async function collectPreviewBindings(): Promise<{
+  bindings: PreviewBinding[];
+  frames: Record<string, NodeBox>;
+}> {
   await figma.currentPage.loadAsync();
-  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: {} });
+  // Match by the specific binding key, not just "has any plugin data". When
+  // BINDING_KEY is cleared (unbind), Figma drops the node from this result
+  // immediately, so an unbound node can't leak into the bound list even if
+  // some other transient state lingers.
+  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
   const out: PreviewBinding[] = [];
+  const frames: Record<string, NodeBox> = {};
   for (const node of nodes) {
     const binding = readBinding(node);
     if (!binding) continue;
     const descendantIds =
       'findAll' in node ? (node as ChildrenMixin & BaseNode).findAll(() => true).map((d) => d.id) : [];
+    const frame = topLevelFrameAncestor(node);
+    const frameId = frame ? frame.id : null;
+    if (frame && !(frame.id in frames)) {
+      const box = boxOf(frame);
+      if (box) frames[frame.id] = box;
+    }
     out.push({
       nodeId: node.id,
       nodeName: node.name,
@@ -87,16 +125,21 @@ async function collectPreviewBindings(): Promise<PreviewBinding[]> {
       presetName: binding.presetName,
       customPattern: binding.customPattern,
       box: boxOf(node),
+      frameId,
       descendantIds
     });
   }
-  return out;
+  return { bindings: out, frames };
 }
 
 // Light list of bound components for the "Bound" tab (no boxes/descendants).
 async function collectBoundItems(): Promise<BoundItem[]> {
   await figma.currentPage.loadAsync();
-  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: {} });
+  // Match by the specific binding key, not just "has any plugin data". When
+  // BINDING_KEY is cleared (unbind), Figma drops the node from this result
+  // immediately, so an unbound node can't leak into the bound list even if
+  // some other transient state lingers.
+  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
   const out: BoundItem[] = [];
   for (const node of nodes) {
     const binding = readBinding(node);
@@ -155,6 +198,22 @@ function nearestFrameLikeAncestor(node: BaseNode): SceneNode | null {
   return null;
 }
 
+// Walk all the way up and return the OUTERMOST frame-like ancestor — the one
+// whose parent is the page (or a section). Figma's PRESENTED_NODE_CHANGED event
+// always reports the top-level prototype frame, so matching bound elements to
+// their owning frame by the outermost frame id keeps the preview's
+// per-frame highlight filter accurate even when the button sits inside a
+// nested frame.
+function topLevelFrameAncestor(node: BaseNode): SceneNode | null {
+  let n: BaseNode | null = node;
+  let topmost: SceneNode | null = null;
+  while (n && n.type !== 'PAGE') {
+    if (isFrameLike(n)) topmost = n;
+    n = n.parent;
+  }
+  return topmost;
+}
+
 // Recursively look for a frame-like node, descending into SECTIONs (which can
 // nest). Anything else is treated as a leaf for our purposes.
 function firstFrameLikeIn(node: SceneNode): SceneNode | null {
@@ -211,6 +270,10 @@ function bindToSelection(binding: BindingMeta) {
     return;
   }
   const node = sel[0];
+  // Drop any prior negation flag — without this, re-binding a previously
+  // opted-out instance silently does nothing because readBinding still
+  // returns null.
+  node.setPluginData(BINDING_NEGATED_KEY, '');
   node.setPluginData(BINDING_KEY, JSON.stringify(binding));
   node.setRelaunchData({ play: `Pulsar: ${binding.presetName}` });
   figma.notify(`Bound "${binding.presetName}" to ${node.name}`);
@@ -221,8 +284,45 @@ function unbindSelection() {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) return;
   const node = sel[0];
-  node.setPluginData(BINDING_KEY, '');
-  node.setRelaunchData({});
+
+  // Find the nearest enclosing instance (the selected node itself counts).
+  // Two cases:
+  //   - inside an instance → the binding might live on the master, and
+  //     instances inherit it via Figma's plugin-data inheritance. Clearing
+  //     BINDING_KEY on the instance just drops its own override and
+  //     re-exposes the master's value, so we use a per-instance opt-out
+  //     marker instead. The master and every sibling instance are left
+  //     alone, which is what users expect when unbinding "this one copy".
+  //   - everything else (plain frame, component master, group, …) → no
+  //     inheritance to fight, so clearing BINDING_KEY on the node itself is
+  //     enough. For a master, this propagates and unbinds every instance,
+  //     which is also what users expect for "unbind the template".
+  let instance: InstanceNode | null = null;
+  let n: BaseNode | null = node;
+  while (n && n.type !== 'PAGE') {
+    if (n.type === 'INSTANCE') {
+      instance = n as InstanceNode;
+      break;
+    }
+    n = n.parent;
+  }
+
+  if (instance) {
+    instance.setPluginData(BINDING_NEGATED_KEY, '1');
+    // Also drop any direct binding override the instance may carry, so a
+    // future re-bind on it starts from the inherited state.
+    instance.setPluginData(BINDING_KEY, '');
+    instance.setRelaunchData({});
+  } else {
+    // Belt-and-suspenders: wipe every plugin-data key on the node so older
+    // keys (from earlier plugin versions) don't keep the node alive in
+    // findAllWithCriteria result sets.
+    for (const key of node.getPluginDataKeys()) {
+      node.setPluginData(key, '');
+    }
+    node.setPluginData(BINDING_KEY, '');
+    node.setRelaunchData({});
+  }
   figma.notify('Preset unbound.');
   pushSelection();
 }
@@ -279,14 +379,15 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
       break;
     case 'request-preview-data': {
-      const bindings = await collectPreviewBindings();
+      const { bindings, frames } = await collectPreviewBindings();
       const present = pickPresentNode();
       postToUi({
         type: 'preview-data',
         fileKey: figma.fileKey ?? null,
         presentNodeId: present ? present.id : null,
         presentNodeBox: present ? boxOf(present) : null,
-        bindings
+        bindings,
+        frames
       });
       break;
     }

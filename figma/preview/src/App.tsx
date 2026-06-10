@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { PresetData, PreviewPayload } from './types';
+import type { NodeBox, PresetData, PreviewPayload } from './types';
 import { readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
@@ -13,6 +13,16 @@ import { PresetDetailsModal } from './components/PresetDetailsModal';
 
 const ACTIVE_MS = 900;
 const TAP_DEBOUNCE_MS = 250;
+
+// True when the center point of `inner` lies within `outer`. Used as a fallback
+// "which frame does this element belong to?" test for payloads that don't carry
+// a per-element frameId — we treat the element as part of the currently shown
+// frame iff its center sits inside the frame's absolute canvas box.
+function boxCenterInside(inner: NodeBox, outer: NodeBox): boolean {
+  const cx = inner.x + inner.w / 2;
+  const cy = inner.y + inner.h / 2;
+  return cx >= outer.x && cx <= outer.x + outer.w && cy >= outer.y && cy <= outer.y + outer.h;
+}
 
 export default function App() {
   // Payload now arrives asynchronously (token → server fetch). Hold null while
@@ -33,18 +43,32 @@ export default function App() {
   }, []);
 
   // Derived lookup maps (stable across renders).
-  const { bindings, ownerMap, presentedId } = useMemo(() => {
+  const { bindings, ownerMap, presentedId, frames } = useMemo(() => {
     const binds = new Map<string, PresetData>();
     const owner = new Map<string, string>();
+    const framesMap = new Map<string, NodeBox>();
     if (payload) {
       for (const [id, data] of Object.entries(payload.bindings)) binds.set(normalizeId(id), data);
       for (const [id, ownerId] of Object.entries(payload.owner)) owner.set(normalizeId(id), normalizeId(ownerId));
+      if (payload.frames) {
+        for (const [id, box] of Object.entries(payload.frames)) framesMap.set(normalizeId(id), box);
+      }
     }
-    return { bindings: binds, ownerMap: owner, presentedId: normalizeId(payload?.nodeId) };
+    return {
+      bindings: binds,
+      ownerMap: owner,
+      presentedId: normalizeId(payload?.nodeId),
+      frames: framesMap
+    };
   }, [payload]);
 
   const elements = useMemo(
-    () => (payload?.elements ?? []).map((e) => ({ ...e, id: normalizeId(e.id) })),
+    () =>
+      (payload?.elements ?? []).map((e) => ({
+        ...e,
+        id: normalizeId(e.id),
+        frameId: e.frameId ? normalizeId(e.frameId) : null
+      })),
     [payload]
   );
 
@@ -173,9 +197,34 @@ export default function App() {
     );
   }
 
+  // Pick the frame + element subset that match what Figma is currently showing.
+  // When the user taps a button whose prototype interaction navigates to another
+  // frame, Figma fires PRESENTED_NODE_CHANGED and `currentNodeId` shifts. We use
+  // the per-frame box map the plugin sends to keep the overlay aligned on the
+  // new frame instead of hiding every highlight. Backward-compat: payloads
+  // created before the `frames` field exists fall through to the original
+  // present-frame box.
+  const hasFrameMap = frames.size > 0;
+  const currentFrame: NodeBox | null =
+    (hasFrameMap ? frames.get(currentNodeId) ?? null : null) ??
+    (currentNodeId === presentedId ? payload.frame : null);
+  // Filter elements to those that belong to the currently-presented frame.
+  // Prefer the explicit `frameId` when present (new payloads); for older
+  // payloads — and for any element the plugin didn't tag — fall back to a
+  // canvas-coordinate containment check against the current frame's box. This
+  // matters because the plugin collects bound nodes from the whole page, not
+  // just the present frame, so without filtering we'd paint highlights for
+  // off-frame elements over the wrong screen area of the iframe.
+  const visibleElements = currentFrame
+    ? elements.filter((e) => {
+        if (e.frameId) return e.frameId === currentNodeId;
+        return e.box ? boxCenterInside(e.box, currentFrame) : false;
+      })
+    : [];
   // In fullscreen we show only the Figma content — no header, panel, highlights,
   // or card chrome.
-  const showHighlights = highlightsOn && currentNodeId === presentedId && !fullscreen;
+  const showHighlights =
+    highlightsOn && !fullscreen && currentFrame !== null && visibleElements.length > 0;
 
   return (
     <>
@@ -186,8 +235,8 @@ export default function App() {
         <PrototypeView
           fileKey={payload.fileKey}
           nodeId={payload.nodeId}
-          frame={payload.frame}
-          elements={elements}
+          frame={currentFrame}
+          elements={visibleElements}
           showHighlights={showHighlights}
           activeId={activeId}
           fullscreen={fullscreen}

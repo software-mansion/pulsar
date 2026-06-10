@@ -64,6 +64,11 @@ export interface PreviewBinding {
   customPattern?: PresetData;
   // Absolute bounding box, used to position on-canvas highlights in the preview.
   box: NodeBox | null;
+  // Id of the nearest frame-like ancestor (FRAME / COMPONENT / COMPONENT_SET /
+  // INSTANCE). Lets the preview keep showing this highlight when Figma navigates
+  // into the owning frame via a prototype interaction, instead of hiding every
+  // overlay because the originally-presented frame is no longer current.
+  frameId: string | null;
   // Ids of every descendant of the bound node. A tap in the embed usually lands
   // on a child layer (text/icon), so we map those to the same preset too.
   descendantIds: string[];
@@ -114,6 +119,10 @@ export type MainToUi =
       presentNodeId: string | null;
       presentNodeBox: NodeBox | null;
       bindings: PreviewBinding[];
+      // frame-like-node id → its absolute canvas box, for every frame that
+      // contains at least one bound element. Lets the preview reposition the
+      // highlight overlay after a prototype navigation.
+      frames: Record<string, NodeBox>;
     };
 
 export interface SelectionInfo {

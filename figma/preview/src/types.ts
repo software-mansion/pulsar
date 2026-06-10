@@ -30,6 +30,9 @@ export interface ElementInfo {
   name: string;
   presetName: string;
   box: NodeBox | null;
+  // Id of the bound element's nearest frame-like ancestor. Optional for
+  // backward compatibility with payloads created before this field existed.
+  frameId?: string | null;
 }
 
 // The base64'd payload the plugin puts in the URL hash.
@@ -40,4 +43,7 @@ export interface PreviewPayload {
   elements: ElementInfo[];
   owner: Record<string, string>; // any node id -> owning bound-element id
   bindings: Record<string, PresetData>; // node id (incl. descendants) -> preset
+  // frame-like-node id → its absolute canvas box, for every frame that contains
+  // at least one bound element. Optional for backward compatibility.
+  frames?: Record<string, NodeBox>;
 }
