@@ -1,6 +1,9 @@
 import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
 import iconPlay from '../assets/icon-play.svg';
+import iconClock from '../assets/icon-clock.svg';
+import iconLink from '../assets/icon-link.svg';
+import iconInfo from '../assets/icon-info.svg';
 
 const formatDuration = (ms: number) =>
   ms >= 1000 ? `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)} s` : `${Math.round(ms)} ms`;
@@ -26,9 +29,10 @@ export default function PresetCard({
 }) {
   const { data } = entry;
 
+  // Lighter, borderless favourite star — shared by both layouts.
   const favButton = (
     <button
-      className="fav"
+      className="fav-plain"
       title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
       aria-pressed={isFavourite}
       onClick={onToggleFavourite}
@@ -37,75 +41,69 @@ export default function PresetCard({
     </button>
   );
 
+  const boundBadge = isBound ? (
+    <span className="bound-badge" style={{ flexShrink: 0 }}>● bound</span>
+  ) : null;
+
   if (compact) {
+    // One dense bordered line: play · name · scrolling tags · duration · fav · bind.
     return (
-      <div
-        className="row"
-        style={{
-          padding: '6px 8px',
-          borderBottom: '1px solid var(--border)',
-          gap: 8
-        }}
-      >
+      <div className="preset-row-compact">
         <button className="ghost icon" onClick={onPlay} title="Play">
           <img src={iconPlay} alt="" width={14} height={14} />
         </button>
-        <div style={{ minWidth: 0, flex: 1 }} onClick={onOpen}>
-          <div style={{ fontWeight: 600, cursor: 'pointer' }}>
-            {data.name}
-            {isBound && <span className="bound-badge" style={{ marginLeft: 6 }}>● bound</span>}
-          </div>
-          <div className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>
-            {[...data.tags.slice(0, 4), formatDuration(data.duration)].join(' · ')}
-          </div>
+        <span className="preset-row-compact-name" onClick={onOpen} title={data.name}>
+          {data.name}
+        </span>
+        {boundBadge}
+        <div className="preset-row-compact-tags">
+          {data.tags.map((t) => (
+            <span className="tag" key={t} style={{ margin: 0 }}>{t}</span>
+          ))}
         </div>
+        <span className="muted preset-row-compact-dur" title="Pattern duration">
+          {formatDuration(data.duration)}
+        </span>
         {favButton}
-        <button className="primary icon" onClick={onBind} title="Bind to selection">Bind</button>
+        <button className="primary icon" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+          <img src={iconLink} alt="" width={14} height={14} />
+        </button>
       </div>
     );
   }
 
+  // Expanded card — name, duration pill, star and the Details/Bind actions all
+  // sit on the top line; the waveform is the hero below with the play button
+  // docked in its bottom-right corner.
   return (
     <div className="preset-card">
-      <div className="row" style={{ marginBottom: 8 }}>
-        <div style={{ flex: 1, minWidth: 0, fontWeight: 700, fontSize: 'var(--fs-lg)' }}>
-          {data.name}
-          {isBound && <span className="bound-badge" style={{ marginLeft: 6 }}>● bound</span>}
-        </div>
+      <div className="preset-card-head">
+        <span className="preset-card-name">{data.name}</span>
+        {boundBadge}
+        <span className="preset-dur" title="Pattern duration">
+          <img src={iconClock} alt="" />
+          {formatDuration(data.duration)}
+        </span>
         {favButton}
-        <button className="ghost icon" onClick={onPlay} title="Play">
-          <img src={iconPlay} alt="" width={14} height={14} />
+        <button className="ghost icon" onClick={onOpen} title="Details" aria-label="Open details">
+          <img src={iconInfo} alt="" width={14} height={14} />
+        </button>
+        <button className="primary icon" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+          <img src={iconLink} alt="" width={14} height={14} />
         </button>
       </div>
       {data.tags.length > 0 && (
-        <div
-          className="scroll row"
-          style={{
-            gap: 6,
-            marginBottom: 8,
-            flexWrap: 'nowrap',
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            paddingBottom: 2
-          }}
-        >
+        <div className="preset-card-tags">
           {data.tags.map((t) => (
-            <span className="tag" key={t} style={{ margin: 0, flex: '0 0 auto' }}>{t}</span>
+            <span className="tag" key={t} style={{ margin: 0 }}>{t}</span>
           ))}
         </div>
       )}
-      <Visualization data={data} />
-      <div className="row" style={{ marginTop: 6 }}>
-        <span
-          className="muted"
-          style={{ fontSize: 'var(--fs-2xs)' }}
-          title="Pattern duration"
-        >
-          {formatDuration(data.duration)}
-        </span>
-        <div className="spacer" />
-        <button className="ghost" onClick={onOpen}>Details</button>
-        <button className="primary" onClick={onBind}>Bind</button>
+      <div className="wv-panel">
+        <Visualization data={data} />
+        <button className="ghost icon wv-play" onClick={onPlay} title="Play">
+          <img src={iconPlay} alt="" width={14} height={14} />
+        </button>
       </div>
     </div>
   );

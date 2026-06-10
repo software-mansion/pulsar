@@ -536,15 +536,16 @@ export default function App() {
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{filtered.length} results</span>
             <label
               className="row"
-              style={{ gap: 4, marginLeft: 8, fontSize: 'var(--fs-xs)', cursor: 'pointer', userSelect: 'none' }}
+              style={{ gap: 6, marginLeft: 8, fontSize: 'var(--fs-xs)', cursor: 'pointer', userSelect: 'none' }}
               title="Play audio when selecting a bound node in the editor"
             >
+              Sound
               <input
                 type="checkbox"
+                className="switch"
                 checked={settings.soundInEdit}
                 onChange={(e) => setSettings({ ...settings, soundInEdit: e.target.checked })}
               />
-              Sound
             </label>
             <div className="spacer" />
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>Layout:</span>
@@ -565,7 +566,7 @@ export default function App() {
               <img src={iconLayoutCompact} alt="" width={16} height={16} />
             </button>
           </div>
-          <div style={{ paddingTop: settings.compactLayout ? 0 : 8 }}>
+          <div style={{ paddingTop: 8 }}>
             {filtered.map((e) => (
               <PresetCard
                 key={e.id}
