@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import PRESETS from './presets-data';
-import type { BoundItem, CatalogEntry, SelectionInfo, Settings } from '../shared/types';
+import { CUSTOM_TAG, type BoundItem, type CatalogEntry, type SelectionInfo, type Settings } from '../shared/types';
 import { onMessage, send } from './figmaBridge';
 import Filters, { applyFilter, useFilterStateInit, type FilterState } from './components/Filters';
 import PresetCard from './components/PresetCard';
@@ -11,6 +11,8 @@ import BoundComponentsPanel from './components/BoundComponentsPanel';
 import AddCustomPreset from './components/AddCustomPreset';
 import PhonePanel, { broadcastToPhone } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
+import PulsarLogo from './components/PulsarLogo';
+import ResizeHandle from './components/ResizeHandle';
 import { playPreset, stopAll } from './audio/AudioPatternUtility';
 
 type Tab = 'presets' | 'bound' | 'phone' | 'preview';
@@ -264,7 +266,10 @@ export default function App() {
           name: b.nodeName,
           presetName: b.presetName,
           box: b.box,
-          frameId: b.frameId
+          frameId: b.frameId,
+          // Marked custom when the binding inlines a custom pattern (always
+          // user-defined) or when the resolved preset carries the Custom tag.
+          isCustom: !!b.customPattern || (Array.isArray(data.tags) && data.tags.includes(CUSTOM_TAG))
         });
       }
       if (elements.length === 0) {
@@ -426,8 +431,18 @@ export default function App() {
         className="row"
         style={{ padding: '8px 10px 0', gap: 0, borderBottom: '1px solid var(--border)' }}
       >
-        <div style={{ fontWeight: 700, color: 'var(--color-primary)', paddingBottom: 8 }}>
-          Pulsar
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontWeight: 700,
+            color: 'var(--color-primary)',
+            paddingBottom: 8
+          }}
+        >
+          <PulsarLogo size={22} />
+          <span>Pulsar</span>
         </div>
         <div className="spacer" />
         {(['presets', 'bound', 'phone', 'preview'] as const).map((t) => (
@@ -597,6 +612,7 @@ export default function App() {
         />
       )}
 
+      <ResizeHandle />
     </div>
   );
 }

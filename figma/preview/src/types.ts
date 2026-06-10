@@ -33,6 +33,15 @@ export interface ElementInfo {
   // Id of the bound element's nearest frame-like ancestor. Optional for
   // backward compatibility with payloads created before this field existed.
   frameId?: string | null;
+  // True when the bound preset is a user-defined custom pattern (binding had
+  // customPattern set OR the preset's tags include "Custom"). The Haptic
+  // elements list shows a "Custom" pill for these.
+  isCustom?: boolean;
+}
+
+export interface FrameInfo {
+  name: string;
+  box: NodeBox;
 }
 
 // The base64'd payload the plugin puts in the URL hash.
@@ -43,7 +52,9 @@ export interface PreviewPayload {
   elements: ElementInfo[];
   owner: Record<string, string>; // any node id -> owning bound-element id
   bindings: Record<string, PresetData>; // node id (incl. descendants) -> preset
-  // frame-like-node id → its absolute canvas box, for every frame that contains
-  // at least one bound element. Optional for backward compatibility.
-  frames?: Record<string, NodeBox>;
+  // frame-like-node id → { human name, absolute canvas box } for every frame
+  // that contains at least one bound element. Optional for backward
+  // compatibility — older payloads stored just NodeBox; the loader normalises
+  // those to FrameInfo with a synthetic name.
+  frames?: Record<string, FrameInfo | NodeBox>;
 }

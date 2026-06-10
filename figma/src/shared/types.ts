@@ -98,6 +98,7 @@ export type UiToMain =
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
   | { type: 'open-external'; url: string }
+  | { type: 'resize'; width: number; height: number; commit?: boolean }
   | { type: 'notify'; message: string };
 
 // Messages: Main -> UI
@@ -119,11 +120,18 @@ export type MainToUi =
       presentNodeId: string | null;
       presentNodeBox: NodeBox | null;
       bindings: PreviewBinding[];
-      // frame-like-node id → its absolute canvas box, for every frame that
-      // contains at least one bound element. Lets the preview reposition the
-      // highlight overlay after a prototype navigation.
-      frames: Record<string, NodeBox>;
+      // frame-like-node id → { human-readable name, absolute canvas box } for
+      // every frame that contains at least one bound element. Used by the
+      // preview to (a) reposition the highlight overlay after a prototype
+      // navigation, and (b) group the "Haptic elements" list under a screen
+      // header that the user can read.
+      frames: Record<string, FrameInfo>;
     };
+
+export interface FrameInfo {
+  name: string;
+  box: NodeBox;
+}
 
 export interface SelectionInfo {
   id: string;

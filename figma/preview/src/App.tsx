@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { NodeBox, PresetData, PreviewPayload } from './types';
+import type { FrameInfo, NodeBox, PresetData, PreviewPayload } from './types';
 import { readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
@@ -46,12 +46,21 @@ export default function App() {
   const { bindings, ownerMap, presentedId, frames } = useMemo(() => {
     const binds = new Map<string, PresetData>();
     const owner = new Map<string, string>();
-    const framesMap = new Map<string, NodeBox>();
+    const framesMap = new Map<string, FrameInfo>();
     if (payload) {
       for (const [id, data] of Object.entries(payload.bindings)) binds.set(normalizeId(id), data);
       for (const [id, ownerId] of Object.entries(payload.owner)) owner.set(normalizeId(id), normalizeId(ownerId));
       if (payload.frames) {
-        for (const [id, box] of Object.entries(payload.frames)) framesMap.set(normalizeId(id), box);
+        for (const [id, entry] of Object.entries(payload.frames)) {
+          // Old payloads stored plain NodeBox; new ones store FrameInfo. Detect
+          // by presence of `box` and synthesise a placeholder name otherwise so
+          // the grouping UI still has something to render.
+          const normalized: FrameInfo =
+            'box' in entry
+              ? (entry as FrameInfo)
+              : { name: 'Screen', box: entry as NodeBox };
+          framesMap.set(normalizeId(id), normalized);
+        }
       }
     }
     return {
@@ -206,7 +215,7 @@ export default function App() {
   // present-frame box.
   const hasFrameMap = frames.size > 0;
   const currentFrame: NodeBox | null =
-    (hasFrameMap ? frames.get(currentNodeId) ?? null : null) ??
+    (hasFrameMap ? frames.get(currentNodeId)?.box ?? null : null) ??
     (currentNodeId === presentedId ? payload.frame : null);
   // Filter elements to those that belong to the currently-presented frame.
   // Prefer the explicit `frameId` when present (new payloads); for older
@@ -246,6 +255,8 @@ export default function App() {
         {!fullscreen && (
           <HapticList
             elements={elements}
+            frames={frames}
+            currentFrameId={currentNodeId}
             highlightsOn={highlightsOn}
             onToggleHighlights={setHighlightsOn}
             activeId={activeId}
@@ -259,6 +270,7 @@ export default function App() {
         <PresetDetailsModal
           data={bindings.get(detailsId)!}
           elementName={elements.find((e) => e.id === detailsId)?.name}
+          isCustom={elements.find((e) => e.id === detailsId)?.isCustom}
           onClose={() => setDetailsId('')}
         />
       )}

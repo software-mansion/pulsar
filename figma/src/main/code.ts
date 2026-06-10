@@ -4,6 +4,7 @@ import type {
   BindingMeta,
   BoundItem,
   CatalogEntry,
+  FrameInfo,
   MainToUi,
   NodeBox,
   PreviewBinding,
@@ -26,6 +27,20 @@ const TOKEN_KEY = 'pulsar:hapticsToken';
 const PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
+const WINDOW_SIZE_KEY = 'pulsar:windowSize';
+
+const DEFAULT_SIZE = { width: 380, height: 640 };
+// Clamp the persisted size so a stored value can't shrink the UI below a
+// usable size or blow it up past the host window.
+const MIN_SIZE = { width: 320, height: 460 };
+const MAX_SIZE = { width: 1200, height: 1200 };
+
+function clampSize(width: number, height: number) {
+  return {
+    width: Math.max(MIN_SIZE.width, Math.min(MAX_SIZE.width, Math.round(width))),
+    height: Math.max(MIN_SIZE.height, Math.min(MAX_SIZE.height, Math.round(height)))
+  };
+}
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
@@ -34,7 +49,16 @@ const DEFAULT_SETTINGS: Settings = {
   previewBaseUrlOverride: ''
 };
 
-figma.showUI(__html__, { width: 380, height: 640, themeColors: true });
+figma.showUI(__html__, { ...DEFAULT_SIZE, themeColors: true });
+
+// Restore the last-used window size (figma.showUI must run synchronously with a
+// literal size, so we resize once clientStorage resolves).
+figma.clientStorage.getAsync(WINDOW_SIZE_KEY).then((raw) => {
+  if (raw && typeof raw.width === 'number' && typeof raw.height === 'number') {
+    const { width, height } = clampSize(raw.width, raw.height);
+    figma.ui.resize(width, height);
+  }
+});
 
 function postToUi(msg: MainToUi) {
   figma.ui.postMessage(msg);
@@ -97,7 +121,7 @@ function boxOf(node: BaseNode): NodeBox | null {
 // highlight overlay after Figma navigates between frames.
 async function collectPreviewBindings(): Promise<{
   bindings: PreviewBinding[];
-  frames: Record<string, NodeBox>;
+  frames: Record<string, FrameInfo>;
 }> {
   await figma.currentPage.loadAsync();
   // Match by the specific binding key, not just "has any plugin data". When
@@ -106,7 +130,7 @@ async function collectPreviewBindings(): Promise<{
   // some other transient state lingers.
   const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
   const out: PreviewBinding[] = [];
-  const frames: Record<string, NodeBox> = {};
+  const frames: Record<string, FrameInfo> = {};
   for (const node of nodes) {
     const binding = readBinding(node);
     if (!binding) continue;
@@ -116,7 +140,7 @@ async function collectPreviewBindings(): Promise<{
     const frameId = frame ? frame.id : null;
     if (frame && !(frame.id in frames)) {
       const box = boxOf(frame);
-      if (box) frames[frame.id] = box;
+      if (box) frames[frame.id] = { name: frame.name, box };
     }
     out.push({
       nodeId: node.id,
@@ -402,6 +426,16 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'open-external':
       figma.openExternal(msg.url);
       break;
+    case 'resize': {
+      const { width, height } = clampSize(msg.width, msg.height);
+      figma.ui.resize(width, height);
+      // Only persist on commit (pointer-up) — persisting on every drag frame
+      // would flood clientStorage with dozens of writes per second.
+      if (msg.commit) {
+        await figma.clientStorage.setAsync(WINDOW_SIZE_KEY, { width, height });
+      }
+      break;
+    }
     case 'notify':
       figma.notify(msg.message);
       break;

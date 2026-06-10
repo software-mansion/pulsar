@@ -65,17 +65,24 @@ button {
   background: var(--surface);
   color: var(--color-primary);
   border-radius: var(--radius);
-  padding: 6px 10px;
+  padding: 6px 12px;
   font-size: var(--fs-sm);
   font-weight: 600;
-  box-shadow: var(--shadow-card);
-  transition: transform 60ms ease, box-shadow 60ms ease;
+  box-shadow: -3px 3px 0 var(--color-blue-50);
+  transition: transform 120ms ease, box-shadow 120ms ease;
 }
-/* No hover effect — feedback comes from a subtle press (:active) nudge. */
-/* Press: button face moves 1px into the shadow direction; shadow offset is
-   compensated by the same delta so the shadow stays visually anchored — only
-   the face appears to push down into the offset edge, like a physical button. */
-button:active { transform: translate(-1px, 1px); box-shadow: -2px 2px 0 var(--color-blue-50); }
+/* Hover lift + click press — matches the canonical animation used across the
+   docs landing-page cards/CTAs and the preview's `.docs-btn`. Hover grows the
+   shadow by 1px and nudges the face up-right; active drops the shadow and
+   snaps the face into where the shadow was. */
+button:hover {
+  box-shadow: -4px 4px 0 var(--color-blue-50);
+  transform: translate(1px, -1px);
+}
+button:active {
+  box-shadow: none;
+  transform: translate(-3px, 3px);
+}
 /* Unfilled docs variant — same border + offset shadow, lighter label. */
 button.ghost { font-weight: 500; }
 /* Filled docs variant — blue-20 face. */
@@ -120,7 +127,11 @@ button.scroll-top {
   color: var(--color-blue-50);
   box-shadow: var(--shadow-card);
 }
-button.scroll-top:active { transform: translate(-1px, 1px); box-shadow: -2px 2px 0 var(--color-blue-50); }
+button.scroll-top:hover {
+  box-shadow: -4px 4px 0 var(--color-blue-50);
+  transform: translate(1px, -1px);
+}
+button.scroll-top:active { box-shadow: none; transform: translate(-3px, 3px); }
 
 input[type='text'], input[type='url'], textarea {
   width: 100%;

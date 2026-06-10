@@ -27,9 +27,9 @@ export default function FigmaScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
   const token = typeof params.token === 'string' ? params.token : '';
 
-  if (token) {
+  // if (token) {
     return <FigmaPreviewWebView token={token} />;
-  }
+  // }
   return <FigmaExplainer />;
 }
 
@@ -63,7 +63,8 @@ function FigmaPreviewWebView({ token }: { token: string }) {
     <SafeAreaView style={styles.webContainer} edges={['bottom']}>
       <WebView
         ref={webRef}
-        source={{ uri: previewUrl }}
+        // source={{ uri: previewUrl }}
+        source={{ uri: "http://169.254.201.130:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
         originWhitelist={['*']}
         javaScriptEnabled
         domStorageEnabled
