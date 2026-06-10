@@ -498,19 +498,40 @@ export default function App() {
             selection={selection}
             onUnbind={() => send({ type: 'unbind-preset' })}
           />
-          <Filters
-            state={filter}
-            setState={setFilter}
-            favouritesOnly={favouritesOnly}
-            onFavouritesOnlyChange={setFavouritesOnly}
-          />
-          <AddCustomPreset
-            customPresets={customPresets}
-            onAdd={addCustomPreset}
-            onUpdate={updateCustomPreset}
-            onRemove={removeCustomPreset}
-          />
-          <PhonePanel token={hapticsToken} onTokenChange={setHapticsToken} />
+          <div className="controls-section">
+            <div className="controls-search">
+              <input
+                type="text"
+                placeholder="Search presets by name or description…"
+                value={filter.search}
+                onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+              />
+              {filter.search.length > 0 && (
+                <span
+                  className="tag"
+                  style={{ position: 'absolute', right: 4, top: 4, margin: 0 }}
+                  onClick={() => setFilter({ ...filter, search: '' })}
+                >
+                  Clear
+                </span>
+              )}
+            </div>
+            <div className="controls-card">
+              <Filters
+                state={filter}
+                setState={setFilter}
+                favouritesOnly={favouritesOnly}
+                onFavouritesOnlyChange={setFavouritesOnly}
+              />
+              <AddCustomPreset
+                customPresets={customPresets}
+                onAdd={addCustomPreset}
+                onUpdate={updateCustomPreset}
+                onRemove={removeCustomPreset}
+              />
+              <PhonePanel token={hapticsToken} onTokenChange={setHapticsToken} />
+            </div>
+          </div>
           <div className="row" style={{ padding: '4px 8px', gap: 6, marginTop: 8 }}>
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{filtered.length} results</span>
             <label

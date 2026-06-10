@@ -397,6 +397,66 @@ details.accordion > summary .caret {
 }
 details.accordion[open] > summary .caret { transform: rotate(90deg); }
 
+/* Grouped controls card — Filters / Custom presets / Phone share one bordered
+   panel below the search box, replacing the old loose accordion rows. Each row
+   gets a leading icon chip, a right-aligned chevron, and a tinted open state so
+   the section scans as a single control group. */
+.controls-section {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.controls-search { position: relative; }
+.controls-card {
+  margin-top: 8px;
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+/* Neutralise the standalone .accordion divider/padding so rows sit flush in the
+   card, separated by hairlines instead. */
+.controls-card > .acc-row { border-top: 1px solid var(--color-blue-10); padding-top: 0; }
+.controls-card > .acc-row:first-child { border-top: none; }
+
+.acc-row > summary.acc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--color-primary);
+  transition: background 120ms ease;
+}
+.acc-row > summary.acc-head:hover { background: var(--color-blue-10); }
+.acc-row[open] > summary.acc-head {
+  background: var(--color-blue-10);
+  box-shadow: inset 3px 0 0 var(--color-blue-50);
+}
+.acc-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  background: var(--color-blue-10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.acc-row[open] > summary.acc-head .acc-icon { background: var(--surface); }
+.acc-icon img { display: block; width: 15px; height: 15px; }
+.acc-title { flex: 1; }
+.acc-chevron { flex-shrink: 0; display: flex; }
+.acc-chevron img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  transition: transform 120ms ease;
+}
+.acc-row[open] > summary.acc-head .acc-chevron img { transform: rotate(180deg); opacity: 0.85; }
+.acc-body { padding: 2px 12px 12px; }
+
 .row { display: flex; align-items: center; gap: 8px; }
 .col { display: flex; flex-direction: column; gap: 8px; }
 .spacer { flex: 1; }

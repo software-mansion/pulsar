@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import iconSmartphone from '../assets/icon-smartphone.svg';
+import iconChevron from '../assets/icon-chevron-down.svg';
 
 const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
 const SOCKET_SERVER_URL = 'wss://pulsar-server.swmansion.com';
@@ -94,16 +96,21 @@ export default function PhonePanel({
   };
 
   return (
-    <details className="accordion" style={{ margin: '8px', borderTop: 'none', paddingTop: 0 }}>
-      <summary className="row" style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
-        <span className="caret" aria-hidden="true">▸</span>
-        Phone
+    <details className="accordion acc-row">
+      <summary className="acc-head">
+        <span className="acc-icon">
+          <img src={iconSmartphone} alt="" />
+        </span>
+        <span className="acc-title">Phone</span>
         {status === 'connected' && (
           <span className="tag active" style={{ margin: 0 }}>Connected</span>
         )}
+        <span className="acc-chevron" aria-hidden="true">
+          <img src={iconChevron} alt="" />
+        </span>
       </summary>
 
-      <div className="col" style={{ marginTop: 8, gap: 6 }}>
+      <div className="col acc-body" style={{ gap: 6 }}>
         <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
           Pair the Pulsar app to feel real haptics on your device when you preview a preset.
         </p>

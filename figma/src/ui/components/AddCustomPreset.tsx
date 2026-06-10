@@ -6,6 +6,8 @@ import {
   parseCustomPresetJson,
   stringifyPreset
 } from './customPreset';
+import iconPlus from '../assets/icon-square-plus.svg';
+import iconChevron from '../assets/icon-chevron-down.svg';
 
 export default function AddCustomPreset({
   customPresets,
@@ -48,16 +50,21 @@ export default function AddCustomPreset({
   };
 
   return (
-    <details className="accordion" style={{ margin: '8px', borderTop: 'none', paddingTop: 0 }}>
-      <summary className="row" style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
-        <span className="caret" aria-hidden="true">▸</span>
-        Custom presets
+    <details className="accordion acc-row">
+      <summary className="acc-head">
+        <span className="acc-icon">
+          <img src={iconPlus} alt="" />
+        </span>
+        <span className="acc-title">Custom presets</span>
         {customPresets.length > 0 && (
           <span className="tag active" style={{ margin: 0 }}>{customPresets.length}</span>
         )}
+        <span className="acc-chevron" aria-hidden="true">
+          <img src={iconChevron} alt="" />
+        </span>
       </summary>
 
-      <div className="col" style={{ marginTop: 8, gap: 6 }}>
+      <div className="col acc-body" style={{ gap: 6 }}>
         <div className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>
           {editingId ? 'Editing custom preset (JSON)' : 'Paste a preset JSON to add it to the list'}
         </div>
