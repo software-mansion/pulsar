@@ -56,6 +56,12 @@ function getKmpPresetImport(shortName: string) {
   return `import com.swmansion.pulsar.kmp.Pulsar\n\nval pulsar = Pulsar.create()\npulsar.getPresets().${normalizedName}()`;
 }
 
+function getFlutterPresetImport(shortName: string) {
+  const cleanName = shortName.replace(/Preset$/, '');
+  const normalizedName = cleanName.charAt(0).toLowerCase() + cleanName.slice(1);
+  return `import 'package:pulsar_haptics/pulsar.dart';\n\nfinal pulsar = Pulsar();\npulsar.getPresets().${normalizedName}()`;
+}
+
 function toAnchorId(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
@@ -237,6 +243,7 @@ export function Preset(preset: PresetProps) {
             kotlin={getKotlinPresetImport(data.name)}
             kmp={getKmpPresetImport(data.name)}
             reactNative={getReactNativePresetImport(data.name)}
+            flutter={getFlutterPresetImport(data.name)}
           />
         </Accordion>
       </div>
