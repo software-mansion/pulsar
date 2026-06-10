@@ -6,17 +6,28 @@ interface CodeTabsProps {
   kotlin: string;
   kmp: string;
   reactNative: string;
+  flutter: string;
   className?: string;
 }
 
-export function CodeTabs({ swift, reactNative, kotlin, kmp, className = '' }: CodeTabsProps) {
-  const [activeTab, setActiveTab] = useState<'swift' | 'kotlin' | 'kmp' | 'reactNative'>('swift');
+export function CodeTabs({
+  swift,
+  reactNative,
+  kotlin,
+  kmp,
+  flutter,
+  className = '',
+}: CodeTabsProps) {
+  const [activeTab, setActiveTab] = useState<
+    'swift' | 'kotlin' | 'kmp' | 'reactNative' | 'flutter'
+  >('swift');
 
   const content = {
     swift,
     kotlin,
     kmp,
     reactNative,
+    flutter,
   };
 
   return (
@@ -45,6 +56,12 @@ export function CodeTabs({ swift, reactNative, kotlin, kmp, className = '' }: Co
           onClick={() => setActiveTab('reactNative')}
         >
           React Native
+        </div>
+        <div
+          className={`${styles.tab} ${activeTab === 'flutter' ? styles.active : ''}`}
+          onClick={() => setActiveTab('flutter')}
+        >
+          Flutter
         </div>
       </div>
 
