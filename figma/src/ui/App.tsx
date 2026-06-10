@@ -618,14 +618,10 @@ export default function App() {
   }, [allPresets, filter, favouritesOnly, favourites]);
   const openEntry = openId ? presetById.get(openId) ?? null : null;
 
-  const playEntry = async (e: CatalogEntry) => {
+  const playEntry = (e: CatalogEntry) => {
     stopAll();
-    if (settings.soundInEdit) {
-      try {
-        await playPreset(e.id, e.data);
-      } catch {}
-    }
     if (hapticsToken) broadcastToPhone(hapticsToken, e.data.name);
+    if (settings.soundInEdit) playPreset(e.id, e.data).catch(() => {});
   };
 
   const bindEntry = (e: CatalogEntry) => {
