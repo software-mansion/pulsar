@@ -480,7 +480,14 @@ button.wv-play { position: absolute; right: 8px; bottom: 8px; }
   scrollbar-width: none;
 }
 .preset-row-compact-tags::-webkit-scrollbar { display: none; }
-.preset-row-compact-tags .tag { flex: 0 0 auto; }
+/* Compact rows pack tags tighter than the default pill — smaller text and
+   padding so they take less horizontal space in the dense layout. */
+.preset-row-compact-tags .tag {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 12px;
+}
 .preset-row-compact-dur { flex-shrink: 0; font-size: var(--fs-2xs); }
 
 /* Test: flatten preset-card buttons — drop the signature offset shadow (resting
