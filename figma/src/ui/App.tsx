@@ -14,6 +14,9 @@ import SelectionBar from './components/SelectionBar';
 import PulsarLogo from './components/PulsarLogo';
 import ResizeHandle from './components/ResizeHandle';
 import { playPreset, stopAll } from './audio/AudioPatternUtility';
+import iconLayoutFull from './assets/icon-layout-full.svg';
+import iconLayoutCompact from './assets/icon-layout-compact.svg';
+import iconArrowUp from './assets/icon-arrow-up.svg';
 
 type Tab = 'presets' | 'bound' | 'phone' | 'preview';
 
@@ -511,10 +514,7 @@ export default function App() {
               aria-pressed={!settings.compactLayout}
               onClick={() => setSettings({ ...settings, compactLayout: false })}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
-                <rect x="3" y="13" width="18" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
-              </svg>
+              <img src={iconLayoutFull} alt="" width={16} height={16} />
             </button>
             <button
               className={`icon ${settings.compactLayout ? 'primary' : 'ghost'}`}
@@ -522,14 +522,7 @@ export default function App() {
               aria-pressed={settings.compactLayout}
               onClick={() => setSettings({ ...settings, compactLayout: true })}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <img src={iconLayoutCompact} alt="" width={16} height={16} />
             </button>
           </div>
           <div style={{ paddingTop: settings.compactLayout ? 0 : 8 }}>
@@ -559,15 +552,7 @@ export default function App() {
           aria-label="Scroll to top"
           onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M12 19V5M12 5l-6 6M12 5l6 6"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <img src={iconArrowUp} alt="" width={20} height={20} />
         </button>
       )}
 

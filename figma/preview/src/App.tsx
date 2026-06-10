@@ -11,6 +11,7 @@ import { PrototypeView } from './components/PrototypeView';
 import { HapticList } from './components/HapticList';
 import { PresetDetailsModal } from './components/PresetDetailsModal';
 import fullscreenExitIcon from './assets/icon-fullscreen-exit.svg';
+import fullscreenIcon from './assets/icon-fullscreen.svg';
 
 const ACTIVE_MS = 900;
 const TAP_DEBOUNCE_MS = 250;
@@ -135,6 +136,25 @@ export default function App() {
     () => typeof (window as any).ReactNativeWebView !== 'undefined',
     []
   );
+
+  // When running inside the PulsarApp WebView the preview already fills the
+  // WebView (mobile → implicit fullscreen), but the app's bottom tab bar still
+  // covers the lower strip. This toggle asks the native host to hide/show that
+  // tab bar so the prototype can run edge-to-edge. No-op outside the app host.
+  const [navBarHidden, setNavBarHidden] = useState(false);
+  const toggleNavBar = useCallback(() => {
+    setNavBarHidden((prev) => {
+      const next = !prev;
+      try {
+        (window as any).ReactNativeWebView?.postMessage(
+          JSON.stringify({ type: 'set-tab-bar-hidden', hidden: next })
+        );
+      } catch {
+        // No bridge — nothing to toggle.
+      }
+      return next;
+    });
+  }, []);
 
   const play = useCallback(
     (id: string) => {
@@ -295,6 +315,24 @@ export default function App() {
       {isFullscreen && !isMobile && (
         <button className="exit-fs" onClick={exitFullscreen} title="Exit fullscreen (Esc)">
           <img src={fullscreenExitIcon} alt="" width={16} height={16} />
+        </button>
+      )}
+
+      {/* In-app only: hide/show the native bottom tab bar for a true full-screen
+          prototype. Lives at the bottom corner, above where the tab bar sits. */}
+      {isAppHost && (
+        <button
+          className="nav-toggle"
+          onClick={toggleNavBar}
+          title={navBarHidden ? 'Show navigation bar' : 'Hide navigation bar'}
+          aria-pressed={navBarHidden}
+        >
+          <img
+            src={navBarHidden ? fullscreenExitIcon : fullscreenIcon}
+            alt={navBarHidden ? 'Show navigation bar' : 'Hide navigation bar'}
+            width={16}
+            height={16}
+          />
         </button>
       )}
     </>

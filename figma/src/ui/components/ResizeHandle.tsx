@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { send } from '../figmaBridge';
+import gripIcon from '../assets/icon-resize-grip.svg';
 
 // Kept in sync with MIN_SIZE/MAX_SIZE in src/main/code.ts. The main thread
 // clamps authoritatively; this just stops the UI from sending obviously
@@ -62,19 +63,7 @@ export default function ResizeHandle() {
         touchAction: 'none'
       }}
     >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 22 22"
-        style={{ display: 'block' }}
-        aria-hidden="true"
-      >
-        {/* Diagonal grip lines — the conventional resize affordance. */}
-        <g stroke="var(--accent, #38acdd)" strokeWidth="1.5" strokeLinecap="round">
-          <line x1="21" y1="9" x2="9" y2="21" />
-          <line x1="21" y1="15" x2="15" y2="21" />
-        </g>
-      </svg>
+      <img src={gripIcon} alt="" width={22} height={22} style={{ display: 'block' }} />
     </div>
   );
 }

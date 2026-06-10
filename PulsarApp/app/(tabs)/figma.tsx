@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, ActivityIndicator, ScrollView } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
@@ -45,28 +45,48 @@ function FigmaPreviewWebView({ token }: { token: string }) {
 
   const webRef = useRef<WebView>(null);
   const playFromHost = usePlayPatternFromHost();
+  const navigation = useNavigation();
 
-  const onMessage = (event: WebViewMessageEvent) => {
-    // Messages from the embedded preview. We expect
-    //   { type: 'play-preset', presetName: '...', pattern?: Pattern }
-    // - For built-in presets (TickTock, DogBark, …) the host resolves the name
-    //   via react-native-pulsar's Presets and plays the tuned haptic.
-    // - For custom (user-defined) presets the name won't match anything, so
-    //   the host falls back to PatternComposer.parse() + .play() on the pattern
-    //   carried in the same message.
-    try {
-      const data = JSON.parse(event.nativeEvent.data) as {
-        type?: string;
-        presetName?: string;
-        pattern?: Pattern;
-      };
-      if (data.type === 'play-preset' && typeof data.presetName === 'string') {
-        playFromHost(data.presetName, data.pattern);
+  // The preview can ask us to hide the bottom tab bar so the prototype runs
+  // edge-to-edge ("true full screen"). We drive it through state + setOptions so
+  // it's declarative and self-restores: leaving the screen with the bar hidden
+  // resets it via the cleanup below.
+  const [tabBarHidden, setTabBarHidden] = useState(false);
+  useEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: tabBarHidden ? { display: 'none' } : undefined,
+    });
+    return () => navigation.setOptions({ tabBarStyle: undefined });
+  }, [navigation, tabBarHidden]);
+
+  const onMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      // Messages from the embedded preview:
+      //   { type: 'play-preset', presetName: '...', pattern?: Pattern }
+      //     - Built-in presets (TickTock, DogBark, …) resolve by name via
+      //       react-native-pulsar's Presets and play the tuned haptic.
+      //     - Custom presets won't match a name, so we fall back to
+      //       PatternComposer.parse() + .play() on the carried pattern.
+      //   { type: 'set-tab-bar-hidden', hidden: boolean }
+      //     - Toggles the bottom tab bar for the full-screen preview.
+      try {
+        const data = JSON.parse(event.nativeEvent.data) as {
+          type?: string;
+          presetName?: string;
+          pattern?: Pattern;
+          hidden?: boolean;
+        };
+        if (data.type === 'play-preset' && typeof data.presetName === 'string') {
+          playFromHost(data.presetName, data.pattern);
+        } else if (data.type === 'set-tab-bar-hidden' && typeof data.hidden === 'boolean') {
+          setTabBarHidden(data.hidden);
+        }
+      } catch {
+        // Non-JSON messages aren't ours; swallow.
       }
-    } catch {
-      // Non-JSON messages aren't ours; swallow.
-    }
-  };
+    },
+    [playFromHost]
+  );
 
   return (
     <WebView
