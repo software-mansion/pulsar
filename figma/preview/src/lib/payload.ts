@@ -2,7 +2,7 @@ import type { PreviewPayload } from '../types';
 
 // Pulsar backend that stores the preview payload by token. Set in .env.local
 // (gitignored) as VITE_API_SERVER_URL; .env.example documents the variable.
-const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
+const API_SERVER_URL = "https://pulsar-server.swmansion.com";
 
 // Read the `?token=` query param from the current URL, falling back to the
 // parent window's URL when we're embedded inside an <iframe srcdoc>. Srcdoc

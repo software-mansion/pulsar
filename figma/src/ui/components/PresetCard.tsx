@@ -1,5 +1,6 @@
 import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
+import iconPlay from '../assets/icon-play.svg';
 
 const formatDuration = (ms: number) =>
   ms >= 1000 ? `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)} s` : `${Math.round(ms)} ms`;
@@ -46,7 +47,9 @@ export default function PresetCard({
           gap: 8
         }}
       >
-        <button className="ghost icon" onClick={onPlay} title="Play">▶</button>
+        <button className="ghost icon" onClick={onPlay} title="Play">
+          <img src={iconPlay} alt="" width={14} height={14} />
+        </button>
         <div style={{ minWidth: 0, flex: 1 }} onClick={onOpen}>
           <div style={{ fontWeight: 600, cursor: 'pointer' }}>
             {data.name}
@@ -70,7 +73,9 @@ export default function PresetCard({
           {isBound && <span className="bound-badge" style={{ marginLeft: 6 }}>● bound</span>}
         </div>
         {favButton}
-        <button className="ghost icon" onClick={onPlay} title="Play">▶</button>
+        <button className="ghost icon" onClick={onPlay} title="Play">
+          <img src={iconPlay} alt="" width={14} height={14} />
+        </button>
       </div>
       {data.tags.length > 0 && (
         <div

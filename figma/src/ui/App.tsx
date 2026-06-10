@@ -34,7 +34,7 @@ const DEFAULT_SETTINGS: Settings = {
 // production-built plugin at a locally-hosted docs/preview instance.
 const DEFAULT_PREVIEW_BASE_URL = import.meta.env.DEV
   ? 'http://localhost:5173/'
-  : 'https://docs.swmansion.com/figma-preview/';
+  : 'https://docs.swmansion.com/pulsar/figma-preview/';
 
 function resolvePreviewBaseUrl(override: string): string {
   const trimmed = override.trim();
@@ -329,6 +329,15 @@ export default function App() {
           type: 'notify',
           message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
         });
+      } else if (previewActionRef.current === 'copy-token') {
+        // Just the raw token — handy for pasting into other figma-preview URLs
+        // (e.g. a local dev instance), debugging, or sharing the token by itself
+        // without a particular host.
+        const ok = copyToClipboard(token);
+        send({
+          type: 'notify',
+          message: ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.'
+        });
       } else if (previewActionRef.current === 'qr') {
         try {
           const dataUrl = await QRCode.toDataURL(appDeepLink, {
@@ -356,8 +365,9 @@ export default function App() {
     return off;
   }, [settings.fileKeyOverride, settings.previewBaseUrlOverride, presetById]);
 
-  // Whether the pending preview-data response should open / copy / QR-encode the link.
-  const previewActionRef = useRef<'open' | 'copy' | 'qr'>('open');
+  // Whether the pending preview-data response should open / copy the link /
+  // copy just the token / QR-encode the link.
+  const previewActionRef = useRef<'open' | 'copy' | 'copy-token' | 'qr'>('open');
   const [shareQr, setShareQr] = useState<string | null>(null);
   const showInLivePreview = () => {
     previewActionRef.current = 'open';
@@ -365,6 +375,10 @@ export default function App() {
   };
   const copyShareLink = () => {
     previewActionRef.current = 'copy';
+    send({ type: 'request-preview-data' });
+  };
+  const copyShareToken = () => {
+    previewActionRef.current = 'copy-token';
     send({ type: 'request-preview-data' });
   };
   const showQrCode = () => {
@@ -595,6 +609,7 @@ export default function App() {
           onChange={setSettings}
           onShowLivePreview={showInLivePreview}
           onCopyShareLink={copyShareLink}
+          onCopyShareToken={copyShareToken}
           onShowQrCode={showQrCode}
           qrDataUrl={shareQr}
           onClearQr={() => setShareQr(null)}

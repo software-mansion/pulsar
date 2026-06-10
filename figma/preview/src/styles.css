@@ -20,7 +20,7 @@
 
   --radius-sm: 2px;
   --radius: 4px;
-  --shadow-card: -3px 3px 0 var(--color-blue-50);
+  --shadow-card: -2px 2px 0 var(--color-blue-50);
 
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui,
     sans-serif;
@@ -83,16 +83,12 @@ body {
   font-size: var(--fs-xs);
   font-weight: 600;
   cursor: pointer;
-  box-shadow: -3px 3px 0 var(--color-blue-50);
+  box-shadow: -2px 2px 0 var(--color-blue-50);
   transition: transform 120ms ease, box-shadow 120ms ease;
-}
-.header .fs-btn:hover {
-  box-shadow: -4px 4px 0 var(--color-blue-50);
-  transform: translate(1px, -1px);
 }
 .header .fs-btn:active {
   box-shadow: none;
-  transform: translate(-3px, 3px);
+  transform: translate(-2px, 2px);
 }
 
 /* Layout ------------------------------------------------------------------- */
@@ -324,11 +320,11 @@ body {
   cursor: pointer;
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
-.el-row:active { transform: translate(-1px, 1px); box-shadow: -2px 2px 0 var(--color-blue-50); }
+.el-row:active { transform: translate(-1px, 1px); box-shadow: -1px 1px 0 var(--color-primary) !important; }
 .el-row.active {
   background: #fff;
   border-color: var(--color-primary);
-  box-shadow: -3px 3px 0 var(--color-primary);
+  box-shadow: -2px 2px 0 var(--color-primary);
 }
 .el-name {
   font-size: var(--fs-2xs);
@@ -717,16 +713,13 @@ button.docs-btn {
   padding: 6px 14px;
   font-size: var(--fs-xs);
   font-weight: 600;
-  box-shadow: -3px 3px 0 var(--color-blue-50);
+  box-shadow: -2px 2px 0 var(--color-blue-50);
   transition: transform 120ms ease, box-shadow 120ms ease;
-}
-button.docs-btn:hover {
-  box-shadow: -4px 4px 0 var(--color-blue-50);
-  transform: translate(1px, -1px);
 }
 button.docs-btn:active {
   box-shadow: none;
-  transform: translate(-3px, 3px);
+  transform: translate(-1px, 1px);
+  box-shadow: -1px 1px 0 var(--color-blue-50);
 }
 
 .spacer { flex: 1; }

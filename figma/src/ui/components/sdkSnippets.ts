@@ -1,29 +1,39 @@
-import { useEffect, useState } from 'react';
-import type { PresetData } from '../types';
-import closeIcon from '../assets/icon-close.svg';
+import type { PresetData } from '../../shared/types';
 
-// Order chosen to match the docs SDK overview page.
-const LANGS = ['Swift', 'Android', 'KMP', 'React Native', 'Flutter', 'Web'] as const;
-type Lang = (typeof LANGS)[number];
+// Order chosen to match the docs SDK overview page. Kept in sync with the
+// preview's PresetDetailsModal — if you fix a snippet here, fix it there too
+// (or vice versa). The two apps have to be self-contained because they live
+// in separate Vite projects, but the source of truth for the snippet content
+// is the docs/src/content/docs/sdk/*.mdx pages.
+export const LANGS = [
+  'Swift',
+  'Android',
+  'KMP',
+  'React Native',
+  'Flutter',
+  'Web'
+] as const;
+export type Lang = (typeof LANGS)[number];
 
-// Maps PascalCase / "Title Case" preset names ("DogBark", "TickTock", "My Buzz")
-// to the camelCase identifier each SDK actually uses (dogBark, tickTock,
-// myBuzz). The docs use this casing in every authoritative example we have.
+// Maps PascalCase / "Title Case" preset names ("DogBark", "TickTock",
+// "My Buzz") to the camelCase identifier each SDK actually uses (dogBark,
+// tickTock, myBuzz). The docs use this casing in every authoritative example.
 const camel = (s: string): string => {
   const stripped = s.replace(/[^A-Za-z0-9]+/g, ' ').trim();
   const parts = stripped.split(/\s+/);
   if (parts.length === 0) return s;
   return parts
     .map((p, i) =>
-      i === 0 ? p.charAt(0).toLowerCase() + p.slice(1) : p.charAt(0).toUpperCase() + p.slice(1)
+      i === 0
+        ? p.charAt(0).toLowerCase() + p.slice(1)
+        : p.charAt(0).toUpperCase() + p.slice(1)
     )
     .join('');
 };
 
-// SDK-specific code generators for a built-in preset. Each returns the
-// recommended invocation as quoted from the matching `docs/src/content/docs/sdk/*.mdx`
-// page (see PresetDetailsModal-snippets audit for source citations).
-function builtInSnippet(lang: Lang, name: string): string {
+// Built-in preset call site for each SDK — quoted from
+// docs/src/content/docs/sdk/{ios,android,kmp,react-native,flutter}.mdx.
+export function builtInSnippet(lang: Lang, name: string): string {
   const id = camel(name);
   switch (lang) {
     case 'Swift':
@@ -57,9 +67,6 @@ const pulsar = new Pulsar();
 await pulsar.getPresets().play('${id}');`;
   }
 }
-
-// Build SDK-specific representations of the preset's discrete + continuous
-// arrays, formatted as the SDK's own native types.
 
 function customSwift(data: PresetData): string {
   const amp = data.continuousPattern.amplitude
@@ -140,8 +147,6 @@ ${playCall}`;
 }
 
 function customReactNative(data: PresetData): string {
-  // Render as JS-object literal (unquoted keys) for closer parity with the
-  // docs' react-native.mdx example.
   const stringifyPattern = (obj: unknown, indent = 2): string => {
     const pad = ' '.repeat(indent);
     if (Array.isArray(obj)) {
@@ -211,14 +216,9 @@ await composer.playPattern(pattern);`;
 }
 
 function customWeb(data: PresetData): string {
-  // The web SDK uses a segment-based HapticPattern, not the iOS-style
-  // discrete/continuous shape — see web/Pulsar/src/types.ts. We render the
-  // most-fidelity-preserving translation:
-  //   - each discretePattern point → a short "continuous" segment (30 ms)
-  //   - the continuousPattern envelope → one "line" segment spanning the
-  //     preset duration with the amplitude/frequency arrays as control points.
   const lineSegment =
-    data.continuousPattern.amplitude.length > 0 || data.continuousPattern.frequency.length > 0
+    data.continuousPattern.amplitude.length > 0 ||
+    data.continuousPattern.frequency.length > 0
       ? `  {
     type: 'line',
     timestamp: 0,
@@ -244,7 +244,7 @@ composer.parse(pattern);
 composer.play();`;
 }
 
-function customSnippet(lang: Lang, data: PresetData): string {
+export function customSnippet(lang: Lang, data: PresetData): string {
   switch (lang) {
     case 'Swift':
       return customSwift(data);
@@ -259,108 +259,4 @@ function customSnippet(lang: Lang, data: PresetData): string {
     case 'Web':
       return customWeb(data);
   }
-}
-
-export function PresetDetailsModal({
-  data,
-  elementName,
-  isCustom = false,
-  onClose
-}: {
-  data: PresetData;
-  elementName?: string;
-  isCustom?: boolean;
-  onClose: () => void;
-}) {
-  const [lang, setLang] = useState<Lang>('Swift');
-  const snippet = isCustom ? customSnippet(lang, data) : builtInSnippet(lang, data.name);
-  const json = JSON.stringify(data, null, 2);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  const [copiedKey, setCopiedKey] = useState<'snippet' | 'json' | null>(null);
-  const copy = (text: string, key: 'snippet' | 'json') => {
-    navigator.clipboard?.writeText(text).then(
-      () => {
-        setCopiedKey(key);
-        window.setTimeout(() => setCopiedKey(null), 1200);
-      },
-      () => {}
-    );
-  };
-
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <header className="modal-head">
-          <div className="modal-head-text">
-            <div className="modal-title">{data.name}</div>
-            {elementName && <div className="modal-subtitle">on {elementName}</div>}
-          </div>
-          <button className="modal-close" onClick={onClose} title="Close (Esc)" aria-label="Close">
-            <img src={closeIcon} alt="" width={14} height={14} />
-          </button>
-        </header>
-
-        <div className="modal-body">
-          {(data.tags.length > 0 || isCustom) && (
-            <div className="tags-row">
-              {isCustom && <span className="tag tag-custom">Custom</span>}
-              {data.tags
-                .filter((t) => t !== 'Custom')
-                .map((t) => (
-                  <span key={t} className="tag tag-white">
-                    {t}
-                  </span>
-                ))}
-            </div>
-          )}
-
-          {data.description && <p className="modal-description">{data.description}</p>}
-
-          <section className="modal-section">
-            <div className="modal-section-head">
-              <h3>Usage</h3>
-            </div>
-            <div className="docs-tabs">
-              {LANGS.map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  className={`docs-tab${lang === l ? ' active' : ''}`}
-                  onClick={() => setLang(l)}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-            <pre className="code-block">{snippet}</pre>
-            <div className="modal-section-foot">
-              <button className="docs-btn" onClick={() => copy(snippet, 'snippet')}>
-                {copiedKey === 'snippet' ? 'Copied' : 'Copy'}
-              </button>
-            </div>
-          </section>
-
-          <section className="modal-section">
-            <div className="modal-section-head">
-              <h3>Raw pattern data</h3>
-            </div>
-            <pre className="code-block">{json}</pre>
-            <div className="modal-section-foot">
-              <button className="docs-btn" onClick={() => copy(json, 'json')}>
-                {copiedKey === 'json' ? 'Copied' : 'Copy'}
-              </button>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
 }

@@ -2,13 +2,17 @@ import type { Settings } from '../../shared/types';
 import iconExternalLink from '../assets/icon-external-link.svg';
 import iconLink from '../assets/icon-link.svg';
 import iconQrCode from '../assets/icon-qr-code.svg';
+import iconKey from '../assets/icon-key.svg';
 import iconClose from '../assets/icon-close.svg';
 
-// Live preview tab. Three share paths with clear visual hierarchy:
+// Live preview tab. Share paths with clear visual hierarchy:
 //   - Primary CTA: open the preview in the browser (most direct, taps the
 //     current device immediately).
 //   - Two equal secondaries: copy the share link (paste into chat / phone) or
 //     show a QR code (scan with phone camera).
+//   - One full-width tertiary: copy just the share token — handy for pasting
+//     into other figma-preview URLs (e.g. local dev) or sharing the raw token
+//     without a particular host.
 // The previously-exposed "File key override" / "Preview base URL override"
 // inputs are deliberately gone from the UI — they're still honoured if set
 // programmatically on the Settings object (the consumers in App.tsx haven't
@@ -21,6 +25,7 @@ import iconClose from '../assets/icon-close.svg';
 export default function LivePreviewPanel({
   onShowLivePreview,
   onCopyShareLink,
+  onCopyShareToken,
   onShowQrCode,
   qrDataUrl,
   onClearQr
@@ -29,6 +34,7 @@ export default function LivePreviewPanel({
   onChange: (next: Settings) => void;
   onShowLivePreview: () => void;
   onCopyShareLink: () => void;
+  onCopyShareToken: () => void;
   onShowQrCode: () => void;
   qrDataUrl: string | null;
   onClearQr: () => void;
@@ -72,6 +78,18 @@ export default function LivePreviewPanel({
           <span>QR code</span>
         </button>
       </div>
+
+      {/* Tertiary action — full-width, raw token only. Useful for pasting the
+          token into a different host (local-dev preview, debug tooling) without
+          the full URL boilerplate. */}
+      <button
+        className="ghost preview-tertiary"
+        onClick={onCopyShareToken}
+        title="Copy just the share token (no URL) to the clipboard"
+      >
+        <img src={iconKey} alt="" width={14} height={14} />
+        <span>Copy share token</span>
+      </button>
 
       {qrDataUrl && (
         /*
