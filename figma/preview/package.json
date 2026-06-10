@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:embed": "tsc --noEmit && vite build --config vite.config.embed.ts",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
@@ -20,6 +21,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "vite-plugin-singlefile": "^2.0.3"
   }
 }

@@ -1,0 +1,42 @@
+---
+// Self-contained embed of the figma/preview app. The `embed.html` next to this
+// file is produced by docs/scripts/build-figma-preview.mjs as part of the docs
+// build (`npm run build` → prebuild → `npm --prefix figma/preview run
+// build:embed`). It is a single HTML file with every JS/CSS chunk inlined as a
+// data URI, so we can hand it straight to an <iframe srcdoc>.
+import embedHtml from './embed.html?raw';
+---
+
+<iframe
+  id="figma-preview-frame"
+  title="Pulsar Figma Live Preview"
+  srcdoc={embedHtml}
+  allow="fullscreen; clipboard-write"
+  allowfullscreen
+></iframe>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  #figma-preview-frame {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border: 0;
+    display: block;
+  }
+</style>
+
+<!--
+  The outer page's `?token=…` query string is forwarded automatically: the
+  embedded preview's `readPayload` (figma/preview/src/lib/payload.ts) reads its
+  own location.search first, then falls back to window.parent.location.search
+  for srcdoc iframes whose own URL is the synthetic `about:srcdoc` (which never
+  has a query string).
+-->
+
