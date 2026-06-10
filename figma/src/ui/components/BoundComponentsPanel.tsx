@@ -37,7 +37,7 @@ export default function BoundComponentsPanel({
   }, [items]);
 
   return (
-    <div className="col" style={{ padding: 12, gap: 8, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+    <div className="col scroll" style={{ padding: 12, gap: 8, flex: 1, minHeight: 0 }}>
       <div className="row">
         <div style={{ fontWeight: 700, fontSize: 'var(--fs-lg)' }}>Bound components</div>
         <div className="spacer" />
@@ -55,7 +55,7 @@ export default function BoundComponentsPanel({
           No components have haptics bound yet. Select a node and bind a preset.
         </p>
       ) : (
-        <div className="scroll" style={{ flex: 1, marginTop: 4 }}>
+        <div style={{ marginTop: 4 }}>
           {groups.map((group) => (
             <div key={group.id} className="bound-group">
               <div className="bound-group-head" title={group.name}>

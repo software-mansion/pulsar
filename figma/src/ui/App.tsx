@@ -475,7 +475,7 @@ export default function App() {
               setOpenId(null);
             }}
           >
-            {t}
+            {t === 'bound' ? 'components' : t}
           </span>
         ))}
       </div>
