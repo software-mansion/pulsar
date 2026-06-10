@@ -1,8 +1,10 @@
+/// <reference types="@figma/plugin-typings" />
 // Figma plugin main thread. Runs in the figma sandbox; talks to the UI iframe via postMessage.
 import type {
   BindingMeta,
   BoundItem,
   CatalogEntry,
+  FrameInfo,
   MainToUi,
   NodeBox,
   PreviewBinding,
@@ -12,19 +14,62 @@ import type {
 } from '../shared/types';
 
 const BINDING_KEY = 'pulsar:binding';
+// Per-instance opt-out marker. Setting BINDING_KEY to '' on a component
+// instance only removes the instance's own override — Figma then falls back
+// to the main component's plugin data, so the instance keeps appearing bound.
+// We need a way to say "this one instance is unbound" without touching the
+// master (which would unbind every sibling instance). Setting this key on
+// the instance is per-instance because it has no value on the master, so
+// inheritance never overrides it.
+const BINDING_NEGATED_KEY = 'pulsar:binding-negated';
 const SETTINGS_KEY = 'pulsar:settings';
 const TOKEN_KEY = 'pulsar:hapticsToken';
-const PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
+// Per-file share tokens: { [fileKey]: token }. Small and precious — this is the
+// only record tying a design file to its server-side preview row, so it is
+// NEVER evicted to reclaim quota. Replaces the old single global
+// `pulsar:previewToken`, which made every file reuse (and overwrite) one row.
+const PROJECT_TOKENS_KEY = 'pulsar:previewTokens';
+// Legacy single global preview token (pre per-file). Migrated lazily into the
+// per-file map for the first file that asks, then deleted.
+const LEGACY_PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
+// Per-file cached preview config + the server revision it was synced at, stored
+// under `${PROJECT_CACHE_PREFIX}${fileKey}`. These can be large, so they are the
+// only thing evicted (oldest-first) when clientStorage runs out of space.
+const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
+const WINDOW_SIZE_KEY = 'pulsar:windowSize';
+
+const DEFAULT_SIZE = { width: 380, height: 640 };
+// Clamp the persisted size so a stored value can't shrink the UI below a
+// usable size or blow it up past the host window.
+const MIN_SIZE = { width: 320, height: 460 };
+const MAX_SIZE = { width: 1200, height: 1200 };
+
+function clampSize(width: number, height: number) {
+  return {
+    width: Math.max(MIN_SIZE.width, Math.min(MAX_SIZE.width, Math.round(width))),
+    height: Math.max(MIN_SIZE.height, Math.min(MAX_SIZE.height, Math.round(height)))
+  };
+}
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
   compactLayout: false,
-  fileKeyOverride: ''
+  fileKeyOverride: '',
+  previewBaseUrlOverride: ''
 };
 
-figma.showUI(__html__, { width: 380, height: 640, themeColors: true });
+figma.showUI(__html__, { ...DEFAULT_SIZE, themeColors: true });
+
+// Restore the last-used window size (figma.showUI must run synchronously with a
+// literal size, so we resize once clientStorage resolves).
+figma.clientStorage.getAsync(WINDOW_SIZE_KEY).then((raw) => {
+  if (raw && typeof raw.width === 'number' && typeof raw.height === 'number') {
+    const { width, height } = clampSize(raw.width, raw.height);
+    figma.ui.resize(width, height);
+  }
+});
 
 function postToUi(msg: MainToUi) {
   figma.ui.postMessage(msg);
@@ -39,8 +84,90 @@ async function loadToken(): Promise<string | null> {
   return (await figma.clientStorage.getAsync(TOKEN_KEY)) ?? null;
 }
 
-async function loadPreviewToken(): Promise<string | null> {
-  return (await figma.clientStorage.getAsync(PREVIEW_TOKEN_KEY)) ?? null;
+type ProjectCache = {
+  config: unknown;
+  baseRevision: number | null;
+  // Wall-clock of the last write, used to pick the oldest entry to evict.
+  lastAccess: number;
+};
+
+async function loadProjectTokens(): Promise<Record<string, string>> {
+  const raw = await figma.clientStorage.getAsync(PROJECT_TOKENS_KEY);
+  return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
+}
+
+// Resolve the share token for a file, migrating the legacy global token into
+// the per-file map the first time a file asks (so existing shares survive the
+// upgrade instead of orphaning a server row).
+async function getProjectToken(fileKey: string): Promise<string | null> {
+  const tokens = await loadProjectTokens();
+  if (tokens[fileKey]) return tokens[fileKey];
+  const legacy = await figma.clientStorage.getAsync(LEGACY_PREVIEW_TOKEN_KEY);
+  if (typeof legacy === 'string' && legacy.length > 0) {
+    tokens[fileKey] = legacy;
+    await figma.clientStorage.setAsync(PROJECT_TOKENS_KEY, tokens);
+    await figma.clientStorage.deleteAsync(LEGACY_PREVIEW_TOKEN_KEY);
+    return legacy;
+  }
+  return null;
+}
+
+async function setProjectToken(fileKey: string, token: string): Promise<void> {
+  const tokens = await loadProjectTokens();
+  tokens[fileKey] = token;
+  await figma.clientStorage.setAsync(PROJECT_TOKENS_KEY, tokens);
+}
+
+async function getProjectCache(fileKey: string): Promise<ProjectCache | null> {
+  const raw = await figma.clientStorage.getAsync(PROJECT_CACHE_PREFIX + fileKey);
+  return raw && typeof raw === 'object' ? (raw as ProjectCache) : null;
+}
+
+// Drop the least-recently-written project cache (excluding `exceptKey`, the one
+// we're trying to write). Returns false when there is nothing left to evict.
+// Only ever touches PROJECT_CACHE_PREFIX keys — tokens, settings, favourites,
+// custom presets and the haptics token are all off-limits.
+async function evictOldestProjectCache(exceptKey: string): Promise<boolean> {
+  const keys = (await figma.clientStorage.keysAsync()).filter(
+    (k) => k.startsWith(PROJECT_CACHE_PREFIX) && k !== exceptKey
+  );
+  if (keys.length === 0) return false;
+  let oldestKey: string | null = null;
+  let oldest = Infinity;
+  for (const k of keys) {
+    const v = (await figma.clientStorage.getAsync(k)) as ProjectCache | undefined;
+    const t = v && typeof v.lastAccess === 'number' ? v.lastAccess : 0;
+    if (t < oldest) {
+      oldest = t;
+      oldestKey = k;
+    }
+  }
+  if (!oldestKey) return false;
+  await figma.clientStorage.deleteAsync(oldestKey);
+  return true;
+}
+
+// Persist a file's cached config, evicting older project caches if we hit the
+// clientStorage quota. Best-effort: if even an empty store can't fit this one
+// entry, the rejection propagates to the caller (which treats the cache as
+// optional — the server copy is the source of truth).
+async function setProjectCache(
+  fileKey: string,
+  config: unknown,
+  baseRevision: number | null
+): Promise<void> {
+  const key = PROJECT_CACHE_PREFIX + fileKey;
+  const entry: ProjectCache = { config, baseRevision, lastAccess: Date.now() };
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      await figma.clientStorage.setAsync(key, entry);
+      return;
+    } catch (err) {
+      const evicted = await evictOldestProjectCache(key);
+      if (!evicted) throw err;
+    }
+  }
 }
 
 async function loadFavourites(): Promise<string[]> {
@@ -54,10 +181,22 @@ async function loadCustomPresets(): Promise<CatalogEntry[]> {
 }
 
 function readBinding(node: BaseNode): BindingMeta | null {
+  // Honour the per-instance opt-out flag before reading the binding. An
+  // instance with this flag set keeps inheriting BINDING_KEY from its
+  // component master via Figma's plugin-data inheritance, but should be
+  // treated as unbound for the purposes of our lists and overlays.
+  if (node.getPluginData(BINDING_NEGATED_KEY)) return null;
   const raw = node.getPluginData(BINDING_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as BindingMeta;
+    const parsed = JSON.parse(raw) as Partial<BindingMeta>;
+    // Reject anything that's not a real binding — empty objects, half-written
+    // payloads, or data left behind by an older plugin version. Without this
+    // the bound-list could show ghost entries with undefined preset names.
+    if (!parsed || typeof parsed.presetId !== 'string' || parsed.presetId.length === 0) {
+      return null;
+    }
+    return parsed as BindingMeta;
   } catch {
     return null;
   }
@@ -70,15 +209,32 @@ function boxOf(node: BaseNode): NodeBox | null {
 
 // Collect every node on the current page that has a Pulsar binding, so the
 // standalone preview app can map embed click events (by node id) to a preset.
-async function collectPreviewBindings(): Promise<PreviewBinding[]> {
+// Also returns a `frames` map (frameId → absolute box) covering every distinct
+// frame-like ancestor of those bound nodes, so the preview can reposition its
+// highlight overlay after Figma navigates between frames.
+async function collectPreviewBindings(): Promise<{
+  bindings: PreviewBinding[];
+  frames: Record<string, FrameInfo>;
+}> {
   await figma.currentPage.loadAsync();
-  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: {} });
+  // Match by the specific binding key, not just "has any plugin data". When
+  // BINDING_KEY is cleared (unbind), Figma drops the node from this result
+  // immediately, so an unbound node can't leak into the bound list even if
+  // some other transient state lingers.
+  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
   const out: PreviewBinding[] = [];
+  const frames: Record<string, FrameInfo> = {};
   for (const node of nodes) {
     const binding = readBinding(node);
     if (!binding) continue;
     const descendantIds =
       'findAll' in node ? (node as ChildrenMixin & BaseNode).findAll(() => true).map((d) => d.id) : [];
+    const frame = topLevelFrameAncestor(node);
+    const frameId = frame ? frame.id : null;
+    if (frame && !(frame.id in frames)) {
+      const box = boxOf(frame);
+      if (box) frames[frame.id] = { name: frame.name, box };
+    }
     out.push({
       nodeId: node.id,
       nodeName: node.name,
@@ -86,26 +242,36 @@ async function collectPreviewBindings(): Promise<PreviewBinding[]> {
       presetName: binding.presetName,
       customPattern: binding.customPattern,
       box: boxOf(node),
+      frameId,
       descendantIds
     });
   }
-  return out;
+  return { bindings: out, frames };
 }
 
 // Light list of bound components for the "Bound" tab (no boxes/descendants).
+// Each item carries its top-level frame id + name so the UI can group entries
+// by screen, mirroring the preview's "Haptic elements" sidebar.
 async function collectBoundItems(): Promise<BoundItem[]> {
   await figma.currentPage.loadAsync();
-  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: {} });
+  // Match by the specific binding key, not just "has any plugin data". When
+  // BINDING_KEY is cleared (unbind), Figma drops the node from this result
+  // immediately, so an unbound node can't leak into the bound list even if
+  // some other transient state lingers.
+  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
   const out: BoundItem[] = [];
   for (const node of nodes) {
     const binding = readBinding(node);
     if (!binding) continue;
+    const frame = topLevelFrameAncestor(node);
     out.push({
       nodeId: node.id,
       nodeName: node.name,
       nodeType: node.type,
       presetId: binding.presetId,
-      presetName: binding.presetName
+      presetName: binding.presetName,
+      frameId: frame ? frame.id : null,
+      frameName: frame ? frame.name : null
     });
   }
   return out;
@@ -152,6 +318,22 @@ function nearestFrameLikeAncestor(node: BaseNode): SceneNode | null {
     n = n.parent;
   }
   return null;
+}
+
+// Walk all the way up and return the OUTERMOST frame-like ancestor — the one
+// whose parent is the page (or a section). Figma's PRESENTED_NODE_CHANGED event
+// always reports the top-level prototype frame, so matching bound elements to
+// their owning frame by the outermost frame id keeps the preview's
+// per-frame highlight filter accurate even when the button sits inside a
+// nested frame.
+function topLevelFrameAncestor(node: BaseNode): SceneNode | null {
+  let n: BaseNode | null = node;
+  let topmost: SceneNode | null = null;
+  while (n && n.type !== 'PAGE') {
+    if (isFrameLike(n)) topmost = n;
+    n = n.parent;
+  }
+  return topmost;
 }
 
 // Recursively look for a frame-like node, descending into SECTIONs (which can
@@ -210,6 +392,10 @@ function bindToSelection(binding: BindingMeta) {
     return;
   }
   const node = sel[0];
+  // Drop any prior negation flag — without this, re-binding a previously
+  // opted-out instance silently does nothing because readBinding still
+  // returns null.
+  node.setPluginData(BINDING_NEGATED_KEY, '');
   node.setPluginData(BINDING_KEY, JSON.stringify(binding));
   node.setRelaunchData({ play: `Pulsar: ${binding.presetName}` });
   figma.notify(`Bound "${binding.presetName}" to ${node.name}`);
@@ -220,11 +406,70 @@ function unbindSelection() {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) return;
   const node = sel[0];
-  node.setPluginData(BINDING_KEY, '');
-  node.setRelaunchData({});
+
+  // Find the nearest enclosing instance (the selected node itself counts).
+  // Two cases:
+  //   - inside an instance → the binding might live on the master, and
+  //     instances inherit it via Figma's plugin-data inheritance. Clearing
+  //     BINDING_KEY on the instance just drops its own override and
+  //     re-exposes the master's value, so we use a per-instance opt-out
+  //     marker instead. The master and every sibling instance are left
+  //     alone, which is what users expect when unbinding "this one copy".
+  //   - everything else (plain frame, component master, group, …) → no
+  //     inheritance to fight, so clearing BINDING_KEY on the node itself is
+  //     enough. For a master, this propagates and unbinds every instance,
+  //     which is also what users expect for "unbind the template".
+  let instance: InstanceNode | null = null;
+  let n: BaseNode | null = node;
+  while (n && n.type !== 'PAGE') {
+    if (n.type === 'INSTANCE') {
+      instance = n as InstanceNode;
+      break;
+    }
+    n = n.parent;
+  }
+
+  if (instance) {
+    instance.setPluginData(BINDING_NEGATED_KEY, '1');
+    // Also drop any direct binding override the instance may carry, so a
+    // future re-bind on it starts from the inherited state.
+    instance.setPluginData(BINDING_KEY, '');
+    instance.setRelaunchData({});
+  } else {
+    // Belt-and-suspenders: wipe every plugin-data key on the node so older
+    // keys (from earlier plugin versions) don't keep the node alive in
+    // findAllWithCriteria result sets.
+    for (const key of node.getPluginDataKeys()) {
+      node.setPluginData(key, '');
+    }
+    node.setPluginData(BINDING_KEY, '');
+    node.setRelaunchData({});
+  }
   figma.notify('Preset unbound.');
   pushSelection();
 }
+
+// Notify the UI when the document changes so it can debounce a background save
+// to the server. documentchange is very chatty during drags (one event per
+// frame), so coalesce a burst into a single message; the UI debounces further
+// before actually pushing. Covers binding/unbinding (setPluginData fires here)
+// as well as moves/resizes that shift bound-node boxes.
+let docChangedPending = false;
+function onDocumentChange() {
+  if (docChangedPending) return;
+  docChangedPending = true;
+  setTimeout(() => {
+    docChangedPending = false;
+    postToUi({ type: 'doc-changed' });
+  }, 300);
+}
+// In dynamic-page documents `figma.on('documentchange')` throws unless every
+// page has been loaded first. Load them, then subscribe; if loading fails the
+// auto-sync trigger is simply absent (explicit share / "Sync now" still work).
+figma
+  .loadAllPagesAsync()
+  .then(() => figma.on('documentchange', onDocumentChange))
+  .catch((err) => console.error('Could not subscribe to documentchange:', err));
 
 figma.on('selectionchange', () => {
   pushSelection();
@@ -242,17 +487,48 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken, previewToken, favourites, customPresets] = await Promise.all([
+      const [settings, hapticsToken, favourites, customPresets] = await Promise.all([
         loadSettings(),
         loadToken(),
-        loadPreviewToken(),
         loadFavourites(),
         loadCustomPresets()
       ]);
-      postToUi({ type: 'init', settings, hapticsToken, previewToken, favourites, customPresets });
+      postToUi({
+        type: 'init',
+        settings,
+        hapticsToken,
+        fileKey: figma.fileKey ?? null,
+        favourites,
+        customPresets
+      });
       pushSelection();
       break;
     }
+    case 'get-project': {
+      const [token, cache] = await Promise.all([
+        getProjectToken(msg.fileKey),
+        getProjectCache(msg.fileKey)
+      ]);
+      postToUi({
+        type: 'project',
+        fileKey: msg.fileKey,
+        token,
+        config: cache ? cache.config : null,
+        baseRevision: cache ? cache.baseRevision : null
+      });
+      break;
+    }
+    case 'persist-project-token':
+      await setProjectToken(msg.fileKey, msg.token);
+      break;
+    case 'persist-project-cache':
+      // Cache is best-effort; never let a quota failure crash the handler.
+      try {
+        await setProjectCache(msg.fileKey, msg.config, msg.baseRevision);
+      } catch (err) {
+        console.error('Failed to cache figma project config:', err);
+      }
+      break;
     case 'request-selection':
       pushSelection();
       break;
@@ -268,9 +544,6 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'persist-haptics-token':
       await figma.clientStorage.setAsync(TOKEN_KEY, msg.token);
       break;
-    case 'persist-preview-token':
-      await figma.clientStorage.setAsync(PREVIEW_TOKEN_KEY, msg.token);
-      break;
     case 'persist-favourites':
       await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);
       break;
@@ -278,14 +551,16 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
       break;
     case 'request-preview-data': {
-      const bindings = await collectPreviewBindings();
+      const { bindings, frames } = await collectPreviewBindings();
       const present = pickPresentNode();
       postToUi({
         type: 'preview-data',
+        purpose: msg.purpose,
         fileKey: figma.fileKey ?? null,
         presentNodeId: present ? present.id : null,
         presentNodeBox: present ? boxOf(present) : null,
-        bindings
+        bindings,
+        frames
       });
       break;
     }
@@ -300,6 +575,16 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'open-external':
       figma.openExternal(msg.url);
       break;
+    case 'resize': {
+      const { width, height } = clampSize(msg.width, msg.height);
+      figma.ui.resize(width, height);
+      // Only persist on commit (pointer-up) — persisting on every drag frame
+      // would flood clientStorage with dozens of writes per second.
+      if (msg.commit) {
+        await figma.clientStorage.setAsync(WINDOW_SIZE_KEY, { width, height });
+      }
+      break;
+    }
     case 'notify':
       figma.notify(msg.message);
       break;

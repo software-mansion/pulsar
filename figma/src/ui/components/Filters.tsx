@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import type { CatalogEntry } from '../../shared/types';
+import iconSliders from '../assets/icon-sliders-horizontal.svg';
+import iconChevron from '../assets/icon-chevron-down.svg';
 
 // Tag grouping mirrors the docs `TagsInfo`. Within a group selections are OR'd;
 // across groups they are AND'd.
@@ -57,109 +59,84 @@ export default function Filters({
   const activeCount = state.tags.size + state.systemPresets.size;
 
   return (
-    <div style={{ padding: 8, borderBottom: '1px solid var(--border)' }}>
-      {/* Search */}
-      <div style={{ position: 'relative' }}>
-        <input
-          type="text"
-          placeholder="Search presets by name or description…"
-          value={state.search}
-          onChange={(e) => update({ search: e.target.value })}
-        />
-        {state.search.length > 0 && (
+    <details className="accordion acc-row">
+      <summary className="acc-head">
+        <span className="acc-icon">
+          <img src={iconSliders} alt="" />
+        </span>
+        <span className="acc-title">Filters</span>
+        {activeCount > 0 && (
+          <span className="tag active" style={{ margin: 0 }}>{activeCount}</span>
+        )}
+        {activeCount > 0 && (
           <span
             className="tag"
-            style={{ position: 'absolute', right: 4, top: 4, margin: 0 }}
-            onClick={() => update({ search: '' })}
+            style={{ margin: 0 }}
+            onClick={(e) => {
+              e.preventDefault();
+              update({ tags: new Set(), systemPresets: new Set() });
+            }}
           >
-            Clear
+            Clear all
           </span>
         )}
-      </div>
+        <span className="acc-chevron" aria-hidden="true">
+          <img src={iconChevron} alt="" />
+        </span>
+      </summary>
 
-      {/* Filters accordion: grouped tag chips + system presets */}
-      <details className="accordion" style={{ marginTop: 8, borderTop: 'none', paddingTop: 0 }}>
-        <summary
-          className="row"
-          style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}
-        >
-          <span className="caret" aria-hidden="true">▸</span>
-          Filters
-          {activeCount > 0 && (
-            <span className="tag active" style={{ margin: 0 }}>{activeCount}</span>
-          )}
-          {activeCount > 0 && (
-            <>
-              <div className="spacer" />
-              <span
-                className="tag"
-                style={{ margin: 0 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  update({ tags: new Set(), systemPresets: new Set() });
-                }}
-              >
-                Clear all
-              </span>
-            </>
-          )}
-        </summary>
+      <div className="acc-body">
+        {/* Favourites — styled toggle-switch row. */}
+        <label className="filter-toggle">
+          <span className="star">★</span>
+          <span style={{ flex: 1 }}>Favourites only</span>
+          <input
+            type="checkbox"
+            className="switch"
+            checked={favouritesOnly}
+            onChange={(e) => onFavouritesOnlyChange(e.target.checked)}
+          />
+        </label>
 
-        <div style={{ marginTop: 8 }}>
-          {/* Show favourites only */}
-          <label
-            className="row"
-            style={{ marginBottom: 8, gap: 6, cursor: 'pointer', fontSize: 'var(--fs-sm)', userSelect: 'none' }}
-          >
-            <input
-              type="checkbox"
-              checked={favouritesOnly}
-              onChange={(e) => onFavouritesOnlyChange(e.target.checked)}
-            />
-            <span className="star" style={{ color: 'var(--color-primary)' }}>★</span>
-            Show favourites only
-          </label>
+        <div className="acc-sep" />
 
-          {TAG_GROUPS.map((g) => (
-            <div key={g.groupName} style={{ marginBottom: 8 }}>
-              <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 4 }}>
-                {g.groupName}
-              </div>
-              <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
-                {g.tags.map((t) => (
-                  <span
-                    key={t}
-                    className={`tag ${state.tags.has(t) ? 'active' : ''}`}
-                    style={{ margin: 0 }}
-                    onClick={() => toggleTag(t)}
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          <div style={{ marginBottom: 4 }}>
-            <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 4 }}>
-              System presets
-            </div>
-            <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
-              {SYSTEM_PRESETS.map((s) => (
+        {TAG_GROUPS.map((g) => (
+          <div key={g.groupName} className="filter-group">
+            <div className="acc-label">{g.groupName}</div>
+            <div className="chips-row">
+              {g.tags.map((t) => (
                 <span
-                  key={s}
-                  className={`tag ${state.systemPresets.has(s) ? 'active' : ''}`}
+                  key={t}
+                  className={`tag ${state.tags.has(t) ? 'active' : ''}`}
                   style={{ margin: 0 }}
-                  onClick={() => toggleSystem(s)}
+                  onClick={() => toggleTag(t)}
                 >
-                  {s}
+                  {t}
                 </span>
               ))}
             </div>
           </div>
+        ))}
+
+        <div className="acc-sep" />
+
+        <div className="filter-group" style={{ marginBottom: 0 }}>
+          <div className="acc-label">System presets</div>
+          <div className="chips-row">
+            {SYSTEM_PRESETS.map((s) => (
+              <span
+                key={s}
+                className={`tag ${state.systemPresets.has(s) ? 'active' : ''}`}
+                style={{ margin: 0 }}
+                onClick={() => toggleSystem(s)}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
         </div>
-      </details>
-    </div>
+      </div>
+    </details>
   );
 }
 

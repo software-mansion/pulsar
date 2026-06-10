@@ -1,8 +1,15 @@
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import type { PresetData } from '../../shared/types';
 
-// Simple SVG visualization of a haptic pattern. Shows continuous amplitude
-// curve plus discrete impulse bars. Frequency is encoded as bar color.
+// Frequency → hue: 0 → blue (220°), 1 → warm (20°). Shared by the discrete
+// impulse bars and the continuous envelope so both channels encode frequency
+// on the same colour scale.
+const freqColor = (f: number) => `hsl(${(220 - f * 200).toFixed(0)}, 70%, 45%)`;
+
+// Simple SVG visualization of a haptic pattern. The continuous channel is an
+// amplitude envelope whose colour tracks the continuous frequency along the
+// time axis (via a horizontal gradient); discrete impulses are bars whose
+// height encodes amplitude and whose colour encodes frequency.
 export default function Visualization({
   data,
   height = 56
@@ -12,6 +19,10 @@ export default function Visualization({
 }) {
   const W = 320;
   const H = height;
+  // Unique gradient id per instance — the plugin renders many of these SVGs in
+  // one document, so a shared id would make every envelope reuse the first
+  // gradient. Strip the colons useId() emits since they break funciri refs.
+  const gradId = `freq-${useId().replace(/:/g, '')}`;
   const dur = useMemo(
     () =>
       Math.max(
@@ -36,6 +47,13 @@ export default function Visualization({
       .join(' ');
   }, [data, dur, H]);
 
+  // Continuous frequency drives a horizontal gradient along the time axis. When
+  // the preset has no continuous frequency data we fall back to a flat blue.
+  const freqPts = data.continuousPattern.frequency;
+  const hasFreq = freqPts.length > 0;
+  const fillPaint = hasFreq ? `url(#${gradId})` : 'var(--color-blue-30)';
+  const strokePaint = hasFreq ? `url(#${gradId})` : 'var(--color-blue-60)';
+
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
@@ -49,15 +67,33 @@ export default function Visualization({
         padding: 4
       }}
     >
-      {ampPath && (
-        <path d={`${ampPath} L${W - 2},${H} L2,${H} Z`} fill="var(--color-blue-30)" opacity="0.55" />
+      {hasFreq && (
+        <defs>
+          <linearGradient
+            id={gradId}
+            gradientUnits="userSpaceOnUse"
+            x1={xOf(0)}
+            y1={0}
+            x2={xOf(dur)}
+            y2={0}
+          >
+            {freqPts.map((p, i) => (
+              <stop
+                key={i}
+                offset={Math.min(1, Math.max(0, p.time / dur))}
+                stopColor={freqColor(p.value)}
+              />
+            ))}
+          </linearGradient>
+        </defs>
       )}
-      {ampPath && <path d={ampPath} stroke="var(--color-blue-60)" strokeWidth="1.2" fill="none" />}
+      {ampPath && (
+        <path d={`${ampPath} L${W - 2},${H} L2,${H} Z`} fill={fillPaint} opacity="0.45" />
+      )}
+      {ampPath && <path d={ampPath} stroke={strokePaint} strokeWidth="1.6" fill="none" />}
       {data.discretePattern.map((d, i) => {
         const x = xOf(d.time);
         const h = Math.max(2, d.amplitude * (H - 4));
-        // Hue from frequency (0 -> blue, 1 -> magenta-ish)
-        const hue = 220 - d.frequency * 200;
         return (
           <line
             key={i}
@@ -65,7 +101,7 @@ export default function Visualization({
             x2={x}
             y1={H - 2}
             y2={H - 2 - h}
-            stroke={`hsl(${hue}, 70%, 45%)`}
+            stroke={freqColor(d.frequency)}
             strokeWidth="2"
             strokeLinecap="round"
           />

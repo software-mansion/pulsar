@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import iconSmartphone from '../assets/icon-smartphone.svg';
+import iconChevron from '../assets/icon-chevron-down.svg';
+import iconQr from '../assets/icon-qr-code.svg';
 
 const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
 const SOCKET_SERVER_URL = 'wss://pulsar-server.swmansion.com';
@@ -94,50 +97,105 @@ export default function PhonePanel({
   };
 
   return (
-    <div className="col" style={{ padding: 12 }}>
-      <div style={{ fontWeight: 700, fontSize: 'var(--fs-lg)' }}>Phone</div>
-      <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
-        Pair the Pulsar app to feel real haptics on your device when you preview a preset.
-      </p>
+    <details className="accordion acc-row">
+      <summary className="acc-head">
+        <span className="acc-icon">
+          <img src={iconSmartphone} alt="" />
+        </span>
+        <span className="acc-title">Phone</span>
+        {status === 'connected' && (
+          <span className="tag active" style={{ margin: 0 }}>Connected</span>
+        )}
+        <span className="acc-chevron" aria-hidden="true">
+          <img src={iconChevron} alt="" />
+        </span>
+      </summary>
 
-      {status === 'idle' && (
-        <button className="primary" onClick={startPairing}>Pair with phone</button>
-      )}
-      {status === 'requesting' && <span className="muted">Requesting channel…</span>}
-      {status === 'awaiting-phone' && (
-        <div className="col">
-          {qrDataUrl && (
-            <img
-              src={qrDataUrl}
-              alt="Scan with Pulsar"
-              style={{ width: 220, height: 220, alignSelf: 'center', borderRadius: 4 }}
-            />
-          )}
-          <div className="row">
-            <span className="muted">Code:</span>
-            <span className="mono" style={{ fontWeight: 700 }}>{code}</span>
-            <div className="spacer" />
+      <div className="col acc-body" style={{ gap: 8 }}>
+        {status === 'idle' && (
+          <div className="phone-card">
+            <span className="phone-card-ic">
+              <img src={iconSmartphone} alt="" />
+            </span>
+            <div className="phone-card-main">
+              <div className="phone-card-title">
+                <span className="status-dot" />
+                Not connected
+              </div>
+              <p className="phone-card-text">
+                Pair the Pulsar app to feel real haptics on your device while you preview a preset.
+              </p>
+              <button className="primary preset-action-btn" onClick={startPairing}>
+                <img src={iconQr} alt="" width={14} height={14} />
+                <span>Pair with phone</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {status === 'requesting' && (
+          <div className="phone-card">
+            <span className="phone-card-ic">
+              <img src={iconSmartphone} alt="" />
+            </span>
+            <div className="phone-card-main">
+              <div className="phone-card-title">
+                <span className="status-dot" />
+                Requesting channel…
+              </div>
+            </div>
+          </div>
+        )}
+
+        {status === 'awaiting-phone' && (
+          <div className="phone-await">
+            {qrDataUrl && <img className="phone-qr" src={qrDataUrl} alt="Scan with Pulsar" />}
+            <div className="row" style={{ gap: 8 }}>
+              <span className="muted">Code</span>
+              <span className="mono" style={{ fontWeight: 700, letterSpacing: '0.08em' }}>{code}</span>
+            </div>
+            <p className="phone-card-text" style={{ marginBottom: 0 }}>
+              Open the Pulsar mobile app and scan the QR (or enter the code).
+            </p>
             <button className="ghost" onClick={disconnect}>Cancel</button>
           </div>
-          <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
-            Open the Pulsar mobile app and scan the QR (or enter the code).
-          </span>
-        </div>
-      )}
-      {status === 'connected' && (
-        <div className="row">
-          <span style={{ color: 'green', fontWeight: 600 }}>● Connected</span>
-          <div className="spacer" />
-          <button className="ghost" onClick={disconnect}>Disconnect</button>
-        </div>
-      )}
-      {status === 'error' && (
-        <div className="col">
-          <span style={{ color: 'crimson' }}>Error: {error ?? 'unknown'}</span>
-          <button className="ghost" onClick={startPairing}>Retry</button>
-        </div>
-      )}
-    </div>
+        )}
+
+        {status === 'connected' && (
+          <div className="phone-card">
+            <span className="phone-card-ic">
+              <img src={iconSmartphone} alt="" />
+            </span>
+            <div className="phone-card-main">
+              <div className="phone-card-title">
+                <span className="status-dot ok" />
+                Connected
+              </div>
+              <p className="phone-card-text">
+                Your phone will play each preset as you preview it.
+              </p>
+              <button className="ghost" onClick={disconnect}>Disconnect</button>
+            </div>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="phone-card">
+            <span className="phone-card-ic">
+              <img src={iconSmartphone} alt="" />
+            </span>
+            <div className="phone-card-main">
+              <div className="phone-card-title">
+                <span className="status-dot err" />
+                Couldn’t connect
+              </div>
+              <p className="phone-card-text">{error ?? 'Unknown error.'}</p>
+              <button className="ghost" onClick={startPairing}>Retry</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </details>
   );
 }
 

@@ -6,6 +6,11 @@ import {
   parseCustomPresetJson,
   stringifyPreset
 } from './customPreset';
+import iconPlus from '../assets/icon-square-plus.svg';
+import iconChevron from '../assets/icon-chevron-down.svg';
+import iconWaveform from '../assets/icon-audio-waveform.svg';
+import iconPencil from '../assets/icon-pencil.svg';
+import iconTrash from '../assets/icon-trash-2.svg';
 
 export default function AddCustomPreset({
   customPresets,
@@ -48,32 +53,35 @@ export default function AddCustomPreset({
   };
 
   return (
-    <details className="accordion" style={{ margin: '8px', borderTop: 'none', paddingTop: 0 }}>
-      <summary className="row" style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
-        <span className="caret" aria-hidden="true">▸</span>
-        Custom presets
+    <details className="accordion acc-row">
+      <summary className="acc-head">
+        <span className="acc-icon">
+          <img src={iconPlus} alt="" />
+        </span>
+        <span className="acc-title">Custom presets</span>
         {customPresets.length > 0 && (
           <span className="tag active" style={{ margin: 0 }}>{customPresets.length}</span>
         )}
+        <span className="acc-chevron" aria-hidden="true">
+          <img src={iconChevron} alt="" />
+        </span>
       </summary>
 
-      <div className="col" style={{ marginTop: 8, gap: 6 }}>
-        <div className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>
-          {editingId ? 'Editing custom preset (JSON)' : 'Paste a preset JSON to add it to the list'}
+      <div className="col acc-body" style={{ gap: 8 }}>
+        <div>
+          <div className="acc-label">{editingId ? 'Editing preset (JSON)' : 'Paste preset JSON'}</div>
+          <textarea
+            className="preset-editor"
+            rows={8}
+            spellCheck={false}
+            value={json}
+            onChange={(e) => {
+              setJson(e.target.value);
+              if (error) setError(null);
+            }}
+          />
         </div>
-        <textarea
-          rows={10}
-          spellCheck={false}
-          value={json}
-          onChange={(e) => {
-            setJson(e.target.value);
-            if (error) setError(null);
-          }}
-          style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 'var(--fs-2xs)' }}
-        />
-        {error && (
-          <span style={{ color: 'crimson', fontSize: 'var(--fs-2xs)' }}>{error}</span>
-        )}
+        {error && <span className="preset-error">{error}</span>}
         <div className="row">
           <button className="primary" onClick={submit} disabled={!json.trim()}>
             {editingId ? 'Save changes' : 'Add to presets'}
@@ -86,43 +94,39 @@ export default function AddCustomPreset({
         </div>
 
         {customPresets.length > 0 && (
-          <div className="col" style={{ gap: 4, marginTop: 4 }}>
-            <div className="muted" style={{ fontSize: 'var(--fs-2xs)' }}>Your custom presets</div>
-            {customPresets.map((e) => (
-              <div key={e.id} className="row" style={{ gap: 6 }}>
-                <span
-                  style={{
-                    fontSize: 'var(--fs-xs)',
-                    flex: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}
-                  title={e.data.name}
-                >
-                  {e.data.name}
-                </span>
-                <button
-                  className="ghost"
-                  style={{ padding: '2px 8px' }}
-                  onClick={() => setEditingId(e.id)}
-                  disabled={editingId === e.id}
-                >
-                  Edit
-                </button>
-                <button
-                  className="ghost"
-                  style={{ padding: '2px 8px' }}
-                  title="Remove"
-                  onClick={() => {
-                    if (editingId === e.id) reset();
-                    onRemove(e.id);
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+          <div>
+            <div className="acc-sep" />
+            <div className="acc-label">Your presets</div>
+            <div className="col" style={{ gap: 6 }}>
+              {customPresets.map((e) => (
+                <div key={e.id} className="preset-row">
+                  <img className="preset-row-icon" src={iconWaveform} alt="" />
+                  <span className="preset-row-name" title={e.data.name}>
+                    {e.data.name}
+                  </span>
+                  <button
+                    className="icon-btn"
+                    title="Edit"
+                    aria-label="Edit preset"
+                    onClick={() => setEditingId(e.id)}
+                    disabled={editingId === e.id}
+                  >
+                    <img src={iconPencil} alt="" />
+                  </button>
+                  <button
+                    className="icon-btn"
+                    title="Remove"
+                    aria-label="Remove preset"
+                    onClick={() => {
+                      if (editingId === e.id) reset();
+                      onRemove(e.id);
+                    }}
+                  >
+                    <img src={iconTrash} alt="" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

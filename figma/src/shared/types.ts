@@ -40,6 +40,10 @@ export type Settings = {
   // Optional manual file-key override, used when figma.fileKey is unavailable
   // (e.g. the plugin is not private / enablePrivatePluginApi is off).
   fileKeyOverride: string;
+  // Optional override for the live-preview app base URL. Empty string uses the
+  // built-in default (vite-dev → localhost:5173, prod → docs.swmansion.com).
+  // Useful for pointing a production-built plugin at a locally-hosted preview.
+  previewBaseUrlOverride: string;
 };
 
 // One bound node, as forwarded from the main thread to the UI when building the
@@ -60,6 +64,11 @@ export interface PreviewBinding {
   customPattern?: PresetData;
   // Absolute bounding box, used to position on-canvas highlights in the preview.
   box: NodeBox | null;
+  // Id of the nearest frame-like ancestor (FRAME / COMPONENT / COMPONENT_SET /
+  // INSTANCE). Lets the preview keep showing this highlight when Figma navigates
+  // into the owning frame via a prototype interaction, instead of hiding every
+  // overlay because the originally-presented frame is no longer current.
+  frameId: string | null;
   // Ids of every descendant of the bound node. A tap in the embed usually lands
   // on a child layer (text/icon), so we map those to the same preset too.
   descendantIds: string[];
@@ -72,7 +81,25 @@ export interface BoundItem {
   nodeType: string;
   presetId: string;
   presetName: string;
+  // Id + name of the top-level frame the bound node sits under. Used to
+  // group entries by screen in the Bound panel. Both null when the node
+  // isn't nested inside a frame-like ancestor (rare — usually means the
+  // user bound a top-level frame itself).
+  frameId: string | null;
+  frameName: string | null;
 }
+
+// Why the UI asked the main thread to rebuild the preview payload. The main
+// thread echoes it back on the `preview-data` reply so the UI's single handler
+// knows whether to open a browser, copy a link/token, render a QR, or just run
+// a (silent) server sync — without a shared mutable ref that auto-sync and
+// user actions could race on.
+//   - 'open' / 'copy' / 'copy-token' / 'qr': explicit user share actions.
+//   - 'sync': manual "Sync now" — publishes (creating a token if needed).
+//   - 'autosync': debounced background save — only updates an *existing*
+//     project; never creates a token on its own (avoids spamming the backend
+//     for files the user never chose to share).
+export type PreviewPurpose = 'open' | 'copy' | 'copy-token' | 'qr' | 'sync' | 'autosync';
 
 // Messages: UI -> Main
 export type UiToMain =
@@ -82,13 +109,19 @@ export type UiToMain =
   | { type: 'request-selection' }
   | { type: 'persist-settings'; settings: Settings }
   | { type: 'persist-haptics-token'; token: string | null }
-  | { type: 'persist-preview-token'; token: string | null }
   | { type: 'persist-favourites'; favourites: string[] }
   | { type: 'persist-custom-presets'; presets: CatalogEntry[] }
-  | { type: 'request-preview-data' }
+  // Per-file project state. The server token and cached config are keyed by
+  // fileKey so opening the plugin in another design file gets its own token
+  // instead of clobbering the first file's shared preview.
+  | { type: 'get-project'; fileKey: string }
+  | { type: 'persist-project-token'; fileKey: string; token: string }
+  | { type: 'persist-project-cache'; fileKey: string; config: unknown; baseRevision: number | null }
+  | { type: 'request-preview-data'; purpose: PreviewPurpose }
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
   | { type: 'open-external'; url: string }
+  | { type: 'resize'; width: number; height: number; commit?: boolean }
   | { type: 'notify'; message: string };
 
 // Messages: Main -> UI
@@ -97,20 +130,48 @@ export type MainToUi =
       type: 'init';
       settings: Settings;
       hapticsToken: string | null;
-      previewToken: string | null;
+      // Current document's file key (figma.fileKey), or null when unavailable
+      // (e.g. enablePrivatePluginApi off). Lets the UI request this file's
+      // project state immediately on load.
+      fileKey: string | null;
       favourites: string[];
       customPresets: CatalogEntry[];
     }
   | { type: 'selection'; node: SelectionInfo | null }
   | { type: 'play-preset'; presetId: string } // emitted when a bound node is clicked in editor
   | { type: 'bound-list'; items: BoundItem[] }
+  // Reply to `get-project`: this file's persisted token + last cached config
+  // (and the server revision that cache was synced at). Either may be null.
+  | {
+      type: 'project';
+      fileKey: string;
+      token: string | null;
+      config: unknown | null;
+      baseRevision: number | null;
+    }
+  // The Figma document changed. The UI debounces this into a background
+  // auto-sync so the server snapshot stays fresh as the designer edits.
+  | { type: 'doc-changed' }
   | {
       type: 'preview-data';
+      // Echoed back from the originating request so the handler knows what to do.
+      purpose: PreviewPurpose;
       fileKey: string | null;
       presentNodeId: string | null;
       presentNodeBox: NodeBox | null;
       bindings: PreviewBinding[];
+      // frame-like-node id → { human-readable name, absolute canvas box } for
+      // every frame that contains at least one bound element. Used by the
+      // preview to (a) reposition the highlight overlay after a prototype
+      // navigation, and (b) group the "Haptic elements" list under a screen
+      // header that the user can read.
+      frames: Record<string, FrameInfo>;
     };
+
+export interface FrameInfo {
+  name: string;
+  box: NodeBox;
+}
 
 export interface SelectionInfo {
   id: string;

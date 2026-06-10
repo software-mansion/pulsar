@@ -1,3 +1,10 @@
+// Copied verbatim from docs/src/assets/logo.svg so the preview ships the same
+// brand mark as the marketing site / Figma plugin. Imported as a URL — Vite
+// emits a hashed filename and rewrites the path through the app's `base`
+// (`./`), so the asset works at any deploy sub-path.
+import logoUrl from '../assets/pulsar-logo.svg';
+import fullscreenIcon from '../assets/icon-fullscreen.svg';
+
 export function Header({
   status,
   count,
@@ -9,22 +16,14 @@ export function Header({
 }) {
   return (
     <header className="header">
-      <span className="dot" />
+      <img className="brand-logo" src={logoUrl} alt="" width={34} height={34} />
       <span className="brand">Pulsar</span>
       <span className="status">{status}</span>
       <span className="pill">
         <b>{count}</b> with haptics
       </span>
       <button className="fs-btn" onClick={onEnterFullscreen} title="Fullscreen (content only)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <img src={fullscreenIcon} alt="" width={14} height={14} />
         Fullscreen
       </button>
     </header>

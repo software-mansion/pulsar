@@ -2,6 +2,7 @@ import WebSocket from 'ws';
 import http from 'http';
 import type { ExtendedWebSocket } from './types';
 import { ConnectionManager } from './connection-manager';
+import { PairingRateLimiter, RateLimiterOptions } from './rate-limiter';
 
 type SocketData = {
   type: string | null;
@@ -10,17 +11,34 @@ type SocketData = {
   code: string | null;
 };
 
+// Best-effort client IP. Behind a proxy the real peer is in X-Forwarded-For
+// (first hop); otherwise fall back to the socket's remote address.
+function getClientIp(req: http.IncomingMessage): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.length > 0) {
+    return forwarded.split(',')[0].trim();
+  }
+  if (Array.isArray(forwarded) && forwarded.length > 0) {
+    return forwarded[0].trim();
+  }
+  return req.socket.remoteAddress || 'unknown';
+}
+
 export class WebSocketHandler {
   private nextId = 0;
   private heartbeatInterval: NodeJS.Timeout;
   private readonly heartbeatIntervalMs = 30_000;
+  private readonly rateLimiter: PairingRateLimiter;
 
   constructor(
     wsServer: WebSocket.Server,
     private connectionManager: ConnectionManager,
+    rateLimiterOptions?: RateLimiterOptions,
   ) {
+    this.rateLimiter = new PairingRateLimiter(rateLimiterOptions);
     this.setupHeartbeat(wsServer);
     this.setupWebSocket(wsServer);
+    wsServer.on('close', () => this.rateLimiter.dispose());
   }
 
   public broadcast(message: string, token: string): string {
@@ -37,6 +55,10 @@ export class WebSocketHandler {
         try {
           const message = JSON.parse(data.toString());
           if (message.type === 'ping') {
+            // App-level ping also counts as liveness, so a client that pings at
+            // the app level but ignores protocol ping frames isn't reaped by the
+            // heartbeat sweep.
+            ws.isAlive = true;
             ws.send(JSON.stringify({ type: 'pong' }));
           }
         } catch {
@@ -59,6 +81,10 @@ export class WebSocketHandler {
         client.ping();
       });
     }, this.heartbeatIntervalMs);
+    // Don't let the heartbeat alone keep the process alive, and stop it when the
+    // server closes so the interval (and its closure) doesn't leak.
+    this.heartbeatInterval.unref?.();
+    wsServer.on('close', () => clearInterval(this.heartbeatInterval));
   }
 
   private handleConnection(ws: ExtendedWebSocket, req: http.IncomingMessage): void {
@@ -77,67 +103,105 @@ export class WebSocketHandler {
 
     ws.id = `${++this.nextId}`;
     ws.type = type as 'sender' | 'receiver';
+    const ip = getClientIp(req);
 
     if (type === 'sender') {
-      this.handleSenderConnection(ws, data);
+      this.handleSenderConnection(ws, data, ip);
     } else {
-      this.handleReceiverConnection(ws, data);
+      this.handleReceiverConnection(ws, data, ip);
     }
   }
 
-  private handleSenderConnection(ws: ExtendedWebSocket, data: SocketData): void {
+  // Guard a `new_connection` claim against brute-force: reject when the IP is
+  // locked out or the code has been burned, and feed failed claims back to the
+  // limiter. Returns true if the connection should be torn down by the caller.
+  private rejectThrottledClaim(
+    ws: ExtendedWebSocket,
+    ip: string,
+    code: string,
+    claim: (code: string) => import('./connection-manager').ClaimResult,
+  ): boolean {
+    const decision = this.rateLimiter.checkAttempt(ip, code);
+    if (!decision.allowed) {
+      const seconds = Math.ceil((decision.retryAfterMs ?? 0) / 1000);
+      ws.close(1008, `Too many pairing attempts. Try again in ${seconds}s.`);
+      return true;
+    }
+
+    const result = claim(code);
+    if (result === 'claimed') {
+      this.rateLimiter.recordSuccess(ip, code);
+      return false;
+    }
+
+    this.rateLimiter.recordFailure(ip, code);
+    if (result === 'slot_taken') {
+      ws.close(1008, 'Pairing code already in use');
+    } else {
+      ws.close(1008, 'Invalid code: no sender connection found for the provided code');
+    }
+    return true;
+  }
+
+  private handleSenderConnection(ws: ExtendedWebSocket, data: SocketData, ip: string): void {
     if (data.action === 'new_connection') {
       if (!data.code) {
         ws.close(1008, 'Missing code for new_connection action');
         return;
       }
-      this.connectionManager.createNewSenderConnection(ws, data.code);
-      console.log(`WebSocket action [new_connection] for SENDER ${ws.id}`);
+      if (
+        this.rejectThrottledClaim(ws, ip, data.code, (code) =>
+          this.connectionManager.createNewSenderConnection(ws, code),
+        )
+      ) {
+        return;
+      }
     } else if (data.action === 'reuse_connection') {
       if (!data.token) {
         ws.close(1008, 'Missing token for reuse_connection action');
         return;
       }
       this.connectionManager.reuseSenderConnection(ws, data.token);
-      console.log(`WebSocket action [reuse_connection] for SENDER ${ws.id}`);
     } else {
       ws.close(1008, 'Invalid or missing action parameter for sender');
       return;
     }
 
     ws.on('close', () => {
-      console.log(`WebSocket closed for SENDER ${ws.id}`);
       this.connectionManager.unregisterSocket(ws.id);
     });
 
     ws.on('error', (error) => {
-      console.log(`WebSocket error for SENDER ${ws.id}:`, error);
+      console.error(`WebSocket error for SENDER ${ws.id}:`, error);
       this.connectionManager.unregisterSocket(ws.id);
     });
   }
 
-  private handleReceiverConnection(ws: ExtendedWebSocket, data: SocketData): void {
+  private handleReceiverConnection(ws: ExtendedWebSocket, data: SocketData, ip: string): void {
     if (data.action === 'new_connection') {
       if (!data.code) {
         ws.close(1008, 'Missing code for new_connection action');
         return;
       }
-      this.connectionManager.createNewReceiverConnection(ws, data.code);
-      console.log(`WebSocket action [new_connection] for RECEIVER ${ws.id}`);
+      if (
+        this.rejectThrottledClaim(ws, ip, data.code, (code) =>
+          this.connectionManager.createNewReceiverConnection(ws, code),
+        )
+      ) {
+        return;
+      }
     } else if (data.action === 'reuse_connection') {
       if (!data.token) {
         ws.close(1008, 'Missing token for reuse_connection action');
         return;
       }
       this.connectionManager.reuseReceiverConnection(ws, data.token);
-      console.log(`WebSocket action [reuse_connection] for RECEIVER ${ws.id}`);
     } else {
       ws.close(1008, 'Invalid or missing action parameter for receiver');
       return;
     }
 
     ws.on('close', () => {
-      console.log(`WebSocket closed for RECEIVER ${ws.id}`);
       this.connectionManager.unregisterSocket(ws.id);
     });
 

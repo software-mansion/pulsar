@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { PresetData, PreviewPayload } from './types';
+import type { FrameInfo, NodeBox, PresetData, PreviewPayload } from './types';
 import { readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
@@ -10,9 +10,21 @@ import { Header } from './components/Header';
 import { PrototypeView } from './components/PrototypeView';
 import { HapticList } from './components/HapticList';
 import { PresetDetailsModal } from './components/PresetDetailsModal';
+import fullscreenExitIcon from './assets/icon-fullscreen-exit.svg';
+import fullscreenIcon from './assets/icon-fullscreen.svg';
 
 const ACTIVE_MS = 900;
 const TAP_DEBOUNCE_MS = 250;
+
+// True when the center point of `inner` lies within `outer`. Used as a fallback
+// "which frame does this element belong to?" test for payloads that don't carry
+// a per-element frameId — we treat the element as part of the currently shown
+// frame iff its center sits inside the frame's absolute canvas box.
+function boxCenterInside(inner: NodeBox, outer: NodeBox): boolean {
+  const cx = inner.x + inner.w / 2;
+  const cy = inner.y + inner.h / 2;
+  return cx >= outer.x && cx <= outer.x + outer.w && cy >= outer.y && cy <= outer.y + outer.h;
+}
 
 export default function App() {
   // Payload now arrives asynchronously (token → server fetch). Hold null while
@@ -33,18 +45,41 @@ export default function App() {
   }, []);
 
   // Derived lookup maps (stable across renders).
-  const { bindings, ownerMap, presentedId } = useMemo(() => {
+  const { bindings, ownerMap, presentedId, frames } = useMemo(() => {
     const binds = new Map<string, PresetData>();
     const owner = new Map<string, string>();
+    const framesMap = new Map<string, FrameInfo>();
     if (payload) {
       for (const [id, data] of Object.entries(payload.bindings)) binds.set(normalizeId(id), data);
       for (const [id, ownerId] of Object.entries(payload.owner)) owner.set(normalizeId(id), normalizeId(ownerId));
+      if (payload.frames) {
+        for (const [id, entry] of Object.entries(payload.frames)) {
+          // Old payloads stored plain NodeBox; new ones store FrameInfo. Detect
+          // by presence of `box` and synthesise a placeholder name otherwise so
+          // the grouping UI still has something to render.
+          const normalized: FrameInfo =
+            'box' in entry
+              ? (entry as FrameInfo)
+              : { name: 'Screen', box: entry as NodeBox };
+          framesMap.set(normalizeId(id), normalized);
+        }
+      }
     }
-    return { bindings: binds, ownerMap: owner, presentedId: normalizeId(payload?.nodeId) };
+    return {
+      bindings: binds,
+      ownerMap: owner,
+      presentedId: normalizeId(payload?.nodeId),
+      frames: framesMap
+    };
   }, [payload]);
 
   const elements = useMemo(
-    () => (payload?.elements ?? []).map((e) => ({ ...e, id: normalizeId(e.id) })),
+    () =>
+      (payload?.elements ?? []).map((e) => ({
+        ...e,
+        id: normalizeId(e.id),
+        frameId: e.frameId ? normalizeId(e.frameId) : null
+      })),
     [payload]
   );
 
@@ -86,16 +121,40 @@ export default function App() {
     activeTimer.current = window.setTimeout(() => setActiveId(''), ACTIVE_MS);
   }, []);
 
-  // When the preview is loaded inside the PulsarApp WebView the URL carries
-  // `?host=app`. In that mode we skip the in-page audio fallback and instead
-  // postMessage the preset name to the native host, which plays the real
-  // device haptic via react-native-pulsar.
+  // When the preview is loaded inside the PulsarApp WebView the
+  // `window.ReactNativeWebView` global is injected by react-native-webview.
+  // That single check is authoritative: if it's present we postMessage the
+  // preset payload to the native host (which plays the real device haptic via
+  // react-native-pulsar); if it isn't, we fall back to the in-page audio
+  // generator. We always send the full pattern so the host can fall back to
+  // PatternComposer for custom (user-defined) presets whose names don't match
+  // anything in react-native-pulsar.Presets. (We used to also gate on a
+  // `?host=app` URL param, but that's redundant with the bridge check and
+  // broke whenever someone hardcoded the preview URL in PulsarApp for local
+  // dev.)
   const isAppHost = useMemo(
-    () =>
-      new URLSearchParams(location.search).get('host') === 'app' &&
-      typeof (window as any).ReactNativeWebView !== 'undefined',
+    () => typeof (window as any).ReactNativeWebView !== 'undefined',
     []
   );
+
+  // When running inside the PulsarApp WebView the preview already fills the
+  // WebView (mobile → implicit fullscreen), but the app's bottom tab bar still
+  // covers the lower strip. This toggle asks the native host to hide/show that
+  // tab bar so the prototype can run edge-to-edge. No-op outside the app host.
+  const [navBarHidden, setNavBarHidden] = useState(false);
+  const toggleNavBar = useCallback(() => {
+    setNavBarHidden((prev) => {
+      const next = !prev;
+      try {
+        (window as any).ReactNativeWebView?.postMessage(
+          JSON.stringify({ type: 'set-tab-bar-hidden', hidden: next })
+        );
+      } catch {
+        // No bridge — nothing to toggle.
+      }
+      return next;
+    });
+  }, []);
 
   const play = useCallback(
     (id: string) => {
@@ -104,7 +163,17 @@ export default function App() {
       if (isAppHost) {
         try {
           (window as any).ReactNativeWebView.postMessage(
-            JSON.stringify({ type: 'play-preset', presetName: data.name })
+            JSON.stringify({
+              type: 'play-preset',
+              presetName: data.name,
+              // PresetData's discrete/continuous shape is structurally identical
+              // to react-native-pulsar's Pattern type — see
+              // react-native/react-native-pulsar/src/types.ts.
+              pattern: {
+                discretePattern: data.discretePattern,
+                continuousPattern: data.continuousPattern
+              }
+            })
           );
         } catch {
           // If the bridge isn't there for some reason, fall through to audio.
@@ -173,9 +242,34 @@ export default function App() {
     );
   }
 
+  // Pick the frame + element subset that match what Figma is currently showing.
+  // When the user taps a button whose prototype interaction navigates to another
+  // frame, Figma fires PRESENTED_NODE_CHANGED and `currentNodeId` shifts. We use
+  // the per-frame box map the plugin sends to keep the overlay aligned on the
+  // new frame instead of hiding every highlight. Backward-compat: payloads
+  // created before the `frames` field exists fall through to the original
+  // present-frame box.
+  const hasFrameMap = frames.size > 0;
+  const currentFrame: NodeBox | null =
+    (hasFrameMap ? frames.get(currentNodeId)?.box ?? null : null) ??
+    (currentNodeId === presentedId ? payload.frame : null);
+  // Filter elements to those that belong to the currently-presented frame.
+  // Prefer the explicit `frameId` when present (new payloads); for older
+  // payloads — and for any element the plugin didn't tag — fall back to a
+  // canvas-coordinate containment check against the current frame's box. This
+  // matters because the plugin collects bound nodes from the whole page, not
+  // just the present frame, so without filtering we'd paint highlights for
+  // off-frame elements over the wrong screen area of the iframe.
+  const visibleElements = currentFrame
+    ? elements.filter((e) => {
+        if (e.frameId) return e.frameId === currentNodeId;
+        return e.box ? boxCenterInside(e.box, currentFrame) : false;
+      })
+    : [];
   // In fullscreen we show only the Figma content — no header, panel, highlights,
   // or card chrome.
-  const showHighlights = highlightsOn && currentNodeId === presentedId && !fullscreen;
+  const showHighlights =
+    highlightsOn && !fullscreen && currentFrame !== null && visibleElements.length > 0;
 
   return (
     <>
@@ -186,8 +280,8 @@ export default function App() {
         <PrototypeView
           fileKey={payload.fileKey}
           nodeId={payload.nodeId}
-          frame={payload.frame}
-          elements={elements}
+          frame={currentFrame}
+          elements={visibleElements}
           showHighlights={showHighlights}
           activeId={activeId}
           fullscreen={fullscreen}
@@ -197,6 +291,8 @@ export default function App() {
         {!fullscreen && (
           <HapticList
             elements={elements}
+            frames={frames}
+            currentFrameId={currentNodeId}
             highlightsOn={highlightsOn}
             onToggleHighlights={setHighlightsOn}
             activeId={activeId}
@@ -210,6 +306,7 @@ export default function App() {
         <PresetDetailsModal
           data={bindings.get(detailsId)!}
           elementName={elements.find((e) => e.id === detailsId)?.name}
+          isCustom={elements.find((e) => e.id === detailsId)?.isCustom}
           onClose={() => setDetailsId('')}
         />
       )}
@@ -217,15 +314,25 @@ export default function App() {
       {/* Manual fullscreen on desktop can be exited; mobile fullscreen is implicit. */}
       {isFullscreen && !isMobile && (
         <button className="exit-fs" onClick={exitFullscreen} title="Exit fullscreen (Esc)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M9 4H4v5M20 9V4h-5M9 20H4v-5M20 15v5h-5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <img src={fullscreenExitIcon} alt="" width={16} height={16} />
+        </button>
+      )}
+
+      {/* In-app only: hide/show the native bottom tab bar for a true full-screen
+          prototype. Lives at the bottom corner, above where the tab bar sits. */}
+      {isAppHost && (
+        <button
+          className="nav-toggle"
+          onClick={toggleNavBar}
+          title={navBarHidden ? 'Show navigation bar' : 'Hide navigation bar'}
+          aria-pressed={navBarHidden}
+        >
+          <img
+            src={navBarHidden ? fullscreenExitIcon : fullscreenIcon}
+            alt={navBarHidden ? 'Show navigation bar' : 'Hide navigation bar'}
+            width={16}
+            height={16}
+          />
         </button>
       )}
     </>
