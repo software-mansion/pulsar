@@ -86,26 +86,24 @@ export default function Filters({
       </summary>
 
       <div className="acc-body">
-        {/* Show favourites only */}
-        <label
-          className="row"
-          style={{ marginBottom: 8, gap: 6, cursor: 'pointer', fontSize: 'var(--fs-sm)', userSelect: 'none' }}
-        >
+        {/* Favourites — styled toggle-switch row. */}
+        <label className="filter-toggle">
+          <span className="star">★</span>
+          <span style={{ flex: 1 }}>Favourites only</span>
           <input
             type="checkbox"
+            className="switch"
             checked={favouritesOnly}
             onChange={(e) => onFavouritesOnlyChange(e.target.checked)}
           />
-          <span className="star" style={{ color: 'var(--color-primary)' }}>★</span>
-          Show favourites only
         </label>
 
+        <div className="acc-sep" />
+
         {TAG_GROUPS.map((g) => (
-          <div key={g.groupName} style={{ marginBottom: 8 }}>
-            <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 4 }}>
-              {g.groupName}
-            </div>
-            <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+          <div key={g.groupName} className="filter-group">
+            <div className="acc-label">{g.groupName}</div>
+            <div className="chips-row">
               {g.tags.map((t) => (
                 <span
                   key={t}
@@ -120,11 +118,11 @@ export default function Filters({
           </div>
         ))}
 
-        <div style={{ marginBottom: 4 }}>
-          <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginBottom: 4 }}>
-            System presets
-          </div>
-          <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+        <div className="acc-sep" />
+
+        <div className="filter-group" style={{ marginBottom: 0 }}>
+          <div className="acc-label">System presets</div>
+          <div className="chips-row">
             {SYSTEM_PRESETS.map((s) => (
               <span
                 key={s}

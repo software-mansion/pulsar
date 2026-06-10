@@ -455,7 +455,167 @@ details.accordion[open] > summary .caret { transform: rotate(90deg); }
   transition: transform 120ms ease;
 }
 .acc-row[open] > summary.acc-head .acc-chevron img { transform: rotate(180deg); opacity: 0.85; }
-.acc-body { padding: 2px 12px 12px; }
+.acc-body { padding: 10px }
+
+/* ---- Accordion body internals — shared building blocks ---- */
+/* Small uppercase section label heading each group inside a body. */
+.acc-label {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-blue-60);
+  margin-bottom: 6px;
+}
+/* Hairline separator between body sub-sections. */
+.acc-sep { height: 1px; background: var(--color-blue-10); margin: 10px 0; }
+.chips-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Filters — favourites switch row + tag groups. */
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+.filter-toggle .star { color: var(--color-primary); }
+.filter-group { margin-bottom: 12px; }
+
+/* Toggle switch — a checkbox restyled as an iOS-style switch. */
+input.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border: none;
+  border-radius: 20px;
+  background: var(--color-blue-20);
+  position: relative;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+input.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 120ms ease;
+}
+input.switch:checked { background: var(--color-blue-50); }
+input.switch:checked::after { transform: translateX(14px); }
+
+/* Custom presets — JSON editor + saved-preset rows. */
+textarea.preset-editor {
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  padding: 10px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--fs-2xs);
+  line-height: 1.5;
+  color: var(--color-primary);
+  resize: vertical;
+}
+.preset-error { color: crimson; font-size: var(--fs-2xs); }
+.preset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--color-blue-10);
+  border-radius: var(--radius);
+  font-size: var(--fs-xs);
+}
+.preset-row-icon { flex-shrink: 0; width: 15px; height: 15px; opacity: 0.7; }
+.preset-row-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Compact square icon button (edit / delete in lists). Resets the signature
+   button chrome to a flat blue-bordered chip. */
+button.icon-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: none;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+button.icon-btn:hover { background: var(--color-blue-10); border-color: var(--color-blue-50); box-shadow: none; transform: none; }
+button.icon-btn:active { box-shadow: none; transform: scale(0.9); }
+button.icon-btn:disabled { opacity: 0.4; cursor: default; }
+button.icon-btn img { display: block; width: 15px; height: 15px; }
+
+/* Phone — status card shared by every pairing state. */
+.phone-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+}
+.phone-card-ic {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phone-card-ic img { display: block; width: 20px; height: 20px; }
+.phone-card-main { flex: 1; min-width: 0; }
+.phone-card-title { font-size: var(--fs-sm); font-weight: 600; margin-bottom: 3px; }
+.phone-card-text { font-size: var(--fs-xs); color: var(--color-blue-60); line-height: 1.45; margin: 0 0 10px; }
+.phone-card-text:last-child { margin-bottom: 0; }
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.status-dot.ok { background: #1d9e75; }
+.status-dot.err { background: #d85a30; }
+/* Phone — awaiting-pair (QR) layout. */
+.phone-await {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.phone-qr { width: 200px; height: 200px; border-radius: var(--radius); background: var(--surface); }
 
 .row { display: flex; align-items: center; gap: 8px; }
 .col { display: flex; flex-direction: column; gap: 8px; }

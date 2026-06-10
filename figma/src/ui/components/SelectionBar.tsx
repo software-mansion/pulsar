@@ -1,4 +1,5 @@
 import type { SelectionInfo } from '../../shared/types';
+import iconUnlink from '../assets/icon-unlink.svg';
 
 export default function SelectionBar({
   selection,
@@ -30,7 +31,9 @@ export default function SelectionBar({
             <strong>{selection.name}</strong> → <em>{selection.binding.presetName}</em>
           </span>
           <div className="spacer" />
-          <button className="ghost icon" onClick={onUnbind}>Unbind</button>
+          <button className="icon-btn" title="Unbind" aria-label="Unbind preset" onClick={onUnbind}>
+            <img src={iconUnlink} alt="" />
+          </button>
         </>
       )}
     </div>
