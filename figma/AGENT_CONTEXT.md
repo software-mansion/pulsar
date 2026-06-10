@@ -260,6 +260,48 @@ a sub-frame.
 
 ---
 
+## Per-file tokens & live-preview sync
+
+The share token is **per design file**, not global. Storage in `clientStorage`
+(all main-thread, in `src/main/code.ts`):
+
+- `pulsar:previewTokens` → `{ [fileKey]: token }`. Small and **never evicted** —
+  losing it orphans a server row. Replaces the old single `pulsar:previewToken`
+  (which made every file reuse one row); that legacy key is migrated into the
+  map for the first file that asks, then deleted.
+- `pulsar:project:<fileKey>` → `{ config, baseRevision, lastAccess }`. The
+  cached payload + the server revision it synced at. These are the **only**
+  thing evicted (oldest `lastAccess` first) when `clientStorage` hits its quota
+  — see `setProjectCache` / `evictOldestProjectCache`. Tokens, settings,
+  favourites, custom presets and the haptics token are off-limits.
+
+`fileKey` is resolved as `figma.fileKey ?? extractFileKey(fileKeyOverride)` and
+must be the **same** key used at share time and for storage, or a file's token
+and cache won't line up.
+
+### Sync engine (UI, `App.tsx`)
+
+The preview payload auto-saves to the server. Flow:
+
+- Main posts `doc-changed` on `documentchange` (needs `loadAllPagesAsync()`
+  first in dynamic-page mode, else `figma.on` throws — already guarded). The UI
+  debounces ~1.5 s, then sends `request-preview-data` with `purpose: 'autosync'`.
+- Every share/sync path funnels through the one `preview-data` handler, keyed by
+  `purpose` (`open` / `copy` / `copy-token` / `qr` / `sync` / `autosync`) echoed
+  back from main — no shared mutable action ref to race on.
+- `ensurePublished()` does create / 404-recreate / 409-reconcile and is wrapped
+  in a promise-chain **mutex** (`syncLockRef`) so two triggers can't both POST
+  and orphan a row. `stableStringify` skips the network when nothing changed.
+- **`autosync` never creates a token** (`allowCreate = false`) — it only updates
+  a file that's already been shared, so merely tweaking an unshared file doesn't
+  spam the backend. `sync` (the "Sync now" button) and the share actions create.
+- Status pill in `LivePreviewPanel`: `idle` / `syncing` / `synced` / `unsynced`
+  / `error` (`SyncStatus` is exported from `App.tsx`).
+
+If you add a field to `PreviewPayload`, the auto-sync will republish it on the
+next edit — but already-cached `pulsar:project:*` entries keep the old shape
+until then; don't assume the cache matches the latest schema.
+
 ## Audio playback
 
 ### Plugin (`src/ui/audio/AudioPatternUtility.ts`)
@@ -365,17 +407,37 @@ discrete + continuous arrays. It's not an icon — never replace it with an
 
 ## Backend (docs/server)
 
-Express + PostgreSQL. Two routes that matter here: `POST /figma-project`,
+Express + PostgreSQL. Three routes that matter here: `POST /figma-project`,
 `PUT /figma-project/:token`, `GET /figma-project/:token`. Schema:
 
 ```sql
 CREATE TABLE figma_projects (
   token TEXT PRIMARY KEY,
   config TEXT NOT NULL,         -- JSON-serialized PreviewPayload
+  revision BIGINT NOT NULL DEFAULT 0,  -- monotonic, bumped on every PUT
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
+
+### Optimistic concurrency (`revision`)
+
+Each row carries a monotonic `revision` (added via `ALTER TABLE … ADD COLUMN
+IF NOT EXISTS`, so old deployments self-migrate on first use). It powers the
+plugin's conflict reconciliation:
+
+- `POST` → `{ token, revision }` (revision 0).
+- `GET` → `{ config, revision }`.
+- `PUT` body is `{ config, baseRevision? }`. When `baseRevision` is present the
+  update is **conditional** (`WHERE token = $ AND revision = $`): if the row
+  moved on, the server replies `409 { config, revision }` with the current
+  snapshot instead of overwriting. Omit `baseRevision` for an unconditional
+  update (legacy behaviour). On success → `{ revision }` (bumped); `404` if the
+  token is gone.
+
+The client treats the server as the source of truth at cold start, but a 409
+during a push means the live Figma doc wins: it rebases on the returned
+revision and re-publishes (last-writer = the editor making edits now).
 
 ### TTL / GC
 

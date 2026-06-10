@@ -20,6 +20,14 @@ import iconArrowUp from './assets/icon-arrow-up.svg';
 
 type Tab = 'presets' | 'bound' | 'preview';
 
+// Live-preview sync state, surfaced as a pill in the Live preview tab.
+//   idle     — nothing shared for this file yet (no server row).
+//   syncing  — a push/fetch is in flight.
+//   synced   — local state matches what's on the server.
+//   unsynced — local edits not yet pushed (a debounced save is pending).
+//   error    — last sync attempt failed (will retry on the next change).
+export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'unsynced' | 'error';
+
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
   compactLayout: false,
@@ -51,43 +59,94 @@ function extractFileKey(input: string): string {
 // PhonePanel.API_SERVER_URL.
 const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
 
-// POST the preview payload to the server and return a short token to embed in
-// the share URL instead of the (potentially huge) base64 blob.
-async function createFigmaProjectToken(payload: unknown): Promise<string> {
+// Server <-> client sync state. The server keeps a monotonic `revision` per
+// project; the client remembers the revision it last synced (its "base") so it
+// can detect when the row changed underneath it and reconcile.
+
+// POST the preview payload to the server and return a fresh token + revision.
+async function createProject(payload: unknown): Promise<{ token: string; revision: number }> {
   const res = await fetch(`${API_SERVER_URL}/figma-project`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ config: payload })
   });
   const data = (await res.json().catch(() => null)) as
-    | { success: boolean; token?: string; error?: string; detail?: string }
+    | { success: boolean; token?: string; revision?: number; error?: string; detail?: string }
     | null;
   if (!res.ok) {
     const msg = data?.error ?? `Server responded ${res.status}`;
     throw new Error(data?.detail ? `${msg} (${data.detail})` : msg);
   }
   if (!data?.success || !data.token) throw new Error(data?.error || 'No token returned');
-  return data.token;
+  return { token: data.token, revision: data.revision ?? 0 };
 }
 
-// PUT the payload at an existing token. Returns false on 404 (token gone from
-// the server — caller should re-create), throws on any other error.
-async function updateFigmaProjectToken(token: string, payload: unknown): Promise<boolean> {
+// Result of a conditional update: applied (new revision), gone (404, caller
+// should recreate), or conflict (server moved on — carries the current
+// snapshot so the caller can reconcile).
+type UpdateResult =
+  | { kind: 'ok'; revision: number }
+  | { kind: 'gone' }
+  | { kind: 'conflict'; config: unknown; revision: number };
+
+// PUT the payload at an existing token. When `baseRevision` is non-null the
+// update is conditional and a server-side change yields a 'conflict'.
+async function updateProject(
+  token: string,
+  payload: unknown,
+  baseRevision: number | null
+): Promise<UpdateResult> {
   const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ config: payload })
+    body: JSON.stringify({ config: payload, baseRevision })
   });
-  if (res.status === 404) return false;
+  if (res.status === 404) return { kind: 'gone' };
   const data = (await res.json().catch(() => null)) as
-    | { success: boolean; error?: string; detail?: string }
+    | { success: boolean; revision?: number; config?: unknown; error?: string; detail?: string }
     | null;
+  if (res.status === 409) {
+    return { kind: 'conflict', config: data?.config ?? null, revision: data?.revision ?? 0 };
+  }
   if (!res.ok) {
     const msg = data?.error ?? `Server responded ${res.status}`;
     throw new Error(data?.detail ? `${msg} (${data.detail})` : msg);
   }
   if (!data?.success) throw new Error(data?.error || 'Update failed');
-  return true;
+  return { kind: 'ok', revision: data.revision ?? 0 };
+}
+
+// GET the stored config + revision for a token. null on 404.
+async function fetchProject(token: string): Promise<{ config: unknown; revision: number } | null> {
+  const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`);
+  if (res.status === 404) return null;
+  const data = (await res.json().catch(() => null)) as
+    | { success: boolean; config?: unknown; revision?: number; error?: string; detail?: string }
+    | null;
+  if (!res.ok) {
+    const msg = data?.error ?? `Server responded ${res.status}`;
+    throw new Error(data?.detail ? `${msg} (${data.detail})` : msg);
+  }
+  if (!data?.success) throw new Error(data?.error || 'Fetch failed');
+  return { config: data.config ?? null, revision: data.revision ?? 0 };
+}
+
+// Deterministic JSON: keys sorted recursively so two structurally-equal
+// payloads (built locally vs. parsed back from the server) stringify
+// identically. Used purely for "did anything actually change?" comparisons.
+function stableStringify(value: unknown): string {
+  const seen = new WeakSet();
+  const norm = (v: unknown): unknown => {
+    if (v === null || typeof v !== 'object') return v;
+    if (seen.has(v as object)) return null;
+    seen.add(v as object);
+    if (Array.isArray(v)) return v.map(norm);
+    const obj = v as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(obj).sort()) out[k] = norm(obj[k]);
+    return out;
+  };
+  return JSON.stringify(norm(value));
 }
 
 // Clipboard inside the Figma plugin iframe: navigator.clipboard is often blocked,
@@ -112,15 +171,27 @@ function copyToClipboard(text: string): boolean {
 export default function App() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [hapticsToken, setHapticsToken] = useState<string | null>(null);
-  // Server-side project token. Persisted via the main thread so a single
-  // project row is reused across share clicks instead of creating a new row
-  // every time. Kept in a ref so the preview-data handler always sees the
-  // latest value without re-binding the bridge subscription.
-  const [previewToken, setPreviewToken] = useState<string | null>(null);
-  const previewTokenRef = useRef<string | null>(null);
-  useEffect(() => {
-    previewTokenRef.current = previewToken;
-  }, [previewToken]);
+
+  // --- Per-file server-sync state ---------------------------------------
+  // The file we're editing. Tokens + cached config are keyed by this so a
+  // different design file gets its own server row instead of overwriting the
+  // first. Resolved from figma.fileKey (or the file-key override).
+  const fileKeyRef = useRef<string>('');
+  // Current file's server token. Kept in a ref so the (rebound) preview-data
+  // and doc-changed handlers always read the latest value.
+  const tokenRef = useRef<string | null>(null);
+  // Server revision our local state is based on (for conflict detection).
+  const baseRevisionRef = useRef<number | null>(null);
+  // stableStringify of the payload we last successfully pushed — lets us skip a
+  // network round-trip when nothing actually changed.
+  const lastSyncedJsonRef = useRef<string | null>(null);
+  // Promise chain that serializes all publishes, so concurrent triggers (cold
+  // start + a doc-change) can't both create a token and orphan a server row.
+  const syncLockRef = useRef<Promise<void>>(Promise.resolve());
+  // Debounce timer for background auto-save.
+  const autosyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
   const [tab, setTab] = useState<Tab>('presets');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -147,20 +218,85 @@ export default function App() {
       if (m.type === 'init') {
         setSettings(m.settings);
         setHapticsToken(m.hapticsToken);
-        setPreviewToken(m.previewToken ?? null);
         setFavourites(new Set(m.favourites));
         setCustomPresets(m.customPresets ?? []);
+        // Resolve this file's key and pull its persisted token + cached config.
+        const fk =
+          m.fileKey ?? (m.settings.fileKeyOverride ? extractFileKey(m.settings.fileKeyOverride) : '');
+        fileKeyRef.current = fk;
+        if (fk) send({ type: 'get-project', fileKey: fk });
+        else setSyncStatus('idle');
       }
       if (m.type === 'selection') setSelection(m.node);
       if (m.type === 'bound-list') setBoundItems(m.items);
-      // play-preset is handled in a separate effect that re-binds when
-      // settings/token change, so it always reads fresh values.
+      if (m.type === 'project') void handleProject(m);
+      if (m.type === 'doc-changed') handleDocChanged();
+      // play-preset and preview-data are handled in separate effects that
+      // re-bind when settings/token change, so they always read fresh values.
     });
     send({ type: 'ui-ready' });
     return off;
     // We intentionally don't depend on settings/hapticsToken — see the play handler effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Cold-start reconcile for a file. The server is the source of truth: if we
+  // have no local cache but do have a token, fetch the server copy and seed the
+  // cache. Either way, finish by kicking a silent auto-sync so any local design
+  // drift since the last snapshot gets published (the Figma doc is live truth).
+  const handleProject = async (m: {
+    fileKey: string;
+    token: string | null;
+    config: unknown | null;
+    baseRevision: number | null;
+  }) => {
+    fileKeyRef.current = m.fileKey;
+    tokenRef.current = m.token;
+    baseRevisionRef.current = m.baseRevision;
+    if (m.config != null) {
+      lastSyncedJsonRef.current = stableStringify(m.config);
+      setSyncStatus(m.token ? 'synced' : 'idle');
+    } else if (m.token) {
+      setSyncStatus('syncing');
+      try {
+        const got = await fetchProject(m.token);
+        if (got) {
+          baseRevisionRef.current = got.revision;
+          lastSyncedJsonRef.current = stableStringify(got.config);
+          send({
+            type: 'persist-project-cache',
+            fileKey: m.fileKey,
+            config: got.config,
+            baseRevision: got.revision
+          });
+          setSyncStatus('synced');
+        } else {
+          // Token no longer exists server-side — forget it; nothing is shared.
+          tokenRef.current = null;
+          lastSyncedJsonRef.current = null;
+          baseRevisionRef.current = null;
+          setSyncStatus('idle');
+        }
+      } catch {
+        setSyncStatus('error');
+      }
+    } else {
+      lastSyncedJsonRef.current = null;
+      setSyncStatus('idle');
+    }
+    send({ type: 'request-preview-data', purpose: 'autosync' });
+  };
+
+  // A local edit happened. Mark the file dirty (only meaningful once it has a
+  // token) and debounce a background save.
+  const handleDocChanged = () => {
+    if (tokenRef.current) setSyncStatus((s) => (s === 'syncing' ? s : 'unsynced'));
+    if (autosyncTimerRef.current) clearTimeout(autosyncTimerRef.current);
+    autosyncTimerRef.current = setTimeout(() => {
+      autosyncTimerRef.current = null;
+      send({ type: 'request-preview-data', purpose: 'autosync' });
+    }, 1500);
+  };
 
   // Persist settings whenever they change (skip the very first render to avoid
   // overwriting what the main thread loaded).
@@ -225,17 +361,34 @@ export default function App() {
     return off;
   }, [settings.soundInEdit, hapticsToken, presetById]);
 
-  // Build the live-preview URL once the main thread sends bound-node data, then
-  // hand it back to the main thread to open externally (figma.openExternal).
-  // Rebind on changes so it reads fresh presets/preview URL.
+  const [shareQr, setShareQr] = useState<string | null>(null);
+
+  // Handle a preview-data reply: build the payload, publish it to the server
+  // (create/update with conflict reconciliation), then carry out the action the
+  // request was made for. Rebind on changes so it reads fresh presets/preview
+  // URL/file-key override.
   useEffect(() => {
+    // Serialize every publish through one promise chain. Two concurrent
+    // triggers (e.g. cold-start reconcile + a doc-change) must not both POST,
+    // which would create two server rows and orphan one.
+    const runExclusive = (fn: () => Promise<void>): Promise<void> => {
+      const next = syncLockRef.current.then(fn, fn);
+      syncLockRef.current = next.then(
+        () => {},
+        () => {}
+      );
+      return next;
+    };
+
     const off = onMessage((m) => {
       if (m.type !== 'preview-data') return;
-      // Wrap in an async IIFE so we can await the token round-trip without
-      // refactoring the bridge subscription itself.
-      void (async () => {
-      const fileKey = m.fileKey ?? (settings.fileKeyOverride ? extractFileKey(settings.fileKeyOverride) : '');
+      const purpose = m.purpose;
+      const silent = purpose === 'autosync';
+
+      const fileKey =
+        m.fileKey ?? (settings.fileKeyOverride ? extractFileKey(settings.fileKeyOverride) : '');
       if (!fileKey) {
+        if (silent) return;
         send({
           type: 'notify',
           message:
@@ -243,6 +396,8 @@ export default function App() {
         });
         return;
       }
+      fileKeyRef.current = fileKey;
+
       const bindings: Record<string, unknown> = {};
       // owner maps every node id (a bound node and its descendants) to the bound
       // node it belongs to, so a tap on a child resolves to the right element.
@@ -276,6 +431,11 @@ export default function App() {
         });
       }
       if (elements.length === 0) {
+        if (silent || purpose === 'sync') {
+          // Nothing to publish. Don't touch the (possibly stale) server row.
+          setSyncStatus(tokenRef.current ? 'synced' : 'idle');
+          return;
+        }
         send({ type: 'notify', message: 'No haptic bindings on this page yet.' });
         return;
       }
@@ -288,103 +448,168 @@ export default function App() {
         bindings,
         frames: m.frames
       };
-      // Strip any existing query/hash so we don't duplicate or stack tokens
-      // when the user has manually visited the preview before.
-      const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
-      let token: string;
-      try {
-        const existing = previewTokenRef.current;
-        if (existing) {
-          // Reuse the persisted token: update the row in place. If the server
-          // no longer knows about it (404 → returns false), fall through to a
-          // fresh create.
-          const updated = await updateFigmaProjectToken(existing, payload);
-          if (updated) {
-            token = existing;
-          } else {
-            token = await createFigmaProjectToken(payload);
-            send({ type: 'persist-preview-token', token });
-            setPreviewToken(token);
-          }
-        } else {
-          token = await createFigmaProjectToken(payload);
-          send({ type: 'persist-preview-token', token });
-          setPreviewToken(token);
+
+      // Publish `payload` to the server, reconciling against its current state.
+      // Returns the token (or null when nothing is shared yet and create isn't
+      // allowed — i.e. a background auto-sync of a never-shared file).
+      const ensurePublished = async (allowCreate: boolean): Promise<string | null> => {
+        const json = stableStringify(payload);
+        const adopt = (t: string, revision: number) => {
+          tokenRef.current = t;
+          baseRevisionRef.current = revision;
+          lastSyncedJsonRef.current = json;
+          send({ type: 'persist-project-token', fileKey, token: t });
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
+        };
+
+        let token = tokenRef.current;
+        // Skip the round-trip when nothing actually changed since last sync.
+        if (token && json === lastSyncedJsonRef.current) return token;
+
+        if (!token) {
+          if (!allowCreate) return null;
+          const created = await createProject(payload);
+          adopt(created.token, created.revision);
+          return created.token;
         }
-      } catch (err) {
-        send({
-          type: 'notify',
-          message: `Could not upload preview data: ${(err as Error).message}`
-        });
-        return;
-      }
-      const url = `${base}?token=${encodeURIComponent(token)}`;
-      // The QR is scanned by a phone with PulsarApp installed. Encode the
-      // app's deep-link scheme instead of the web URL so it routes straight
-      // into the in-app Figma WebView screen.
-      const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(token)}`;
-      if (previewActionRef.current === 'copy') {
-        const ok = copyToClipboard(url);
-        send({
-          type: 'notify',
-          message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
-        });
-      } else if (previewActionRef.current === 'copy-token') {
-        // Just the raw token — handy for pasting into other figma-preview URLs
-        // (e.g. a local dev instance), debugging, or sharing the token by itself
-        // without a particular host.
-        const ok = copyToClipboard(token);
-        send({
-          type: 'notify',
-          message: ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.'
-        });
-      } else if (previewActionRef.current === 'qr') {
+
+        const res = await updateProject(token, payload, baseRevisionRef.current);
+        if (res.kind === 'ok') {
+          baseRevisionRef.current = res.revision;
+          lastSyncedJsonRef.current = json;
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: res.revision });
+          return token;
+        }
+        if (res.kind === 'gone') {
+          // Token vanished server-side. Recreate when allowed, else forget it.
+          if (!allowCreate) {
+            tokenRef.current = null;
+            baseRevisionRef.current = null;
+            lastSyncedJsonRef.current = null;
+            return null;
+          }
+          const created = await createProject(payload);
+          adopt(created.token, created.revision);
+          return created.token;
+        }
+        // Conflict: someone changed the row since our base. The server is the
+        // source of truth for the base revision, so adopt it — but the Figma
+        // document is the live design, so re-publish our payload on top
+        // (last-writer-wins, now that we're rebased on the server's revision).
+        const forced = await updateProject(token, payload, res.revision);
+        if (forced.kind === 'ok') {
+          baseRevisionRef.current = forced.revision;
+          lastSyncedJsonRef.current = json;
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: forced.revision });
+          return token;
+        }
+        if (forced.kind === 'gone') {
+          if (!allowCreate) {
+            tokenRef.current = null;
+            baseRevisionRef.current = null;
+            lastSyncedJsonRef.current = null;
+            return null;
+          }
+          const created = await createProject(payload);
+          adopt(created.token, created.revision);
+          return created.token;
+        }
+        // Lost a second race — bail; the next change will retry from the new base.
+        baseRevisionRef.current = forced.revision;
+        throw new Error('Sync conflict — will retry on the next change.');
+      };
+
+      void runExclusive(async () => {
+        setSyncStatus('syncing');
+        let token: string | null;
         try {
-          const dataUrl = await QRCode.toDataURL(appDeepLink, {
-            margin: 1,
-            width: 240,
-            errorCorrectionLevel: 'L',
-            // Match the docs Connection.tsx palette: navy modules on a blue-10
-            // background so the code visually merges into the .preview-qr-box
-            // panel below (which uses the same blue-10 fill).
-            color: { dark: '#001a72', light: '#e1f3fa' }
-          });
-          setShareQr(dataUrl);
-        } catch {
-          setShareQr(null);
+          token = await ensurePublished(!silent);
+        } catch (err) {
+          setSyncStatus('error');
+          if (!silent) {
+            send({
+              type: 'notify',
+              message: `Could not upload preview data: ${(err as Error).message}`
+            });
+          }
+          return;
+        }
+        if (!token) {
+          // Background auto-sync of a file that was never shared — nothing to do.
+          setSyncStatus('idle');
+          return;
+        }
+        setSyncStatus('synced');
+
+        // Beyond the sync itself, share actions also need a URL / QR / clipboard.
+        if (purpose === 'autosync' || purpose === 'sync') return;
+
+        // Strip any existing query/hash so we don't duplicate or stack tokens
+        // when the user has manually visited the preview before.
+        const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
+        const url = `${base}?token=${encodeURIComponent(token)}`;
+        // The QR is scanned by a phone with PulsarApp installed. Encode the
+        // app's deep-link scheme instead of the web URL so it routes straight
+        // into the in-app Figma WebView screen.
+        const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(token)}`;
+        if (purpose === 'copy') {
+          const ok = copyToClipboard(url);
           send({
             type: 'notify',
-            message: 'Could not generate a QR code for the share link.'
+            message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
           });
+        } else if (purpose === 'copy-token') {
+          // Just the raw token — handy for pasting into other figma-preview URLs
+          // (e.g. a local dev instance), debugging, or sharing the token by itself
+          // without a particular host.
+          const ok = copyToClipboard(token);
+          send({
+            type: 'notify',
+            message: ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.'
+          });
+        } else if (purpose === 'qr') {
+          try {
+            const dataUrl = await QRCode.toDataURL(appDeepLink, {
+              margin: 1,
+              width: 240,
+              errorCorrectionLevel: 'L',
+              // Match the docs Connection.tsx palette: navy modules on a blue-10
+              // background so the code visually merges into the .preview-qr-box
+              // panel below (which uses the same blue-10 fill).
+              color: { dark: '#001a72', light: '#e1f3fa' }
+            });
+            setShareQr(dataUrl);
+          } catch {
+            setShareQr(null);
+            send({
+              type: 'notify',
+              message: 'Could not generate a QR code for the share link.'
+            });
+          }
+        } else {
+          send({ type: 'open-external', url });
         }
-      } else {
-        send({ type: 'open-external', url });
-      }
-      })();
+      });
     });
     return off;
   }, [settings.fileKeyOverride, settings.previewBaseUrlOverride, presetById]);
 
-  // Whether the pending preview-data response should open / copy the link /
-  // copy just the token / QR-encode the link.
-  const previewActionRef = useRef<'open' | 'copy' | 'copy-token' | 'qr'>('open');
-  const [shareQr, setShareQr] = useState<string | null>(null);
-  const showInLivePreview = () => {
-    previewActionRef.current = 'open';
-    send({ type: 'request-preview-data' });
-  };
-  const copyShareLink = () => {
-    previewActionRef.current = 'copy';
-    send({ type: 'request-preview-data' });
-  };
-  const copyShareToken = () => {
-    previewActionRef.current = 'copy-token';
-    send({ type: 'request-preview-data' });
-  };
+  const showInLivePreview = () => send({ type: 'request-preview-data', purpose: 'open' });
+  const copyShareLink = () => send({ type: 'request-preview-data', purpose: 'copy' });
+  const copyShareToken = () => send({ type: 'request-preview-data', purpose: 'copy-token' });
   const showQrCode = () => {
-    previewActionRef.current = 'qr';
     setShareQr(null);
-    send({ type: 'request-preview-data' });
+    send({ type: 'request-preview-data', purpose: 'qr' });
+  };
+  // On-demand sync: flush any pending debounce and publish now (creating a
+  // token if this file hasn't been shared yet).
+  const syncNow = () => {
+    if (autosyncTimerRef.current) {
+      clearTimeout(autosyncTimerRef.current);
+      autosyncTimerRef.current = null;
+    }
+    setSyncStatus('syncing');
+    send({ type: 'request-preview-data', purpose: 'sync' });
   };
 
   const filtered = useMemo(() => {
@@ -626,6 +851,8 @@ export default function App() {
         <LivePreviewPanel
           settings={settings}
           onChange={setSettings}
+          syncStatus={syncStatus}
+          onSyncNow={syncNow}
           onShowLivePreview={showInLivePreview}
           onCopyShareLink={copyShareLink}
           onCopyShareToken={copyShareToken}

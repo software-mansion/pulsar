@@ -110,6 +110,48 @@ button.preview-tertiary {
   padding: 8px 12px;
 }
 
+/* Sync status row — a coloured-dot pill on the left, "Sync now" on the right. */
+.preview-sync-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preview-sync-pill {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-20);
+  font-size: var(--fs-xs);
+  color: var(--color-primary);
+  min-width: 0;
+}
+.preview-sync-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.preview-sync-dot.pulse {
+  animation: preview-sync-pulse 1s ease-in-out infinite;
+}
+@keyframes preview-sync-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+button.preview-sync-now {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: var(--fs-xs);
+}
+button.preview-sync-now:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* QR display — mirrors the docs Connection.tsx widget.
    Outer card: white, blue-50 border, signature offset shadow (docs .content).
    Inner box: blue-10 fill, centred prompt + QR, close (×) button in the

@@ -1,4 +1,5 @@
 import type { Settings } from '../../shared/types';
+import type { SyncStatus } from '../App';
 import iconExternalLink from '../assets/icon-external-link.svg';
 import iconLink from '../assets/icon-link.svg';
 import iconQrCode from '../assets/icon-qr-code.svg';
@@ -22,7 +23,19 @@ import iconClose from '../assets/icon-close.svg';
 // (App.tsx) doesn't need wholesale prop-list changes. `settings` and
 // `onChange` are unused here today but kept on the signature so the inputs
 // can be reintroduced behind a flag without another round-trip.
+// Copy + dot colour for each sync state. The dot colour reuses the design
+// tokens so the pill sits in the same palette as the rest of the plugin.
+const SYNC_META: Record<SyncStatus, { label: string; dot: string; pulse?: boolean }> = {
+  idle: { label: 'Not shared yet', dot: 'var(--color-blue-20)' },
+  syncing: { label: 'Syncing…', dot: 'var(--color-blue-50)', pulse: true },
+  synced: { label: 'Synced with server', dot: '#1ea672' },
+  unsynced: { label: 'Unsynced changes', dot: 'var(--color-yellow-60)' },
+  error: { label: 'Sync failed — will retry', dot: '#d2392b' }
+};
+
 export default function LivePreviewPanel({
+  syncStatus,
+  onSyncNow,
   onShowLivePreview,
   onCopyShareLink,
   onCopyShareToken,
@@ -32,6 +45,8 @@ export default function LivePreviewPanel({
 }: {
   settings: Settings;
   onChange: (next: Settings) => void;
+  syncStatus: SyncStatus;
+  onSyncNow: () => void;
   onShowLivePreview: () => void;
   onCopyShareLink: () => void;
   onCopyShareToken: () => void;
@@ -39,6 +54,7 @@ export default function LivePreviewPanel({
   qrDataUrl: string | null;
   onClearQr: () => void;
 }) {
+  const sync = SYNC_META[syncStatus];
   return (
     <div className="col" style={{ padding: 16, gap: 14 }}>
       <div>
@@ -47,6 +63,27 @@ export default function LivePreviewPanel({
           Open the current design in the standalone preview app and feel the
           bound haptics when you tap an element.
         </p>
+      </div>
+
+      {/* Sync status: a coloured-dot pill plus an on-demand "Sync now" button.
+          Bindings auto-save to the server (debounced); this row shows whether
+          the shared link is currently up to date and lets the user force it. */}
+      <div className="preview-sync-row">
+        <span className="preview-sync-pill" title="Whether the shared preview matches your current design">
+          <span
+            className={`preview-sync-dot${sync.pulse ? ' pulse' : ''}`}
+            style={{ background: sync.dot }}
+          />
+          <span>{sync.label}</span>
+        </span>
+        <button
+          className="ghost preview-sync-now"
+          onClick={onSyncNow}
+          disabled={syncStatus === 'syncing'}
+          title="Push the current design to the server now"
+        >
+          Sync now
+        </button>
       </div>
 
       {/* Primary action — full-width, icon-prefixed. */}

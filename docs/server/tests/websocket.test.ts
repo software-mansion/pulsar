@@ -1,244 +1,191 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, afterEach } from '@jest/globals';
 import WebSocket from 'ws';
+import request from 'supertest';
+import type { Server } from 'http';
 import { createApp } from '../src/app';
-import { Server } from 'http';
 
-describe('WebSocket', () => {
-  let server: Server;
-  let port: number;
-  let wsUrl: string;
+// Integration tests for the WebSocket pairing protocol end-to-end (real ws
+// client against a real listening server). Complements pairing-security.test.ts
+// (invalid-code / one-shot / rate-limit) and rate-limiter.test.ts (unit).
 
-  beforeAll((done) => {
-    const setup = createApp();
-    server = setup.server;
+interface Running {
+  server: Server;
+  app: import('express').Express;
+  wsUrl: string;
+  close: () => Promise<void>;
+}
 
+function startServer(): Promise<Running> {
+  return new Promise((resolve) => {
+    const { app, server } = createApp({ rateLimiter: { sweepIntervalMs: 0 } });
     server.listen(0, () => {
-      const address = server.address();
-      if (address && typeof address === 'object') {
-        port = address.port;
-        wsUrl = `ws://localhost:${port}`;
+      const addr = server.address();
+      const port = typeof addr === 'object' && addr ? addr.port : 0;
+      resolve({
+        server,
+        app,
+        wsUrl: `ws://localhost:${port}`,
+        close: () => new Promise<void>((res) => server.close(() => res())),
+      });
+    });
+  });
+}
+
+// Buffers every frame from a socket and lets a test await the first one
+// matching a predicate (checking already-received frames first).
+class Frames {
+  private msgs: any[] = [];
+  private waiters: { pred: (m: any) => boolean; resolve: (m: any) => void }[] = [];
+  constructor(ws: WebSocket) {
+    ws.on('message', (data) => {
+      let m: any;
+      try {
+        m = JSON.parse(data.toString());
+      } catch {
+        return;
       }
-      done();
+      this.msgs.push(m);
+      this.waiters = this.waiters.filter((w) => {
+        if (w.pred(m)) {
+          w.resolve(m);
+          return false;
+        }
+        return true;
+      });
+    });
+  }
+  await(pred: (m: any) => boolean): Promise<any> {
+    const found = this.msgs.find(pred);
+    if (found) return Promise.resolve(found);
+    return new Promise((resolve) => this.waiters.push({ pred, resolve }));
+  }
+  has(type: string): boolean {
+    return this.msgs.some((m) => m.type === type);
+  }
+}
+
+const type = (t: string) => (m: any) => m.type === t;
+const awaitClose = (ws: WebSocket) =>
+  new Promise<{ code: number; reason: string }>((resolve) =>
+    ws.on('close', (code, reason) => resolve({ code, reason: reason.toString() })),
+  );
+
+describe('WebSocket pairing protocol', () => {
+  let running: Running;
+  const sockets: WebSocket[] = [];
+
+  function connect(query: string): WebSocket {
+    const ws = new WebSocket(`${running.wsUrl}/?${query}`);
+    sockets.push(ws);
+    return ws;
+  }
+
+  afterEach(async () => {
+    sockets.splice(0).forEach((ws) => {
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) ws.close();
+    });
+    if (running) await running.close();
+  });
+
+  describe('handshake validation', () => {
+    it('closes a socket with no type param (1008)', async () => {
+      running = await startServer();
+      const { code } = await awaitClose(connect('action=new_connection&code=1234'));
+      expect(code).toBe(1008);
+    });
+
+    it('closes a sender with new_connection but no code (1008)', async () => {
+      running = await startServer();
+      const { code, reason } = await awaitClose(connect('type=sender&action=new_connection'));
+      expect(code).toBe(1008);
+      expect(reason).toMatch(/code/i);
+    });
+
+    it('closes a sender with reuse_connection but no token (1008)', async () => {
+      running = await startServer();
+      const { code, reason } = await awaitClose(connect('type=sender&action=reuse_connection'));
+      expect(code).toBe(1008);
+      expect(reason).toMatch(/token/i);
     });
   });
 
-  afterAll((done) => {
-    // Give a small delay to allow pending disconnections to complete
-    setTimeout(() => {
-      server.close(done);
-    }, 100);
-  });
-
-  describe('Connection', () => {
-    it('should connect and receive welcome message', (done) => {
-      const ws = new WebSocket(wsUrl);
-      let timeout: NodeJS.Timeout;
-
-      ws.on('open', () => {
-        expect(ws.readyState).toBe(WebSocket.OPEN);
+  describe('liveness', () => {
+    it('replies to an app-level ping with a pong', async () => {
+      running = await startServer();
+      // A receiver on a valid pending code stays open (no sender yet).
+      const code = (await request(running.app).get('/create-channel')).body.code;
+      const ws = connect(`type=receiver&action=new_connection&code=${code}`);
+      const frames = new Frames(ws);
+      await new Promise<void>((res, rej) => {
+        ws.on('open', () => res());
+        ws.on('error', rej);
       });
-
-      ws.on('message', (data: WebSocket.RawData) => {
-        clearTimeout(timeout);
-        const message = JSON.parse(data.toString());
-        expect(message).toHaveProperty('type', 'connection');
-        expect(message).toHaveProperty('message', 'Connected to WebSocket server');
-        expect(message).toHaveProperty('clientId');
-        expect(message).toHaveProperty('timestamp');
-        ws.close();
-        done();
-      });
-
-      ws.on('error', (error) => {
-        clearTimeout(timeout);
-        done(error);
-      });
-
-      timeout = setTimeout(() => {
-        done(new Error('Connection timeout'));
-      }, 5000);
-    });
-
-    it('should handle multiple concurrent connections', (done) => {
-      const clients: WebSocket[] = [];
-      let connectedCount = 0;
-      const totalClients = 3;
-      let timeout: NodeJS.Timeout;
-
-      for (let i = 0; i < totalClients; i++) {
-        const ws = new WebSocket(wsUrl);
-        clients.push(ws);
-
-        ws.on('message', () => {
-          connectedCount++;
-          if (connectedCount === totalClients) {
-            clearTimeout(timeout);
-            // Close all clients and wait for disconnection
-            clients.forEach((client) => client.close());
-            // Give time for all disconnections to process
-            setTimeout(done, 100);
-          }
-        });
-
-        ws.on('error', (error) => {
-          clearTimeout(timeout);
-          done(error);
-        });
-      }
-
-      timeout = setTimeout(() => {
-        done(new Error('Connections timeout'));
-      }, 5000);
+      ws.send(JSON.stringify({ type: 'ping' }));
+      expect(await frames.await(type('pong'))).toEqual({ type: 'pong' });
     });
   });
 
-  describe('Messaging', () => {
-    it('should echo message back to sender', (done) => {
-      const ws = new WebSocket(wsUrl);
-      let messageCount = 0;
-      let timeout: NodeJS.Timeout;
+  describe('full pairing', () => {
+    async function pair() {
+      const code = (await request(running.app).get('/create-channel')).body.code as string;
+      const sender = connect(`type=sender&action=new_connection&code=${code}`);
+      const receiver = connect(`type=receiver&action=new_connection&code=${code}`);
+      const sf = new Frames(sender);
+      const rf = new Frames(receiver);
+      const st = await sf.await(type('connection_established'));
+      const rt = await rf.await(type('connection_established'));
+      return { code, sender, receiver, sf, rf, token: st.token as string, senderToken: st.token, receiverToken: rt.token };
+    }
 
-      ws.on('open', () => {
-        ws.send(JSON.stringify({ message: 'test echo', data: 'some data' }));
-      });
-
-      ws.on('message', (data: WebSocket.RawData) => {
-        messageCount++;
-        const message = JSON.parse(data.toString());
-
-        // First message is welcome, second is echo
-        if (messageCount === 2) {
-          clearTimeout(timeout);
-          expect(message).toHaveProperty('type', 'echo');
-          expect(message.data).toHaveProperty('message', 'test echo');
-          ws.close();
-          done();
-        }
-      });
-
-      ws.on('error', (error) => {
-        clearTimeout(timeout);
-        done(error);
-      });
-
-      timeout = setTimeout(() => {
-        done(new Error('Echo message timeout'));
-      }, 5000);
+    it('issues one identical token to both peers once paired', async () => {
+      running = await startServer();
+      const { senderToken, receiverToken } = await pair();
+      expect(typeof senderToken).toBe('string');
+      expect(senderToken).toBe(receiverToken);
     });
 
-    it('should broadcast message to other clients', (done) => {
-      const ws1 = new WebSocket(wsUrl);
-      const ws2 = new WebSocket(wsUrl);
-
-      let ws1Connected = false;
-      let ws2Connected = false;
-      let timeout: NodeJS.Timeout;
-
-      const cleanup = () => {
-        clearTimeout(timeout);
-        ws1.close();
-        ws2.close();
-        done();
-      };
-
-      ws1.on('message', (data: WebSocket.RawData) => {
-        const message = JSON.parse(data.toString());
-        if (message.type === 'connection') {
-          ws1Connected = true;
-          if (ws1Connected && ws2Connected) {
-            // Send broadcast from ws1
-            ws1.send(JSON.stringify({ message: 'broadcast test', broadcast: true }));
-          }
-        }
-      });
-
-      ws2.on('message', (data: WebSocket.RawData) => {
-        const message = JSON.parse(data.toString());
-
-        if (message.type === 'connection') {
-          ws2Connected = true;
-          if (ws1Connected && ws2Connected) {
-            // Send broadcast from ws1
-            ws1.send(JSON.stringify({ message: 'broadcast test', broadcast: true }));
-          }
-        } else if (message.type === 'broadcast') {
-          expect(message.message).toHaveProperty('message', 'broadcast test');
-          cleanup();
-        }
-      });
-
-      ws1.on('error', (error) => {
-        clearTimeout(timeout);
-        done(error);
-      });
-
-      ws2.on('error', (error) => {
-        clearTimeout(timeout);
-        done(error);
-      });
-
-      timeout = setTimeout(() => {
-        done(new Error('Broadcast message timeout'));
-      }, 5000);
+    it('notifies the surviving peer with peer_disconnected when one closes', async () => {
+      running = await startServer();
+      const { sender, rf } = await pair();
+      sender.close();
+      expect(await rf.await(type('peer_disconnected'))).toEqual({ type: 'peer_disconnected' });
     });
 
-    it('should handle invalid JSON gracefully', (done) => {
-      const ws = new WebSocket(wsUrl);
-      let messageCount = 0;
-      let timeout: NodeJS.Timeout;
+    it('delivers an HTTP /broadcast to the paired receiver only', async () => {
+      running = await startServer();
+      const { rf, sf, token } = await pair();
+      const res = await request(running.app)
+        .post('/broadcast')
+        .send({ message: JSON.stringify({ hello: 'phone' }), token });
+      expect(res.body.message).toBe('ok');
 
-      ws.on('open', () => {
-        ws.send('invalid json{');
-      });
-
-      ws.on('message', (data: WebSocket.RawData) => {
-        messageCount++;
-        const message = JSON.parse(data.toString());
-
-        // First message is welcome, second is error
-        if (messageCount === 2) {
-          clearTimeout(timeout);
-          expect(message).toHaveProperty('type', 'error');
-          expect(message).toHaveProperty('message', 'Invalid JSON format');
-          ws.close();
-          done();
-        }
-      });
-
-      ws.on('error', (error) => {
-        clearTimeout(timeout);
-        done(error);
-      });
-
-      timeout = setTimeout(() => {
-        done(new Error('Invalid JSON handling timeout'));
-      }, 5000);
+      const got = await rf.await(type('broadcast'));
+      expect(got.message).toEqual({ hello: 'phone' });
+      // The sender must NOT receive the broadcast.
+      expect(sf.has('broadcast')).toBe(false);
     });
   });
 
-  describe('Disconnection', () => {
-    it('should handle client disconnection', (done) => {
-      const ws = new WebSocket(wsUrl);
-      let timeout: NodeJS.Timeout;
+  describe('reconnection (reuse_connection)', () => {
+    it('re-establishes the strong channel and emits connection_restored to both', async () => {
+      running = await startServer();
+      const code = (await request(running.app).get('/create-channel')).body.code as string;
+      const s1 = connect(`type=sender&action=new_connection&code=${code}`);
+      const r1 = connect(`type=receiver&action=new_connection&code=${code}`);
+      // Attach both listeners up front — connection_established fires on both at
+      // once, so a listener attached after awaiting the first would miss the other.
+      const s1f = new Frames(s1);
+      const r1f = new Frames(r1);
+      const token = (await s1f.await(type('connection_established'))).token as string;
+      await r1f.await(type('connection_established'));
 
-      ws.on('open', () => {
-        ws.close();
-      });
-
-      ws.on('close', () => {
-        clearTimeout(timeout);
-        expect(ws.readyState).toBe(WebSocket.CLOSED);
-        done();
-      });
-
-      ws.on('error', (error) => {
-        clearTimeout(timeout);
-        done(error);
-      });
-
-      timeout = setTimeout(() => {
-        done(new Error('Disconnection timeout'));
-      }, 5000);
+      // Reconnect both sides with the issued token.
+      const s2 = connect(`type=sender&action=reuse_connection&token=${token}`);
+      const r2 = connect(`type=receiver&action=reuse_connection&token=${token}`);
+      const s2f = new Frames(s2);
+      const r2f = new Frames(r2);
+      expect((await s2f.await(type('connection_restored'))).type).toBe('connection_restored');
+      expect((await r2f.await(type('connection_restored'))).type).toBe('connection_restored');
     });
   });
 });

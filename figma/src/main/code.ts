@@ -24,7 +24,18 @@ const BINDING_KEY = 'pulsar:binding';
 const BINDING_NEGATED_KEY = 'pulsar:binding-negated';
 const SETTINGS_KEY = 'pulsar:settings';
 const TOKEN_KEY = 'pulsar:hapticsToken';
-const PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
+// Per-file share tokens: { [fileKey]: token }. Small and precious — this is the
+// only record tying a design file to its server-side preview row, so it is
+// NEVER evicted to reclaim quota. Replaces the old single global
+// `pulsar:previewToken`, which made every file reuse (and overwrite) one row.
+const PROJECT_TOKENS_KEY = 'pulsar:previewTokens';
+// Legacy single global preview token (pre per-file). Migrated lazily into the
+// per-file map for the first file that asks, then deleted.
+const LEGACY_PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
+// Per-file cached preview config + the server revision it was synced at, stored
+// under `${PROJECT_CACHE_PREFIX}${fileKey}`. These can be large, so they are the
+// only thing evicted (oldest-first) when clientStorage runs out of space.
+const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 const WINDOW_SIZE_KEY = 'pulsar:windowSize';
@@ -73,8 +84,90 @@ async function loadToken(): Promise<string | null> {
   return (await figma.clientStorage.getAsync(TOKEN_KEY)) ?? null;
 }
 
-async function loadPreviewToken(): Promise<string | null> {
-  return (await figma.clientStorage.getAsync(PREVIEW_TOKEN_KEY)) ?? null;
+type ProjectCache = {
+  config: unknown;
+  baseRevision: number | null;
+  // Wall-clock of the last write, used to pick the oldest entry to evict.
+  lastAccess: number;
+};
+
+async function loadProjectTokens(): Promise<Record<string, string>> {
+  const raw = await figma.clientStorage.getAsync(PROJECT_TOKENS_KEY);
+  return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
+}
+
+// Resolve the share token for a file, migrating the legacy global token into
+// the per-file map the first time a file asks (so existing shares survive the
+// upgrade instead of orphaning a server row).
+async function getProjectToken(fileKey: string): Promise<string | null> {
+  const tokens = await loadProjectTokens();
+  if (tokens[fileKey]) return tokens[fileKey];
+  const legacy = await figma.clientStorage.getAsync(LEGACY_PREVIEW_TOKEN_KEY);
+  if (typeof legacy === 'string' && legacy.length > 0) {
+    tokens[fileKey] = legacy;
+    await figma.clientStorage.setAsync(PROJECT_TOKENS_KEY, tokens);
+    await figma.clientStorage.deleteAsync(LEGACY_PREVIEW_TOKEN_KEY);
+    return legacy;
+  }
+  return null;
+}
+
+async function setProjectToken(fileKey: string, token: string): Promise<void> {
+  const tokens = await loadProjectTokens();
+  tokens[fileKey] = token;
+  await figma.clientStorage.setAsync(PROJECT_TOKENS_KEY, tokens);
+}
+
+async function getProjectCache(fileKey: string): Promise<ProjectCache | null> {
+  const raw = await figma.clientStorage.getAsync(PROJECT_CACHE_PREFIX + fileKey);
+  return raw && typeof raw === 'object' ? (raw as ProjectCache) : null;
+}
+
+// Drop the least-recently-written project cache (excluding `exceptKey`, the one
+// we're trying to write). Returns false when there is nothing left to evict.
+// Only ever touches PROJECT_CACHE_PREFIX keys — tokens, settings, favourites,
+// custom presets and the haptics token are all off-limits.
+async function evictOldestProjectCache(exceptKey: string): Promise<boolean> {
+  const keys = (await figma.clientStorage.keysAsync()).filter(
+    (k) => k.startsWith(PROJECT_CACHE_PREFIX) && k !== exceptKey
+  );
+  if (keys.length === 0) return false;
+  let oldestKey: string | null = null;
+  let oldest = Infinity;
+  for (const k of keys) {
+    const v = (await figma.clientStorage.getAsync(k)) as ProjectCache | undefined;
+    const t = v && typeof v.lastAccess === 'number' ? v.lastAccess : 0;
+    if (t < oldest) {
+      oldest = t;
+      oldestKey = k;
+    }
+  }
+  if (!oldestKey) return false;
+  await figma.clientStorage.deleteAsync(oldestKey);
+  return true;
+}
+
+// Persist a file's cached config, evicting older project caches if we hit the
+// clientStorage quota. Best-effort: if even an empty store can't fit this one
+// entry, the rejection propagates to the caller (which treats the cache as
+// optional — the server copy is the source of truth).
+async function setProjectCache(
+  fileKey: string,
+  config: unknown,
+  baseRevision: number | null
+): Promise<void> {
+  const key = PROJECT_CACHE_PREFIX + fileKey;
+  const entry: ProjectCache = { config, baseRevision, lastAccess: Date.now() };
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      await figma.clientStorage.setAsync(key, entry);
+      return;
+    } catch (err) {
+      const evicted = await evictOldestProjectCache(key);
+      if (!evicted) throw err;
+    }
+  }
 }
 
 async function loadFavourites(): Promise<string[]> {
@@ -356,6 +449,28 @@ function unbindSelection() {
   pushSelection();
 }
 
+// Notify the UI when the document changes so it can debounce a background save
+// to the server. documentchange is very chatty during drags (one event per
+// frame), so coalesce a burst into a single message; the UI debounces further
+// before actually pushing. Covers binding/unbinding (setPluginData fires here)
+// as well as moves/resizes that shift bound-node boxes.
+let docChangedPending = false;
+function onDocumentChange() {
+  if (docChangedPending) return;
+  docChangedPending = true;
+  setTimeout(() => {
+    docChangedPending = false;
+    postToUi({ type: 'doc-changed' });
+  }, 300);
+}
+// In dynamic-page documents `figma.on('documentchange')` throws unless every
+// page has been loaded first. Load them, then subscribe; if loading fails the
+// auto-sync trigger is simply absent (explicit share / "Sync now" still work).
+figma
+  .loadAllPagesAsync()
+  .then(() => figma.on('documentchange', onDocumentChange))
+  .catch((err) => console.error('Could not subscribe to documentchange:', err));
+
 figma.on('selectionchange', () => {
   pushSelection();
 
@@ -372,17 +487,48 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken, previewToken, favourites, customPresets] = await Promise.all([
+      const [settings, hapticsToken, favourites, customPresets] = await Promise.all([
         loadSettings(),
         loadToken(),
-        loadPreviewToken(),
         loadFavourites(),
         loadCustomPresets()
       ]);
-      postToUi({ type: 'init', settings, hapticsToken, previewToken, favourites, customPresets });
+      postToUi({
+        type: 'init',
+        settings,
+        hapticsToken,
+        fileKey: figma.fileKey ?? null,
+        favourites,
+        customPresets
+      });
       pushSelection();
       break;
     }
+    case 'get-project': {
+      const [token, cache] = await Promise.all([
+        getProjectToken(msg.fileKey),
+        getProjectCache(msg.fileKey)
+      ]);
+      postToUi({
+        type: 'project',
+        fileKey: msg.fileKey,
+        token,
+        config: cache ? cache.config : null,
+        baseRevision: cache ? cache.baseRevision : null
+      });
+      break;
+    }
+    case 'persist-project-token':
+      await setProjectToken(msg.fileKey, msg.token);
+      break;
+    case 'persist-project-cache':
+      // Cache is best-effort; never let a quota failure crash the handler.
+      try {
+        await setProjectCache(msg.fileKey, msg.config, msg.baseRevision);
+      } catch (err) {
+        console.error('Failed to cache figma project config:', err);
+      }
+      break;
     case 'request-selection':
       pushSelection();
       break;
@@ -398,9 +544,6 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'persist-haptics-token':
       await figma.clientStorage.setAsync(TOKEN_KEY, msg.token);
       break;
-    case 'persist-preview-token':
-      await figma.clientStorage.setAsync(PREVIEW_TOKEN_KEY, msg.token);
-      break;
     case 'persist-favourites':
       await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);
       break;
@@ -412,6 +555,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       const present = pickPresentNode();
       postToUi({
         type: 'preview-data',
+        purpose: msg.purpose,
         fileKey: figma.fileKey ?? null,
         presentNodeId: present ? present.id : null,
         presentNodeBox: present ? boxOf(present) : null,

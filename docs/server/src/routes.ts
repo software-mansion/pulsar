@@ -8,9 +8,11 @@ interface BroadcastBody {
 }
 
 interface FigmaProjectBody {
-  // Free-form configuration object the plugin wants to persist. We store it as
-  // a JSON string so the schema stays stable as the plugin payload evolves.
+  // Free-form config, stored as a JSON string.
   config: unknown;
+  // Optimistic-concurrency base: the client's last-synced revision. When set,
+  // the update applies only if the server is still at it (else 409).
+  baseRevision?: number | null;
 }
 
 export function getRoutes(connectionManager: ConnectionManager): Router {
@@ -26,7 +28,7 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     }
     res.json({
       success: true,
-      code: connectionManager.getParingCode(),
+      code,
     });
   });
 
@@ -44,8 +46,7 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     });
   });
 
-  // Create a Figma project record and return a token identifying it. The
-  // plugin POSTs its current payload here right before sharing a preview link.
+  // Create a project row; returns its token + revision.
   router.post(
     '/figma-project',
     async (req: Request<{}, {}, FigmaProjectBody>, res: Response) => {
@@ -55,70 +56,83 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
       }
       const serialized = typeof config === 'string' ? config : JSON.stringify(config);
       try {
-        const token = await createFigmaProject(serialized);
-        res.json({ success: true, token });
+        const { token, revision } = await createFigmaProject(serialized);
+        res.json({ success: true, token, revision });
       } catch (err) {
         console.error('createFigmaProject failed:', err);
-        res.status(500).json({
-          success: false,
-          error: 'Failed to create figma project',
-          detail: (err as Error)?.message,
-        });
+        res.status(500).json({ success: false, error: 'Failed to create figma project' });
       }
     },
   );
 
-  // Update an existing project's config. Lets the plugin reuse a token across
-  // shares without spamming new rows.
+  // Update a project's config, optionally conditional on baseRevision.
   router.put(
     '/figma-project/:token',
     async (req: Request<{ token: string }, {}, FigmaProjectBody>, res: Response) => {
       const { token } = req.params;
-      const { config } = req.body ?? {};
+      const { config, baseRevision } = req.body ?? {};
       if (config === undefined || config === null) {
         return res.status(400).json({ success: false, error: 'config is required' });
       }
+      // baseRevision is optional, but if present it must be a real number — it
+      // goes into a numeric SQL comparison, so reject junk up front rather than
+      // letting it reach the driver as a silent conflict-detection failure.
+      if (
+        baseRevision !== undefined &&
+        baseRevision !== null &&
+        !Number.isFinite(baseRevision)
+      ) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'baseRevision must be a number or null' });
+      }
       const serialized = typeof config === 'string' ? config : JSON.stringify(config);
       try {
-        const ok = await updateFigmaProject(token, serialized);
-        if (!ok) {
+        const result = await updateFigmaProject(token, serialized, baseRevision);
+        if (result.kind === 'ok') {
+          return res.json({ success: true, revision: result.revision });
+        }
+        if (result.kind === 'not_found') {
           return res.status(404).json({ success: false, error: 'Project not found' });
         }
-        res.json({ success: true });
+        // Conflict: hand back the current snapshot so the client can reconcile.
+        let current: unknown = result.current.config;
+        try {
+          current = JSON.parse(result.current.config);
+        } catch {
+          // not JSON — return the raw string
+        }
+        return res.status(409).json({
+          success: false,
+          error: 'conflict',
+          config: current,
+          revision: result.current.revision,
+        });
       } catch (err) {
         console.error('updateFigmaProject failed:', err);
-        res.status(500).json({
-          success: false,
-          error: 'Failed to update figma project',
-          detail: (err as Error)?.message,
-        });
+        res.status(500).json({ success: false, error: 'Failed to update figma project' });
       }
     },
   );
 
-  // Fetch a project's stored configuration by token. Returns the raw object the
-  // plugin originally stored (parsed back from the stored JSON string).
+  // Fetch a project's config + revision by token.
   router.get('/figma-project/:token', async (req: Request<{ token: string }>, res: Response) => {
     const { token } = req.params;
     try {
-      const config = await getFigmaProject(token);
-      if (config === null) {
+      const snapshot = await getFigmaProject(token);
+      if (snapshot === null) {
         return res.status(404).json({ success: false, error: 'Project not found' });
       }
-      let parsed: unknown = config;
+      let parsed: unknown = snapshot.config;
       try {
-        parsed = JSON.parse(config);
+        parsed = JSON.parse(snapshot.config);
       } catch {
-        // Stored value wasn't JSON — fall back to the raw string.
+        // not JSON — return the raw string
       }
-      res.json({ success: true, config: parsed });
+      res.json({ success: true, config: parsed, revision: snapshot.revision });
     } catch (err) {
       console.error('getFigmaProject failed:', err);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch figma project',
-        detail: (err as Error)?.message,
-      });
+      res.status(500).json({ success: false, error: 'Failed to fetch figma project' });
     }
   });
 
