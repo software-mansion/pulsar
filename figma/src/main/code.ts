@@ -157,6 +157,8 @@ async function collectPreviewBindings(): Promise<{
 }
 
 // Light list of bound components for the "Bound" tab (no boxes/descendants).
+// Each item carries its top-level frame id + name so the UI can group entries
+// by screen, mirroring the preview's "Haptic elements" sidebar.
 async function collectBoundItems(): Promise<BoundItem[]> {
   await figma.currentPage.loadAsync();
   // Match by the specific binding key, not just "has any plugin data". When
@@ -168,12 +170,15 @@ async function collectBoundItems(): Promise<BoundItem[]> {
   for (const node of nodes) {
     const binding = readBinding(node);
     if (!binding) continue;
+    const frame = topLevelFrameAncestor(node);
     out.push({
       nodeId: node.id,
       nodeName: node.name,
       nodeType: node.type,
       presetId: binding.presetId,
-      presetName: binding.presetName
+      presetName: binding.presetName,
+      frameId: frame ? frame.id : null,
+      frameName: frame ? frame.name : null
     });
   }
   return out;

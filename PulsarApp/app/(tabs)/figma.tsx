@@ -12,6 +12,8 @@ import { ThemedText } from '@/components/themed-text';
 import BasicLayout from '@/components/BasicLayout';
 import Card from '@/components/Card';
 import Point from '@/components/Point';
+import Input from '@/components/Input';
+import Button from '@/components/Button';
 import SvgIcon from '@/components/SvgIcon';
 import { Margins } from '@/constants/theme';
 
@@ -27,12 +29,17 @@ import { Margins } from '@/constants/theme';
 // fallback (see figma/preview/src/App.tsx).
 export default function FigmaScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
-  const token = typeof params.token === 'string' ? params.token : '';
+  const paramToken = typeof params.token === 'string' ? params.token : '';
+  // Token typed/pasted into the explainer screen. Lifted here so a manual
+  // connect survives mode-switches between explainer and WebView, and so the
+  // explainer can ask us to "connect" without owning the navigation logic.
+  const [enteredToken, setEnteredToken] = useState('');
+  const token = paramToken || enteredToken;
 
-  // if (token) {
+  if (token) {
     return <FigmaPreviewWebView token={token} />;
-  // }
-  return <FigmaExplainer />;
+  }
+  return <FigmaExplainer onConnect={(t) => setEnteredToken(t.trim())} />;
 }
 
 function FigmaPreviewWebView({ token }: { token: string }) {
@@ -92,7 +99,7 @@ function FigmaPreviewWebView({ token }: { token: string }) {
     <WebView
       ref={webRef}
       // source={{ uri: previewUrl }}
-      source={{ uri: "http://169.254.70.111:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
+      source={{ uri: "http://169.254.109.67:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
       originWhitelist={['*']}
       javaScriptEnabled
       domStorageEnabled
@@ -108,7 +115,10 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   );
 }
 
-function FigmaExplainer() {
+function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
+  const [manualToken, setManualToken] = useState('');
+  const canConnect = manualToken.trim().length > 0;
+
   return (
     <SafeAreaView>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -123,6 +133,33 @@ function FigmaExplainer() {
             you tap on a component in the prototype preview — perfect for
             reviewing UX before writing any code.
           </ThemedText>
+
+          <Card style={Margins.marginTop4X}>
+            <ThemedText type="subtitle">Connect with a token</ThemedText>
+            <ThemedText style={Margins.marginTop2X}>
+              Already have a share token from the Figma plugin? Paste it here
+              to open the preview without scanning the QR code.
+            </ThemedText>
+            <Input
+              placeholder="Paste preview token"
+              style={Margins.marginTop3X}
+              value={manualToken}
+              onChangeText={setManualToken}
+              keyboardType="default"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <Button
+              label="Connect"
+              style={Margins.marginTop3X}
+              enabled={canConnect}
+              onClick={() => {
+                if (canConnect) onConnect(manualToken);
+              }}
+            />
+          </Card>
 
           <Card style={Margins.marginTop4X}>
             <ThemedText type="subtitle">How to connect Figma</ThemedText>
@@ -157,8 +194,9 @@ function FigmaExplainer() {
             <ThemedText type="subtitle">Good to know</ThemedText>
             <ThemedText style={Margins.marginTop2X}>
               You don&apos;t need to pair the phone separately for Figma Live
-              Preview — the QR code carries everything PulsarApp needs to fetch
-              the design and play the right pattern when you tap an element.
+              Preview — the QR code (or the token above) carries everything
+              PulsarApp needs to fetch the design and play the right pattern
+              when you tap an element.
             </ThemedText>
           </Card>
         </BasicLayout>

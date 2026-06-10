@@ -184,6 +184,47 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50);
   vertical-align: middle;
 }
 
+/* Bound-tab grouping — one section per top-level Figma frame that owns at
+   least one binding. Mirrors the preview's .screen-group treatment so the
+   "Bound" panel and the preview's "Haptic elements" sidebar read as the same
+   panel rendered in different chromes. */
+.bound-group { margin-bottom: 14px; }
+.bound-group:last-child { margin-bottom: 0; }
+.bound-group-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.bound-group-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bound-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 6px;
+  height: 16px;
+  border-radius: 10px;
+  background: var(--color-blue-10);
+  color: var(--color-blue-60);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 /* Filter dropdown, ported from the docs SelectBox. */
 .selectbox { position: relative; user-select: none; }
 .selectbox-header {

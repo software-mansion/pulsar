@@ -81,6 +81,12 @@ export interface BoundItem {
   nodeType: string;
   presetId: string;
   presetName: string;
+  // Id + name of the top-level frame the bound node sits under. Used to
+  // group entries by screen in the Bound panel. Both null when the node
+  // isn't nested inside a frame-like ancestor (rare — usually means the
+  // user bound a top-level frame itself).
+  frameId: string | null;
+  frameName: string | null;
 }
 
 // Messages: UI -> Main

@@ -192,14 +192,14 @@ body {
 }
 .exit-fs:active { box-shadow: none; transform: translate(-3px, 3px); }
 
-/* In-app tab-bar toggle. Same button motion as .exit-fs but anchored to the
-   bottom-right corner (above the native tab bar it controls) and respecting the
-   device safe-area inset. Slightly more opaque at rest than .exit-fs since it's
-   the primary affordance for entering/leaving true full screen on a phone. */
+/* In-app tab-bar toggle. Same button motion as .exit-fs, anchored to the
+   top-right corner and respecting the device safe-area inset. Slightly more
+   opaque at rest than .exit-fs since it's the primary affordance for
+   entering/leaving true full screen on a phone. */
 .nav-toggle {
   position: fixed;
   right: 14px;
-  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  top: calc(50px + env(safe-area-inset-top, 0px));
   z-index: 50;
   width: 36px;
   height: 36px;
@@ -625,20 +625,66 @@ body {
   border-top-right-radius: var(--radius);
 }
 
-/* Code block (JSON + SDK snippet) — docs CodeTabs.contentArea recipe. */
+/* Code block (JSON + SDK snippet) — docs CodeTabs.contentArea recipe. We
+   intentionally wrap long lines instead of letting the user scroll sideways:
+   the modal is narrow enough that horizontal scroll is fiddly, and the only
+   things that overflow are long Swift/Kotlin import paths and JSON values
+   whose meaning survives a soft break. `pre-wrap` keeps the original
+   indentation (so multi-line snippets still read top-to-bottom), while
+   `overflow-wrap: anywhere` lets us break long unbreakable tokens at any
+   character if needed. */
 .code-block {
   background: var(--color-blue-10);
   padding: 14px 16px;
   border-radius: var(--radius);
   margin: 0;
   max-height: 280px;
-  overflow: auto;
-  white-space: pre;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
   word-break: normal;
+  overflow-wrap: anywhere;
   font-family: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   font-size: var(--fs-xs);
   line-height: 1.55;
   color: var(--color-primary);
+}
+
+/* Custom scrollbars — applied to every scrollable surface inside the modal
+   (and the sidebar list for parity). Mirrors the docs site's clean look: thin
+   transparent track, blue-tinted thumb that darkens on hover. Firefox uses
+   `scrollbar-width`/`scrollbar-color`; Chromium/WebKit uses the ::-webkit-*
+   pseudo elements (both are required for cross-browser coverage). */
+.modal-body,
+.code-block,
+.list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue-20) transparent;
+}
+.modal-body::-webkit-scrollbar,
+.code-block::-webkit-scrollbar,
+.list::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.modal-body::-webkit-scrollbar-track,
+.code-block::-webkit-scrollbar-track,
+.list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-body::-webkit-scrollbar-thumb,
+.code-block::-webkit-scrollbar-thumb,
+.list::-webkit-scrollbar-thumb {
+  background: var(--color-blue-20);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.modal-body::-webkit-scrollbar-thumb:hover,
+.code-block::-webkit-scrollbar-thumb:hover,
+.list::-webkit-scrollbar-thumb:hover {
+  background: var(--color-blue-30);
+  background-clip: padding-box;
 }
 
 /* Tags row inside the modal — also reusable across the app. */
