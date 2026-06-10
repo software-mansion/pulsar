@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { PresetData } from '../types';
 import closeIcon from '../assets/icon-close.svg';
+import copyIcon from '../assets/icon-copy.svg';
+import checkIcon from '../assets/icon-check.svg';
 
 // Order chosen to match the docs SDK overview page.
 const LANGS = ['Swift', 'Android', 'KMP', 'React Native', 'Flutter', 'Web'] as const;
@@ -340,10 +342,20 @@ export function PresetDetailsModal({
                 </button>
               ))}
             </div>
-            <pre className="code-block">{snippet}</pre>
-            <div className="modal-section-foot">
-              <button className="docs-btn" onClick={() => copy(snippet, 'snippet')}>
-                {copiedKey === 'snippet' ? 'Copied' : 'Copy'}
+            <div className="code-block-wrap">
+              <pre className="code-block">{snippet}</pre>
+              <button
+                className="code-copy-btn"
+                onClick={() => copy(snippet, 'snippet')}
+                title="Copy"
+                aria-label={copiedKey === 'snippet' ? 'Copied' : 'Copy'}
+              >
+                <img
+                  src={copiedKey === 'snippet' ? checkIcon : copyIcon}
+                  alt=""
+                  width={16}
+                  height={16}
+                />
               </button>
             </div>
           </section>
@@ -352,10 +364,20 @@ export function PresetDetailsModal({
             <div className="modal-section-head">
               <h3>Raw pattern data</h3>
             </div>
-            <pre className="code-block">{json}</pre>
-            <div className="modal-section-foot">
-              <button className="docs-btn" onClick={() => copy(json, 'json')}>
-                {copiedKey === 'json' ? 'Copied' : 'Copy'}
+            <div className="code-block-wrap">
+              <pre className="code-block">{json}</pre>
+              <button
+                className="code-copy-btn"
+                onClick={() => copy(json, 'json')}
+                title="Copy"
+                aria-label={copiedKey === 'json' ? 'Copied' : 'Copy'}
+              >
+                <img
+                  src={copiedKey === 'json' ? checkIcon : copyIcon}
+                  alt=""
+                  width={16}
+                  height={16}
+                />
               </button>
             </div>
           </section>

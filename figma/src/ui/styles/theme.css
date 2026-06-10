@@ -594,6 +594,43 @@ button.preset-action-btn {
   color: var(--color-primary);
 }
 
+/* Copy-to-clipboard affordance docked in the top-right corner of a code
+   block — mirrors the docs preset modal (.copyButton over .jsonContainer).
+   Resets the signature button chrome (border + offset shadow) down to a flat
+   icon chip that blends into the blue-10 code surface and masks the text
+   scrolling beneath it. */
+.code-block-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.code-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-blue-10);
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.code-copy-btn img { display: block; width: 16px; height: 16px; }
+.code-copy-btn:hover {
+  background: var(--color-blue-20);
+  box-shadow: none;
+  transform: none;
+}
+.code-copy-btn:active {
+  box-shadow: none;
+  transform: scale(0.9);
+}
+
 /* Tags row inside the modal — same recipe as preview's. */
 .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
 /* White-faced variant (Used for ordinary tags inside the modal). */

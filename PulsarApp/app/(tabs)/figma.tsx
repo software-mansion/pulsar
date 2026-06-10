@@ -30,22 +30,15 @@ const defaultEdges = {
 //        its preset-tap events to native haptics.
 //   2. Opened manually via the tab bar (no token) → render a short explainer
 //      describing what Figma Live Preview is and how to connect a design file.
-//
-// The preview reads `?host=app` from its own URL to know it's running inside
-// the native shell and should postMessage instead of using its in-page audio
-// fallback (see figma/preview/src/App.tsx).
 export default function FigmaScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
   const paramToken = typeof params.token === 'string' ? params.token : '';
-  // Token typed/pasted into the explainer screen. Lifted here so a manual
-  // connect survives mode-switches between explainer and WebView, and so the
-  // explainer can ask us to "connect" without owning the navigation logic.
   const [enteredToken, setEnteredToken] = useState('');
   const token = paramToken || enteredToken;
 
-  // if (token) {
-  //   return <FigmaPreviewWebView token={token} />;
-  // }
+  if (token) {
+    return <FigmaPreviewWebView token={token} />;
+  }
   return <FigmaExplainer onConnect={(t) => setEnteredToken(t.trim())} />;
 }
 
@@ -61,10 +54,6 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   const playFromHost = usePlayPatternFromHost();
   const navigation = useNavigation();
 
-  // The preview can ask us to hide the bottom tab bar so the prototype runs
-  // edge-to-edge ("true full screen"). We drive it through state + setOptions so
-  // it's declarative and self-restores: leaving the screen with the bar hidden
-  // resets it via the cleanup below.
   const [tabBarHidden, setTabBarHidden] = useState(false);
   useEffect(() => {
     navigation.setOptions({
@@ -75,14 +64,6 @@ function FigmaPreviewWebView({ token }: { token: string }) {
 
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
-      // Messages from the embedded preview:
-      //   { type: 'play-preset', presetName: '...', pattern?: Pattern }
-      //     - Built-in presets (TickTock, DogBark, …) resolve by name via
-      //       react-native-pulsar's Presets and play the tuned haptic.
-      //     - Custom presets won't match a name, so we fall back to
-      //       PatternComposer.parse() + .play() on the carried pattern.
-      //   { type: 'set-tab-bar-hidden', hidden: boolean }
-      //     - Toggles the bottom tab bar for the full-screen preview.
       try {
         const data = JSON.parse(event.nativeEvent.data) as {
           type?: string;
@@ -106,8 +87,7 @@ function FigmaPreviewWebView({ token }: { token: string }) {
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
       <WebView
         ref={webRef}
-        // source={{ uri: previewUrl }}
-        source={{ uri: "http://169.254.109.67:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
+        source={{ uri: previewUrl }}
         originWhitelist={['*']}
         javaScriptEnabled
         domStorageEnabled

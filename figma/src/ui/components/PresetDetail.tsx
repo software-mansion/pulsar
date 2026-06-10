@@ -5,11 +5,13 @@ import Visualization from './Visualization';
 import iconClose from '../assets/icon-close.svg';
 import iconPlay from '../assets/icon-play.svg';
 import iconSmartphone from '../assets/icon-smartphone.svg';
+import iconCopy from '../assets/icon-copy.svg';
+import iconCheck from '../assets/icon-check.svg';
 import { builtInSnippet, customSnippet, LANGS, type Lang } from './sdkSnippets';
 
 // Plugin's preset-detail modal. Mirrors the preview app's PresetDetailsModal
 // recipe (docs-style head bar, blue-10 inner sections, underlined SDK tabs,
-// hover-lift/press-shadow copy button) so the two surfaces feel like the same
+// corner copy-icon button) so the two surfaces feel like the same
 // dialog rendered in different chromes. Layers a plugin-specific action row
 // (Play / Phone / Bind) on top, plus the plugin's waveform Visualization
 // component, since neither has an equivalent in the preview.
@@ -44,7 +46,7 @@ export default function PresetDetail({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Brief "Copied" confirmation that swaps in the button label for ~1.2s,
+  // Brief "Copied" confirmation that swaps the copy glyph for a check ~1.2s,
   // ported from the preview modal so the affordance feels identical.
   const [copiedKey, setCopiedKey] = useState<'snippet' | 'json' | null>(null);
   const copy = (text: string, key: 'snippet' | 'json') => {
@@ -134,10 +136,20 @@ export default function PresetDetail({
               </button>
             ))}
           </div>
-          <pre className="code-block">{snippet}</pre>
-          <div className="modal-section-foot">
-            <button className="docs-btn" onClick={() => copy(snippet, 'snippet')}>
-              {copiedKey === 'snippet' ? 'Copied' : 'Copy'}
+          <div className="code-block-wrap">
+            <pre className="code-block">{snippet}</pre>
+            <button
+              className="code-copy-btn"
+              onClick={() => copy(snippet, 'snippet')}
+              title="Copy"
+              aria-label={copiedKey === 'snippet' ? 'Copied' : 'Copy'}
+            >
+              <img
+                src={copiedKey === 'snippet' ? iconCheck : iconCopy}
+                alt=""
+                width={16}
+                height={16}
+              />
             </button>
           </div>
         </section>
@@ -146,10 +158,20 @@ export default function PresetDetail({
           <div className="modal-section-head">
             <h3>Raw pattern data</h3>
           </div>
-          <pre className="code-block">{json}</pre>
-          <div className="modal-section-foot">
-            <button className="docs-btn" onClick={() => copy(json, 'json')}>
-              {copiedKey === 'json' ? 'Copied' : 'Copy'}
+          <div className="code-block-wrap">
+            <pre className="code-block">{json}</pre>
+            <button
+              className="code-copy-btn"
+              onClick={() => copy(json, 'json')}
+              title="Copy"
+              aria-label={copiedKey === 'json' ? 'Copied' : 'Copy'}
+            >
+              <img
+                src={copiedKey === 'json' ? iconCheck : iconCopy}
+                alt=""
+                width={16}
+                height={16}
+              />
             </button>
           </div>
         </section>
