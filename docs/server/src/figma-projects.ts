@@ -54,6 +54,37 @@ function generateToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
+const PROJECT_TTL_DAYS = 90;
+const PURGE_THROTTLE_MS = 60 * 60 * 1000;
+let lastPurgeAt = 0;
+
+export async function purgeExpiredFigmaProjects(): Promise<number> {
+  await ensureFigmaProjectsTable();
+  const result = await pool.query(
+    `DELETE FROM figma_projects WHERE updated_at < NOW() - INTERVAL '${PROJECT_TTL_DAYS} days'`,
+  );
+  return result.rowCount ?? 0;
+}
+
+function schedulePurge(): void {
+  const now = Date.now();
+  if (now - lastPurgeAt < PURGE_THROTTLE_MS) return;
+  lastPurgeAt = now;
+  purgeExpiredFigmaProjects().then(
+    (count) => {
+      if (count > 0) {
+        console.log(
+          `purged ${count} figma project(s) inactive for >${PROJECT_TTL_DAYS} days`,
+        );
+      }
+    },
+    (err) => {
+      lastPurgeAt = 0;
+      console.error('purgeExpiredFigmaProjects failed:', err);
+    },
+  );
+}
+
 export async function createFigmaProject(config: string): Promise<string> {
   await ensureFigmaProjectsTable();
   const token = generateToken();
@@ -61,6 +92,7 @@ export async function createFigmaProject(config: string): Promise<string> {
     'INSERT INTO figma_projects (token, config) VALUES ($1, $2)',
     [token, config],
   );
+  schedulePurge();
   return token;
 }
 
