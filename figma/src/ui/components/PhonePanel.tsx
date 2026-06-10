@@ -94,50 +94,59 @@ export default function PhonePanel({
   };
 
   return (
-    <div className="col" style={{ padding: 12 }}>
-      <div style={{ fontWeight: 700, fontSize: 'var(--fs-lg)' }}>Phone</div>
-      <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
-        Pair the Pulsar app to feel real haptics on your device when you preview a preset.
-      </p>
+    <details className="accordion" style={{ margin: '8px', borderTop: 'none', paddingTop: 0 }}>
+      <summary className="row" style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
+        <span className="caret" aria-hidden="true">▸</span>
+        Phone
+        {status === 'connected' && (
+          <span className="tag active" style={{ margin: 0 }}>Connected</span>
+        )}
+      </summary>
 
-      {status === 'idle' && (
-        <button className="primary" onClick={startPairing}>Pair with phone</button>
-      )}
-      {status === 'requesting' && <span className="muted">Requesting channel…</span>}
-      {status === 'awaiting-phone' && (
-        <div className="col">
-          {qrDataUrl && (
-            <img
-              src={qrDataUrl}
-              alt="Scan with Pulsar"
-              style={{ width: 220, height: 220, alignSelf: 'center', borderRadius: 4 }}
-            />
-          )}
-          <div className="row">
-            <span className="muted">Code:</span>
-            <span className="mono" style={{ fontWeight: 700 }}>{code}</span>
-            <div className="spacer" />
-            <button className="ghost" onClick={disconnect}>Cancel</button>
+      <div className="col" style={{ marginTop: 8, gap: 6 }}>
+        <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
+          Pair the Pulsar app to feel real haptics on your device when you preview a preset.
+        </p>
+
+        {status === 'idle' && (
+          <button className="primary" onClick={startPairing}>Pair with phone</button>
+        )}
+        {status === 'requesting' && <span className="muted">Requesting channel…</span>}
+        {status === 'awaiting-phone' && (
+          <div className="col">
+            {qrDataUrl && (
+              <img
+                src={qrDataUrl}
+                alt="Scan with Pulsar"
+                style={{ width: 220, height: 220, alignSelf: 'center', borderRadius: 4 }}
+              />
+            )}
+            <div className="row">
+              <span className="muted">Code:</span>
+              <span className="mono" style={{ fontWeight: 700 }}>{code}</span>
+              <div className="spacer" />
+              <button className="ghost" onClick={disconnect}>Cancel</button>
+            </div>
+            <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
+              Open the Pulsar mobile app and scan the QR (or enter the code).
+            </span>
           </div>
-          <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>
-            Open the Pulsar mobile app and scan the QR (or enter the code).
-          </span>
-        </div>
-      )}
-      {status === 'connected' && (
-        <div className="row">
-          <span style={{ color: 'green', fontWeight: 600 }}>● Connected</span>
-          <div className="spacer" />
-          <button className="ghost" onClick={disconnect}>Disconnect</button>
-        </div>
-      )}
-      {status === 'error' && (
-        <div className="col">
-          <span style={{ color: 'crimson' }}>Error: {error ?? 'unknown'}</span>
-          <button className="ghost" onClick={startPairing}>Retry</button>
-        </div>
-      )}
-    </div>
+        )}
+        {status === 'connected' && (
+          <div className="row">
+            <span style={{ color: 'green', fontWeight: 600 }}>● Connected</span>
+            <div className="spacer" />
+            <button className="ghost" onClick={disconnect}>Disconnect</button>
+          </div>
+        )}
+        {status === 'error' && (
+          <div className="col">
+            <span style={{ color: 'crimson' }}>Error: {error ?? 'unknown'}</span>
+            <button className="ghost" onClick={startPairing}>Retry</button>
+          </div>
+        )}
+      </div>
+    </details>
   );
 }
 

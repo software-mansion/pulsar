@@ -18,7 +18,7 @@ import iconLayoutFull from './assets/icon-layout-full.svg';
 import iconLayoutCompact from './assets/icon-layout-compact.svg';
 import iconArrowUp from './assets/icon-arrow-up.svg';
 
-type Tab = 'presets' | 'bound' | 'phone' | 'preview';
+type Tab = 'presets' | 'bound' | 'preview';
 
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
@@ -466,7 +466,7 @@ export default function App() {
           <span>Pulsar</span>
         </div>
         <div className="spacer" />
-        {(['presets', 'bound', 'phone', 'preview'] as const).map((t) => (
+        {(['presets', 'bound', 'preview'] as const).map((t) => (
           <span
             key={t}
             className={`tab ${tab === t ? 'active' : ''}`}
@@ -510,6 +510,7 @@ export default function App() {
             onUpdate={updateCustomPreset}
             onRemove={removeCustomPreset}
           />
+          <PhonePanel token={hapticsToken} onTokenChange={setHapticsToken} />
           <div className="row" style={{ padding: '4px 8px', gap: 6, marginTop: 8 }}>
             <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{filtered.length} results</span>
             <label
@@ -597,10 +598,6 @@ export default function App() {
           onRefresh={refreshBoundList}
           onSelect={selectBoundItem}
         />
-      )}
-
-      {tab === 'phone' && (
-        <PhonePanel token={hapticsToken} onTokenChange={setHapticsToken} />
       )}
 
       {tab === 'preview' && (
