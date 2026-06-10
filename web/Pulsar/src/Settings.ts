@@ -4,8 +4,20 @@ let hapticsEnabled = true;
 let soundEnabled = true;
 const stopHapticsHandlers = new Set<StopHapticsHandler>();
 
+const canActuallyVibrate = () => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return true;
+  }
+
+  return window.matchMedia("(pointer: coarse)").matches;
+};
+
 const isHapticsAvailable = () => {
-  return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+  return (
+    typeof navigator !== "undefined" &&
+    typeof navigator.vibrate === "function" &&
+    canActuallyVibrate()
+  );
 };
 
 const stopBrowserVibration = () => {
