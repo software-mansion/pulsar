@@ -68,7 +68,7 @@ button {
   padding: 6px 12px;
   font-size: var(--fs-sm);
   font-weight: 600;
-  box-shadow: -3px 3px 0 var(--color-blue-50);
+  box-shadow: -2px 2px 0 var(--color-blue-50);
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 /* Hover lift + click press — matches the canonical animation used across the
@@ -76,12 +76,12 @@ button {
    shadow by 1px and nudges the face up-right; active drops the shadow and
    snaps the face into where the shadow was. */
 button:hover {
-  box-shadow: -4px 4px 0 var(--color-blue-50);
+  box-shadow: -3px 3px 0 var(--color-blue-50);
   transform: translate(1px, -1px);
 }
 button:active {
   box-shadow: none;
-  transform: translate(-3px, 3px);
+  transform: translate(-2px, 2px);
 }
 /* Unfilled docs variant — same border + offset shadow, lighter label. */
 button.ghost { font-weight: 500; }
@@ -89,6 +89,84 @@ button.ghost { font-weight: 500; }
 button.primary { background: var(--color-blue-20); }
 button.icon { padding: 4px 8px; }
 button.icon svg { display: block; }
+
+/* Live preview tab — primary CTA is full-width with an icon-prefixed label,
+   secondary actions sit in a two-up row underneath. */
+button.preview-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: var(--fs-md);
+}
+.preview-secondary-row { gap: 8px; }
+button.preview-secondary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+/* QR display — mirrors the docs Connection.tsx widget.
+   Outer card: white, blue-50 border, signature offset shadow (docs .content).
+   Inner box: blue-10 fill, centred prompt + QR, close (×) button in the
+   top-right corner (docs .codebox + .iconButton). The QR itself is generated
+   with lightColor=blue-10 (App.tsx) so its background merges into the box. */
+.preview-qr-card {
+  margin-top: 6px;
+  background: var(--surface);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 12px;
+}
+.preview-qr-box {
+  position: relative;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+  padding: 18px 16px 16px;
+  text-align: center;
+}
+.preview-qr-prompt {
+  font-size: var(--fs-md);
+  color: var(--color-primary);
+  padding: 0 28px;
+  line-height: 1.4;
+}
+.preview-qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+.preview-qr-wrap img {
+  display: block;
+  width: 200px;
+  height: 200px;
+}
+button.preview-qr-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+button.preview-qr-close:hover {
+  border-color: var(--color-blue-50);
+  box-shadow: -2px 2px 0 var(--color-blue-50);
+  transform: translate(1px, -1px);
+}
+button.preview-qr-close:active { box-shadow: none; transform: translate(-1px, 1px); }
 .star { display: block; font-size: var(--fs-lg); line-height: 1; }
 
 /* Favourite toggle — subtle square button on a light fill (mirrors the docs heart button). */

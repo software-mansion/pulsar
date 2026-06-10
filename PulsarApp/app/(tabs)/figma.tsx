@@ -17,6 +17,13 @@ import Button from '@/components/Button';
 import SvgIcon from '@/components/SvgIcon';
 import { Margins } from '@/constants/theme';
 
+const defaultEdges = {
+  top: 'additive',
+  left: 'additive',
+  bottom: 'off',
+  right: 'additive',
+};
+
 // Figma tab. Two modes:
 //   1. Deep-linked from the Figma plugin (`pulsarapp://figma?token=<token>`)
 //      → render the standalone live-preview web app inside a WebView and bridge
@@ -36,9 +43,9 @@ export default function FigmaScreen() {
   const [enteredToken, setEnteredToken] = useState('');
   const token = paramToken || enteredToken;
 
-  if (token) {
-    return <FigmaPreviewWebView token={token} />;
-  }
+  // if (token) {
+  //   return <FigmaPreviewWebView token={token} />;
+  // }
   return <FigmaExplainer onConnect={(t) => setEnteredToken(t.trim())} />;
 }
 
@@ -96,22 +103,24 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   );
 
   return (
-    <WebView
-      ref={webRef}
-      // source={{ uri: previewUrl }}
-      source={{ uri: "http://169.254.109.67:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
-      originWhitelist={['*']}
-      javaScriptEnabled
-      domStorageEnabled
-      onMessage={onMessage}
-      startInLoadingState
-      renderLoading={() => (
-        <View style={styles.loader}>
-          <ActivityIndicator />
-        </View>
-      )}
-      style={styles.webview}
-    />
+    <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
+      <WebView
+        ref={webRef}
+        // source={{ uri: previewUrl }}
+        source={{ uri: "http://169.254.109.67:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
+        originWhitelist={['*']}
+        javaScriptEnabled
+        domStorageEnabled
+        onMessage={onMessage}
+        startInLoadingState
+        renderLoading={() => (
+          <View style={styles.loader}>
+            <ActivityIndicator />
+          </View>
+        )}
+        style={styles.webview}
+      />
+    </SafeAreaView>
   );
 }
 
@@ -120,7 +129,7 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
   const canConnect = manualToken.trim().length > 0;
 
   return (
-    <SafeAreaView>
+    <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <BasicLayout>
           <View style={styles.titleContainer}>
@@ -129,10 +138,37 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
           </View>
 
           <ThemedText style={Margins.marginTop2X}>
-            Connect a Figma design to your phone and feel the bound haptics when
-            you tap on a component in the prototype preview — perfect for
-            reviewing UX before writing any code.
+            Connect a Figma design to your phone and feel haptics when
+            you tap on a component in the prototype preview.
           </ThemedText>
+
+          <Card style={Margins.marginTop4X}>
+            <ThemedText type="subtitle">How to connect Figma</ThemedText>
+            <Point index={1}>
+              <ThemedText>
+                Install the <ThemedText type="defaultSemiBold">Pulsar</ThemedText> plugin from the
+                Figma Community and run it on the design file you want to preview.
+              </ThemedText>
+            </Point>
+            <Point index={2}>
+              <ThemedText>
+                Select a component, pick a haptic preset and bind it. Repeat for
+                every element you want to feel in the prototype.
+              </ThemedText>
+            </Point>
+            <Point index={3}>
+              <ThemedText>
+                Open the plugin's <ThemedText type="defaultSemiBold">Live preview</ThemedText> tab
+                and tap <ThemedText type="defaultSemiBold">Show QR code</ThemedText>.
+              </ThemedText>
+            </Point>
+            <Point index={4}>
+              <ThemedText>
+                Scan the QR code (or paste the token above) - PulsarApp opens
+                straight on this screen with the preview loaded.
+              </ThemedText>
+            </Point>
+          </Card>
 
           <Card style={Margins.marginTop4X}>
             <ThemedText type="subtitle">Connect with a token</ThemedText>
@@ -161,44 +197,6 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
             />
           </Card>
 
-          <Card style={Margins.marginTop4X}>
-            <ThemedText type="subtitle">How to connect Figma</ThemedText>
-            <Point index={1}>
-              <ThemedText>
-                Install the <ThemedText type="defaultSemiBold">Pulsar</ThemedText> plugin from the
-                Figma Community and run it on the design file you want to preview.
-              </ThemedText>
-            </Point>
-            <Point index={2}>
-              <ThemedText>
-                Select a component, pick a haptic preset and bind it. Repeat for
-                every element you want to feel in the prototype.
-              </ThemedText>
-            </Point>
-            <Point index={3}>
-              <ThemedText>
-                Open the plugin&apos;s <ThemedText type="defaultSemiBold">Live preview</ThemedText> tab
-                and tap <ThemedText type="defaultSemiBold">Show QR code</ThemedText>.
-              </ThemedText>
-            </Point>
-            <Point index={4}>
-              <ThemedText>
-                Scan the QR code with your phone&apos;s camera — PulsarApp opens
-                straight on this screen and starts playing the bound haptics as
-                you tap components in the preview.
-              </ThemedText>
-            </Point>
-          </Card>
-
-          <Card style={Margins.marginTop4X}>
-            <ThemedText type="subtitle">Good to know</ThemedText>
-            <ThemedText style={Margins.marginTop2X}>
-              You don&apos;t need to pair the phone separately for Figma Live
-              Preview — the QR code (or the token above) carries everything
-              PulsarApp needs to fetch the design and play the right pattern
-              when you tap an element.
-            </ThemedText>
-          </Card>
         </BasicLayout>
       </ScrollView>
     </SafeAreaView>
@@ -206,6 +204,9 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   webContainer: { flex: 1, backgroundColor: '#fff' },
   webview: { flex: 1 },
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },

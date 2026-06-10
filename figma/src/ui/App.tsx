@@ -334,7 +334,11 @@ export default function App() {
           const dataUrl = await QRCode.toDataURL(appDeepLink, {
             margin: 1,
             width: 240,
-            errorCorrectionLevel: 'L'
+            errorCorrectionLevel: 'L',
+            // Match the docs Connection.tsx palette: navy modules on a blue-10
+            // background so the code visually merges into the .preview-qr-box
+            // panel below (which uses the same blue-10 fill).
+            color: { dark: '#001a72', light: '#e1f3fa' }
           });
           setShareQr(dataUrl);
         } catch {
