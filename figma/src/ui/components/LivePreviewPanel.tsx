@@ -39,6 +39,18 @@ export default function LivePreviewPanel({
         onChange={(e) => set('fileKeyOverride', e.target.value)}
       />
 
+      <div className="muted" style={{ fontSize: 'var(--fs-2xs)', marginTop: 8 }}>
+        Preview base URL override (optional) — point a production-built plugin
+        at a locally-hosted preview app. Leave empty to use the default
+        (https://docs.swmansion.com/figma-preview/).
+      </div>
+      <input
+        type="text"
+        placeholder="http://localhost:5173/"
+        value={settings.previewBaseUrlOverride}
+        onChange={(e) => set('previewBaseUrlOverride', e.target.value)}
+      />
+
       <div className="row" style={{ gap: 6, marginTop: 6 }}>
         <button className="primary" style={{ flex: 1 }} onClick={onShowLivePreview}>
           Show in live preview

@@ -18,15 +18,23 @@ type Tab = 'presets' | 'bound' | 'phone' | 'preview';
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
   compactLayout: false,
-  fileKeyOverride: ''
+  fileKeyOverride: '',
+  previewBaseUrlOverride: ''
 };
 
-// Live-preview web app URL. Pinned at build time: localhost while developing
-// the plugin (vite dev → import.meta.env.DEV === true), production host
-// otherwise. No longer user-configurable.
-const PREVIEW_BASE_URL = import.meta.env.DEV
+// Default live-preview app URL. Pinned at build time: localhost while
+// developing the plugin (vite dev → import.meta.env.DEV === true), production
+// host otherwise. The user can also override this per-install via
+// Settings → Live preview (Preview base URL override) — handy for pointing a
+// production-built plugin at a locally-hosted docs/preview instance.
+const DEFAULT_PREVIEW_BASE_URL = import.meta.env.DEV
   ? 'http://localhost:5173/'
   : 'https://docs.swmansion.com/figma-preview/';
+
+function resolvePreviewBaseUrl(override: string): string {
+  const trimmed = override.trim();
+  return trimmed.length > 0 ? trimmed : DEFAULT_PREVIEW_BASE_URL;
+}
 
 // Accept either a raw file key or a full Figma URL and return the key.
 function extractFileKey(input: string): string {
@@ -267,7 +275,7 @@ export default function App() {
       };
       // Strip any existing query/hash so we don't duplicate or stack tokens
       // when the user has manually visited the preview before.
-      const base = PREVIEW_BASE_URL.replace(/[?#].*$/, '');
+      const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
       let token: string;
       try {
         const existing = previewTokenRef.current;
@@ -327,7 +335,7 @@ export default function App() {
       })();
     });
     return off;
-  }, [settings.fileKeyOverride, presetById]);
+  }, [settings.fileKeyOverride, settings.previewBaseUrlOverride, presetById]);
 
   // Whether the pending preview-data response should open / copy / QR-encode the link.
   const previewActionRef = useRef<'open' | 'copy' | 'qr'>('open');

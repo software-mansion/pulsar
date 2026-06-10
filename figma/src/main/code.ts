@@ -21,7 +21,8 @@ const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 const DEFAULT_SETTINGS: Settings = {
   soundInEdit: true,
   compactLayout: false,
-  fileKeyOverride: ''
+  fileKeyOverride: '',
+  previewBaseUrlOverride: ''
 };
 
 figma.showUI(__html__, { width: 380, height: 640, themeColors: true });

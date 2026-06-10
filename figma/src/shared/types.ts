@@ -40,6 +40,10 @@ export type Settings = {
   // Optional manual file-key override, used when figma.fileKey is unavailable
   // (e.g. the plugin is not private / enablePrivatePluginApi is off).
   fileKeyOverride: string;
+  // Optional override for the live-preview app base URL. Empty string uses the
+  // built-in default (vite-dev → localhost:5173, prod → docs.swmansion.com).
+  // Useful for pointing a production-built plugin at a locally-hosted preview.
+  previewBaseUrlOverride: string;
 };
 
 // One bound node, as forwarded from the main thread to the UI when building the
