@@ -304,23 +304,35 @@ until then; don't assume the cache matches the latest schema.
 
 ## Audio playback
 
-### Plugin (`src/ui/audio/AudioPatternUtility.ts`)
+Both apps now play through the shared **`pulsar-haptics`** package (`web/Pulsar`)
+— the plugin's old hand-rolled `AudioPatternUtility` WebAudio renderer is gone.
 
-Hand-rolled WebAudio renderer that consumes `PresetData` directly. Sound is
-gated by `Settings.soundInEdit`. Keep it — it's tuned for the iOS Core
-Haptics shape.
+### Plugin (`src/ui/audio/player.ts`)
+
+Mirrors the preview's player. Wired via `file:../web/Pulsar` in the plugin's
+`package.json` (the preview uses `file:../../web/Pulsar` — different depth). In
+the Figma iframe there's no vibration API, so `Preset.play()` falls back to
+rendering the pattern as audio. Sound is still gated by `Settings.soundInEdit`
+(in `App.tsx`, not the player). The plugin's `playPreset(id, data)` caches a
+`Preset` per binding **id**.
 
 ### Preview (`src/audio/player.ts`)
 
-Uses **`pulsar-haptics`** from `web/Pulsar`. Wired via `file:../../web/Pulsar`
-in `package.json`. The `pulsar-haptics` `HapticPattern` is segment-based, not
-the iOS shape, so there's an adapter `toHapticPattern(data)` that converts:
+Same package; `playPreset(data)` caches per binding **name**.
+
+### The adapter (kept in both players, in sync)
+
+`pulsar-haptics`' `HapticPattern` is segment-based, not the iOS Core Haptics
+shape, so `toHapticPattern(data)` converts:
 
 - each `discretePattern` point → short (30 ms) "continuous" segment.
-- continuous envelope → one "line" segment spanning the duration.
+- continuous envelope → one "line" segment spanning the duration (its
+  `amplitude`/`frequency` points are `{ time, value }`, identical to the
+  package's `HapticValuePoint`, so they pass straight through).
 
-Lossy by design. If you want bit-identical audio to the plugin, push the
-discrete/continuous shape into `web/Pulsar` and drop the adapter.
+Lossy by design (the web SDK doesn't expose the iOS shape natively). If you want
+bit-identical audio, push the discrete/continuous shape into `web/Pulsar` and
+drop the adapter. Edit `toHapticPattern` in **both** players to keep them in sync.
 
 `presets.has(data.name)` shortcuts the adapter when a figma binding name
 happens to match a built-in pulsar-haptics preset (rare — different

@@ -13,7 +13,7 @@ import PhonePanel, { broadcastToPhone } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
 import PulsarLogo from './components/PulsarLogo';
 import ResizeHandle from './components/ResizeHandle';
-import { playPreset, stopAll } from './audio/AudioPatternUtility';
+import { playPreset, stopAll } from './audio/player';
 import iconLayoutFull from './assets/icon-layout-full.svg';
 import iconLayoutCompact from './assets/icon-layout-compact.svg';
 import iconArrowUp from './assets/icon-arrow-up.svg';
