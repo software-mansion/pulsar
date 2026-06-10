@@ -10,6 +10,7 @@ import { Header } from './components/Header';
 import { PrototypeView } from './components/PrototypeView';
 import { HapticList } from './components/HapticList';
 import { PresetDetailsModal } from './components/PresetDetailsModal';
+import fullscreenExitIcon from './assets/icon-fullscreen-exit.svg';
 
 const ACTIVE_MS = 900;
 const TAP_DEBOUNCE_MS = 250;
@@ -293,15 +294,7 @@ export default function App() {
       {/* Manual fullscreen on desktop can be exited; mobile fullscreen is implicit. */}
       {isFullscreen && !isMobile && (
         <button className="exit-fs" onClick={exitFullscreen} title="Exit fullscreen (Esc)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M9 4H4v5M20 9V4h-5M9 20H4v-5M20 15v5h-5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <img src={fullscreenExitIcon} alt="" width={16} height={16} />
         </button>
       )}
     </>

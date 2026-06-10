@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { PresetData } from '../types';
+import closeIcon from '../assets/icon-close.svg';
 
 // Order chosen to match the docs SDK overview page.
 const LANGS = ['Swift', 'Android', 'KMP', 'React Native', 'Flutter', 'Web'] as const;
@@ -303,14 +304,7 @@ export function PresetDetailsModal({
             {elementName && <div className="modal-subtitle">on {elementName}</div>}
           </div>
           <button className="modal-close" onClick={onClose} title="Close (Esc)" aria-label="Close">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M6 6l12 12M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
+            <img src={closeIcon} alt="" width={14} height={14} />
           </button>
         </header>
 
