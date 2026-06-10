@@ -70,9 +70,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/pulsar-org/pulsar-haptics.git"
+    "url": "https://github.com/software-mansion/pulsar"
   },
   "bugs": {
-    "url": "https://github.com/pulsar-org/pulsar-haptics/issues"
+    "url": "https://github.com/software-mansion/pulsar/issues"
   }
 }
