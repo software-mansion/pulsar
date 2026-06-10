@@ -27,6 +27,27 @@ const MASTER_GAIN = 0.7;
 const ATTACK_SECONDS = 0.002;
 const RELEASE_SECONDS = 0.02;
 
+// Lowpass filter shaping the whole mix. Mirrors the documentation reference
+// implementation (docs/.../Preset/audio-player.ts) so the web preview matches
+// the source-of-truth timbre instead of sounding bright and buzzy.
+const FILTER_FREQUENCY = 700;
+const FILTER_Q = 5;
+
+// Component waves summed per vibration interval. These mirror the continuous
+// synthesis in the documentation reference (`generateContinuousAudioConfig`):
+// a sustained vibration block layers a sine fundamental, a quiet low sub, and a
+// sine at the base frequency. `frequencyScale` and `volumeScale` correspond to
+// the reference `createComponentWave(amplitudeModifier, frequencyModifier, type)`.
+const COMPONENT_WAVES = [
+  { frequencyScale: 0.8, volumeScale: 0.6, waveform: "sine" },
+  { frequencyScale: 0.4, volumeScale: 0.2, waveform: "triangle" },
+  { frequencyScale: 1, volumeScale: 0.5, waveform: "sine" },
+] as const satisfies readonly {
+  frequencyScale: number;
+  volumeScale: number;
+  waveform: OscillatorType;
+}[];
+
 class AudioGenerator {
   private readonly timingCapabilities = getHapticTimingCapabilities();
   private readonly patternComposer = new PatternComposer();
@@ -167,8 +188,8 @@ class AudioGenerator {
 
     const filterNode = offlineContext.createBiquadFilter();
     filterNode.type = "lowpass";
-    filterNode.frequency.setValueAtTime(900, offlineContext.currentTime);
-    filterNode.Q.setValueAtTime(1.2, offlineContext.currentTime);
+    filterNode.frequency.setValueAtTime(FILTER_FREQUENCY, offlineContext.currentTime);
+    filterNode.Q.setValueAtTime(FILTER_Q, offlineContext.currentTime);
     filterNode.connect(masterGain);
 
     for (const interval of intervals) {
@@ -186,26 +207,17 @@ class AudioGenerator {
     const normalizedDuration = this.normalizeIntervalDuration(interval.duration);
     const baseFrequency = this.lerp(220, 95, normalizedDuration);
     const volume = this.lerp(0.14, 0.42, normalizedDuration);
-    const harmonicConfigs = [
-      { multiplier: 1, volumeScale: 1, waveform: "sine" },
-      { multiplier: 1.5, volumeScale: 0.35, waveform: "triangle" },
-      { multiplier: 0.5, volumeScale: 0.2, waveform: "sine" },
-    ] as const satisfies readonly {
-      multiplier: number;
-      volumeScale: number;
-      waveform: OscillatorType;
-    }[];
 
-    for (const harmonicConfig of harmonicConfigs) {
+    for (const componentWave of COMPONENT_WAVES) {
       const oscillator = offlineContext.createOscillator();
-      oscillator.type = harmonicConfig.waveform;
+      oscillator.type = componentWave.waveform;
       oscillator.frequency.setValueAtTime(
-        baseFrequency * harmonicConfig.multiplier,
+        baseFrequency * componentWave.frequencyScale,
         interval.start / 1000,
       );
 
       const gainNode = offlineContext.createGain();
-      this.applyEnvelope(gainNode, interval, volume * harmonicConfig.volumeScale);
+      this.applyEnvelope(gainNode, interval, volume * componentWave.volumeScale);
 
       oscillator.connect(gainNode);
       gainNode.connect(targetNode);
