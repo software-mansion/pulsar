@@ -4,7 +4,6 @@ import { usePathname } from 'expo-router';
 
 import { HapticTab } from '@/components/haptic-tab';
 import SvgIcon from '@/components/SvgIcon';
-import FigmaTabIcon from '@/components/FigmaTabIcon';
 import { useStoreReview } from '@/contexts/StoreReviewContext';
 
 export default function TabLayout() {
@@ -55,7 +54,7 @@ export default function TabLayout() {
         name="figma"
         options={{
           title: 'Figma',
-          tabBarIcon: ({ focused }) => <FigmaTabIcon state={focused ? 'active' : 'default'} />,
+          tabBarIcon: ({ focused }) => <SvgIcon iconName="figma" state={focused ? 'active' : 'default'} />,
         }}
       />
       {/* <Tabs.Screen

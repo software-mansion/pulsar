@@ -4,13 +4,15 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
+import type { Pattern } from 'react-native-pulsar';
+
 import { FIGMA_PREVIEW_URL } from '@/constants/Connection';
-import { playPattern } from '@/src/haptics/playPattern';
+import { usePlayPatternFromHost } from '@/src/haptics/playPattern';
 import { ThemedText } from '@/components/themed-text';
 import BasicLayout from '@/components/BasicLayout';
 import Card from '@/components/Card';
 import Point from '@/components/Point';
-import FigmaTabIcon from '@/components/FigmaTabIcon';
+import SvgIcon from '@/components/SvgIcon';
 import { Margins } from '@/constants/theme';
 
 // Figma tab. Two modes:
@@ -42,17 +44,24 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   }, [token]);
 
   const webRef = useRef<WebView>(null);
+  const playFromHost = usePlayPatternFromHost();
 
   const onMessage = (event: WebViewMessageEvent) => {
-    // Messages from the embedded preview. Currently the only message we expect
-    // is { type: 'play-preset', presetName: '...' } — anything else is ignored.
+    // Messages from the embedded preview. We expect
+    //   { type: 'play-preset', presetName: '...', pattern?: Pattern }
+    // - For built-in presets (TickTock, DogBark, …) the host resolves the name
+    //   via react-native-pulsar's Presets and plays the tuned haptic.
+    // - For custom (user-defined) presets the name won't match anything, so
+    //   the host falls back to PatternComposer.parse() + .play() on the pattern
+    //   carried in the same message.
     try {
       const data = JSON.parse(event.nativeEvent.data) as {
         type?: string;
         presetName?: string;
+        pattern?: Pattern;
       };
       if (data.type === 'play-preset' && typeof data.presetName === 'string') {
-        playPattern(data.presetName);
+        playFromHost(data.presetName, data.pattern);
       }
     } catch {
       // Non-JSON messages aren't ours; swallow.
@@ -60,24 +69,22 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   };
 
   return (
-    <SafeAreaView style={styles.webContainer} edges={['bottom']}>
-      <WebView
-        ref={webRef}
-        // source={{ uri: previewUrl }}
-        source={{ uri: "http://169.254.201.130:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
-        originWhitelist={['*']}
-        javaScriptEnabled
-        domStorageEnabled
-        onMessage={onMessage}
-        startInLoadingState
-        renderLoading={() => (
-          <View style={styles.loader}>
-            <ActivityIndicator />
-          </View>
-        )}
-        style={styles.webview}
-      />
-    </SafeAreaView>
+    <WebView
+      ref={webRef}
+      // source={{ uri: previewUrl }}
+      source={{ uri: "http://169.254.70.111:5173/?token=f8bceab464a398a68b3f9cb43e79ea9c5a005acedc6b5c88c9898fbabbd0968c" }}
+      originWhitelist={['*']}
+      javaScriptEnabled
+      domStorageEnabled
+      onMessage={onMessage}
+      startInLoadingState
+      renderLoading={() => (
+        <View style={styles.loader}>
+          <ActivityIndicator />
+        </View>
+      )}
+      style={styles.webview}
+    />
   );
 }
 
@@ -88,7 +95,7 @@ function FigmaExplainer() {
         <BasicLayout>
           <View style={styles.titleContainer}>
             <ThemedText type="title">Figma Live Preview</ThemedText>
-            <FigmaTabIcon state="active" size={42} />
+            <SvgIcon iconName="figma" state="active" size={42} />
           </View>
 
           <ThemedText style={Margins.marginTop2X}>

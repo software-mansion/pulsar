@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Icon, IconName } from './Icon';
 
 interface SvgIconProps {
-  iconName: Extract<IconName, 'home' | 'list' | 'brush' | 'sparkles'>;
+  iconName: Extract<IconName, 'home' | 'list' | 'brush' | 'sparkles' | 'figma'>;
   state?: 'active' | 'default';
   size?: number;
 }

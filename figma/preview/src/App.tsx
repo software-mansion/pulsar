@@ -119,14 +119,19 @@ export default function App() {
     activeTimer.current = window.setTimeout(() => setActiveId(''), ACTIVE_MS);
   }, []);
 
-  // When the preview is loaded inside the PulsarApp WebView the URL carries
-  // `?host=app`. In that mode we skip the in-page audio fallback and instead
-  // postMessage the preset name to the native host, which plays the real
-  // device haptic via react-native-pulsar.
+  // When the preview is loaded inside the PulsarApp WebView the
+  // `window.ReactNativeWebView` global is injected by react-native-webview.
+  // That single check is authoritative: if it's present we postMessage the
+  // preset payload to the native host (which plays the real device haptic via
+  // react-native-pulsar); if it isn't, we fall back to the in-page audio
+  // generator. We always send the full pattern so the host can fall back to
+  // PatternComposer for custom (user-defined) presets whose names don't match
+  // anything in react-native-pulsar.Presets. (We used to also gate on a
+  // `?host=app` URL param, but that's redundant with the bridge check and
+  // broke whenever someone hardcoded the preview URL in PulsarApp for local
+  // dev.)
   const isAppHost = useMemo(
-    () =>
-      new URLSearchParams(location.search).get('host') === 'app' &&
-      typeof (window as any).ReactNativeWebView !== 'undefined',
+    () => typeof (window as any).ReactNativeWebView !== 'undefined',
     []
   );
 
@@ -137,7 +142,17 @@ export default function App() {
       if (isAppHost) {
         try {
           (window as any).ReactNativeWebView.postMessage(
-            JSON.stringify({ type: 'play-preset', presetName: data.name })
+            JSON.stringify({
+              type: 'play-preset',
+              presetName: data.name,
+              // PresetData's discrete/continuous shape is structurally identical
+              // to react-native-pulsar's Pattern type — see
+              // react-native/react-native-pulsar/src/types.ts.
+              pattern: {
+                discretePattern: data.discretePattern,
+                continuousPattern: data.continuousPattern
+              }
+            })
           );
         } catch {
           // If the bridge isn't there for some reason, fall through to audio.
