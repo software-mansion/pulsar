@@ -114,8 +114,14 @@ The web audio simulation intentionally follows the same timing that actual web h
 Design choice:
 
 - it first uses `PatternComposer.parse()` to get the final vibration timeline
-- then it converts the resulting "on" windows into short tonal audio bursts
+- then it gates a single fixed buzz across the resulting "on" windows
 - this keeps audio preview aligned with actual web haptic playback
+
+Core constraint (must not be violated):
+
+- web haptics drive the vibration motor at one **fixed frequency** and one **fixed amplitude**; `navigator.vibrate` can only control *when* the motor is on
+- so every "on" window is rendered with the exact same carrier frequency (`CARRIER_FREQUENCY_HZ`), the same amplitude (`PULSE_VOLUME`), and the same fixed harmonic timbre (`BUZZ_HARMONICS`)
+- `renderInterval` must never derive pitch or loudness from a window's duration — intensity and frequency are expressed purely through the PWM timing (longer shots feel stronger, tighter shots feel buzzier), exactly as the real web haptic does
 
 Current public methods:
 
