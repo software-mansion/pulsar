@@ -41,7 +41,11 @@ export default function LivePreviewPanel({
   onCopyShareToken,
   onShowQrCode,
   qrDataUrl,
-  onClearQr
+  onClearQr,
+  figmaConnected,
+  connecting,
+  onConnectFigma,
+  onDisconnectFigma
 }: {
   settings: Settings;
   onChange: (next: Settings) => void;
@@ -53,6 +57,12 @@ export default function LivePreviewPanel({
   onShowQrCode: () => void;
   qrDataUrl: string | null;
   onClearQr: () => void;
+  // When connected, the preview reads haptics straight from the Figma file via
+  // the REST API instead of a server-stored payload — see App.tsx design-data path.
+  figmaConnected: boolean;
+  connecting: boolean;
+  onConnectFigma: () => void;
+  onDisconnectFigma: () => void;
 }) {
   const sync = SYNC_META[syncStatus];
   return (
@@ -63,6 +73,43 @@ export default function LivePreviewPanel({
           Open the current design in the standalone preview app and feel the
           bound haptics when you tap an element.
         </p>
+      </div>
+
+      {/* Connect Figma: opt into reading haptics directly from the design file
+          (REST API) instead of publishing a payload to the server. One-time per
+          Figma account; viewers of the shared link still need no login. */}
+      <div className="preview-connect-row">
+        <span className="preview-sync-pill" title="Whether this plugin can read the design file directly">
+          <span
+            className={`preview-sync-dot${connecting ? ' pulse' : ''}`}
+            style={{ background: figmaConnected ? '#1ea672' : 'var(--color-blue-20)' }}
+          />
+          <span>
+            {connecting
+              ? 'Connecting to Figma…'
+              : figmaConnected
+                ? 'Reading from design'
+                : 'Not connected to Figma'}
+          </span>
+        </span>
+        {figmaConnected ? (
+          <button
+            className="ghost preview-sync-now"
+            onClick={onDisconnectFigma}
+            title="Stop reading from the design file (revert to the share-link payload)"
+          >
+            Disconnect
+          </button>
+        ) : (
+          <button
+            className="ghost preview-sync-now"
+            onClick={onConnectFigma}
+            disabled={connecting}
+            title="Authorize Pulsar to read this file's haptics directly from Figma"
+          >
+            {connecting ? 'Waiting…' : 'Connect Figma'}
+          </button>
+        )}
       </div>
 
       {/* Sync status: a coloured-dot pill plus an on-demand "Sync now" button.

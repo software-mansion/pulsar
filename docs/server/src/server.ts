@@ -1,16 +1,17 @@
 import { PORT } from './config';
 import { createApp } from './app';
 import { ensureFigmaProjectsTable } from './figma-projects';
+import { ensureFigmaOAuthTables } from './figma-oauth';
 
 const { server } = createApp();
 
-// Create the figma_projects table before accepting traffic. Fail fast on error
-// so the orchestrator restarts us (and retries) rather than serving requests
-// against a missing table after a transient DB hiccup at boot.
-ensureFigmaProjectsTable()
+// Create the figma_projects + OAuth tables before accepting traffic. Fail fast
+// on error so the orchestrator restarts us (and retries) rather than serving
+// requests against a missing table after a transient DB hiccup at boot.
+Promise.all([ensureFigmaProjectsTable(), ensureFigmaOAuthTables()])
   .then(() => start())
   .catch((err) => {
-    console.error('Failed to initialize figma_projects table:', err);
+    console.error('Failed to initialize database tables:', err);
     process.exit(1);
   });
 

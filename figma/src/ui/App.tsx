@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import PRESETS from './presets-data';
-import { CUSTOM_TAG, type BoundItem, type CatalogEntry, type SelectionInfo, type Settings } from '../shared/types';
+import { CUSTOM_TAG, type BoundItem, type CatalogEntry, type PreviewPurpose, type SelectionInfo, type Settings } from '../shared/types';
 import { onMessage, send } from './figmaBridge';
 import Filters, { applyFilter, useFilterStateInit, type FilterState } from './components/Filters';
 import PresetCard from './components/PresetCard';
@@ -149,6 +149,48 @@ function stableStringify(value: unknown): string {
   return JSON.stringify(norm(value));
 }
 
+// Turn a resolved preview link into the artifact the user asked for: copy the
+// link, copy the raw token/fileKey, render a QR of the app deep-link, or open
+// the link in the browser. Shared by both the token/DB path and the
+// design-data (OAuth) path so the delivery behaviour stays identical.
+async function deliverShare(
+  purpose: PreviewPurpose,
+  artifacts: { url: string; appDeepLink: string; rawCopyValue: string },
+  setShareQr: (v: string | null) => void
+): Promise<void> {
+  const { url, appDeepLink, rawCopyValue } = artifacts;
+  if (purpose === 'copy') {
+    const ok = copyToClipboard(url);
+    send({
+      type: 'notify',
+      message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
+    });
+  } else if (purpose === 'copy-token') {
+    const ok = copyToClipboard(rawCopyValue);
+    send({
+      type: 'notify',
+      message: ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.'
+    });
+  } else if (purpose === 'qr') {
+    try {
+      const dataUrl = await QRCode.toDataURL(appDeepLink, {
+        margin: 1,
+        width: 240,
+        errorCorrectionLevel: 'L',
+        // Match the docs Connection.tsx palette: navy modules on a blue-10
+        // background so the code visually merges into the .preview-qr-box panel.
+        color: { dark: '#001a72', light: '#e1f3fa' }
+      });
+      setShareQr(dataUrl);
+    } catch {
+      setShareQr(null);
+      send({ type: 'notify', message: 'Could not generate a QR code for the share link.' });
+    }
+  } else {
+    send({ type: 'open-external', url });
+  }
+}
+
 // Clipboard inside the Figma plugin iframe: navigator.clipboard is often blocked,
 // so fall back to a temporary textarea + execCommand('copy').
 function copyToClipboard(text: string): boolean {
@@ -171,6 +213,19 @@ function copyToClipboard(text: string): boolean {
 export default function App() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [hapticsToken, setHapticsToken] = useState<string | null>(null);
+
+  // --- Figma OAuth (design-data preview path) ---------------------------
+  // The Figma user id that authorized reading this file's design data, or null
+  // when not connected. The ref mirror is read inside the preview-data handler
+  // (set once on mount) so it always sees the latest value without re-subscribing.
+  const [figmaUser, setFigmaUser] = useState<string | null>(null);
+  const figmaUserRef = useRef<string | null>(null);
+  useEffect(() => {
+    figmaUserRef.current = figmaUser;
+  }, [figmaUser]);
+  const [connecting, setConnecting] = useState(false);
+  // The state nonce of the in-flight connect handshake, and its poll timer.
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // --- Per-file server-sync state ---------------------------------------
   // The file we're editing. Tokens + cached config are keyed by this so a
@@ -220,6 +275,7 @@ export default function App() {
         setHapticsToken(m.hapticsToken);
         setFavourites(new Set(m.favourites));
         setCustomPresets(m.customPresets ?? []);
+        setFigmaUser(m.figmaUser ?? null);
         // Resolve this file's key and pull its persisted token + cached config.
         const fk =
           m.fileKey ?? (m.settings.fileKeyOverride ? extractFileKey(m.settings.fileKeyOverride) : '');
@@ -398,6 +454,52 @@ export default function App() {
       }
       fileKeyRef.current = fileKey;
 
+      // --- Design-data path -------------------------------------------------
+      // When the designer has connected Figma, the haptics already live in the
+      // file's shared plugin data, so there's no payload to publish to the DB.
+      // We only register which grant can read this file, then hand out a
+      // ?file= link; the preview reads the design straight from Figma via REST.
+      if (figmaUserRef.current) {
+        if (m.bindings.length === 0) {
+          if (silent || purpose === 'sync') {
+            setSyncStatus('synced');
+            return;
+          }
+          send({ type: 'notify', message: 'No haptic bindings on this page yet.' });
+          return;
+        }
+        void runExclusive(async () => {
+          setSyncStatus('syncing');
+          try {
+            const res = await fetch(
+              `${API_SERVER_URL}/figma-file-grant/${encodeURIComponent(fileKey)}`,
+              {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ figmaUser: figmaUserRef.current })
+              }
+            );
+            if (!res.ok) throw new Error(`Server responded ${res.status}`);
+          } catch (err) {
+            setSyncStatus('error');
+            if (!silent) {
+              send({
+                type: 'notify',
+                message: `Could not register the file for preview: ${(err as Error).message}`
+              });
+            }
+            return;
+          }
+          setSyncStatus('synced');
+          if (purpose === 'autosync' || purpose === 'sync') return;
+          const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
+          const url = `${base}?file=${encodeURIComponent(fileKey)}`;
+          const appDeepLink = `pulsarapp://figma?file=${encodeURIComponent(fileKey)}`;
+          await deliverShare(purpose, { url, appDeepLink, rawCopyValue: fileKey }, setShareQr);
+        });
+        return;
+      }
+
       const bindings: Record<string, unknown> = {};
       // owner maps every node id (a bound node and its descendants) to the bound
       // node it belongs to, so a tap on a child resolves to the right element.
@@ -552,43 +654,7 @@ export default function App() {
         // app's deep-link scheme instead of the web URL so it routes straight
         // into the in-app Figma WebView screen.
         const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(token)}`;
-        if (purpose === 'copy') {
-          const ok = copyToClipboard(url);
-          send({
-            type: 'notify',
-            message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
-          });
-        } else if (purpose === 'copy-token') {
-          // Just the raw token — handy for pasting into other figma-preview URLs
-          // (e.g. a local dev instance), debugging, or sharing the token by itself
-          // without a particular host.
-          const ok = copyToClipboard(token);
-          send({
-            type: 'notify',
-            message: ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.'
-          });
-        } else if (purpose === 'qr') {
-          try {
-            const dataUrl = await QRCode.toDataURL(appDeepLink, {
-              margin: 1,
-              width: 240,
-              errorCorrectionLevel: 'L',
-              // Match the docs Connection.tsx palette: navy modules on a blue-10
-              // background so the code visually merges into the .preview-qr-box
-              // panel below (which uses the same blue-10 fill).
-              color: { dark: '#001a72', light: '#e1f3fa' }
-            });
-            setShareQr(dataUrl);
-          } catch {
-            setShareQr(null);
-            send({
-              type: 'notify',
-              message: 'Could not generate a QR code for the share link.'
-            });
-          }
-        } else {
-          send({ type: 'open-external', url });
-        }
+        await deliverShare(purpose, { url, appDeepLink, rawCopyValue: token }, setShareQr);
       });
     });
     return off;
@@ -612,6 +678,69 @@ export default function App() {
     send({ type: 'request-preview-data', purpose: 'sync' });
   };
 
+  // --- Figma OAuth connect / disconnect --------------------------------
+  const stopPolling = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  };
+  // Clear the poll timer if the component unmounts mid-handshake.
+  useEffect(() => stopPolling, []);
+
+  const connectFigma = () => {
+    if (connecting) return;
+    // A random nonce ties this plugin session's poll to the browser callback.
+    const state =
+      (typeof crypto !== 'undefined' && crypto.randomUUID && crypto.randomUUID()) ||
+      `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setConnecting(true);
+    // The backend /figma-auth/login bounces to Figma's consent screen (keeps
+    // the client id + redirect uri server-side). Opens in the user's browser.
+    send({
+      type: 'open-external',
+      url: `${API_SERVER_URL}/figma-auth/login?state=${encodeURIComponent(state)}`
+    });
+    // Poll for completion. Auth codes expire in 30s, but the designer may take a
+    // moment to click Allow — give the whole handshake ~5 minutes before bailing.
+    let attempts = 0;
+    stopPolling();
+    pollTimerRef.current = setInterval(async () => {
+      attempts += 1;
+      if (attempts > 150) {
+        stopPolling();
+        setConnecting(false);
+        send({ type: 'notify', message: 'Figma connection timed out — try again.' });
+        return;
+      }
+      try {
+        const res = await fetch(
+          `${API_SERVER_URL}/figma-auth/status?state=${encodeURIComponent(state)}`
+        );
+        const data = (await res.json().catch(() => null)) as
+          | { connected?: boolean; figmaUser?: string | null }
+          | null;
+        if (data?.connected && data.figmaUser) {
+          stopPolling();
+          setConnecting(false);
+          setFigmaUser(data.figmaUser);
+          send({ type: 'persist-figma-connection', figmaUser: data.figmaUser });
+          send({ type: 'notify', message: 'Figma connected — preview reads straight from the design.' });
+        }
+      } catch {
+        // Network blip — keep polling until the attempt budget runs out.
+      }
+    }, 2000);
+  };
+
+  const disconnectFigma = () => {
+    stopPolling();
+    setConnecting(false);
+    setFigmaUser(null);
+    send({ type: 'persist-figma-connection', figmaUser: null });
+    send({ type: 'notify', message: 'Figma disconnected. Preview falls back to the share link.' });
+  };
+
   const filtered = useMemo(() => {
     const base = applyFilter(allPresets, filter);
     return favouritesOnly ? base.filter((e) => favourites.has(e.id)) : base;
@@ -632,6 +761,10 @@ export default function App() {
       binding: {
         presetId: e.id,
         presetName: e.data.name,
+        // Always attach the fully-resolved pattern so the plugin can mirror it
+        // into the file's shared plugin data — that's what lets the preview
+        // read the haptic straight from the design (no DB / preset catalog).
+        presetData: e.data,
         ...(e.category === 'custom' ? { customPattern: e.data } : {})
       }
     });
@@ -855,6 +988,10 @@ export default function App() {
           onShowQrCode={showQrCode}
           qrDataUrl={shareQr}
           onClearQr={() => setShareQr(null)}
+          figmaConnected={figmaUser !== null}
+          connecting={connecting}
+          onConnectFigma={connectFigma}
+          onDisconnectFigma={disconnectFigma}
         />
       )}
 

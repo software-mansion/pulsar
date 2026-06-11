@@ -1,6 +1,17 @@
 import { Router, Request, Response } from 'express';
 import { ConnectionManager } from './connection-manager';
 import { createFigmaProject, getFigmaProject, updateFigmaProject } from './figma-projects';
+import { isFigmaOAuthConfigured } from './config';
+import {
+  buildAuthorizeUrl,
+  exchangeCodeForTokens,
+  upsertGrant,
+  markPendingComplete,
+  readPending,
+  mapFileToUser,
+  getAccessTokenForFile,
+} from './figma-oauth';
+import { fetchPreviewPayload } from './figma-design';
 
 interface BroadcastBody {
   message: string;
@@ -133,6 +144,122 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     } catch (err) {
       console.error('getFigmaProject failed:', err);
       res.status(500).json({ success: false, error: 'Failed to fetch figma project' });
+    }
+  });
+
+  // --- Figma OAuth: read haptics straight from the design file --------------
+  // The designer authenticates once; the backend keeps their refresh token; the
+  // preview reads the file with it so viewers stay anonymous. See figma-oauth.ts.
+
+  // Reject the whole OAuth surface cleanly when env isn't configured, so a
+  // partial deploy returns 503 instead of throwing on a missing client secret.
+  function requireOAuth(res: Response): boolean {
+    if (isFigmaOAuthConfigured()) return true;
+    res.status(503).json({ success: false, error: 'Figma OAuth is not configured' });
+    return false;
+  }
+
+  // Step 1: the plugin opens this in a browser. We bounce to Figma's consent
+  // screen, carrying the plugin-generated `state` so the callback + poll match.
+  router.get('/figma-auth/login', (req: Request, res: Response) => {
+    if (!requireOAuth(res)) return;
+    const state = typeof req.query.state === 'string' ? req.query.state : '';
+    if (!state) {
+      res.status(400).send('Missing state');
+      return;
+    }
+    res.redirect(buildAuthorizeUrl(state));
+  });
+
+  // Step 2: Figma redirects here after the designer clicks Allow. Exchange the
+  // (30s-lived) code for tokens, store the grant, and mark the handshake done.
+  router.get('/figma-auth/callback', async (req: Request, res: Response) => {
+    if (!requireOAuth(res)) return;
+    const code = typeof req.query.code === 'string' ? req.query.code : '';
+    const state = typeof req.query.state === 'string' ? req.query.state : '';
+    if (!code || !state) {
+      res.status(400).send('Missing code or state');
+      return;
+    }
+    try {
+      const tokens = await exchangeCodeForTokens(code);
+      const figmaUser = tokens.user_id;
+      if (!figmaUser) throw new Error('Figma token response had no user_id');
+      await upsertGrant(figmaUser, tokens.refresh_token);
+      await markPendingComplete(state, figmaUser);
+      res
+        .status(200)
+        .send(
+          '<!doctype html><meta charset="utf-8"><title>Connected</title>' +
+            '<body style="font-family:sans-serif;padding:2rem;text-align:center">' +
+            '<h2>Figma connected ✓</h2><p>You can close this tab and return to the plugin.</p></body>',
+        );
+    } catch (err) {
+      console.error('figma-auth callback failed:', err);
+      res.status(502).send('Figma authentication failed. Close this tab and try again.');
+    }
+  });
+
+  // Step 3: the plugin polls this until the callback lands. Returns only a
+  // boolean + the connected user id — never the tokens.
+  router.get('/figma-auth/status', async (req: Request, res: Response) => {
+    if (!requireOAuth(res)) return;
+    const state = typeof req.query.state === 'string' ? req.query.state : '';
+    if (!state) {
+      res.status(400).json({ success: false, error: 'Missing state' });
+      return;
+    }
+    try {
+      const figmaUser = await readPending(state);
+      res.json({ success: true, connected: figmaUser !== null, figmaUser });
+    } catch (err) {
+      console.error('figma-auth status failed:', err);
+      res.status(500).json({ success: false, error: 'Failed to read auth status' });
+    }
+  });
+
+  // Step 4: when the designer shares a file, record which grant can read it so
+  // the anonymous preview can later be resolved by fileKey alone.
+  router.put(
+    '/figma-file-grant/:fileKey',
+    async (req: Request<{ fileKey: string }, {}, { figmaUser?: string }>, res: Response) => {
+      if (!requireOAuth(res)) return;
+      const { fileKey } = req.params;
+      const figmaUser = req.body?.figmaUser;
+      if (!figmaUser) {
+        res.status(400).json({ success: false, error: 'figmaUser is required' });
+        return;
+      }
+      try {
+        await mapFileToUser(fileKey, figmaUser);
+        res.json({ success: true });
+      } catch (err) {
+        console.error('figma-file-grant failed:', err);
+        res.status(500).json({ success: false, error: 'Failed to map file to grant' });
+      }
+    },
+  );
+
+  // Step 5: the preview calls this with just a fileKey. We read the live file
+  // with the owning grant's token and rebuild the preview payload from the
+  // haptics stored in the design. Shape matches GET /figma-project/:token so
+  // the preview's loader is identical.
+  router.get('/figma-design/:fileKey', async (req: Request<{ fileKey: string }>, res: Response) => {
+    if (!requireOAuth(res)) return;
+    const { fileKey } = req.params;
+    try {
+      const accessToken = await getAccessTokenForFile(fileKey);
+      if (!accessToken) {
+        return res.status(404).json({ success: false, error: 'File not shared or grant missing' });
+      }
+      const payload = await fetchPreviewPayload(fileKey, accessToken);
+      if (!payload) {
+        return res.status(502).json({ success: false, error: 'Could not read file from Figma' });
+      }
+      res.json({ success: true, config: payload });
+    } catch (err) {
+      console.error('figma-design read failed:', err);
+      res.status(500).json({ success: false, error: 'Failed to read figma design' });
     }
   });
 

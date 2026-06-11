@@ -32,6 +32,12 @@ export interface BindingMeta {
   presetName: string;
   // Optional inlined custom JSON (when the user pastes a custom pattern).
   customPattern?: PresetData;
+  // Fully-resolved preset pattern, attached so the binding can be mirrored into
+  // the file's *shared* plugin data at bind time. That lets the server read the
+  // whole haptic straight from the design via the REST API — no preset catalog
+  // needed server-side, no DB payload. For built-in presets the UI resolves
+  // this from its catalog; for custom presets it equals customPattern.
+  presetData?: PresetData;
 }
 
 export type Settings = {
@@ -121,6 +127,10 @@ export type UiToMain =
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
   | { type: 'open-external'; url: string }
+  // Persist (in clientStorage) the Figma OAuth connection result so the plugin
+  // remembers across sessions which Figma user authorized the design-data
+  // preview path. null clears it (disconnect).
+  | { type: 'persist-figma-connection'; figmaUser: string | null }
   | { type: 'resize'; width: number; height: number; commit?: boolean }
   | { type: 'notify'; message: string };
 
@@ -136,6 +146,10 @@ export type MainToUi =
       fileKey: string | null;
       favourites: string[];
       customPresets: CatalogEntry[];
+      // The Figma user id that previously authorized the design-data preview
+      // path (via OAuth), or null when not connected. Drives the "Connect
+      // Figma" / "Connected ✓" state in the Live preview tab.
+      figmaUser: string | null;
     }
   | { type: 'selection'; node: SelectionInfo | null }
   | { type: 'play-preset'; presetId: string } // emitted when a bound node is clicked in editor

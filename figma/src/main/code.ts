@@ -39,6 +39,19 @@ const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 const WINDOW_SIZE_KEY = 'pulsar:windowSize';
+// clientStorage record of which Figma user authorized the design-data preview
+// path (OAuth). Just an id for UI state; the refresh token lives only on the
+// server (see docs/server/src/figma-oauth.ts).
+const FIGMA_CONNECTION_KEY = 'pulsar:figmaConnection';
+
+// Shared-plugin-data namespace + key. Unlike BINDING_KEY (private plugin data,
+// used by the editor UI), shared plugin data is readable through the Figma REST
+// API with `?plugin_data=shared`. We mirror the full resolved preset here at
+// bind time so the standalone preview can read the haptic straight from the
+// design file — no server-side preset catalog, no DB payload. Must match
+// FIGMA_SHARED_NAMESPACE in docs/server/src/config.ts.
+const SHARED_NS = 'pulsar';
+const SHARED_BINDING_KEY = 'binding';
 
 const DEFAULT_SIZE = { width: 380, height: 640 };
 // Clamp the persisted size so a stored value can't shrink the UI below a
@@ -82,6 +95,11 @@ async function loadSettings(): Promise<Settings> {
 
 async function loadToken(): Promise<string | null> {
   return (await figma.clientStorage.getAsync(TOKEN_KEY)) ?? null;
+}
+
+async function loadFigmaConnection(): Promise<string | null> {
+  const raw = await figma.clientStorage.getAsync(FIGMA_CONNECTION_KEY);
+  return typeof raw === 'string' && raw.length > 0 ? raw : null;
 }
 
 type ProjectCache = {
@@ -385,6 +403,30 @@ function pushSelection() {
   postToUi({ type: 'selection', node: describeSelection() });
 }
 
+// Mirror a binding into the node's shared plugin data with the full resolved
+// preset, so the REST API (and thus the standalone preview) can read the haptic
+// straight from the design. Pass `null` to clear it (on unbind). The private
+// BINDING_KEY stays the editor's source of truth; this is purely the
+// externally-readable copy.
+function writeSharedBinding(node: BaseNode, binding: BindingMeta | null): void {
+  if (!binding) {
+    node.setSharedPluginData(SHARED_NS, SHARED_BINDING_KEY, '');
+    return;
+  }
+  const preset = binding.customPattern ?? binding.presetData;
+  // Without a resolved pattern there's nothing useful to expose; leave any
+  // existing shared value untouched rather than write a half-binding.
+  if (!preset) return;
+  const isCustom =
+    !!binding.customPattern ||
+    (Array.isArray(preset.tags) && preset.tags.includes('Custom'));
+  node.setSharedPluginData(
+    SHARED_NS,
+    SHARED_BINDING_KEY,
+    JSON.stringify({ presetId: binding.presetId, presetName: binding.presetName, preset, isCustom })
+  );
+}
+
 function bindToSelection(binding: BindingMeta) {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) {
@@ -396,7 +438,16 @@ function bindToSelection(binding: BindingMeta) {
   // opted-out instance silently does nothing because readBinding still
   // returns null.
   node.setPluginData(BINDING_NEGATED_KEY, '');
-  node.setPluginData(BINDING_KEY, JSON.stringify(binding));
+  // Keep the private copy lean (presetId/presetName/customPattern only) — the
+  // editor never needs the resolved pattern for built-ins, and the heavy data
+  // belongs in the shared copy that the REST read consumes.
+  const leanBinding: BindingMeta = {
+    presetId: binding.presetId,
+    presetName: binding.presetName,
+    ...(binding.customPattern ? { customPattern: binding.customPattern } : {})
+  };
+  node.setPluginData(BINDING_KEY, JSON.stringify(leanBinding));
+  writeSharedBinding(node, binding);
   node.setRelaunchData({ play: `Pulsar: ${binding.presetName}` });
   figma.notify(`Bound "${binding.presetName}" to ${node.name}`);
   pushSelection();
@@ -434,6 +485,7 @@ function unbindSelection() {
     // Also drop any direct binding override the instance may carry, so a
     // future re-bind on it starts from the inherited state.
     instance.setPluginData(BINDING_KEY, '');
+    writeSharedBinding(instance, null);
     instance.setRelaunchData({});
   } else {
     // Belt-and-suspenders: wipe every plugin-data key on the node so older
@@ -443,6 +495,7 @@ function unbindSelection() {
       node.setPluginData(key, '');
     }
     node.setPluginData(BINDING_KEY, '');
+    writeSharedBinding(node, null);
     node.setRelaunchData({});
   }
   figma.notify('Preset unbound.');
@@ -487,11 +540,12 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken, favourites, customPresets] = await Promise.all([
+      const [settings, hapticsToken, favourites, customPresets, figmaUser] = await Promise.all([
         loadSettings(),
         loadToken(),
         loadFavourites(),
-        loadCustomPresets()
+        loadCustomPresets(),
+        loadFigmaConnection()
       ]);
       postToUi({
         type: 'init',
@@ -499,7 +553,8 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         hapticsToken,
         fileKey: figma.fileKey ?? null,
         favourites,
-        customPresets
+        customPresets,
+        figmaUser
       });
       pushSelection();
       break;
@@ -574,6 +629,13 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'open-external':
       figma.openExternal(msg.url);
+      break;
+    case 'persist-figma-connection':
+      if (msg.figmaUser) {
+        await figma.clientStorage.setAsync(FIGMA_CONNECTION_KEY, msg.figmaUser);
+      } else {
+        await figma.clientStorage.deleteAsync(FIGMA_CONNECTION_KEY);
+      }
       break;
     case 'resize': {
       const { width, height } = clampSize(msg.width, msg.height);
