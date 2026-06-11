@@ -24,9 +24,6 @@ const defaultEdges = {
   right: 'additive',
 };
 
-// Full-screen mode (tab bar hidden): drop every safe-area inset so the preview
-// runs truly edge-to-edge — otherwise the top inset keeps clipping the
-// prototype under the notch/status bar even though the bottom bar is gone.
 const fullscreenEdges = {
   top: 'off',
   left: 'off',
