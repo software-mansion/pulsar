@@ -144,12 +144,22 @@ button.preview-tertiary {
 }
 button.preview-sync-now {
   flex-shrink: 0;
-  padding: 6px 12px;
-  font-size: var(--fs-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
 }
 button.preview-sync-now:disabled {
   opacity: 0.5;
   cursor: default;
+}
+/* Spin the refresh glyph while a sync is in flight, echoing the pill's pulse. */
+.preview-sync-spin {
+  animation: preview-sync-spin 0.9s linear infinite;
+}
+@keyframes preview-sync-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Share-link visibility (public/private) toggle. A bordered card matching the

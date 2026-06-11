@@ -7,6 +7,7 @@ import iconKey from '../assets/icon-key.svg';
 import iconClose from '../assets/icon-close.svg';
 import iconGlobe from '../assets/icon-globe.svg';
 import iconLock from '../assets/icon-lock.svg';
+import iconRefresh from '../assets/icon-refresh.svg';
 
 // Live preview tab. Share paths with clear visual hierarchy:
 //   - Primary CTA: open the preview in the browser (most direct, taps the
@@ -88,12 +89,19 @@ export default function LivePreviewPanel({
           <span>{sync.label}</span>
         </span>
         <button
-          className="ghost preview-sync-now"
+          className="ghost icon preview-sync-now"
           onClick={onSyncNow}
           disabled={syncStatus === 'syncing'}
           title="Push the current design to the server now"
+          aria-label="Sync now"
         >
-          Sync now
+          <img
+            src={iconRefresh}
+            alt=""
+            width={16}
+            height={16}
+            className={syncStatus === 'syncing' ? 'preview-sync-spin' : undefined}
+          />
         </button>
       </div>
 
