@@ -5,6 +5,7 @@ import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
 import { useFullscreen } from './lib/useFullscreen';
 import { useIsMobile } from './lib/useIsMobile';
+import { getHostBridge, isAppHost as detectAppHost } from './lib/hostBridge';
 import { playPreset, stopAll } from './audio/player';
 import { Header } from './components/Header';
 import { PrototypeView } from './components/PrototypeView';
@@ -130,7 +131,7 @@ export default function App() {
   }, []);
 
   // When the preview is loaded inside the PulsarApp WebView the
-  // `window.ReactNativeWebView` global is injected by react-native-webview.
+  // `window.ReactNativeWebView` bridge is injected by react-native-webview.
   // That single check is authoritative: if it's present we postMessage the
   // preset payload to the native host (which plays the real device haptic via
   // react-native-pulsar); if it isn't, we fall back to the in-page audio
@@ -140,10 +141,11 @@ export default function App() {
   // `?host=app` URL param, but that's redundant with the bridge check and
   // broke whenever someone hardcoded the preview URL in PulsarApp for local
   // dev.)
-  const isAppHost = useMemo(
-    () => typeof (window as any).ReactNativeWebView !== 'undefined',
-    []
-  );
+  //
+  // The bridge may live on `window` (preview served directly) or on
+  // `window.parent` (the docs /figma-preview page embeds us in an <iframe
+  // srcdoc>); getHostBridge/detectAppHost resolve either — see lib/hostBridge.
+  const isAppHost = useMemo(() => detectAppHost(), []);
 
   // When running inside the PulsarApp WebView the preview already fills the
   // WebView (mobile → implicit fullscreen), but the app's bottom tab bar still
@@ -154,7 +156,7 @@ export default function App() {
     setNavBarHidden((prev) => {
       const next = !prev;
       try {
-        (window as any).ReactNativeWebView?.postMessage(
+        getHostBridge()?.postMessage(
           JSON.stringify({ type: 'set-tab-bar-hidden', hidden: next })
         );
       } catch {
@@ -170,7 +172,9 @@ export default function App() {
       if (!data) return;
       if (isAppHost) {
         try {
-          (window as any).ReactNativeWebView.postMessage(
+          const bridge = getHostBridge();
+          if (!bridge) throw new Error('host bridge unavailable');
+          bridge.postMessage(
             JSON.stringify({
               type: 'play-preset',
               presetName: data.name,
