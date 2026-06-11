@@ -3,6 +3,31 @@
   margin-top: 5px;
   .tabsHeader {
     display: flex;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s;
+    &:hover {
+      scrollbar-color: var(--color-blue-30, #b0b0b0) transparent;
+    }
+    &::-webkit-scrollbar {
+      height: 6px; /* Horizontal scrollbar height */
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+      border-radius: 3px;
+      transition: background-color 0.3s;
+    }
+    &:hover::-webkit-scrollbar-thumb {
+      background-color: var(--color-blue-30, #b0b0b0); /* Visible on hover */
+    }
 
     .tab {
       padding: 8px 32px;
@@ -12,6 +37,7 @@
       cursor: pointer;
       transition: all 0.2s ease;
       border-bottom: 2px solid var(--color-blue-10);
+      white-space: nowrap;
 
       &:hover {
       }
