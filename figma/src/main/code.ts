@@ -39,12 +39,8 @@ const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 const WINDOW_SIZE_KEY = 'pulsar:windowSize';
-// Stable per-document identifier, stored in the document's root pluginData.
-// Replaces `figma.fileKey`, which is only available with the private plugin API
-// and would block a public Community release. Root pluginData is persisted in
-// the file and synced to every collaborator, so this key is just as stable and
-// shared as fileKey was — it simply lives in our own namespace instead of
-// Figma's global one (which only matters for keying our own server rows).
+// Stable per-document id stored in root pluginData; replaces `figma.fileKey`,
+// which needs the private plugin API. Synced to all collaborators.
 const FILE_ID_KEY = 'pulsar:fileId';
 
 const DEFAULT_SIZE = { width: 380, height: 640 };
@@ -83,8 +79,6 @@ function postToUi(msg: MainToUi) {
 }
 
 // Resolve the stable per-file key, minting and persisting one on first use.
-// `figma.root` and its pluginData are always available (even under
-// documentAccess: dynamic-page), so this is safe to call synchronously.
 function resolveFileKey(): string {
   let id = figma.root.getPluginData(FILE_ID_KEY);
   if (!id) {
