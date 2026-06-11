@@ -1,4 +1,3 @@
-import { getHapticTimingCapabilities } from "./Engine.ts";
 import { PatternComposer } from "./PatternComposer.ts";
 import Settings from "./Settings.ts";
 import type { HapticPattern, ParsedPattern } from "./types.ts";
@@ -27,8 +26,36 @@ const MASTER_GAIN = 0.7;
 const ATTACK_SECONDS = 0.002;
 const RELEASE_SECONDS = 0.02;
 
+/**
+ * Web haptics cannot vary the motor's intensity or pitch — `navigator.vibrate`
+ * only controls *when* the motor is on. The vibration motor itself runs at a
+ * single fixed resonant frequency and a single fixed amplitude. The audio
+ * simulation honours that exactly: every "on" window is rendered as the same
+ * buzz, and only its position and length change. Intensity and frequency reach
+ * the listener purely through the PWM timing produced by PatternComposer
+ * (longer shots = stronger, tighter shots = buzzier), never through pitch or
+ * loudness.
+ */
+const CARRIER_FREQUENCY_HZ = 180;
+const PULSE_VOLUME = 0.5;
+
+/**
+ * A fixed timbre for the motor buzz. The same harmonic stack is layered on top
+ * of every pulse so the spectral content never changes between shots — only the
+ * timing does. Integer harmonics keep it sounding like a buzzing actuator rather
+ * than a musical tone.
+ */
+const BUZZ_HARMONICS = [
+  { multiplier: 1, volumeScale: 1, waveform: "sine" },
+  { multiplier: 2, volumeScale: 0.3, waveform: "sine" },
+  { multiplier: 3, volumeScale: 0.15, waveform: "sine" },
+] as const satisfies readonly {
+  multiplier: number;
+  volumeScale: number;
+  waveform: OscillatorType;
+}[];
+
 class AudioGenerator {
-  private readonly timingCapabilities = getHapticTimingCapabilities();
   private readonly patternComposer = new PatternComposer();
   private audioContext: AudioContext | null = null;
   private renderedBuffer: AudioBuffer | null = null;
@@ -183,29 +210,20 @@ class AudioGenerator {
     targetNode: AudioNode,
     interval: AudioInterval,
   ) {
-    const normalizedDuration = this.normalizeIntervalDuration(interval.duration);
-    const baseFrequency = this.lerp(220, 95, normalizedDuration);
-    const volume = this.lerp(0.14, 0.42, normalizedDuration);
-    const harmonicConfigs = [
-      { multiplier: 1, volumeScale: 1, waveform: "sine" },
-      { multiplier: 1.5, volumeScale: 0.35, waveform: "triangle" },
-      { multiplier: 0.5, volumeScale: 0.2, waveform: "sine" },
-    ] as const satisfies readonly {
-      multiplier: number;
-      volumeScale: number;
-      waveform: OscillatorType;
-    }[];
-
-    for (const harmonicConfig of harmonicConfigs) {
+    // Every "on" window is the exact same buzz: a fixed carrier frequency at a
+    // fixed amplitude. Nothing here reads interval.duration to change pitch or
+    // loudness — duration only controls how long the oscillators run, mirroring
+    // how navigator.vibrate can only gate a fixed-frequency motor on and off.
+    for (const harmonic of BUZZ_HARMONICS) {
       const oscillator = offlineContext.createOscillator();
-      oscillator.type = harmonicConfig.waveform;
+      oscillator.type = harmonic.waveform;
       oscillator.frequency.setValueAtTime(
-        baseFrequency * harmonicConfig.multiplier,
+        CARRIER_FREQUENCY_HZ * harmonic.multiplier,
         interval.start / 1000,
       );
 
       const gainNode = offlineContext.createGain();
-      this.applyEnvelope(gainNode, interval, volume * harmonicConfig.volumeScale);
+      this.applyEnvelope(gainNode, interval, PULSE_VOLUME * harmonic.volumeScale);
 
       oscillator.connect(gainNode);
       gainNode.connect(targetNode);
@@ -257,21 +275,6 @@ class AudioGenerator {
     }
 
     return (lastInterval.start + lastInterval.duration + TAIL_PADDING_MS) / 1000;
-  }
-
-  private normalizeIntervalDuration(duration: number) {
-    const { minPulseMs, maxPulseMs } = this.timingCapabilities;
-    const clampedDuration = Math.max(minPulseMs, Math.min(maxPulseMs, duration));
-
-    if (maxPulseMs === minPulseMs) {
-      return 0;
-    }
-
-    return (clampedDuration - minPulseMs) / (maxPulseMs - minPulseMs);
-  }
-
-  private lerp(start: number, end: number, amount: number) {
-    return start + (end - start) * amount;
   }
 }
 
