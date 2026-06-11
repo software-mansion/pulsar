@@ -66,7 +66,7 @@ describe('HTTP routes', () => {
 
       const got = await request(app).get(`/figma-project/${token}`);
       expect(got.status).toBe(200);
-      expect(got.body).toEqual({ success: true, config, revision: 0 });
+      expect(got.body).toEqual({ success: true, config, revision: 0, isPublic: true });
     });
 
     it('stores a non-JSON string config and returns it raw on GET', async () => {
@@ -158,6 +158,71 @@ describe('HTTP routes', () => {
     });
   });
 
+  describe('PATCH /figma-project/:token/visibility', () => {
+    async function create(config: unknown) {
+      const res = await request(app).post('/figma-project').send({ config });
+      return res.body.token as string;
+    }
+
+    it('makes a project private, then GET returns 403 instead of the config', async () => {
+      const token = await create({ v: 1 });
+
+      const patched = await request(app)
+        .patch(`/figma-project/${token}/visibility`)
+        .send({ isPublic: false });
+      expect(patched.status).toBe(200);
+      expect(patched.body).toEqual({ success: true, isPublic: false });
+
+      const got = await request(app).get(`/figma-project/${token}`);
+      expect(got.status).toBe(403);
+      expect(got.body).toEqual({ success: false, error: 'private' });
+    });
+
+    it('re-publishing a private project restores GET access', async () => {
+      const token = await create({ v: 1 });
+      await request(app).patch(`/figma-project/${token}/visibility`).send({ isPublic: false });
+
+      const patched = await request(app)
+        .patch(`/figma-project/${token}/visibility`)
+        .send({ isPublic: true });
+      expect(patched.body).toEqual({ success: true, isPublic: true });
+
+      const got = await request(app).get(`/figma-project/${token}`);
+      expect(got.status).toBe(200);
+      expect(got.body).toEqual({ success: true, config: { v: 1 }, revision: 0, isPublic: true });
+    });
+
+    it('owners can still PUT config to a private project (sync keeps working)', async () => {
+      const token = await create({ v: 1 });
+      await request(app).patch(`/figma-project/${token}/visibility`).send({ isPublic: false });
+
+      const put = await request(app).put(`/figma-project/${token}`).send({ config: { v: 2 } });
+      expect(put.status).toBe(200);
+      // Still private after a config sync — only the explicit PATCH re-exposes it.
+      const got = await request(app).get(`/figma-project/${token}`);
+      expect(got.status).toBe(403);
+    });
+
+    it('returns 400 when isPublic is missing or not a boolean', async () => {
+      const token = await create({ v: 1 });
+      for (const bad of [undefined, 'true', 1, null]) {
+        const res = await request(app)
+          .patch(`/figma-project/${token}/visibility`)
+          .send({ isPublic: bad });
+        expect(res.status).toBe(400);
+        expect(res.body.error).toBe('isPublic must be a boolean');
+      }
+    });
+
+    it('returns 404 for an unknown token', async () => {
+      const res = await request(app)
+        .patch('/figma-project/ghost/visibility')
+        .send({ isPublic: false });
+      expect(res.status).toBe(404);
+      expect(res.body).toEqual({ success: false, error: 'Project not found' });
+    });
+  });
+
   describe('server errors', () => {
     // Drop the table so the next query throws, exercising the 500 catch paths.
     async function breakSchema() {
@@ -185,6 +250,19 @@ describe('HTTP routes', () => {
       const res = await request(app).put('/figma-project/anything').send({ config: { a: 1 } });
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ success: false, error: 'Failed to update figma project' });
+      expect(res.body).not.toHaveProperty('detail');
+    });
+
+    it('PATCH visibility returns a generic 500 when the query fails', async () => {
+      await breakSchema();
+      const res = await request(app)
+        .patch('/figma-project/anything/visibility')
+        .send({ isPublic: false });
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({
+        success: false,
+        error: 'Failed to update figma project visibility',
+      });
       expect(res.body).not.toHaveProperty('detail');
     });
   });

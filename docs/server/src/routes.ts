@@ -1,6 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { ConnectionManager } from './connection-manager';
-import { createFigmaProject, getFigmaProject, updateFigmaProject } from './figma-projects';
+import {
+  createFigmaProject,
+  getFigmaProject,
+  setFigmaProjectVisibility,
+  updateFigmaProject,
+} from './figma-projects';
 
 interface BroadcastBody {
   message: string;
@@ -13,6 +18,12 @@ interface FigmaProjectBody {
   // Optimistic-concurrency base: the client's last-synced revision. When set,
   // the update applies only if the server is still at it (else 409).
   baseRevision?: number | null;
+}
+
+interface FigmaVisibilityBody {
+  // true → anyone with the link can view; false → the link is revoked and GET
+  // refuses to serve the config.
+  isPublic: boolean;
 }
 
 export function getRoutes(connectionManager: ConnectionManager): Router {
@@ -115,6 +126,34 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     },
   );
 
+  // Toggle a project's share-link visibility. Separate from PUT (config sync) so
+  // a background autosync can never accidentally re-expose a link the owner made
+  // private — only this explicit call changes who can view.
+  router.patch(
+    '/figma-project/:token/visibility',
+    async (req: Request<{ token: string }, {}, FigmaVisibilityBody>, res: Response) => {
+      const { token } = req.params;
+      const { isPublic } = req.body ?? {};
+      if (typeof isPublic !== 'boolean') {
+        return res
+          .status(400)
+          .json({ success: false, error: 'isPublic must be a boolean' });
+      }
+      try {
+        const result = await setFigmaProjectVisibility(token, isPublic);
+        if (result.kind === 'not_found') {
+          return res.status(404).json({ success: false, error: 'Project not found' });
+        }
+        return res.json({ success: true, isPublic: result.isPublic });
+      } catch (err) {
+        console.error('setFigmaProjectVisibility failed:', err);
+        res
+          .status(500)
+          .json({ success: false, error: 'Failed to update figma project visibility' });
+      }
+    },
+  );
+
   // Fetch a project's config + revision by token.
   router.get('/figma-project/:token', async (req: Request<{ token: string }>, res: Response) => {
     const { token } = req.params;
@@ -123,13 +162,19 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
       if (snapshot === null) {
         return res.status(404).json({ success: false, error: 'Project not found' });
       }
+      // Private link: the row exists but the owner revoked access. Refuse to
+      // serve the config to anyone holding the token (403, distinct from the
+      // 404 "no such project" so the preview can show a tailored message).
+      if (!snapshot.isPublic) {
+        return res.status(403).json({ success: false, error: 'private' });
+      }
       let parsed: unknown = snapshot.config;
       try {
         parsed = JSON.parse(snapshot.config);
       } catch {
         // not JSON — return the raw string
       }
-      res.json({ success: true, config: parsed, revision: snapshot.revision });
+      res.json({ success: true, config: parsed, revision: snapshot.revision, isPublic: true });
     } catch (err) {
       console.error('getFigmaProject failed:', err);
       res.status(500).json({ success: false, error: 'Failed to fetch figma project' });

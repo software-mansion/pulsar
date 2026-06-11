@@ -419,18 +419,45 @@ discrete + continuous arrays. It's not an icon — never replace it with an
 
 ## Backend (docs/server)
 
-Express + PostgreSQL. Three routes that matter here: `POST /figma-project`,
-`PUT /figma-project/:token`, `GET /figma-project/:token`. Schema:
+Express + PostgreSQL. Four routes that matter here: `POST /figma-project`,
+`PUT /figma-project/:token`, `GET /figma-project/:token`, and
+`PATCH /figma-project/:token/visibility`. Schema:
 
 ```sql
 CREATE TABLE figma_projects (
   token TEXT PRIMARY KEY,
   config TEXT NOT NULL,         -- JSON-serialized PreviewPayload
   revision BIGINT NOT NULL DEFAULT 0,  -- monotonic, bumped on every PUT
+  is_public BOOLEAN NOT NULL DEFAULT TRUE,  -- share-link visibility (see below)
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
+
+### Share-link visibility (`is_public`)
+
+The plugin's Live preview tab has a public/private toggle. `is_public` is the
+server-side source of truth (added via `ALTER TABLE … ADD COLUMN IF NOT EXISTS`,
+defaulting `TRUE` so pre-feature rows stay viewable):
+
+- `POST` always creates public (`is_public = TRUE`).
+- `GET` returns **403 `{ error: 'private' }`** when `is_public` is false — the
+  config is never served for a revoked link, even to a token holder. When public
+  it adds `isPublic: true` to the body. The preview app maps 403 → a dedicated
+  "This preview is private" empty state (distinct from 404 → "no design loaded").
+- `PATCH …/visibility` body `{ isPublic: boolean }` flips the flag. It touches
+  `updated_at` (keeps the TTL fresh) but **leaves `revision` alone** — visibility
+  isn't config, so toggling must not provoke an optimistic-concurrency conflict
+  on the owner's next `PUT`.
+- `PUT` (config sync) **never** changes `is_public`. This is deliberate: a
+  background autosync of a private file keeps the server config fresh without
+  silently re-exposing the link. Only `PATCH` and an explicit share re-open it.
+
+Plugin side: any explicit share action (open / copy link / copy token / QR) calls
+`PATCH …/visibility { isPublic: true }` after publishing, so "share again" always
+re-opens a privated link and flips the toggle back on. The visibility is cached
+per-file in `clientStorage` (`ProjectCache.isPublic`, default true) to seed the
+toggle on cold start, then reconciled against the server.
 
 ### Optimistic concurrency (`revision`)
 

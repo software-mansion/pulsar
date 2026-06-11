@@ -87,6 +87,10 @@ async function loadToken(): Promise<string | null> {
 type ProjectCache = {
   config: unknown;
   baseRevision: number | null;
+  // Cached share-link visibility (public/private toggle). Optional so caches
+  // written before this field existed read back as undefined; callers treat
+  // that as `true` (public), matching the pre-feature behaviour.
+  isPublic?: boolean;
   // Wall-clock of the last write, used to pick the oldest entry to evict.
   lastAccess: number;
 };
@@ -154,10 +158,19 @@ async function evictOldestProjectCache(exceptKey: string): Promise<boolean> {
 async function setProjectCache(
   fileKey: string,
   config: unknown,
-  baseRevision: number | null
+  baseRevision: number | null,
+  isPublic?: boolean
 ): Promise<void> {
   const key = PROJECT_CACHE_PREFIX + fileKey;
-  const entry: ProjectCache = { config, baseRevision, lastAccess: Date.now() };
+  // Preserve the previously-cached visibility when the caller doesn't pass one
+  // (e.g. a config-only sync), so a routine cache write can't silently flip a
+  // private link back to public. Default to public for brand-new caches.
+  let visibility = isPublic;
+  if (visibility === undefined) {
+    const existing = await getProjectCache(fileKey);
+    visibility = existing?.isPublic ?? true;
+  }
+  const entry: ProjectCache = { config, baseRevision, isPublic: visibility, lastAccess: Date.now() };
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -514,7 +527,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         fileKey: msg.fileKey,
         token,
         config: cache ? cache.config : null,
-        baseRevision: cache ? cache.baseRevision : null
+        baseRevision: cache ? cache.baseRevision : null,
+        // Default to public for legacy caches with no stored visibility.
+        isPublic: cache?.isPublic ?? true
       });
       break;
     }
@@ -527,6 +542,21 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         await setProjectCache(msg.fileKey, msg.config, msg.baseRevision);
       } catch (err) {
         console.error('Failed to cache figma project config:', err);
+      }
+      break;
+    case 'persist-project-visibility':
+      // Update only the visibility flag on the cached entry, leaving the cached
+      // config/revision untouched. Best-effort like the rest of the cache.
+      try {
+        const existing = await getProjectCache(msg.fileKey);
+        await setProjectCache(
+          msg.fileKey,
+          existing?.config ?? null,
+          existing?.baseRevision ?? null,
+          msg.isPublic
+        );
+      } catch (err) {
+        console.error('Failed to cache figma project visibility:', err);
       }
       break;
     case 'request-selection':

@@ -152,6 +152,25 @@ button.preview-sync-now:disabled {
   cursor: default;
 }
 
+/* Share-link visibility (public/private) toggle. A bordered card matching the
+   sync pill's palette, holding an icon + label/description and the switch. */
+.preview-visibility-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-20);
+}
+.preview-visibility-row.disabled {
+  opacity: 0.55;
+}
+.preview-visibility-row > input.switch {
+  flex-shrink: 0;
+  align-self: center;
+}
+
 /* QR display — mirrors the docs Connection.tsx widget.
    Outer card: white, blue-50 border, signature offset shadow (docs .content).
    Inner box: blue-10 fill, centred prompt + QR, close (×) button in the

@@ -116,19 +116,56 @@ async function updateProject(
   return { kind: 'ok', revision: data.revision ?? 0 };
 }
 
-// GET the stored config + revision for a token. null on 404.
-async function fetchProject(token: string): Promise<{ config: unknown; revision: number } | null> {
+// Outcome of a GET: the stored snapshot, a revoked (private) link, or a missing
+// row. The plugin is the link's owner, so it still keeps the token on 'private'
+// (the user can re-share to re-open it) — only 'missing' means forget the token.
+type FetchResult =
+  | { kind: 'ok'; config: unknown; revision: number; isPublic: boolean }
+  | { kind: 'private' }
+  | { kind: 'missing' };
+
+// GET the stored config + revision for a token.
+async function fetchProject(token: string): Promise<FetchResult> {
   const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`);
-  if (res.status === 404) return null;
+  if (res.status === 404) return { kind: 'missing' };
+  // 403 = the row exists but its link was made private. The owner still holds
+  // the token; treat it as a known-private project rather than a lost one.
+  if (res.status === 403) return { kind: 'private' };
   const data = (await res.json().catch(() => null)) as
-    | { success: boolean; config?: unknown; revision?: number; error?: string; detail?: string }
+    | {
+        success: boolean;
+        config?: unknown;
+        revision?: number;
+        isPublic?: boolean;
+        error?: string;
+        detail?: string;
+      }
     | null;
   if (!res.ok) {
     const msg = data?.error ?? `Server responded ${res.status}`;
     throw new Error(data?.detail ? `${msg} (${data.detail})` : msg);
   }
   if (!data?.success) throw new Error(data?.error || 'Fetch failed');
-  return { config: data.config ?? null, revision: data.revision ?? 0 };
+  return {
+    kind: 'ok',
+    config: data.config ?? null,
+    revision: data.revision ?? 0,
+    isPublic: data.isPublic ?? true
+  };
+}
+
+// PATCH a token's share-link visibility (public ⇄ private). Returns whether the
+// server accepted the change. Separate from updateProject so a config sync and
+// a visibility toggle never get conflated.
+async function setProjectVisibility(token: string, isPublic: boolean): Promise<boolean> {
+  const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}/visibility`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isPublic })
+  });
+  if (!res.ok) return false;
+  const data = (await res.json().catch(() => null)) as { success?: boolean } | null;
+  return !!data?.success;
 }
 
 // Deterministic JSON: keys sorted recursively so two structurally-equal
@@ -171,6 +208,9 @@ function copyToClipboard(text: string): boolean {
 export default function App() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [hapticsToken, setHapticsToken] = useState<string | null>(null);
+  // Live link to the paired phone (PhonePanel reports this). Broadcasting only
+  // makes sense while the phone is actually connected, not merely paired.
+  const [phoneConnected, setPhoneConnected] = useState(false);
 
   // --- Per-file server-sync state ---------------------------------------
   // The file we're editing. Tokens + cached config are keyed by this so a
@@ -191,6 +231,11 @@ export default function App() {
   // Debounce timer for background auto-save.
   const autosyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+  // Share-link visibility for the current file. true = anyone with the link can
+  // view; false = the link is revoked server-side until the user shares again.
+  // Defaults to public (the historical behaviour) and is reconciled with the
+  // server on cold start and on every explicit share.
+  const [isPublic, setIsPublic] = useState(true);
 
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
   const [tab, setTab] = useState<Tab>('presets');
@@ -249,10 +294,14 @@ export default function App() {
     token: string | null;
     config: unknown | null;
     baseRevision: number | null;
+    isPublic: boolean;
   }) => {
     fileKeyRef.current = m.fileKey;
     tokenRef.current = m.token;
     baseRevisionRef.current = m.baseRevision;
+    // Seed the toggle from the cached value; the server-fetch branch below
+    // reconciles it with the source of truth when there's a token to check.
+    setIsPublic(m.isPublic);
     if (m.config != null) {
       lastSyncedJsonRef.current = stableStringify(m.config);
       setSyncStatus(m.token ? 'synced' : 'idle');
@@ -260,15 +309,25 @@ export default function App() {
       setSyncStatus('syncing');
       try {
         const got = await fetchProject(m.token);
-        if (got) {
+        if (got.kind === 'ok') {
           baseRevisionRef.current = got.revision;
           lastSyncedJsonRef.current = stableStringify(got.config);
+          setIsPublic(got.isPublic);
+          send({ type: 'persist-project-visibility', fileKey: m.fileKey, isPublic: got.isPublic });
           send({
             type: 'persist-project-cache',
             fileKey: m.fileKey,
             config: got.config,
             baseRevision: got.revision
           });
+          setSyncStatus('synced');
+        } else if (got.kind === 'private') {
+          // The link is revoked. Keep the token (the user can re-share to
+          // re-open it) and reflect the private state in the toggle. We can't
+          // read the server config while private, so leave lastSyncedJson empty
+          // — the next autosync will re-publish the live document's bindings.
+          setIsPublic(false);
+          send({ type: 'persist-project-visibility', fileKey: m.fileKey, isPublic: false });
           setSyncStatus('synced');
         } else {
           // Token no longer exists server-side — forget it; nothing is shared.
@@ -356,10 +415,10 @@ export default function App() {
       const p = presetById.get(m.presetId);
       if (!p) return;
       if (settings.soundInEdit) playPreset(p.id, p.data).catch(() => {});
-      if (hapticsToken) broadcastToPhone(hapticsToken, p.data.name);
+      if (hapticsToken && phoneConnected) broadcastToPhone(hapticsToken, p.data.name);
     });
     return off;
-  }, [settings.soundInEdit, hapticsToken, presetById]);
+  }, [settings.soundInEdit, hapticsToken, phoneConnected, presetById]);
 
   const [shareQr, setShareQr] = useState<string | null>(null);
 
@@ -544,6 +603,14 @@ export default function App() {
         // Beyond the sync itself, share actions also need a URL / QR / clipboard.
         if (purpose === 'autosync' || purpose === 'sync') return;
 
+        // Any explicit share re-opens the link to the public: if the user had
+        // made it private, handing the link out again necessarily makes it
+        // viewable, so flip the toggle back on. Optimistic + best-effort — the
+        // server is the source of truth, reconciled on the next cold start.
+        setIsPublic(true);
+        send({ type: 'persist-project-visibility', fileKey, isPublic: true });
+        void setProjectVisibility(token, true).catch(() => {});
+
         // Strip any existing query/hash so we don't duplicate or stack tokens
         // when the user has manually visited the preview before.
         const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
@@ -612,6 +679,40 @@ export default function App() {
     send({ type: 'request-preview-data', purpose: 'sync' });
   };
 
+  // Flip the share-link visibility. Optimistic: update the toggle + local cache
+  // immediately, then PATCH the server. On failure, roll the toggle back and
+  // tell the user so the UI never claims a state the server didn't accept.
+  const setVisibility = (next: boolean) => {
+    const token = tokenRef.current;
+    const fileKey = fileKeyRef.current;
+    if (!token) return; // nothing shared yet — nothing to make private/public
+    setIsPublic(next);
+    send({ type: 'persist-project-visibility', fileKey, isPublic: next });
+    void (async () => {
+      let ok = false;
+      try {
+        ok = await setProjectVisibility(token, next);
+      } catch {
+        ok = false;
+      }
+      if (!ok) {
+        setIsPublic(!next);
+        send({ type: 'persist-project-visibility', fileKey, isPublic: !next });
+        send({
+          type: 'notify',
+          message: 'Could not update the preview’s visibility. Please try again.'
+        });
+        return;
+      }
+      send({
+        type: 'notify',
+        message: next
+          ? 'Preview link is public — anyone with the link can view it.'
+          : 'Preview link is now private — the link won’t work until you share again.'
+      });
+    })();
+  };
+
   const filtered = useMemo(() => {
     const base = applyFilter(allPresets, filter);
     return favouritesOnly ? base.filter((e) => favourites.has(e.id)) : base;
@@ -620,7 +721,7 @@ export default function App() {
 
   const playEntry = (e: CatalogEntry) => {
     stopAll();
-    if (hapticsToken) broadcastToPhone(hapticsToken, e.data.name);
+    if (hapticsToken && phoneConnected) broadcastToPhone(hapticsToken, e.data.name);
     if (settings.soundInEdit) playPreset(e.id, e.data).catch(() => {});
   };
 
@@ -662,7 +763,7 @@ export default function App() {
     if (entry) {
       stopAll();
       playPreset(entry.id, entry.data).catch(() => {});
-      if (hapticsToken) broadcastToPhone(hapticsToken, entry.data.name);
+      if (hapticsToken && phoneConnected) broadcastToPhone(hapticsToken, entry.data.name);
     }
     send({ type: 'focus-node', nodeId: item.nodeId });
   };
@@ -750,7 +851,11 @@ export default function App() {
                 onUpdate={updateCustomPreset}
                 onRemove={removeCustomPreset}
               />
-              <PhonePanel token={hapticsToken} onTokenChange={setHapticsToken} />
+              <PhonePanel
+                token={hapticsToken}
+                onTokenChange={setHapticsToken}
+                onConnectedChange={setPhoneConnected}
+              />
             </div>
           </div>
           <div className="row" style={{ padding: '4px 8px', gap: 6, marginTop: 8 }}>
@@ -826,9 +931,11 @@ export default function App() {
               onClose={() => setOpenId(null)}
               onPlay={() => playEntry(openEntry)}
               onPlayOnPhone={() =>
-                hapticsToken && broadcastToPhone(hapticsToken, openEntry.data.name)
+                hapticsToken &&
+                phoneConnected &&
+                broadcastToPhone(hapticsToken, openEntry.data.name)
               }
-              canPlayOnPhone={!!hapticsToken}
+              canPlayOnPhone={!!hapticsToken && phoneConnected}
               onBind={() => bindEntry(openEntry)}
             />
           </div>
@@ -849,6 +956,9 @@ export default function App() {
           onChange={setSettings}
           syncStatus={syncStatus}
           onSyncNow={syncNow}
+          isPublic={isPublic}
+          isShared={syncStatus !== 'idle'}
+          onToggleVisibility={setVisibility}
           onShowLivePreview={showInLivePreview}
           onCopyShareLink={copyShareLink}
           onCopyShareToken={copyShareToken}
