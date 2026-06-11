@@ -117,6 +117,10 @@ export type UiToMain =
   | { type: 'get-project'; fileKey: string }
   | { type: 'persist-project-token'; fileKey: string; token: string }
   | { type: 'persist-project-cache'; fileKey: string; config: unknown; baseRevision: number | null }
+  // Persist just the share-link visibility for a file (the public/private
+  // toggle), without rewriting the cached config. Keyed by fileKey like the
+  // rest of the per-file project state.
+  | { type: 'persist-project-visibility'; fileKey: string; isPublic: boolean }
   | { type: 'request-preview-data'; purpose: PreviewPurpose }
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
@@ -148,6 +152,10 @@ export type MainToUi =
       token: string | null;
       config: unknown | null;
       baseRevision: number | null;
+      // Last-known share-link visibility for this file. Defaults to true (public)
+      // for files shared before this field existed. The server is the source of
+      // truth; this is the cached value used to seed the toggle on cold start.
+      isPublic: boolean;
     }
   // The Figma document changed. The UI debounces this into a background
   // auto-sync so the server snapshot stays fresh as the designer edits.

@@ -5,6 +5,9 @@ import iconLink from '../assets/icon-link.svg';
 import iconQrCode from '../assets/icon-qr-code.svg';
 import iconKey from '../assets/icon-key.svg';
 import iconClose from '../assets/icon-close.svg';
+import iconGlobe from '../assets/icon-globe.svg';
+import iconLock from '../assets/icon-lock.svg';
+import iconRefresh from '../assets/icon-refresh.svg';
 
 // Live preview tab. Share paths with clear visual hierarchy:
 //   - Primary CTA: open the preview in the browser (most direct, taps the
@@ -36,6 +39,9 @@ const SYNC_META: Record<SyncStatus, { label: string; dot: string; pulse?: boolea
 export default function LivePreviewPanel({
   syncStatus,
   onSyncNow,
+  isPublic,
+  isShared,
+  onToggleVisibility,
   onShowLivePreview,
   onCopyShareLink,
   onCopyShareToken,
@@ -47,6 +53,12 @@ export default function LivePreviewPanel({
   onChange: (next: Settings) => void;
   syncStatus: SyncStatus;
   onSyncNow: () => void;
+  // Whether the share link is currently public (anyone with the link can view).
+  isPublic: boolean;
+  // Whether this file has been shared yet (has a server token). The visibility
+  // toggle is meaningless — and disabled — until then.
+  isShared: boolean;
+  onToggleVisibility: (next: boolean) => void;
   onShowLivePreview: () => void;
   onCopyShareLink: () => void;
   onCopyShareToken: () => void;
@@ -77,13 +89,64 @@ export default function LivePreviewPanel({
           <span>{sync.label}</span>
         </span>
         <button
-          className="ghost preview-sync-now"
+          className="ghost icon preview-sync-now"
           onClick={onSyncNow}
           disabled={syncStatus === 'syncing'}
           title="Push the current design to the server now"
+          aria-label="Sync now"
         >
-          Sync now
+          <img
+            src={iconRefresh}
+            alt=""
+            width={16}
+            height={16}
+            className={syncStatus === 'syncing' ? 'preview-sync-spin' : undefined}
+          />
         </button>
+      </div>
+
+      {/* Share-link visibility. When public, anyone with the link can open the
+          preview; flip it off to revoke access without losing the share token.
+          Any share action below re-opens it. Disabled until the file has been
+          shared at least once (no server row to gate yet). */}
+      <div className={`preview-visibility-row${isShared ? '' : ' disabled'}`}>
+        <img
+          src={isPublic ? iconGlobe : iconLock}
+          alt=""
+          width={16}
+          height={16}
+          style={{ flexShrink: 0, marginTop: 1 }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
+            {isPublic ? 'Anyone with the link can view' : 'Link is private'}
+          </div>
+          <p
+            className="muted"
+            style={{ margin: '2px 0 0', fontSize: 'var(--fs-xs)', lineHeight: 1.45 }}
+          >
+            {isShared
+              ? isPublic
+                ? 'Turn off to revoke the link. Sharing again re-opens it.'
+                : 'The share link won’t work until you share the preview again.'
+              : 'Share the preview first to control who can access the link.'}
+          </p>
+        </div>
+        <input
+          type="checkbox"
+          className="switch"
+          checked={isPublic}
+          disabled={!isShared}
+          onChange={(e) => onToggleVisibility(e.target.checked)}
+          title={
+            isShared
+              ? isPublic
+                ? 'Make the share link private'
+                : 'Make the share link public'
+              : 'Share the preview first'
+          }
+          aria-label="Anyone with the link can view"
+        />
       </div>
 
       {/* Primary action — full-width, icon-prefixed. */}

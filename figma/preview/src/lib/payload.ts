@@ -24,32 +24,46 @@ function getTokenFromUrl(): string | null {
   return null;
 }
 
+// Outcome of loading the payload, so the UI can distinguish the empty states:
+//   - 'ok'       → we have a payload to render.
+//   - 'private'  → the owner revoked the share link (server replied 403).
+//   - 'no-token' → no ?token= in the URL (the bare preview app).
+//   - 'missing'  → token present but the project is gone / unreadable (404 etc.).
+export type PayloadResult =
+  | { status: 'ok'; payload: PreviewPayload }
+  | { status: 'private' }
+  | { status: 'no-token' }
+  | { status: 'missing' };
+
 // Fetch the preview payload from the server using the `?token=` query param.
-export async function readPayload(): Promise<PreviewPayload | null> {
+export async function readPayload(): Promise<PayloadResult> {
   if (!API_SERVER_URL) {
     console.error('VITE_API_SERVER_URL is not set. Copy .env.example to .env.local.');
-    return null;
+    return { status: 'missing' };
   }
   const token = getTokenFromUrl();
-  if (!token) return null;
+  if (!token) return { status: 'no-token' };
   try {
     const res = await fetch(
       `${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`,
     );
-    if (!res.ok) return null;
+    // 403 = the owner made this preview private. Surface it distinctly so the UI
+    // can explain the link was revoked rather than showing "no design loaded".
+    if (res.status === 403) return { status: 'private' };
+    if (!res.ok) return { status: 'missing' };
     const data = (await res.json()) as { success: boolean; config?: PreviewPayload | string };
-    if (!data.success || !data.config) return null;
+    if (!data.success || !data.config) return { status: 'missing' };
     // Server returns the parsed object when storage was JSON; fall back to
     // parsing if it handed back a raw string for any reason.
     if (typeof data.config === 'string') {
       try {
-        return JSON.parse(data.config) as PreviewPayload;
+        return { status: 'ok', payload: JSON.parse(data.config) as PreviewPayload };
       } catch {
-        return null;
+        return { status: 'missing' };
       }
     }
-    return data.config;
+    return { status: 'ok', payload: data.config };
   } catch {
-    return null;
+    return { status: 'missing' };
   }
 }

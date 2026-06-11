@@ -32,11 +32,15 @@ export default function App() {
   // and "no payload at all".
   const [payload, setPayload] = useState<PreviewPayload | null>(null);
   const [payloadLoaded, setPayloadLoaded] = useState(false);
+  // Set when the server reports the share link was made private (403). Drives a
+  // dedicated empty state distinct from "no design loaded".
+  const [isPrivate, setIsPrivate] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    readPayload().then((p) => {
+    readPayload().then((res) => {
       if (cancelled) return;
-      setPayload(p);
+      setPayload(res.status === 'ok' ? res.payload : null);
+      setIsPrivate(res.status === 'private');
       setPayloadLoaded(true);
     });
     return () => {
@@ -94,12 +98,16 @@ export default function App() {
       }
       return;
     }
+    if (isPrivate) {
+      setStatus('This preview link is private.');
+      return;
+    }
     setStatus(
       payload?.fileKey
         ? 'Loading prototype…'
         : 'Waiting for a design — open one from the Pulsar plugin.'
     );
-  }, [payloadLoaded, payload]);
+  }, [payloadLoaded, payload, isPrivate]);
   const [currentNodeId, setCurrentNodeId] = useState(presentedId);
   // Sync currentNodeId when the payload arrives later (async token fetch). The
   // useState initializer above only runs once with whatever presentedId was on
@@ -223,6 +231,27 @@ export default function App() {
   const isMobile = useIsMobile();
   // On mobile we always run fullscreen (content fills the screen, no chrome).
   const fullscreen = isFullscreen || isMobile;
+
+  // The owner revoked this share link. Don't leak that a design ever existed —
+  // just explain the link is private and how to regain access.
+  if (isPrivate) {
+    return (
+      <>
+        <Header status={status} count={0} onEnterFullscreen={enterFullscreen} />
+        <main className="main">
+          <div className="frame-wrap">
+            <div className="empty">
+              <div className="big">This preview is private</div>
+              <div>
+                The owner turned off sharing for this link. Ask them to share the
+                preview again to regain access.
+              </div>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   if (!payload?.fileKey) {
     return (

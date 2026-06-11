@@ -50,12 +50,19 @@ export async function ensureFigmaProjectsTable(): Promise<void> {
       token TEXT PRIMARY KEY,
       config TEXT NOT NULL,
       revision BIGINT NOT NULL DEFAULT 0,
+      is_public BOOLEAN NOT NULL DEFAULT TRUE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`,
   );
   await getPool().query(
     'ALTER TABLE figma_projects ADD COLUMN IF NOT EXISTS revision BIGINT NOT NULL DEFAULT 0',
+  );
+  // is_public is additive too: already-deployed tables pick it up here and
+  // existing rows default to public (the pre-feature behaviour — anyone with
+  // the link could view), so the migration doesn't silently hide live shares.
+  await getPool().query(
+    'ALTER TABLE figma_projects ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT TRUE',
   );
 }
 
@@ -103,7 +110,17 @@ function schedulePurge(): void {
 export interface FigmaProjectSnapshot {
   config: string;
   revision: number;
+  // When false the share link is revoked: GET refuses to serve the config so
+  // anyone holding the token can no longer view the preview. Owners flip this
+  // from the plugin; sharing again re-publishes (sets it back to true).
+  isPublic: boolean;
 }
+
+// Result of toggling a project's visibility. `not_found` mirrors update's shape
+// so the route can reuse the 404 path.
+export type FigmaProjectVisibilityResult =
+  | { kind: 'ok'; isPublic: boolean }
+  | { kind: 'not_found' };
 
 // `conflict` carries the current server snapshot so the caller can reconcile.
 export type FigmaProjectUpdateResult =
@@ -153,12 +170,28 @@ export async function updateFigmaProject(
   return { kind: 'conflict', current };
 }
 
+// Flip a project's share-link visibility. Touches updated_at (so toggling keeps
+// the row alive under the TTL purge) but deliberately leaves `revision` alone —
+// visibility isn't part of the config, so this must not provoke a spurious
+// optimistic-concurrency conflict on the owner's next config PUT.
+export async function setFigmaProjectVisibility(
+  token: string,
+  isPublic: boolean,
+): Promise<FigmaProjectVisibilityResult> {
+  const result = await getPool().query<{ is_public: boolean }>(
+    'UPDATE figma_projects SET is_public = $1, updated_at = NOW() WHERE token = $2 RETURNING is_public',
+    [isPublic, token],
+  );
+  if (result.rowCount === 0) return { kind: 'not_found' };
+  return { kind: 'ok', isPublic: result.rows[0].is_public };
+}
+
 export async function getFigmaProject(token: string): Promise<FigmaProjectSnapshot | null> {
-  const result = await getPool().query<{ config: string; revision: string }>(
-    'SELECT config, revision FROM figma_projects WHERE token = $1',
+  const result = await getPool().query<{ config: string; revision: string; is_public: boolean }>(
+    'SELECT config, revision, is_public FROM figma_projects WHERE token = $1',
     [token],
   );
   const row = result.rows[0];
   if (!row) return null;
-  return { config: row.config, revision: Number(row.revision) };
+  return { config: row.config, revision: Number(row.revision), isPublic: row.is_public };
 }

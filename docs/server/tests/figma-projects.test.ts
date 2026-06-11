@@ -3,6 +3,7 @@ import {
   createFigmaProject,
   getFigmaProject,
   updateFigmaProject,
+  setFigmaProjectVisibility,
   purgeExpiredFigmaProjects,
   ensureFigmaProjectsTable,
 } from '../src/figma-projects';
@@ -24,7 +25,7 @@ describe('figma-projects (in-memory pg)', () => {
       // beforeEach already ran ensureFigmaProjectsTable; a basic round-trip
       // confirms the table + columns exist.
       const { token } = await createFigmaProject('{}');
-      expect(await getFigmaProject(token)).toEqual({ config: '{}', revision: 0 });
+      expect(await getFigmaProject(token)).toEqual({ config: '{}', revision: 0, isPublic: true });
     });
 
     it('migration (ADD COLUMN IF NOT EXISTS) is safe to re-run', async () => {
@@ -48,7 +49,7 @@ describe('figma-projects (in-memory pg)', () => {
       expect(revision).toBe(0);
 
       const snap = await getFigmaProject(token);
-      expect(snap).toEqual({ config: '{"hello":"world"}', revision: 0 });
+      expect(snap).toEqual({ config: '{"hello":"world"}', revision: 0, isPublic: true });
     });
 
     it('returns revision as a JS number, not a bigint string', async () => {
@@ -71,7 +72,7 @@ describe('figma-projects (in-memory pg)', () => {
       expect(res).toEqual({ kind: 'ok', revision: 1 });
 
       const snap = await getFigmaProject(token);
-      expect(snap).toEqual({ config: '{"v":2}', revision: 1 });
+      expect(snap).toEqual({ config: '{"v":2}', revision: 1, isPublic: true });
     });
 
     it('returns not_found for a missing token', async () => {
@@ -93,16 +94,47 @@ describe('figma-projects (in-memory pg)', () => {
       await updateFigmaProject(token, '{"v":2}');
       // Now push against the stale base 0.
       const res = await updateFigmaProject(token, '{"v":3}', 0);
-      expect(res).toEqual({ kind: 'conflict', current: { config: '{"v":2}', revision: 1 } });
+      expect(res).toEqual({
+        kind: 'conflict',
+        current: { config: '{"v":2}', revision: 1, isPublic: true },
+      });
 
       // The conflicting write must NOT have been applied.
       const snap = await getFigmaProject(token);
-      expect(snap).toEqual({ config: '{"v":2}', revision: 1 });
+      expect(snap).toEqual({ config: '{"v":2}', revision: 1, isPublic: true });
     });
 
     it('returns not_found when the token no longer exists', async () => {
       const res = await updateFigmaProject('ghost', '{}', 3);
       expect(res).toEqual({ kind: 'not_found' });
+    });
+  });
+
+  describe('setFigmaProjectVisibility', () => {
+    it('new projects are public by default', async () => {
+      const { token } = await createFigmaProject('{}');
+      const snap = await getFigmaProject(token);
+      expect(snap!.isPublic).toBe(true);
+    });
+
+    it('flips a project to private and back without touching the revision', async () => {
+      const { token } = await createFigmaProject('{"v":1}');
+      // Move the revision off 0 so we can prove a visibility toggle leaves it.
+      await updateFigmaProject(token, '{"v":2}');
+
+      const off = await setFigmaProjectVisibility(token, false);
+      expect(off).toEqual({ kind: 'ok', isPublic: false });
+      const priv = await getFigmaProject(token);
+      expect(priv).toEqual({ config: '{"v":2}', revision: 1, isPublic: false });
+
+      const on = await setFigmaProjectVisibility(token, true);
+      expect(on).toEqual({ kind: 'ok', isPublic: true });
+      const pub = await getFigmaProject(token);
+      expect(pub).toEqual({ config: '{"v":2}', revision: 1, isPublic: true });
+    });
+
+    it('returns not_found for a missing token', async () => {
+      expect(await setFigmaProjectVisibility('ghost', false)).toEqual({ kind: 'not_found' });
     });
   });
 
