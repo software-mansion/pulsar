@@ -6,10 +6,6 @@ on:
       - main
     paths:
       - 'docs/**'
-      # The docs build embeds the standalone figma/preview app (built from these
-      # sources by the prebuild step), and that app depends on web/Pulsar's
-      # pulsar-haptics build. Changes here must redeploy the docs, otherwise the
-      # embed silently keeps serving stale code.
       - 'figma/preview/**'
       - 'web/Pulsar/**'
       - '.github/workflows/deploy-docs.yml'
