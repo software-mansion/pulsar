@@ -24,6 +24,13 @@ const defaultEdges = {
   right: 'additive',
 };
 
+const fullscreenEdges = {
+  top: 'off',
+  left: 'off',
+  bottom: 'off',
+  right: 'off',
+};
+
 // Figma tab. Two modes:
 //   1. Deep-linked from the Figma plugin (`pulsarapp://figma?token=<token>`)
 //      → render the standalone live-preview web app inside a WebView and bridge
@@ -84,7 +91,7 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   );
 
   return (
-    <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
+    <SafeAreaView edges={(tabBarHidden ? fullscreenEdges : defaultEdges) as any} style={styles.safeArea}>
       <WebView
         ref={webRef}
         source={{ uri: previewUrl }}
