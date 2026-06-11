@@ -2,7 +2,7 @@ import { normalizeId } from './ids';
 
 // OAuth client id for the Figma Embed API (provided by the file owner). The host
 // running this app must also be registered as an embed origin on that OAuth app.
-export const CLIENT_ID = '2EUn8wVWgJHsMsjlcRB9nQ';
+export const CLIENT_ID = 'rFVRGQzqVwwaHUEyqKnwwW';
 
 // Origins the embed posts events from. We accept www + embed subdomains.
 export const FIGMA_ORIGINS = ['https://www.figma.com', 'https://embed.figma.com'];
