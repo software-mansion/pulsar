@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'docs/**'
+      - 'figma/preview/**'
+      - 'web/Pulsar/**'
+      - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
 permissions:
