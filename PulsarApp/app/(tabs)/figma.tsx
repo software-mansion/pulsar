@@ -24,6 +24,16 @@ const defaultEdges = {
   right: 'additive',
 };
 
+// Full-screen mode (tab bar hidden): drop every safe-area inset so the preview
+// runs truly edge-to-edge — otherwise the top inset keeps clipping the
+// prototype under the notch/status bar even though the bottom bar is gone.
+const fullscreenEdges = {
+  top: 'off',
+  left: 'off',
+  bottom: 'off',
+  right: 'off',
+};
+
 // Figma tab. Two modes:
 //   1. Deep-linked from the Figma plugin (`pulsarapp://figma?token=<token>`)
 //      → render the standalone live-preview web app inside a WebView and bridge
@@ -84,7 +94,7 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   );
 
   return (
-    <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
+    <SafeAreaView edges={(tabBarHidden ? fullscreenEdges : defaultEdges) as any} style={styles.safeArea}>
       <WebView
         ref={webRef}
         source={{ uri: previewUrl }}
