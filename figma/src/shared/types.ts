@@ -37,8 +37,9 @@ export interface BindingMeta {
 export type Settings = {
   soundInEdit: boolean;
   compactLayout: boolean;
-  // Optional manual file-key override, used when figma.fileKey is unavailable
-  // (e.g. the plugin is not private / enablePrivatePluginApi is off).
+  // Optional manual file-key override. The main thread now always mints a stable
+  // key from root pluginData, so this is a secondary fallback only consulted when
+  // that key is somehow absent (kept for back-compat and manual cross-file pairing).
   fileKeyOverride: string;
   // Optional override for the live-preview app base URL. Empty string uses the
   // built-in default (vite-dev → localhost:5173, prod → docs.swmansion.com).
@@ -134,9 +135,9 @@ export type MainToUi =
       type: 'init';
       settings: Settings;
       hapticsToken: string | null;
-      // Current document's file key (figma.fileKey), or null when unavailable
-      // (e.g. enablePrivatePluginApi off). Lets the UI request this file's
-      // project state immediately on load.
+      // Stable per-document key minted by the main thread (root pluginData),
+      // or null in legacy paths. Lets the UI request this file's project state
+      // immediately on load.
       fileKey: string | null;
       favourites: string[];
       customPresets: CatalogEntry[];

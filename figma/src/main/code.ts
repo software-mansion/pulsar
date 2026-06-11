@@ -39,6 +39,13 @@ const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 const WINDOW_SIZE_KEY = 'pulsar:windowSize';
+// Stable per-document identifier, stored in the document's root pluginData.
+// Replaces `figma.fileKey`, which is only available with the private plugin API
+// and would block a public Community release. Root pluginData is persisted in
+// the file and synced to every collaborator, so this key is just as stable and
+// shared as fileKey was — it simply lives in our own namespace instead of
+// Figma's global one (which only matters for keying our own server rows).
+const FILE_ID_KEY = 'pulsar:fileId';
 
 const DEFAULT_SIZE = { width: 380, height: 640 };
 // Clamp the persisted size so a stored value can't shrink the UI below a
@@ -73,6 +80,18 @@ figma.clientStorage.getAsync(WINDOW_SIZE_KEY).then((raw) => {
 
 function postToUi(msg: MainToUi) {
   figma.ui.postMessage(msg);
+}
+
+// Resolve the stable per-file key, minting and persisting one on first use.
+// `figma.root` and its pluginData are always available (even under
+// documentAccess: dynamic-page), so this is safe to call synchronously.
+function resolveFileKey(): string {
+  let id = figma.root.getPluginData(FILE_ID_KEY);
+  if (!id) {
+    id = `f${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+    figma.root.setPluginData(FILE_ID_KEY, id);
+  }
+  return id;
 }
 
 async function loadSettings(): Promise<Settings> {
@@ -510,7 +529,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         type: 'init',
         settings,
         hapticsToken,
-        fileKey: figma.fileKey ?? null,
+        fileKey: resolveFileKey(),
         favourites,
         customPresets
       });
@@ -586,7 +605,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       postToUi({
         type: 'preview-data',
         purpose: msg.purpose,
-        fileKey: figma.fileKey ?? null,
+        fileKey: resolveFileKey(),
         presentNodeId: present ? present.id : null,
         presentNodeBox: present ? boxOf(present) : null,
         bindings,
