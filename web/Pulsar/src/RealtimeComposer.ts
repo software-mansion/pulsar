@@ -14,12 +14,23 @@ import Settings from "./Settings.ts";
  */
 const ENGAGEMENT_THRESHOLD_MS = 60;
 
+/**
+ * Auto-stop the PWM loop if no `set` arrives within this window. Playback is
+ * continuous and only ends on an explicit `stop()`, so a driver that goes silent
+ * while playing (e.g. a pointer/sensor stream that ends without a final stop)
+ * would otherwise vibrate indefinitely. The keepalive bounds that worst case to a
+ * short, fixed tail. Measured by accumulating elapsed cycle durations (rather than
+ * wall-clock) so it stays deterministic under fake timers in tests.
+ */
+const KEEPALIVE_MS = 400;
+
 class RealtimeComposer {
   private readonly timingCapabilities = getHapticTimingCapabilities();
   private intensity = 0.5;
   private frequency = 0.5;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private playing = false;
+  private msSinceLastSet = 0;
   private unregisterStopHandler: (() => void) | null = null;
 
   /**
@@ -34,6 +45,7 @@ class RealtimeComposer {
   public set(intensity: number, frequency: number) {
     this.intensity = this.clamp01(intensity);
     this.frequency = this.clamp01(frequency);
+    this.msSinceLastSet = 0;
 
     if (!Settings.isHapticsEnabled() || !Settings.isHapticsAvailable()) {
       this.stopInternal(true);
@@ -78,9 +90,17 @@ class RealtimeComposer {
       return false;
     }
 
+    if (this.msSinceLastSet >= KEEPALIVE_MS) {
+      // No fresh set within the keepalive window — the driver went silent;
+      // self-terminate so we never vibrate indefinitely.
+      this.stopInternal(true);
+      return false;
+    }
+
     const shotLength = this.resolveShotLength(this.intensity);
     const pauseLength = this.resolvePauseLength(this.frequency);
     const cycleDuration = shotLength + pauseLength;
+    this.msSinceLastSet += cycleDuration;
 
     // intensity === 0 → silence. Skip vibrate() (a call of 0 would cancel any
     // in-progress shot from a previous tick) and just wait out the pause.

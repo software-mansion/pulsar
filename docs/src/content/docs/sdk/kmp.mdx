@@ -498,20 +498,12 @@ pulsar.realtimeComposerStrategy = RealtimeComposerStrategy.ENVELOPE
 
 ### Methods
 
-#### `start()`
+#### `set(amplitude, frequency)`
 
-Starts the realtime composer so that subsequent `set(amplitude, frequency)` calls play. `set(...)` requires `start()` first — calls made before `start()` or after `stop()` are silent no-ops. After `stop()`, call `start()` again before the next `set(...)`. Backed by `RealtimeComposerHandle.start()` on each platform target.
-
-```kotlin
-fun start()
-```
-
-#### `set(amplitude, frequency, startIfNeeded)`
-
-Updates the ongoing haptic with new amplitude and frequency values. Values should be in the 0-1 range. Has no effect until `start()` has been called; becomes a no-op again after `stop()`. Pass `startIfNeeded = true` to auto-start the composer when it is not already active — defaults to `false`, preserving the no-op-when-inactive behavior.
+Begins realtime playback if it isn't already running and updates the haptic with the new amplitude and frequency. Values should be in the 0-1 range. Playback continues until `stop()` is called or until no `set(...)` arrives within a short keepalive window (~400 ms), after which it stops automatically.
 
 ```kotlin
-fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean = false)
+fun set(amplitude: Float, frequency: Float)
 ```
 
 #### `playDiscrete(amplitude, frequency)`
@@ -543,21 +535,18 @@ fun isActive(): Boolean
 ```kotlin
 val realtime = pulsar.getRealtimeComposer()
 
-// Begin a continuous haptic — required before set(...) will play
-realtime.start()
-
-// Update parameters over time as the gesture progresses
+// Update parameters over time as the gesture progresses.
+// The first set(...) begins playback automatically.
 realtime.set(amplitude = 0.5f, frequency = 0.8f)
 realtime.set(amplitude = 1.0f, frequency = 0.3f)
 
 realtime.playDiscrete(amplitude = 0.7f, frequency = 0.5f)
 
-// End the continuous haptic. After this the composer is inactive
-// again — call start() before the next set(...).
+// End the continuous haptic.
 realtime.stop()
 ```
 
-> **Note:** `set(amplitude, frequency)` requires `start()` first. Calls before `start()` or after `stop()` are silent no-ops. Pair `start()` with the beginning of a gesture and `stop()` with its end, or pass `startIfNeeded = true` to `set(...)` to opt into auto-start when no clear begin hook is available.
+> **Note:** `set(...)` begins playback automatically and `stop()` ends it. Playback also auto-stops shortly after the last `set(...)` via a built-in keepalive, so a gesture or sensor stream that goes silent won't leave the haptic running. Hold an input perfectly still (no `set(...)`) for longer than the keepalive and playback simply lapses until the next `set(...)`.
 
 ---
 
