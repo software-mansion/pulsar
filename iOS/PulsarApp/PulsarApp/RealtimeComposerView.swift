@@ -179,7 +179,6 @@ struct RealtimeComposerView: View {
 
         if !isDragging {
             isDragging = true
-            composer?.start()
         }
         composer?.set(amplitude: getIntensity(), frequency: getSharpness())
     }

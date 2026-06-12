@@ -853,16 +853,8 @@ class PatternComposer internal constructor(
 class RealtimeComposer internal constructor(
     private val handle: RealtimeComposerHandle,
 ) {
-    fun start() {
-        handle.start()
-    }
-
-    fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean) {
-        handle.set(amplitude, frequency, startIfNeeded)
-    }
-
     fun set(amplitude: Float, frequency: Float) {
-        handle.set(amplitude, frequency, false)
+        handle.set(amplitude, frequency)
     }
 
     fun playDiscrete(amplitude: Float, frequency: Float) {

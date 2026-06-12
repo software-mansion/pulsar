@@ -325,6 +325,57 @@ test("restart-after-stop: set -> stop -> set re-enters playing state with a fres
   });
 });
 
+test("keepalive: continuous playback auto-stops when set() stops arriving", () => {
+  resetSettings();
+  const composer = new RealtimeComposer();
+  const vibrateCalls = [];
+
+  withNavigator(vibrateNavigator(vibrateCalls), () => {
+    withFakeTimers((timers) => {
+      // 400ms cycle (shot 200 + pause 200); the keepalive window is also 400ms.
+      composer.set(1, 0);
+      assert.equal(composer.isPlaying(), true);
+
+      // Advance well past the keepalive WITHOUT any further set(). The loop must
+      // self-terminate (a silent driver can never leave it vibrating forever)
+      // rather than keep replaying for the whole 5s window.
+      timers.tick(5000);
+
+      assert.equal(composer.isPlaying(), false, "playback should auto-stop without fresh set()");
+      // The tail is bounded by the keepalive (~1 extra cycle), not the 5s window.
+      assert.ok(
+        vibrateCalls.length <= 3,
+        `expected a short tail bounded by the keepalive, got ${vibrateCalls.length} vibrates`
+      );
+      // The terminating tick goes through stopInternal(true) -> navigator.vibrate(0).
+      assert.equal(vibrateCalls.at(-1), 0);
+    });
+  });
+});
+
+test("keepalive: a fresh set() before the window resets the deadline and keeps playing", () => {
+  resetSettings();
+  const composer = new RealtimeComposer();
+  const vibrateCalls = [];
+
+  withNavigator(vibrateNavigator(vibrateCalls), () => {
+    withFakeTimers((timers) => {
+      composer.set(1, 1); // 220ms cycle (shot 200 + pause 20) < 400ms keepalive
+      assert.equal(composer.isPlaying(), true);
+
+      // Keep feeding set() faster than the keepalive — playback must persist.
+      for (let i = 0; i < 5; i++) {
+        timers.runNext();
+        composer.set(1, 1);
+        assert.equal(composer.isPlaying(), true, `still playing after refresh #${i}`);
+      }
+
+      composer.stop();
+      assert.equal(composer.isPlaying(), false);
+    });
+  });
+});
+
 test("getCurrentValues defaults to 0.5/0.5 before any set", () => {
   resetSettings();
   const composer = new RealtimeComposer();

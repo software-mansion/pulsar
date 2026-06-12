@@ -5,6 +5,14 @@ public class RealtimeComposer: NSObject {
   private var engine: HapticEngineWrapper!
   private var isPlaying = false
 
+  /// Auto-stop the continuous player if no `set` arrives within this window.
+  /// Realtime playback is continuous and only ends on an explicit `stop()`, so a
+  /// driver that goes silent while playing (e.g. a sensor/gesture loop that is
+  /// torn down without a final stop) would otherwise vibrate indefinitely. The
+  /// keepalive bounds that worst case to a short, fixed tail.
+  private static let keepaliveMs = 400
+  private var keepaliveWorkItem: DispatchWorkItem?
+
   public init(engine: HapticEngineWrapper) {
     self.engine = engine
   }
@@ -13,28 +21,10 @@ public class RealtimeComposer: NSObject {
     stop()
   }
 
-  @objc public func start() {
-    guard engine.isHapticsEnabled else { return }
-    guard !isPlaying else { return }
-    guard let player = engine?.getRealtimePlayer() else { return }
-    isPlaying = true
-    do {
-      try player.start(atTime: 0)
-    } catch {
-      isPlaying = false
-      print("Error starting realtime player: \(error.localizedDescription)")
-    }
-  }
-
   @objc public func set(amplitude: Float, frequency: Float) {
-    set(amplitude: amplitude, frequency: frequency, startIfNeeded: false)
-  }
-
-  @objc public func set(amplitude: Float, frequency: Float, startIfNeeded: Bool) {
     guard engine.isHapticsEnabled else { return }
     if !isPlaying {
-      guard startIfNeeded else { return }
-      start()
+      ensureStarted()
     }
     guard isPlaying, let player = engine?.getRealtimePlayer() else { return }
 
@@ -44,12 +34,14 @@ public class RealtimeComposer: NSObject {
     ]
     do {
       try player.sendParameters(parameters, atTime: 0)
+      refreshKeepalive()
     } catch {
       print("Failed to update haptic parameters: \(error)")
     }
   }
 
   @objc public func stop() {
+    cancelKeepalive()
     guard isPlaying else { return }
     do {
       try engine?.getRealtimePlayer()?.stop(atTime: 0)
@@ -79,5 +71,35 @@ public class RealtimeComposer: NSObject {
     } catch {
       print("Failed to play transient haptic: \(error)")
     }
+  }
+
+  /// Starts the continuous realtime player on demand. Driven only by `set`;
+  /// there is no public start lifecycle — sending parameters arms playback.
+  private func ensureStarted() {
+    guard engine.isHapticsEnabled else { return }
+    guard !isPlaying else { return }
+    guard let player = engine?.getRealtimePlayer() else { return }
+    isPlaying = true
+    do {
+      try player.start(atTime: 0)
+      refreshKeepalive()
+    } catch {
+      isPlaying = false
+      print("Error starting realtime player: \(error.localizedDescription)")
+    }
+  }
+
+  private func refreshKeepalive() {
+    cancelKeepalive()
+    let workItem = DispatchWorkItem { [weak self] in
+      self?.stop()
+    }
+    keepaliveWorkItem = workItem
+    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Self.keepaliveMs), execute: workItem)
+  }
+
+  private func cancelKeepalive() {
+    keepaliveWorkItem?.cancel()
+    keepaliveWorkItem = nil
   }
 }
