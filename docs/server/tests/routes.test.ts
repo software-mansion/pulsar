@@ -49,38 +49,81 @@ describe('HTTP routes', () => {
       expect(res.body).toEqual({ success: false, error: 'config is required' });
     });
 
-    it('creates a project and returns token + revision 0', async () => {
+    it('creates a project and returns distinct edit + public tokens, revision 0', async () => {
       const res = await request(app)
         .post('/figma-project')
         .send({ config: { hello: 'world' } });
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(typeof res.body.token).toBe('string');
+      expect(typeof res.body.publicToken).toBe('string');
+      // The share token must never equal the secret edit token.
+      expect(res.body.publicToken).not.toBe(res.body.token);
       expect(res.body.revision).toBe(0);
     });
 
-    it('round-trips an object config back through GET (parsed)', async () => {
+    it('round-trips an object config through the public read route (parsed)', async () => {
       const config = { a: 1, nested: { b: [2, 3] } };
       const created = await request(app).post('/figma-project').send({ config });
-      const token = created.body.token;
+      const publicToken = created.body.publicToken;
 
-      const got = await request(app).get(`/figma-project/${token}`);
+      const got = await request(app).get(`/figma-project/public/${publicToken}`);
       expect(got.status).toBe(200);
       expect(got.body).toEqual({ success: true, config, revision: 0, isPublic: true });
     });
 
-    it('stores a non-JSON string config and returns it raw on GET', async () => {
+    it('stores a non-JSON string config and returns it raw on the public read', async () => {
       const created = await request(app).post('/figma-project').send({ config: 'plain text' });
-      const got = await request(app).get(`/figma-project/${created.body.token}`);
+      const got = await request(app).get(`/figma-project/public/${created.body.publicToken}`);
       expect(got.body.config).toBe('plain text');
     });
   });
 
-  describe('GET /figma-project/:token', () => {
+  describe('GET /figma-project/public/:publicToken (read-only share)', () => {
+    it('returns 404 for an unknown public token', async () => {
+      const res = await request(app).get('/figma-project/public/does-not-exist');
+      expect(res.status).toBe(404);
+      expect(res.body).toEqual({ success: false, error: 'Project not found' });
+    });
+
+    it('does NOT resolve when given the secret edit token', async () => {
+      const created = await request(app).post('/figma-project').send({ config: { v: 1 } });
+      // Hitting the public route with the *edit* token must look like nothing.
+      const res = await request(app).get(`/figma-project/public/${created.body.token}`);
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('GET /figma-project/:token (owner read by edit token)', () => {
     it('returns 404 for an unknown token', async () => {
       const res = await request(app).get('/figma-project/does-not-exist');
       expect(res.status).toBe(404);
       expect(res.body).toEqual({ success: false, error: 'Project not found' });
+    });
+
+    it('returns the config + publicToken for the owner', async () => {
+      const created = await request(app).post('/figma-project').send({ config: { v: 1 } });
+      const got = await request(app).get(`/figma-project/${created.body.token}`);
+      expect(got.status).toBe(200);
+      expect(got.body).toEqual({
+        success: true,
+        config: { v: 1 },
+        revision: 0,
+        isPublic: true,
+        publicToken: created.body.publicToken,
+      });
+    });
+
+    it('still serves the owner their config when the link is private', async () => {
+      const created = await request(app).post('/figma-project').send({ config: { v: 1 } });
+      const token = created.body.token;
+      await request(app).patch(`/figma-project/${token}/visibility`).send({ isPublic: false });
+
+      // Owner read ignores visibility (no 403 here — that's the public route).
+      const got = await request(app).get(`/figma-project/${token}`);
+      expect(got.status).toBe(200);
+      expect(got.body.isPublic).toBe(false);
+      expect(got.body.config).toEqual({ v: 1 });
     });
   });
 
@@ -95,6 +138,22 @@ describe('HTTP routes', () => {
       const res = await request(app).put(`/figma-project/${token}`).send({ config: { v: 2 } });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ success: true, revision: 1 });
+    });
+
+    it('a share-token holder CANNOT write (PUT with the public token → 404)', async () => {
+      // The core of the fix: handing out the public token must not grant edits.
+      const created = await request(app).post('/figma-project').send({ config: { v: 1 } });
+      const { token, publicToken } = created.body;
+
+      const res = await request(app)
+        .put(`/figma-project/${publicToken}`)
+        .send({ config: { v: 999 } });
+      expect(res.status).toBe(404);
+
+      // And the project is untouched — still at v:1, revision 0.
+      const got = await request(app).get(`/figma-project/${token}`);
+      expect(got.body.config).toEqual({ v: 1 });
+      expect(got.body.revision).toBe(0);
     });
 
     it('conditional update succeeds when baseRevision matches', async () => {
@@ -159,13 +218,15 @@ describe('HTTP routes', () => {
   });
 
   describe('PATCH /figma-project/:token/visibility', () => {
+    // Returns both tokens: the edit token (for the PATCH/PUT writes) and the
+    // public token (to verify the read-only share route).
     async function create(config: unknown) {
       const res = await request(app).post('/figma-project').send({ config });
-      return res.body.token as string;
+      return { token: res.body.token as string, publicToken: res.body.publicToken as string };
     }
 
-    it('makes a project private, then GET returns 403 instead of the config', async () => {
-      const token = await create({ v: 1 });
+    it('makes a project private, then the public read returns 403', async () => {
+      const { token, publicToken } = await create({ v: 1 });
 
       const patched = await request(app)
         .patch(`/figma-project/${token}/visibility`)
@@ -173,13 +234,27 @@ describe('HTTP routes', () => {
       expect(patched.status).toBe(200);
       expect(patched.body).toEqual({ success: true, isPublic: false });
 
-      const got = await request(app).get(`/figma-project/${token}`);
+      const got = await request(app).get(`/figma-project/public/${publicToken}`);
       expect(got.status).toBe(403);
       expect(got.body).toEqual({ success: false, error: 'private' });
     });
 
-    it('re-publishing a private project restores GET access', async () => {
-      const token = await create({ v: 1 });
+    it('a share-token holder CANNOT change visibility (PATCH with public token → 404)', async () => {
+      const { token, publicToken } = await create({ v: 1 });
+
+      // A viewer tries to revoke the link using the only token they have.
+      const res = await request(app)
+        .patch(`/figma-project/${publicToken}/visibility`)
+        .send({ isPublic: false });
+      expect(res.status).toBe(404);
+
+      // Visibility is unchanged — the public read still works.
+      const got = await request(app).get(`/figma-project/public/${publicToken}`);
+      expect(got.status).toBe(200);
+    });
+
+    it('re-publishing a private project restores public read access', async () => {
+      const { token, publicToken } = await create({ v: 1 });
       await request(app).patch(`/figma-project/${token}/visibility`).send({ isPublic: false });
 
       const patched = await request(app)
@@ -187,24 +262,24 @@ describe('HTTP routes', () => {
         .send({ isPublic: true });
       expect(patched.body).toEqual({ success: true, isPublic: true });
 
-      const got = await request(app).get(`/figma-project/${token}`);
+      const got = await request(app).get(`/figma-project/public/${publicToken}`);
       expect(got.status).toBe(200);
       expect(got.body).toEqual({ success: true, config: { v: 1 }, revision: 0, isPublic: true });
     });
 
     it('owners can still PUT config to a private project (sync keeps working)', async () => {
-      const token = await create({ v: 1 });
+      const { token, publicToken } = await create({ v: 1 });
       await request(app).patch(`/figma-project/${token}/visibility`).send({ isPublic: false });
 
       const put = await request(app).put(`/figma-project/${token}`).send({ config: { v: 2 } });
       expect(put.status).toBe(200);
       // Still private after a config sync — only the explicit PATCH re-exposes it.
-      const got = await request(app).get(`/figma-project/${token}`);
+      const got = await request(app).get(`/figma-project/public/${publicToken}`);
       expect(got.status).toBe(403);
     });
 
     it('returns 400 when isPublic is missing or not a boolean', async () => {
-      const token = await create({ v: 1 });
+      const { token } = await create({ v: 1 });
       for (const bad of [undefined, 'true', 1, null]) {
         const res = await request(app)
           .patch(`/figma-project/${token}/visibility`)

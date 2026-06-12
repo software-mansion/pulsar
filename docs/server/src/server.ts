@@ -23,9 +23,11 @@ function start() {
   console.log('\n📍 HTTP endpoints:');
   console.log(`   GET  http://localhost:${PORT}/create-channel`);
   console.log(`   POST http://localhost:${PORT}/broadcast`);
-  console.log(`   POST http://localhost:${PORT}/figma-project`);
-  console.log(`   PUT  http://localhost:${PORT}/figma-project/:token`);
-  console.log(`   GET  http://localhost:${PORT}/figma-project/:token`);
+  console.log(`   POST  http://localhost:${PORT}/figma-project`);
+  console.log(`   PUT   http://localhost:${PORT}/figma-project/:token            (owner edit token)`);
+  console.log(`   PATCH http://localhost:${PORT}/figma-project/:token/visibility (owner edit token)`);
+  console.log(`   GET   http://localhost:${PORT}/figma-project/:token            (owner edit token)`);
+  console.log(`   GET   http://localhost:${PORT}/figma-project/public/:token     (read-only share)`);
   console.log('\n🔌 WebSocket (pairing):');
   console.log(`   ws://localhost:${PORT}/?type=sender|receiver&action=new_connection&code=<code>`);
   console.log(`   ws://localhost:${PORT}/?type=sender|receiver&action=reuse_connection&token=<token>`);
