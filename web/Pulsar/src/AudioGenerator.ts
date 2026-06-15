@@ -27,44 +27,27 @@ const ATTACK_SECONDS = 0.003;
 const RELEASE_SECONDS = 0.03;
 
 /**
- * Web haptics cannot vary the motor's intensity or pitch — `navigator.vibrate`
- * only controls *when* the motor is on. The vibration motor itself runs at a
- * single fixed resonant frequency and a single fixed amplitude. The audio
- * simulation honours that exactly: every "on" window is rendered as the *same*
- * buzz, and only its position and length change. Intensity and frequency reach
- * the listener purely through the PWM timing produced by PatternComposer
- * (longer shots = stronger, tighter shots = buzzier), never through pitch or
- * loudness varying between shots.
+ * `navigator.vibrate` only gates a motor that runs at one fixed frequency and
+ * amplitude, so every "on" window is rendered as the *same* buzz — only its
+ * position and length change. Intensity and frequency reach the listener purely
+ * through the PWM timing from PatternComposer, never through per-shot pitch or
+ * loudness.
  *
- * To stop the buzz sounding like a flat electronic test tone, each "on" window
- * borrows the percussive character of the docs/Figma `AudioPatternUtility`
- * renderer: a short onset frequency sweep ("spin-up") settling onto the fixed
- * carrier, layered detuned partials, and a soft attack/release. This is *more*
- * faithful to a real fixed-frequency motor — which has a mechanical spin-up
- * transient — than a perfectly steady sine. Crucially, that character is
- * identical on every shot, so the constraint still holds: only the timing
- * carries information.
+ * To avoid a flat, robotic tone, each shot borrows the percussive character of
+ * the docs/Figma `AudioPatternUtility` renderer (onset frequency sweep, detuned
+ * partials, soft attack/release). That character is identical on every shot, so
+ * the constraint still holds.
  */
 const CARRIER_FREQUENCY_HZ = 180;
 const PULSE_VOLUME = 0.5;
 
-/**
- * The onset "spin-up" transient, mirroring how the docs renderer sweeps each
- * event's pitch (`initial -> final`). Every pulse starts a fixed multiple above
- * the carrier and chirps down onto it over a fixed time, giving a percussive
- * body instead of a flat tone. Because the overshoot, the target, and the sweep
- * length are all constants, the transient is the same on every shot.
- */
+// Onset "spin-up": each shot chirps from this multiple of the carrier down onto
+// it over ONSET_DECAY_SECONDS, giving a percussive body instead of a flat tone.
 const ONSET_FREQUENCY_RATIO = 1.9;
 const ONSET_DECAY_SECONDS = 0.04;
 
-/**
- * A fixed timbre for the motor buzz. The same partials are layered on top of
- * every pulse so the spectral content never changes between shots — only the
- * timing does. The slightly detuned, docs-style stack (fundamental, a fifth
- * above, and a sub) reads as a textured actuator buzz rather than a clean
- * musical note.
- */
+// Fixed timbre: detuned partials (fundamental, a fifth, a sub) that read as a
+// textured actuator buzz rather than a clean musical note.
 const BUZZ_HARMONICS = [
   { multiplier: 1, volumeScale: 1, waveform: "sine" },
   { multiplier: 1.5, volumeScale: 0.35, waveform: "sine" },
@@ -230,15 +213,12 @@ class AudioGenerator {
     targetNode: AudioNode,
     interval: AudioInterval,
   ) {
-    // Every "on" window is the exact same buzz: a fixed carrier frequency at a
-    // fixed amplitude, with a fixed onset chirp. Nothing here reads
-    // interval.duration to change pitch or loudness between shots — duration
-    // only controls how long the oscillators run, mirroring how
-    // navigator.vibrate can only gate a fixed-frequency motor on and off.
+    // duration only controls how long the oscillators run, never their pitch or
+    // amplitude — every shot is the same buzz.
     const startTime = interval.start / 1000;
     const stopTime = (interval.start + interval.duration) / 1000;
     const durationSeconds = interval.duration / 1000;
-    // The chirp settles within the pulse, never overrunning a short one.
+    // Cap the chirp so it settles within a short pulse instead of overrunning it.
     const sweepEndTime = startTime + Math.min(ONSET_DECAY_SECONDS, durationSeconds);
 
     for (const harmonic of BUZZ_HARMONICS) {
@@ -247,8 +227,6 @@ class AudioGenerator {
 
       const oscillator = offlineContext.createOscillator();
       oscillator.type = harmonic.waveform;
-      // Identical "spin-up" on every shot: a fixed overshoot chirping down onto
-      // the fixed steady carrier, which then holds for the rest of the window.
       oscillator.frequency.setValueAtTime(onsetFrequency, startTime);
       oscillator.frequency.exponentialRampToValueAtTime(steadyFrequency, sweepEndTime);
 
