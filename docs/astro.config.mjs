@@ -94,6 +94,10 @@ export default defineConfig({
       },
     }),
     react(),
-    sitemap(),
+    sitemap({
+      // figma-preview is a headless embed surface (noindex) — keep it out of
+      // the sitemap so we don't invite Google to index it.
+      filter: (page) => !page.includes('/figma-preview'),
+    }),
   ],
 });
