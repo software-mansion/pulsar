@@ -9,7 +9,7 @@ import { TagsModal } from '../TagsModal/TagsModal';
 import { TagsInfo } from '../PresetsList/Tags';
 import { WebPresetsConfig } from '../../assets/webPresets/WebPresetsConfig';
 import { NoResult } from '../NoResult/NoResult';
-import { ChartModal } from '../ChartModal/ChartModal';
+import { WebChartModal } from '../WebPreset/WebChartModal';
 
 const COMPACT_LAYOUT_KEY = 'web_presets_compact_layout';
 const FAVOURITES_KEY = 'web_presets_favourites';
@@ -223,7 +223,7 @@ export function WebPresetsList() {
       ))}
 
       {showModal === 'tags' && <TagsModal onClose={() => setShowModal('no')} />}
-      {showModal === 'chart' && <ChartModal onClose={() => setShowModal('no')} />}
+      {showModal === 'chart' && <WebChartModal onClose={() => setShowModal('no')} />}
 
       {portalRoot &&
         showScrollToTop &&
