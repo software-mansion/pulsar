@@ -35,6 +35,10 @@ import arrowIcon from '../assets/landing-page/arrow.svg';
     />
     <meta name="keywords" content="haptic feedback android, haptic feedback android, react native haptic feedback, ios haptics, react native haptics, ios haptic feedback, haptics feedback, android haptic feedback, haptic feedback react native, swiftui haptic feedback, haptics" />
     <title>Pulsar: Haptic Feedback Library for Swift, Kotlin & React Native</title>
+    {/* Self-referencing canonical so tracking-param variants (e.g. ?ref=...)
+        consolidate to the clean root URL. Starlight pages get this automatically;
+        this hand-rolled landing page needs it set explicitly. */}
+    <link rel="canonical" href={new URL(`${BASE_PATH}/`, Astro.site).href} />
     <link rel="icon" type="image/svg+xml" href={`${BASE_PATH}/logo.svg`} />
     <link rel="preload" as="image" type="image/svg+xml" href={swmLogo.src} />
     <link rel="preload" as="image" type="image/svg+xml" href={starIcon.src} />
