@@ -29,16 +29,13 @@
   --fs-xl: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b1226;
-    --surface: #131d3a;
-    --text: #e7efff;
-    --muted: #95a8d4;
-    --border: #28365e;
-    --shadow-card: -3px 3px 0 var(--color-blue-50);
-  }
-}
+/* The plugin UI is built entirely around the light Pulsar palette. Figma renders
+   the plugin in an iframe whose host window adopts the editor's theme, so when
+   Figma is in dark mode its near-black window background shows through any
+   surface we leave transparent. Rather than maintain a separate dark palette for
+   every component, we pin the plugin to its light theme and paint an opaque
+   background on the root surfaces below so the native dark window never bleeds
+   in. (Intentionally not honouring prefers-color-scheme.) */
 
 * {
   box-sizing: border-box;
@@ -53,6 +50,7 @@ body,
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: var(--text);
+  /* Opaque light fill — covers Figma's native (possibly dark) window chrome. */
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }

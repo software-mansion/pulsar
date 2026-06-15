@@ -817,7 +817,16 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        // Opaque light fill so Figma's native window background (dark in dark
+        // mode) never shows through the plugin surface.
+        background: 'var(--bg)'
+      }}
+    >
       <div
         className="row"
         style={{ padding: '8px 10px 0', gap: 0, borderBottom: '1px solid var(--border)' }}
