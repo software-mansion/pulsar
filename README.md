@@ -2,7 +2,7 @@
   <img src="https://github.com/software-mansion/pulsar/blob/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
 </p>
 
-A haptic feedback SDK for iOS, Android, React Native, and Kotlin Multiplatform. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
+A haptic feedback SDK for iOS, Android, React Native, Kotlin Multiplatform, Flutter, and the Web. Pulsar provides ready-to-use haptic presets, a pattern composer for custom haptic sequences, and a real-time composer for gesture-driven feedback.
 
 ## Features
 
@@ -21,6 +21,7 @@ A haptic feedback SDK for iOS, Android, React Native, and Kotlin Multiplatform. 
 | Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
 | Kotlin Multiplatform | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) |
 | Flutter | [pub.dev](https://pub.dev/packages/pulsar_haptics) |
+| Web | [![npm](https://img.shields.io/npm/v/pulsar-haptics)](https://www.npmjs.com/package/pulsar-haptics) |
 
 ## Quick start
 
@@ -39,6 +40,25 @@ Presets.dogBark();
 // Play a system haptic
 Presets.System.impactMedium();
 ```
+
+### Web
+
+<!-- GENERATED:WEB_VERSION_START -->
+Latest available version: `0.1.1`
+<!-- GENERATED:WEB_VERSION_END -->
+
+```bash
+npm install pulsar-haptics
+```
+
+```ts
+import { Presets } from 'pulsar-haptics';
+
+// Play a preset
+Presets.tap();
+```
+
+> Plays through the Web Vibration API, with an audio fallback. Real vibration is unavailable on iOS/iPadOS Safari (Apple does not implement the Web Vibration API) — see the [Web SDK docs](https://docs.swmansion.com/pulsar/sdk/web/).
 
 ### iOS
 

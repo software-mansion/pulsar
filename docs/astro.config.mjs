@@ -41,10 +41,6 @@ export default defineConfig({
           label: 'Presets playground',
           slug: 'presets-playground',
         },
-        {
-          label: 'Web preset playground',
-          slug: 'web-presets-playground',
-        },
         // {
         //   label: 'AI Skills',
         //   slug: 'skills',
@@ -66,6 +62,13 @@ export default defineConfig({
             { label: 'React Native', slug: 'sdk/react-native' },
             { label: 'Kotlin Multiplatform', slug: 'sdk/kmp' },
             { label: 'Flutter', slug: 'sdk/flutter' },
+          ],
+        },
+        {
+          label: 'Web',
+          items: [
+            { label: 'SDK', slug: 'sdk/web' },
+            { label: 'Preset playground', slug: 'web-presets-playground' },
           ],
         },
         {

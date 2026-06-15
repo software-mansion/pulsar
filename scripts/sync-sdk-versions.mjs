@@ -18,12 +18,14 @@ const files = [
   'docs/src/content/docs/sdk/react-native.mdx',
   'docs/src/content/docs/sdk/kmp.mdx',
   'docs/src/content/docs/sdk/flutter.mdx',
+  'docs/src/content/docs/sdk/web.mdx',
   'iOS/Pulsar/README.md',
   'iOS/Pulsar/Pulsar-haptics.podspec',
   'Android/Pulsar/README.md',
   'react-native/react-native-pulsar/README.md',
   'kmp/Pulsar/README.md',
   'flutter/pulsar/README.md',
+  'web/Pulsar/README.md',
 ];
 
 function replaceGeneratedSection(content, key, replacement) {
@@ -61,11 +63,18 @@ function replaceGeneratedSection(content, key, replacement) {
 function getOverviewBlock() {
   return `## Latest available version
 
-- iOS: Swift Package tag \`${versions.ios.version}\`
-- Android: Maven artifact \`${versions.android.mavenCoordinate}:${versions.android.version}\`
-- React Native: npm package \`${versions.reactNative.packageName}@${versions.reactNative.version}\`
-- Kotlin Multiplatform: Maven artifact \`${versions.kmp.mavenCoordinate}:${versions.kmp.version}\`
-- Flutter: pub.dev package \`${versions.flutter.packageName}@${versions.flutter.version}\``;
+| Platform | Package | Version |
+| --- | --- | --- |
+| iOS | Swift Package | \`${versions.ios.version}\` |
+| Android | \`${versions.android.mavenCoordinate}\` (Maven) | \`${versions.android.version}\` |
+| React Native | \`${versions.reactNative.packageName}\` (npm) | \`${versions.reactNative.version}\` |
+| Kotlin Multiplatform | \`${versions.kmp.mavenCoordinate}\` (Maven) | \`${versions.kmp.version}\` |
+| Flutter | \`${versions.flutter.packageName}\` (pub.dev) | \`${versions.flutter.version}\` |
+| Web | \`${versions.web.packageName}\` (npm) | \`${versions.web.version}\` |`;
+}
+
+function getWebVersionLine() {
+  return `Latest available version: \`${versions.web.version}\``;
 }
 
 function getIosVersionLine() {
@@ -192,6 +201,14 @@ for (const relativeFile of files) {
   ) {
     content = replaceGeneratedSection(content, 'FLUTTER_VERSION', getFlutterVersionLine());
     content = replaceGeneratedSection(content, 'FLUTTER_INSTALL_SNIPPET', getFlutterSnippet());
+  }
+
+  if (
+    relativeFile === 'docs/src/content/docs/sdk/web.mdx' ||
+    relativeFile === 'web/Pulsar/README.md' ||
+    relativeFile === 'README.md'
+  ) {
+    content = replaceGeneratedSection(content, 'WEB_VERSION', getWebVersionLine());
   }
 
   await fs.writeFile(absoluteFile, content);
