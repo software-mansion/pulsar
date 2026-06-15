@@ -94,10 +94,6 @@ export default defineConfig({
       },
     }),
     react(),
-    sitemap({
-      // Unfinished, unlinked blog drafts are kept out of the sitemap so Google
-      // does not surface them. They are also marked noindex in their frontmatter.
-      filter: (page) => !page.includes('/blog/'),
-    }),
+    sitemap(),
   ],
 });
