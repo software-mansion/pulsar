@@ -7,7 +7,7 @@ import type { WebPresetConfig } from './types';
 
 // Mirror the generator constants in web/Pulsar/scripts/generate-images.ts so the play
 // indicator lines up with the rendered bars regardless of the image's display scale.
-const PX_PER_MS = 0.5;
+const PX_PER_MS = 0.3;
 const PAD_X = 14;
 const RIGHT_MARGIN = 24; // keep the playhead this far inside the right edge when scrolling
 

@@ -40,8 +40,8 @@ const presetsDir = dirIdx !== -1
   : path.resolve(here, "../../../docs/src/content/docs/assets/webPresets");
 
 const HEIGHT = 100;
-const PX_PER_MS = 0.5; // denser than 1px=1ms so longer presets stay compact
-const MIN_WIDTH = 1000; // wide enough that the grid fills the scroll box (bars stay natural)
+const PX_PER_MS = 0.3; // dense enough that most presets fit the scroll box without scrolling
+const MIN_WIDTH = 630; // short presets fill the box; only the longest presets overflow + scroll
 const MARGIN_TOP = 6;
 const PAD_X = 14;
 const BLOCK_AMPLITUDE = 1; // uniform height for every ON block
