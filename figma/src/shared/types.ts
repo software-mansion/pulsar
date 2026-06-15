@@ -115,7 +115,8 @@ export type UiToMain =
   // fileKey so opening the plugin in another design file gets its own token
   // instead of clobbering the first file's shared preview.
   | { type: 'get-project'; fileKey: string }
-  | { type: 'persist-project-token'; fileKey: string; token: string }
+  // Persist this file's tokens: secret edit `token` + read-only `publicToken`.
+  | { type: 'persist-project-token'; fileKey: string; token: string; publicToken: string }
   | { type: 'persist-project-cache'; fileKey: string; config: unknown; baseRevision: number | null }
   // Persist just the share-link visibility for a file (the public/private
   // toggle), without rewriting the cached config. Keyed by fileKey like the
@@ -147,7 +148,11 @@ export type MainToUi =
   | {
       type: 'project';
       fileKey: string;
+      // Secret edit token, or null when the file has never been shared.
       token: string | null;
+      // Read-only share token, or null when unknown (never shared, or a legacy
+      // share the cold-start reconcile hasn't recovered yet).
+      publicToken: string | null;
       config: unknown | null;
       baseRevision: number | null;
       // Last-known share-link visibility for this file. Defaults to true (public)
