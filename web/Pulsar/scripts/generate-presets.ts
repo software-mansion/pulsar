@@ -308,6 +308,7 @@ for (const key of keys) {
 fs.mkdirSync(outDir, { recursive: true });
 
 const expectedFiles = new Set<string>();
+const sortedNames: string[] = [];
 for (const key of keys) {
   const { name, description, tags } = META[key];
   const pattern = BUILTIN_PRESETS[key] as HapticPattern;
@@ -321,7 +322,57 @@ for (const key of keys) {
   const file = path.join(outDir, `${name}.json`);
   fs.writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
   expectedFiles.add(`${name}.json`);
+  sortedNames.push(name);
 }
+sortedNames.sort((a, b) => a.localeCompare(b));
+
+// Wire every preset JSON + its PNG into the docs config the same way the mobile
+// codegen does: fill the CODEGEN marker blocks of a committed WebPresetsConfig.ts
+// rather than overwriting the hand-maintained wrapper.
+const configImports = sortedNames
+  .map(
+    (name) =>
+      `import ${name}Preset from './${name}.json';\nimport ${name}Image from './${name}.png';`,
+  )
+  .join("\n");
+const configEntries = sortedNames
+  .map((name) => `  { data: ${name}Preset, image: ${name}Image },`)
+  .join("\n");
+
+const configPath = path.join(outDir, "WebPresetsConfig.ts");
+const CONFIG_SCAFFOLD = `import type { WebPresetConfig } from '../../components/WebPreset/types';
+
+// CODEGEN_BEGIN_{imports}
+// CODEGEN_END_{imports}
+
+export const WebPresetsConfig: Array<WebPresetConfig> = [
+// CODEGEN_BEGIN_{presets}
+// CODEGEN_END_{presets}
+];
+`;
+
+if (!fs.existsSync(configPath)) {
+  fs.writeFileSync(configPath, CONFIG_SCAFFOLD);
+}
+
+/** Replace the content between CODEGEN_BEGIN_{section} … CODEGEN_END_{section}. */
+function updateSection(filePath: string, section: string, body: string): void {
+  const begin = `// CODEGEN_BEGIN_{${section}}`;
+  const end = `// CODEGEN_END_{${section}}`;
+  const content = fs.readFileSync(filePath, "utf8");
+  const beginIdx = content.indexOf(begin);
+  const endIdx = content.indexOf(end, beginIdx + begin.length);
+  if (beginIdx === -1 || endIdx === -1) {
+    console.error(`Missing ${begin} / ${end} markers in ${filePath}`);
+    process.exit(1);
+  }
+  const before = content.slice(0, beginIdx + begin.length);
+  const after = content.slice(endIdx);
+  fs.writeFileSync(filePath, `${before}\n${body}\n${after}`);
+}
+
+updateSection(configPath, "imports", configImports);
+updateSection(configPath, "presets", configEntries);
 
 if (process.argv.includes("--clean")) {
   for (const entry of fs.readdirSync(outDir)) {

@@ -41,6 +41,10 @@ export default defineConfig({
           label: 'Presets playground',
           slug: 'presets-playground',
         },
+        {
+          label: 'Web preset playground',
+          slug: 'web-presets-playground',
+        },
         // {
         //   label: 'AI Skills',
         //   slug: 'skills',

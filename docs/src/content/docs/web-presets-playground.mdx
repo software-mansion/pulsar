@@ -1,0 +1,43 @@
+---
+title: Web preset playground
+description: Browse ready-to-use web haptic feedback presets you can play straight in the browser with pulsar-haptics. Filter by intensity, sharpness, shape & duration.
+head:
+  - tag: title
+    content: "Web Haptic Feedback Presets Playground | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar - web haptics presets you can feel in the browser"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "Ready-to-use web haptics presets\nPlay them straight in the browser with pulsar-haptics."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar - web haptics presets you can feel in the browser"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "Ready-to-use web haptics presets\nPlay them straight in the browser with pulsar-haptics."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+import { WebPresetsList } from './components/WebPresetsList/WebPresetsList';
+
+<WebPresetsList client:load />
