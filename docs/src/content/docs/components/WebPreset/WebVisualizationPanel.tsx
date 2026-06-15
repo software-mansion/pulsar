@@ -1,9 +1,15 @@
-import styles from '../VisualizationPanel/VisualizationPanel.module.scss';
+import styles from './WebVisualizationPanel.module.scss';
 import playIcon from '../../assets/new_assets/play.svg';
 import pauseIcon from '../../assets/new_assets/pause.svg';
 import { useEffect, useRef, useState } from 'react';
 import type { HapticPattern } from 'pulsar-haptics';
 import type { WebPresetConfig } from './types';
+
+// Mirror the generator constants in web/Pulsar/scripts/generate-images.ts so the play
+// indicator lines up with the rendered bars regardless of the image's display scale.
+const PX_PER_MS = 0.5;
+const PAD_X = 14;
+const RIGHT_MARGIN = 24; // keep the playhead this far inside the right edge when scrolling
 
 declare global {
   interface Window {
@@ -62,14 +68,21 @@ export function WebVisualizationPanel({ visualization, soundEnabled = true, clas
       if (!startTimeRef.current) startTimeRef.current = timestamp;
       const elapsed = timestamp - startTimeRef.current;
       const progress = Math.min(elapsed / presetDuration, 1);
-      const imageWidth = imageRef.current?.offsetWidth ?? 1000;
-      const indicatorX = progress * Math.min(imageWidth, presetDuration);
+      // Bars sit at natural x = PAD_X + t * PX_PER_MS; scale by the image's display ratio.
+      const img = imageRef.current;
+      const scaleX = img && img.naturalWidth ? img.offsetWidth / img.naturalWidth : 1;
+      const indicatorX = (PAD_X + progress * presetDuration * PX_PER_MS) * scaleX;
 
       if (indicatorRef.current) indicatorRef.current.style.left = `${indicatorX}px`;
 
-      if (scrollRef.current) {
-        const viewportWidth = scrollRef.current.offsetWidth;
-        scrollRef.current.scrollLeft = Math.max(0, indicatorX - viewportWidth / 2);
+      const scroller = scrollRef.current;
+      if (scroller) {
+        // Scroll just enough to keep the playhead in view, based on where the BARS end
+        // (not scrollWidth, which includes trailing grid). Linear in progress → smooth,
+        // never lurches, and never overshoots into empty grid.
+        const barsEndX = (PAD_X + presetDuration * PX_PER_MS) * scaleX;
+        const needed = Math.max(0, barsEndX + RIGHT_MARGIN - scroller.clientWidth);
+        scroller.scrollLeft = progress * needed;
       }
 
       if (progress < 1) {

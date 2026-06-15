@@ -39,9 +39,10 @@ const presetsDir = dirIdx !== -1
   ? path.resolve(args[dirIdx + 1])
   : path.resolve(here, "../../../docs/src/content/docs/assets/webPresets");
 
-const HEIGHT = 200;
-const PX_PER_SEC = 1000;
-const MARGIN_TOP = 8;
+const HEIGHT = 100;
+const PX_PER_MS = 0.5; // denser than 1px=1ms so longer presets stay compact
+const MIN_WIDTH = 1000; // wide enough that the grid fills the scroll box (bars stay natural)
+const MARGIN_TOP = 6;
 const PAD_X = 14;
 const BLOCK_AMPLITUDE = 1; // uniform height for every ON block
 
@@ -81,8 +82,7 @@ function render(canvas: any, intervals: Array<{ start: number; end: number }>) {
   const plotH = HEIGHT - MARGIN_TOP;
   const baseline = HEIGHT; // amplitude 0 sits flush on the bottom edge (matches docs)
 
-  // 1px = 1ms, same scale as the docs renderer.
-  const scaleX = (t: number) => PAD_X + t;
+  const scaleX = (t: number) => PAD_X + t * PX_PER_MS;
   const topY = MARGIN_TOP + (1 - BLOCK_AMPLITUDE) * plotH;
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -146,7 +146,7 @@ for (const file of files) {
     const pattern: HapticPattern = preset.pattern ?? [];
     const intervals = onIntervals(pattern);
     const span = intervals.reduce((m, iv) => Math.max(m, iv.end), preset.duration ?? 0);
-    const width = Math.max(1000, Math.round((span / 1000) * PX_PER_SEC) + PAD_X * 2);
+    const width = Math.max(MIN_WIDTH, Math.round(span * PX_PER_MS) + PAD_X * 2);
     const canvas = createCanvas(width, HEIGHT);
     render(canvas, intervals);
     fs.writeFileSync(jsonPath.replace(/\.json$/, ".png"), canvas.toBuffer("image/png"));
