@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 import { BASE_PATH } from './config.ts';
 import { articles } from './src/data/articles.ts';
 
@@ -93,5 +94,6 @@ export default defineConfig({
       },
     }),
     react(),
+    sitemap(),
   ],
 });
