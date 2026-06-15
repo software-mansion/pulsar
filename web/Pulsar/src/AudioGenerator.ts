@@ -26,18 +26,6 @@ const MASTER_GAIN = 0.7;
 const ATTACK_SECONDS = 0.003;
 const RELEASE_SECONDS = 0.03;
 
-/**
- * `navigator.vibrate` only gates a motor that runs at one fixed frequency and
- * amplitude, so every "on" window is rendered as the *same* buzz — only its
- * position and length change. Intensity and frequency reach the listener purely
- * through the PWM timing from PatternComposer, never through per-shot pitch or
- * loudness.
- *
- * To avoid a flat, robotic tone, each shot borrows the percussive character of
- * the docs/Figma `AudioPatternUtility` renderer (onset frequency sweep, detuned
- * partials, soft attack/release). That character is identical on every shot, so
- * the constraint still holds.
- */
 const CARRIER_FREQUENCY_HZ = 180;
 const PULSE_VOLUME = 0.5;
 
