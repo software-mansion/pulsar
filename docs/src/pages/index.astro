@@ -74,7 +74,7 @@ Presets that you can hear and feel with Live Preview." />
         subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
       />
       <PresetsList client:load />
-      <Button label="See all presets" url={`${BASE_PATH}/presets-playground`} />
+      <Button label="See all presets" url={`${BASE_PATH}/presets-playground/`} />
       <VisitComposer className={commonStyle.spaceTopMedium} />
     </BasicLayout>
 
@@ -96,7 +96,7 @@ Presets that you can hear and feel with Live Preview." />
 
 <script is:inline define:vars={{ basePath: BASE_PATH }}>
   document.addEventListener('DOMContentLoaded', function () {
-    var seeAllBtn = document.querySelector(`a[href="${basePath}/presets-playground"]`);
+    var seeAllBtn = document.querySelector(`a[href="${basePath}/presets-playground/"]`);
     if (seeAllBtn) {
       seeAllBtn.addEventListener('click', function () {
         window.posthog?.capture('see_all_presets_clicked');

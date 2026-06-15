@@ -40,7 +40,7 @@ export function SdkSection({ className }: { className?: string }) {
         />
         <Button
           label="See all of them"
-          url={`${BASE_PATH}/sdk/overview`}
+          url={`${BASE_PATH}/sdk/overview/`}
           onClick={() => window.posthog?.capture('sdk_section_viewed')}
         />
       </div>

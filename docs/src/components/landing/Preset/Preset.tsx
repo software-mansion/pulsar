@@ -52,7 +52,7 @@ export function Preset(preset: PresetConfig) {
         <div className={`${style.toast} ${isExiting ? style.toastExit : style.toastEnter}`} role="status">
           <span>
             To play haptics on your phone, visit the{' '}
-            <a href={`${BASE_PATH}/presets-playground`}>Presets Playground</a>
+            <a href={`${BASE_PATH}/presets-playground/`}>Presets Playground</a>
             {' '}where you can connect your device.
           </span>
           <button
