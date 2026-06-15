@@ -1,5 +1,6 @@
 import { AudioGenerator } from "./AudioGenerator.ts";
 import { BUILTIN_PRESETS } from "./builtin-presets.ts";
+import { PRESETS, type PresetMethodName } from "./generated-presets.ts";
 import { PatternComposer } from "./PatternComposer.ts";
 import Settings from "./Settings.ts";
 import type { HapticPattern } from "./types.ts";
@@ -58,8 +59,16 @@ class Preset {
   }
 }
 
-class Presets {
+type PresetPlaybackMethods = {
+  [K in PresetMethodName]: () => Promise<PresetPlaybackResult>;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface PresetsManager extends PresetPlaybackMethods {}
+
+class PresetsManager {
   private readonly presets: Record<PresetName, Preset>;
+  private readonly namedPresets = new Map<PresetMethodName, Preset>();
   private currentlyPlaying: Preset | null = null;
 
   constructor() {
@@ -67,6 +76,24 @@ class Presets {
     this.presets = Object.fromEntries(
       entries.map(([name, pattern]) => [name, new Preset(name, pattern)]),
     ) as Record<PresetName, Preset>;
+
+    for (const method of Object.keys(PRESETS) as PresetMethodName[]) {
+      this[method] = () => this.playNamedPreset(method);
+    }
+  }
+
+  private playNamedPreset(method: PresetMethodName): Promise<PresetPlaybackResult> {
+    let preset = this.namedPresets.get(method);
+    if (!preset) {
+      const { name, pattern } = PRESETS[method];
+      preset = new Preset(name, pattern);
+      this.namedPresets.set(method, preset);
+    }
+
+    this.currentlyPlaying?.stop();
+    this.currentlyPlaying = preset;
+
+    return preset.play();
   }
 
   public list() {
@@ -106,4 +133,7 @@ class Presets {
   }
 }
 
-export { BUILTIN_PRESETS, Preset, Presets };
+const Presets = new PresetsManager();
+type Presets = PresetsManager;
+
+export { BUILTIN_PRESETS, Preset, Presets, PresetsManager };

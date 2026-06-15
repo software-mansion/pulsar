@@ -4,7 +4,7 @@ import { RealtimeComposer } from "./RealtimeComposer.ts";
 import Settings from "./Settings.ts";
 
 class Pulsar {
-  private readonly presets = new Presets();
+  private readonly presets = Presets;
   private readonly realtimeComposer = new RealtimeComposer();
 
   /**

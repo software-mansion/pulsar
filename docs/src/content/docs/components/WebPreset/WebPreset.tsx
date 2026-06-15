@@ -5,6 +5,7 @@ import { Accordion } from '../Accordion/Accordion';
 import { Tag } from '../Tag/Tag';
 import { Modal } from '../Modal/Modal';
 import { WebVisualizationPanel } from './WebVisualizationPanel';
+import { WebCodeTabs, type WebCodeTab } from './WebCodeTabs';
 import type { WebPresetConfig } from './types';
 import codeIcon from '../../assets/new_assets/code.svg';
 import copyIcon from '../../assets/new_assets/copy.svg';
@@ -25,11 +26,27 @@ function toAnchorId(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
-function getWebUsage(name: string) {
-  return `import { Preset } from 'pulsar-haptics';\n\n// 'pattern' is the array shown in this preset's definition\nconst ${name.charAt(0).toLowerCase()}${name.slice(1)} = new Preset('${name}', pattern);\n${name.charAt(0).toLowerCase()}${name.slice(1)}.play();`;
+function getWebUsageTabs(name: string): WebCodeTab[] {
+  const method = `${name.charAt(0).toLowerCase()}${name.slice(1)}`;
+  return [
+    {
+      id: 'javascript',
+      label: 'JavaScript',
+      code: `import { Presets } from 'pulsar-haptics';\n\nPresets.${method}();`,
+    },
+    {
+      id: 'react',
+      label: 'React',
+      code: `import { usePresets } from 'pulsar-haptics/react';\n\nconst presets = usePresets();\npresets.${method}()\n`,
+    },
+    {
+      id: 'browser',
+      label: 'Browser',
+      code: `<script src="https://unpkg.com/pulsar-haptics"></script>\n\n<script>\n  const presets = Pulsar.Presets;\n  presets.${method}();\n</script>`,
+    },
+  ];
 }
 
-/** Plays a web preset once (used by the compact row, no scrubbing indicator). */
 function useWebPlayer(data: WebPresetConfig['data'], soundEnabled: boolean) {
   const [isPlaying, setIsPlaying] = useState(false);
   const presetRef = useRef<{ play: () => Promise<unknown>; stop: () => boolean } | null>(null);
@@ -174,7 +191,7 @@ export function WebPreset(preset: WebPresetProps) {
       <WebVisualizationPanel visualization={preset} soundEnabled={soundEnabled} />
 
       <Accordion title="Usage" className={style.marginTop}>
-        <pre className={style.jsonBlock}>{getWebUsage(data.name)}</pre>
+        <WebCodeTabs tabs={getWebUsageTabs(data.name)} />
       </Accordion>
     </div>
   );
