@@ -118,6 +118,14 @@ test("every on-window uses the same fixed carrier frequency and amplitude regard
     const peakVolume = (gainNode) =>
       gainNode.gain.calls.find((call) => call.method === "linearRampToValueAtTime")?.value;
 
+    // The onset chirp value and its steady target, recorded in order on the
+    // oscillator's frequency param.
+    const onsetFrequency = (oscillator) =>
+      oscillator.frequency.calls.find((call) => call.method === "setValueAtTime")?.value;
+    const steadyFrequency = (oscillator) =>
+      oscillator.frequency.calls.find((call) => call.method === "exponentialRampToValueAtTime")
+        ?.value;
+
     await generator.parse([{ type: "continuous", timestamp: 0, duration: 40 }]);
     const shortContext = captures.offlineContexts[captures.offlineContexts.length - 1];
     const shortFundamental = shortContext.createdOscillators[0];
@@ -128,9 +136,13 @@ test("every on-window uses the same fixed carrier frequency and amplitude regard
     const longFundamental = longContext.createdOscillators[0];
     const longEnvelope = longContext.createdGainNodes[1];
 
-    // Fixed frequency: the carrier is identical across durations and positive.
-    assert.ok(shortFundamental.frequency.value > 0);
-    assert.equal(shortFundamental.frequency.value, longFundamental.frequency.value);
+    // Fixed frequency: both the onset chirp and the steady carrier it settles
+    // onto are identical across durations and positive. The chirp overshoots the
+    // carrier, so the onset is higher than the steady value.
+    assert.ok(steadyFrequency(shortFundamental) > 0);
+    assert.ok(onsetFrequency(shortFundamental) > steadyFrequency(shortFundamental));
+    assert.equal(onsetFrequency(shortFundamental), onsetFrequency(longFundamental));
+    assert.equal(steadyFrequency(shortFundamental), steadyFrequency(longFundamental));
 
     // Fixed amplitude: the envelope peaks at the same volume across durations.
     assert.ok(peakVolume(shortEnvelope) > 0);

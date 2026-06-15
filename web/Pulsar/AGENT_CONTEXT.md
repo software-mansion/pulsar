@@ -120,8 +120,14 @@ Design choice:
 Core constraint (must not be violated):
 
 - web haptics drive the vibration motor at one **fixed frequency** and one **fixed amplitude**; `navigator.vibrate` can only control *when* the motor is on
-- so every "on" window is rendered with the exact same carrier frequency (`CARRIER_FREQUENCY_HZ`), the same amplitude (`PULSE_VOLUME`), and the same fixed harmonic timbre (`BUZZ_HARMONICS`)
+- so every "on" window is rendered with the exact same character: the same carrier frequency (`CARRIER_FREQUENCY_HZ`), the same amplitude (`PULSE_VOLUME`), the same onset chirp (`ONSET_FREQUENCY_RATIO` / `ONSET_DECAY_SECONDS`), and the same harmonic timbre (`BUZZ_HARMONICS`)
 - `renderInterval` must never derive pitch or loudness from a window's duration — intensity and frequency are expressed purely through the PWM timing (longer shots feel stronger, tighter shots feel buzzier), exactly as the real web haptic does
+
+Sounding natural without breaking the constraint:
+
+- a perfectly flat steady sine sounds robotic, so each shot borrows the percussive character of the docs/Figma `AudioPatternUtility` renderer (`figma/.../audio/AudioPatternUtility.ts`): a short onset frequency sweep ("spin-up") that settles onto the fixed carrier, layered detuned partials, a soft attack/release, and a lowpass filter
+- this is *more* faithful to a real fixed-frequency motor (which has a mechanical spin-up transient) than a flat tone
+- the key invariant: that character is **identical on every shot** — the overshoot, the steady target, and the sweep length are all constants — so only the on/off timing ever varies between shots
 
 Current public methods:
 
