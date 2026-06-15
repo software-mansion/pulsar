@@ -21,12 +21,12 @@ import CroakPreset from './Croak.json';
 import CroakImage from './Croak.png';
 import DeflatePreset from './Deflate.json';
 import DeflateImage from './Deflate.png';
+import DoubleTapPreset from './DoubleTap.json';
+import DoubleTapImage from './DoubleTap.png';
 import DronePreset from './Drone.json';
 import DroneImage from './Drone.png';
 import DrumrollPreset from './Drumroll.json';
 import DrumrollImage from './Drumroll.png';
-import FeatherPreset from './Feather.json';
-import FeatherImage from './Feather.png';
 import FinalePreset from './Finale.json';
 import FinaleImage from './Finale.png';
 import FlutterPreset from './Flutter.json';
@@ -37,16 +37,12 @@ import FuryPreset from './Fury.json';
 import FuryImage from './Fury.png';
 import HeartbeatPreset from './Heartbeat.json';
 import HeartbeatImage from './Heartbeat.png';
-import HoldPreset from './Hold.json';
-import HoldImage from './Hold.png';
-import KnockPreset from './Knock.json';
-import KnockImage from './Knock.png';
 import KnockoutPreset from './Knockout.json';
 import KnockoutImage from './Knockout.png';
+import LongPressPreset from './LongPress.json';
+import LongPressImage from './LongPress.png';
 import MorsePreset from './Morse.json';
 import MorseImage from './Morse.png';
-import PatterPreset from './Patter.json';
-import PatterImage from './Patter.png';
 import PendulumPreset from './Pendulum.json';
 import PendulumImage from './Pendulum.png';
 import PopcornPreset from './Popcorn.json';
@@ -69,6 +65,8 @@ import SmashPreset from './Smash.json';
 import SmashImage from './Smash.png';
 import SneezePreset from './Sneeze.json';
 import SneezeImage from './Sneeze.png';
+import SoftTapPreset from './SoftTap.json';
+import SoftTapImage from './SoftTap.png';
 import SurfacePreset from './Surface.json';
 import SurfaceImage from './Surface.png';
 import SwayPreset from './Sway.json';
@@ -81,6 +79,8 @@ import TimeoutPreset from './Timeout.json';
 import TimeoutImage from './Timeout.png';
 import TrillPreset from './Trill.json';
 import TrillImage from './Trill.png';
+import TripleTapPreset from './TripleTap.json';
+import TripleTapImage from './TripleTap.png';
 import UnwindPreset from './Unwind.json';
 import UnwindImage from './Unwind.png';
 import WaltzPreset from './Waltz.json';
@@ -105,19 +105,17 @@ export const WebPresetsConfig: Array<WebPresetConfig> = [
   { data: CrescendoPreset, image: CrescendoImage },
   { data: CroakPreset, image: CroakImage },
   { data: DeflatePreset, image: DeflateImage },
+  { data: DoubleTapPreset, image: DoubleTapImage },
   { data: DronePreset, image: DroneImage },
   { data: DrumrollPreset, image: DrumrollImage },
-  { data: FeatherPreset, image: FeatherImage },
   { data: FinalePreset, image: FinaleImage },
   { data: FlutterPreset, image: FlutterImage },
   { data: FoghornPreset, image: FoghornImage },
   { data: FuryPreset, image: FuryImage },
   { data: HeartbeatPreset, image: HeartbeatImage },
-  { data: HoldPreset, image: HoldImage },
-  { data: KnockPreset, image: KnockImage },
   { data: KnockoutPreset, image: KnockoutImage },
+  { data: LongPressPreset, image: LongPressImage },
   { data: MorsePreset, image: MorseImage },
-  { data: PatterPreset, image: PatterImage },
   { data: PendulumPreset, image: PendulumImage },
   { data: PopcornPreset, image: PopcornImage },
   { data: RejectPreset, image: RejectImage },
@@ -129,12 +127,14 @@ export const WebPresetsConfig: Array<WebPresetConfig> = [
   { data: SkipPreset, image: SkipImage },
   { data: SmashPreset, image: SmashImage },
   { data: SneezePreset, image: SneezeImage },
+  { data: SoftTapPreset, image: SoftTapImage },
   { data: SurfacePreset, image: SurfaceImage },
   { data: SwayPreset, image: SwayImage },
   { data: TapPreset, image: TapImage },
   { data: ThunderPreset, image: ThunderImage },
   { data: TimeoutPreset, image: TimeoutImage },
   { data: TrillPreset, image: TrillImage },
+  { data: TripleTapPreset, image: TripleTapImage },
   { data: UnwindPreset, image: UnwindImage },
   { data: WaltzPreset, image: WaltzImage },
   { data: WarblePreset, image: WarbleImage },

@@ -48,18 +48,18 @@ const META: Record<PresetKey, Meta> = {
     description: "Clean and immediate, ideal for confirming a selection or a basic button press.",
     tags: ["Substantial", "Rigid", "Impulse", "Short"],
   },
-  softTap1: {
-    name: "Feather",
+  softTap: {
+    name: "SoftTap",
     description: "Barely-there and delicate, suited for subtle confirmations that should never intrude.",
     tags: ["Gentle", "Soft", "Impulse", "Short"],
   },
   doubleTap: {
-    name: "Knock",
+    name: "DoubleTap",
     description: "Insistent and intentional, suited for toggles or acknowledging a deliberate action.",
     tags: ["Substantial", "Rigid", "Impulses", "Short"],
   },
   tripleTap: {
-    name: "Patter",
+    name: "TripleTap",
     description: "Light and playful, suited for multi-step confirmations or lighthearted feedback.",
     tags: ["Substantial", "Rigid", "Impulses", "Short"],
   },
@@ -68,52 +68,52 @@ const META: Record<PresetKey, Meta> = {
     description: "Pent-up then suddenly released, suited for a surprising, expressive moment.",
     tags: ["Bold", "Flexible", "Pattern", "Short"],
   },
-  pulseHeavySlow: {
+  rumble: {
     name: "Rumble",
     description: "Heavy and ominous, ideal for powerful impacts or sustained tension.",
     tags: ["Bold", "Soft", "Impulse", "Long"],
   },
-  pulseMidPlateau: {
+  drone: {
     name: "Drone",
     description: "Calm and constant, ideal for ongoing states or loading feedback.",
     tags: ["Substantial", "Soft", "Impulse", "Long"],
   },
   longPress: {
-    name: "Hold",
+    name: "LongPress",
     description: "Steady and reassuring, ideal for long-press gestures or held-button feedback.",
     tags: ["Substantial", "Rigid", "Impulse", "Short"],
   },
-  birdInCage: {
+  flutter: {
     name: "Flutter",
     description: "Delicate and airy, suited for gentle, fluttering notifications.",
     tags: ["Gentle", "Flexible", "Impulses", "Extended"],
   },
-  lullaby: {
+  sway: {
     name: "Sway",
     description: "Soothing and unhurried, suited for calm, restful or ambient feedback.",
     tags: ["Gentle", "Soft", "Impulses", "Extended"],
   },
-  ringingPhone: {
+  trill: {
     name: "Trill",
     description: "Bright and inviting, ideal for incoming calls or attention-grabbing alerts.",
     tags: ["Bold", "Soft", "Impulses", "Extended"],
   },
-  emergency: {
+  alert: {
     name: "Alert",
     description: "Urgent and insistent, ideal for warnings that demand immediate attention.",
     tags: ["Bold", "Soft", "Impulses", "Extended"],
   },
-  tickingOverHum: {
+  pendulum: {
     name: "Pendulum",
     description: "Patient and measured, suited for countdowns or background timing cues.",
     tags: ["Substantial", "Flexible", "Pattern", "Extended"],
   },
-  error: {
+  reject: {
     name: "Reject",
     description: "Blunt and disapproving, ideal for errors, denials or invalid actions.",
     tags: ["Bold", "Rigid", "Impulses", "Short"],
   },
-  criticalAlert: {
+  alarm: {
     name: "Alarm",
     description: "Tense and demanding, ideal for critical or escalating warnings.",
     tags: ["Bold", "Rigid", "Pattern", "Extended"],
@@ -128,72 +128,72 @@ const META: Record<PresetKey, Meta> = {
     description: "Graceful and lilting, suited for elegant, rhythmic or musical feedback.",
     tags: ["Substantial", "Flexible", "Pattern", "Extended"],
   },
-  tribalDrum: {
+  warDrum: {
     name: "WarDrum",
     description: "Solemn and commanding, suited for dramatic or ceremonial moments.",
     tags: ["Bold", "Flexible", "Pattern", "Extended"],
   },
-  frogCroak: {
+  croak: {
     name: "Croak",
     description: "Goofy and rough-edged, suited for quirky or comedic feedback.",
     tags: ["Substantial", "Soft", "Impulses", "Short"],
   },
-  rollingThunder: {
+  thunder: {
     name: "Thunder",
     description: "Brooding and powerful, ideal for ominous or climactic moments.",
     tags: ["Bold", "Soft", "Impulses", "Long"],
   },
-  fireworksFinale: {
+  finale: {
     name: "Finale",
     description: "Triumphant and exhilarating, ideal for celebrations and grand reveals.",
     tags: ["Bold", "Flexible", "Pattern", "Extended"],
   },
-  drumrollReveal: {
+  drumroll: {
     name: "Drumroll",
     description: "Suspenseful and building, ideal for anticipation and reveals.",
     tags: ["Substantial", "Flexible", "Pattern", "Extended"],
   },
-  gameOver: {
+  deflate: {
     name: "Deflate",
     description: "Disappointed and fading, suited for failure, loss or winding-down moments.",
     tags: ["Substantial", "Flexible", "Pattern", "Extended"],
   },
-  comboFinisher: {
+  knockout: {
     name: "Knockout",
     description: "Punchy and decisive, ideal for combos or finishing actions.",
     tags: ["Bold", "Flexible", "Pattern", "Short"],
   },
-  amusementPark: {
+  crescendo: {
     name: "Crescendo",
     description: "Building and exhilarating, suited for rising excitement or progress.",
     tags: ["Substantial", "Flexible", "Ramp", "Extended"],
   },
-  respawn: {
+  surface: {
     name: "Surface",
     description: "Emergent and refreshing, suited for spawning, appearing or surfacing feedback.",
     tags: ["Substantial", "Flexible", "Ramp", "Extended"],
   },
-  anger: {
+  fury: {
     name: "Fury",
     description: "Agitated and seething, suited for tension, frustration or aggression.",
     tags: ["Bold", "Flexible", "Pattern", "Extended"],
   },
-  clockTick: {
+  clockwork: {
     name: "Clockwork",
     description: "Precise and dependable, ideal for timers, metronomes or steady pacing.",
     tags: ["Substantial", "Rigid", "Impulses", "Extended"],
   },
-  binaryBeep: {
+  morse: {
     name: "Morse",
     description: "Deliberate and coded, suited for signaling or distinct notifications.",
     tags: ["Substantial", "Rigid", "Pattern", "Short"],
   },
-  trainClickClack: {
+  clatter: {
     name: "Clatter",
     description: "Restless and mechanical, suited for industrial or transit-themed feedback.",
     tags: ["Substantial", "Rigid", "Impulses", "Extended"],
   },
-  carCrash: {
+  smash: {
     name: "Smash",
     description: "Violent and jarring, ideal for collisions or destructive events.",
     tags: ["Bold", "Flexible", "Pattern", "Extended"],
@@ -203,7 +203,7 @@ const META: Record<PresetKey, Meta> = {
     description: "Playful and unpredictable, suited for lively, bursty or random feedback.",
     tags: ["Gentle", "Flexible", "Impulses", "Extended"],
   },
-  kettleWhistle: {
+  foghorn: {
     name: "Foghorn",
     description: "Grave and insistent, ideal for steady, attention-holding signaling.",
     tags: ["Substantial", "Rigid", "Impulses", "Extended"],
@@ -213,32 +213,32 @@ const META: Record<PresetKey, Meta> = {
     description: "Cheeky and casual, suited for comedic or lighthearted feedback.",
     tags: ["Substantial", "Soft", "Impulse", "Short"],
   },
-  glassBreak: {
+  shatter: {
     name: "Shatter",
     description: "Brittle and startling, ideal for breaking, cracking or fracture effects.",
     tags: ["Bold", "Flexible", "Pattern", "Extended"],
   },
-  coinDrop: {
+  bounce: {
     name: "Bounce",
     description: "Light and settling, suited for drops, coins or landing feedback.",
     tags: ["Substantial", "Flexible", "Impulses", "Short"],
   },
-  intervalEnd: {
+  timeout: {
     name: "Timeout",
     description: "Conclusive and clear, ideal for ending intervals or session boundaries.",
     tags: ["Substantial", "Rigid", "Pattern", "Extended"],
   },
-  hopscotch: {
+  skip: {
     name: "Skip",
     description: "Bouncy and carefree, suited for playful stepping or progress feedback.",
     tags: ["Substantial", "Flexible", "Pattern", "Extended"],
   },
-  fibonacciTaps: {
+  unwind: {
     name: "Unwind",
     description: "Relaxing and decelerating, suited for slowing, releasing or settling feedback.",
     tags: ["Substantial", "Flexible", "Ramp", "Extended"],
   },
-  fibonacciTapsReverse: {
+  windup: {
     name: "Windup",
     description: "Tightening and energizing, ideal for charging, accelerating or building tension.",
     tags: ["Substantial", "Flexible", "Ramp", "Extended"],
@@ -248,22 +248,22 @@ const META: Record<PresetKey, Meta> = {
     description: "Alarming and sweeping, ideal for emergencies or urgent alerts.",
     tags: ["Bold", "Flexible", "Pattern", "Extended"],
   },
-  tremoloHeavy: {
+  shudder: {
     name: "Shudder",
     description: "Unsettled and trembling, suited for shivering, straining or unstable feedback.",
     tags: ["Bold", "Soft", "Pattern", "Extended"],
   },
-  phoneRingPickup: {
+  connect: {
     name: "Connect",
     description: "Welcoming and resolved, suited for connecting, answering or linking feedback.",
     tags: ["Bold", "Flexible", "Pattern", "Extended"],
   },
-  fractalCascade: {
+  ripple: {
     name: "Ripple",
     description: "Flowing and expansive, suited for cascading or rippling feedback.",
     tags: ["Substantial", "Flexible", "Pattern", "Extended"],
   },
-  twoToneBuzzer: {
+  warble: {
     name: "Warble",
     description: "Quirky and distinctive, ideal for attention-catching two-tone alerts.",
     tags: ["Bold", "Soft", "Pattern", "Extended"],
