@@ -78,14 +78,14 @@ export function TopBanner() {
         <div className={styles.buttonHolder}>
           <Button
             label="Preset playground"
-            url={`${BASE_PATH}/presets-playground`}
+            url={`${BASE_PATH}/presets-playground/`}
             className={styles.fullWidth}
             onClick={() => window.posthog?.capture('preset_playground_cta_clicked')}
           />
           <Button
             label="Read the docs"
             variant="filled"
-            url={`${BASE_PATH}/getting-started`}
+            url={`${BASE_PATH}/getting-started/`}
             className={styles.fullWidth}
             onClick={() => window.posthog?.capture('docs_cta_clicked')}
           />

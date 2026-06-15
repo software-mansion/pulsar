@@ -9,6 +9,9 @@ import { articles } from './src/data/articles.ts';
 export default defineConfig({
   site: 'https://docs.swmansion.com/',
   base: BASE_PATH,
+  // GitHub Pages 301-redirects directory URLs to their trailing-slash form, so
+  // emit and link to that canonical form everywhere to avoid redirect hops.
+  trailingSlash: 'always',
   vite: {
     css: {
       modules: {
@@ -94,6 +97,10 @@ export default defineConfig({
       },
     }),
     react(),
-    sitemap(),
+    sitemap({
+      // figma-preview is a headless embed surface (noindex) — keep it out of
+      // the sitemap so we don't invite Google to index it.
+      filter: (page) => !page.includes('/figma-preview'),
+    }),
   ],
 });
