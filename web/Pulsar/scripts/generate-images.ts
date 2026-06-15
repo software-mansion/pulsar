@@ -37,7 +37,7 @@ const args = process.argv.slice(2);
 const dirIdx = args.indexOf("--dir");
 const presetsDir = dirIdx !== -1
   ? path.resolve(args[dirIdx + 1])
-  : path.resolve(here, "../presets");
+  : path.resolve(here, "../../../docs/src/content/docs/assets/webPresets");
 
 const HEIGHT = 200;
 const PX_PER_SEC = 1000;

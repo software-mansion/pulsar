@@ -279,7 +279,7 @@ function patternDuration(pattern: HapticPattern): number {
 }
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const outDir = path.resolve(here, "../presets");
+const outDir = path.resolve(here, "../../../docs/src/content/docs/assets/webPresets");
 
 const keys = Object.keys(BUILTIN_PRESETS) as PresetKey[];
 
