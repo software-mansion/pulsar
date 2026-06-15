@@ -822,8 +822,6 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        // Opaque light fill so Figma's native window background (dark in dark
-        // mode) never shows through the plugin surface.
         background: 'var(--bg)'
       }}
     >
