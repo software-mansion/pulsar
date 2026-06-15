@@ -1,0 +1,29 @@
+{
+  "name": "Sneeze",
+  "description": "Pent-up then suddenly released, suited for a surprising, expressive moment.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Short",
+    "Web"
+  ],
+  "duration": 340,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 80,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 160,
+      "duration": 180
+    }
+  ]
+}

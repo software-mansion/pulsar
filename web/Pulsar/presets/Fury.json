@@ -1,0 +1,39 @@
+{
+  "name": "Fury",
+  "description": "Agitated and seething, suited for tension, frustration or aggression.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 590,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 90
+    },
+    {
+      "type": "continuous",
+      "timestamp": 160,
+      "duration": 50
+    },
+    {
+      "type": "continuous",
+      "timestamp": 240,
+      "duration": 90
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 50
+    },
+    {
+      "type": "continuous",
+      "timestamp": 480,
+      "duration": 110
+    }
+  ]
+}

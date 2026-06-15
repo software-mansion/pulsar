@@ -1,0 +1,44 @@
+{
+  "name": "Clatter",
+  "description": "Restless and mechanical, suited for industrial or transit-themed feedback.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 905,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 110,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 490,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 760,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 870,
+      "duration": 35
+    }
+  ]
+}

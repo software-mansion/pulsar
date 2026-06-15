@@ -1,0 +1,36 @@
+{
+  "name": "Pendulum",
+  "description": "Patient and measured, suited for countdowns or background timing cues.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1800,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 1800,
+      "intensity": 0.45,
+      "frequency": 0.18
+    },
+    {
+      "type": "continuous",
+      "timestamp": 400,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 900,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1400,
+      "duration": 30
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "Shudder",
+  "description": "Unsettled and trembling, suited for shivering, straining or unstable feedback.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1290,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 250,
+      "intensity": 0.9,
+      "frequency": 0.6
+    },
+    {
+      "type": "pulse",
+      "timestamp": 260,
+      "duration": 250,
+      "intensity": 0.1,
+      "frequency": 0.6
+    },
+    {
+      "type": "pulse",
+      "timestamp": 520,
+      "duration": 250,
+      "intensity": 0.9,
+      "frequency": 0.6
+    },
+    {
+      "type": "pulse",
+      "timestamp": 780,
+      "duration": 250,
+      "intensity": 0.1,
+      "frequency": 0.6
+    },
+    {
+      "type": "pulse",
+      "timestamp": 1040,
+      "duration": 250,
+      "intensity": 0.9,
+      "frequency": 0.6
+    }
+  ]
+}

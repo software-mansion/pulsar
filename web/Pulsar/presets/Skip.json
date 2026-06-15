@@ -1,0 +1,44 @@
+{
+  "name": "Skip",
+  "description": "Bouncy and carefree, suited for playful stepping or progress feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1010,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 50
+    },
+    {
+      "type": "continuous",
+      "timestamp": 280,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 620,
+      "duration": 50
+    },
+    {
+      "type": "continuous",
+      "timestamp": 880,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 980,
+      "duration": 30
+    }
+  ]
+}

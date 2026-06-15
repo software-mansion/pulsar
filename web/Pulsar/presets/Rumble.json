@@ -1,0 +1,21 @@
+{
+  "name": "Rumble",
+  "description": "Heavy and ominous, ideal for powerful impacts or sustained tension.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulse",
+    "Long",
+    "Web"
+  ],
+  "duration": 1000,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 1000,
+      "intensity": 1,
+      "frequency": 0
+    }
+  ]
+}

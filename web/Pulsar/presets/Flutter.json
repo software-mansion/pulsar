@@ -1,0 +1,44 @@
+{
+  "name": "Flutter",
+  "description": "Delicate and airy, suited for gentle, fluttering notifications.",
+  "tags": [
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 585,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 80,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 150,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 400,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 480,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 560,
+      "duration": 25
+    }
+  ]
+}

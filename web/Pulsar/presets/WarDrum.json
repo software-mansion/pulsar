@@ -1,0 +1,34 @@
+{
+  "name": "WarDrum",
+  "description": "Solemn and commanding, suited for dramatic or ceremonial moments.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 620,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 120
+    },
+    {
+      "type": "continuous",
+      "timestamp": 220,
+      "duration": 40
+    },
+    {
+      "type": "continuous",
+      "timestamp": 310,
+      "duration": 40
+    },
+    {
+      "type": "continuous",
+      "timestamp": 500,
+      "duration": 120
+    }
+  ]
+}

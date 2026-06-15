@@ -1,0 +1,44 @@
+{
+  "name": "Unwind",
+  "description": "Relaxing and decelerating, suited for slowing, releasing or settling feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Ramp",
+    "Extended",
+    "Web"
+  ],
+  "duration": 945,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 50,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 130,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 290,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 530,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 910,
+      "duration": 35
+    }
+  ]
+}
