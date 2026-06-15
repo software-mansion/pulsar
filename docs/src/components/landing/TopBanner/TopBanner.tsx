@@ -9,6 +9,7 @@ import arrowIcon from '../../../assets/landing-page/arrow.svg';
 import { Button } from '../Button/Button';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 import { SoundBar } from '../SoundBar/SoundBar';
+import { Presets } from 'pulsar-haptics';
 import { useState } from 'react';
 
 declare global {
@@ -118,6 +119,7 @@ export function TopBanner() {
                 <EmojiButton
                   emoji="emoji1"
                   onClick={() => {
+                    Presets.sway();
                     setColorClass('');
                     setBackgroundAnimation(styles.wave);
                     handleAnimationEffect('');
@@ -130,6 +132,7 @@ export function TopBanner() {
                 <EmojiButton
                   emoji="emoji2"
                   onClick={() => {
+                    Presets.trill();
                     setColorClass(styles.yellow);
                     setBackgroundAnimation(styles.sonar);
                     handleAnimationEffect('stars');
@@ -145,6 +148,7 @@ export function TopBanner() {
                 <EmojiButton
                   emoji="emoji3"
                   onClick={() => {
+                    Presets.smash();
                     setColorClass(styles.red);
                     setBackgroundAnimation(styles.quake);
                     handleAnimationEffect('confetti');
@@ -157,6 +161,7 @@ export function TopBanner() {
                 <EmojiButton
                   emoji="emoji4"
                   onClick={() => {
+                    Presets.heartbeat();
                     setColorClass(styles.green);
                     setBackgroundAnimation(styles.heartbeat);
                     handleAnimationEffect('angels');

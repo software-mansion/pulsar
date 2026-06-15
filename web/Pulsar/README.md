@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/software-mansion/pulsar/blob/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
+</p>
+
 # pulsar-haptics
 
 A lightweight TypeScript library for playing haptic feedback on the web, with optional audio fallback for devices that don't support the Vibration API.
