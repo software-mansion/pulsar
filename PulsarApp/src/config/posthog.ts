@@ -5,6 +5,10 @@ const apiKey: string | undefined = POSTHOG_CONFIG.apiKey
 const host: string | undefined = POSTHOG_CONFIG.host
 const isPostHogConfigured = Boolean(apiKey && apiKey !== 'phc_your_api_key_here')
 
+// Only send events when configured AND not running in development, so dev
+// builds don't pollute production analytics.
+const isPostHogActive = isPostHogConfigured && !__DEV__
+
 if (__DEV__) {
   console.log('PostHog config:', {
     apiKey: apiKey ? 'SET' : 'NOT SET',
@@ -33,8 +37,8 @@ export const posthog = new PostHog(apiKey || 'placeholder_key', {
   // PostHog API host
   host,
 
-  // Disable PostHog if API key is not configured
-  disabled: !isPostHogConfigured,
+  // Disable PostHog if API key is not configured or in development
+  disabled: !isPostHogActive,
 
   // Capture app lifecycle events:
   // - Application Installed, Application Updated
@@ -58,4 +62,4 @@ export const posthog = new PostHog(apiKey || 'placeholder_key', {
   fetchRetryDelay: 3000,
 })
 
-export const isPostHogEnabled = isPostHogConfigured
+export const isPostHogEnabled = isPostHogActive
