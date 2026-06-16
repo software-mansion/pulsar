@@ -1,0 +1,39 @@
+{
+  "name": "Crescendo",
+  "description": "Building and exhilarating, suited for rising excitement or progress.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Ramp",
+    "Extended",
+    "Web"
+  ],
+  "duration": 670,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 110,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 220,
+      "duration": 50
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 70
+    },
+    {
+      "type": "continuous",
+      "timestamp": 560,
+      "duration": 110
+    }
+  ]
+}

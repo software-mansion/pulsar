@@ -1,0 +1,34 @@
+{
+  "name": "Heartbeat",
+  "description": "Alive and anticipatory, suited for organic, tension-building feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 610,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 45
+    },
+    {
+      "type": "continuous",
+      "timestamp": 120,
+      "duration": 70
+    },
+    {
+      "type": "continuous",
+      "timestamp": 420,
+      "duration": 45
+    },
+    {
+      "type": "continuous",
+      "timestamp": 540,
+      "duration": 70
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "Drumroll",
+  "description": "Suspenseful and building, ideal for anticipation and reveals.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1100,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 700,
+      "intensity": 0.15,
+      "frequency": 0.95
+    },
+    {
+      "type": "continuous",
+      "timestamp": 900,
+      "duration": 200
+    }
+  ]
+}

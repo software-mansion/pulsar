@@ -1,0 +1,72 @@
+// Web variant of CodeTabs styles. Same look as the mobile tabs, but the code panel
+// (.contentArea) gets the same thin, hover-revealed scrollbar used by the tab header
+// and the visualization panel — instead of the default browser scrollbar.
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+@mixin thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s;
+  &:hover {
+    scrollbar-color: var(--color-blue-30, #b0b0b0) transparent;
+  }
+  &::-webkit-scrollbar {
+    height: 6px;
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+  }
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: var(--color-blue-30, #b0b0b0);
+  }
+}
+
+.codeTabs {
+  margin-top: 5px;
+  .tabsHeader {
+    display: flex;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    @include thin-scrollbar;
+
+    .tab {
+      padding: 8px 32px;
+      border: none;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid var(--color-blue-10);
+      white-space: nowrap;
+
+      &.active {
+        border-bottom: 2px solid var(--color-blue-50);
+        background-color: var(--color-blue-10);
+      }
+    }
+  }
+
+  .contentArea {
+    background-color: var(--color-blue-10);
+    border-radius: 4px;
+    padding: 24px;
+    overflow-x: auto;
+    margin-top: 10px;
+    @include thin-scrollbar;
+
+    .code {
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      color: var(--color-blue-80);
+      line-height: 140%;
+      word-wrap: break-word;
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "Siren",
+  "description": "Alarming and sweeping, ideal for emergencies or urgent alerts.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1660,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 400,
+      "intensity": 0.7,
+      "frequency": 0.4
+    },
+    {
+      "type": "pulse",
+      "timestamp": 420,
+      "duration": 400,
+      "intensity": 0.2,
+      "frequency": 0.95
+    },
+    {
+      "type": "pulse",
+      "timestamp": 840,
+      "duration": 400,
+      "intensity": 0.7,
+      "frequency": 0.4
+    },
+    {
+      "type": "pulse",
+      "timestamp": 1260,
+      "duration": 400,
+      "intensity": 0.2,
+      "frequency": 0.95
+    }
+  ]
+}

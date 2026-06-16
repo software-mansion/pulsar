@@ -1,0 +1,49 @@
+{
+  "name": "Shatter",
+  "description": "Brittle and startling, ideal for breaking, cracking or fracture effects.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 495,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 90
+    },
+    {
+      "type": "continuous",
+      "timestamp": 140,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 190,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 250,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 330,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 390,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 470,
+      "duration": 25
+    }
+  ]
+}

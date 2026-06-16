@@ -1,0 +1,24 @@
+{
+  "name": "DoubleTap",
+  "description": "Insistent and intentional, suited for toggles or acknowledging a deliberate action.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Short",
+    "Web"
+  ],
+  "duration": 120,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 90,
+      "duration": 30
+    }
+  ]
+}

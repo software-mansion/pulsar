@@ -1,0 +1,34 @@
+{
+  "name": "Deflate",
+  "description": "Disappointed and fading, suited for failure, loss or winding-down moments.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 545,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 120
+    },
+    {
+      "type": "continuous",
+      "timestamp": 220,
+      "duration": 90
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 70
+    },
+    {
+      "type": "continuous",
+      "timestamp": 500,
+      "duration": 45
+    }
+  ]
+}

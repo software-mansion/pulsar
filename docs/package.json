@@ -21,6 +21,7 @@
     "@types/react-dom": "^19.1.9",
     "astro": "^5.6.1",
     "expressive-code-twoslash": "^0.5.3",
+    "pulsar-haptics": "file:../web/Pulsar",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

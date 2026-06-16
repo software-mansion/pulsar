@@ -1,0 +1,42 @@
+{
+  "name": "Warble",
+  "description": "Quirky and distinctive, ideal for attention-catching two-tone alerts.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1030,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 250,
+      "intensity": 0.1,
+      "frequency": 0.95
+    },
+    {
+      "type": "pulse",
+      "timestamp": 260,
+      "duration": 250,
+      "intensity": 0.85,
+      "frequency": 0.25
+    },
+    {
+      "type": "pulse",
+      "timestamp": 520,
+      "duration": 250,
+      "intensity": 0.1,
+      "frequency": 0.95
+    },
+    {
+      "type": "pulse",
+      "timestamp": 780,
+      "duration": 250,
+      "intensity": 0.85,
+      "frequency": 0.25
+    }
+  ]
+}

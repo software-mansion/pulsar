@@ -1,0 +1,21 @@
+{
+  "name": "Drone",
+  "description": "Calm and constant, ideal for ongoing states or loading feedback.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulse",
+    "Long",
+    "Web"
+  ],
+  "duration": 800,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 800,
+      "intensity": 0.5,
+      "frequency": 0.5
+    }
+  ]
+}

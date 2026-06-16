@@ -1,0 +1,34 @@
+{
+  "name": "Clockwork",
+  "description": "Precise and dependable, ideal for timers, metronomes or steady pacing.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1530,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 500,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1000,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1500,
+      "duration": 30
+    }
+  ]
+}

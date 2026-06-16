@@ -1,0 +1,34 @@
+{
+  "name": "Knockout",
+  "description": "Punchy and decisive, ideal for combos or finishing actions.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Short",
+    "Web"
+  ],
+  "duration": 540,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 40
+    },
+    {
+      "type": "continuous",
+      "timestamp": 110,
+      "duration": 40
+    },
+    {
+      "type": "continuous",
+      "timestamp": 220,
+      "duration": 40
+    },
+    {
+      "type": "continuous",
+      "timestamp": 360,
+      "duration": 180
+    }
+  ]
+}

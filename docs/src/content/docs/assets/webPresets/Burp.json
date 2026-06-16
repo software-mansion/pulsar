@@ -1,0 +1,21 @@
+{
+  "name": "Burp",
+  "description": "Cheeky and casual, suited for comedic or lighthearted feedback.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulse",
+    "Short",
+    "Web"
+  ],
+  "duration": 250,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 250,
+      "intensity": 0.5,
+      "frequency": 0.4
+    }
+  ]
+}

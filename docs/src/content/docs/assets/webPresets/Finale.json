@@ -1,0 +1,44 @@
+{
+  "name": "Finale",
+  "description": "Triumphant and exhilarating, ideal for celebrations and grand reveals.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1120,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 60
+    },
+    {
+      "type": "continuous",
+      "timestamp": 180,
+      "duration": 80
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 100
+    },
+    {
+      "type": "continuous",
+      "timestamp": 560,
+      "duration": 60
+    },
+    {
+      "type": "continuous",
+      "timestamp": 700,
+      "duration": 60
+    },
+    {
+      "type": "continuous",
+      "timestamp": 900,
+      "duration": 220
+    }
+  ]
+}

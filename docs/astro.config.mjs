@@ -69,6 +69,13 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Web',
+          items: [
+            { label: 'SDK', slug: 'sdk/web' },
+            { label: 'Preset playground', slug: 'web-presets-playground' },
+          ],
+        },
+        {
           label: 'Articles',
           items: [
             { label: 'Overview', slug: 'articles' },
