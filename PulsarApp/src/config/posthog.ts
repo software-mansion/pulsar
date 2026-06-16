@@ -5,8 +5,6 @@ const apiKey: string | undefined = POSTHOG_CONFIG.apiKey
 const host: string | undefined = POSTHOG_CONFIG.host
 const isPostHogConfigured = Boolean(apiKey && apiKey !== 'phc_your_api_key_here')
 
-// Only send events when configured AND not running in development, so dev
-// builds don't pollute production analytics.
 const isPostHogActive = isPostHogConfigured && !__DEV__
 
 if (__DEV__) {
