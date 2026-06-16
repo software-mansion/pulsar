@@ -1,0 +1,161 @@
+.section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 60px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 40px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 28px;
+  }
+}
+
+.left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    align-items: center;
+  }
+}
+
+.storeButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+
+  @media (max-width: 1024px) {
+    justify-content: center;
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+  }
+
+  a {
+    display: inline-flex;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.storeBadge {
+  height: 48px;
+  width: auto;
+  display: block;
+
+  @media (max-width: 480px) {
+    height: 40px;
+  }
+}
+
+.right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+
+  @media (max-width: 480px) {
+    gap: 18px;
+  }
+}
+
+.phoneFrame {
+  position: relative;
+  width: 280px;
+  padding: 12px;
+  box-sizing: border-box;
+  background: var(--color-primary);
+  border-radius: 44px;
+  box-shadow: -8px 8px 0 var(--color-blue-50);
+
+  @media (max-width: 480px) {
+    width: 232px;
+    padding: 10px;
+    border-radius: 38px;
+    box-shadow: -6px 6px 0 var(--color-blue-50);
+  }
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1179 / 2556;
+  border-radius: 32px;
+  overflow: hidden;
+  background: var(--color-blue-10);
+
+  @media (max-width: 480px) {
+    border-radius: 28px;
+  }
+}
+
+.screenImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.screenImgActive {
+  opacity: 1;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-blue-20);
+  cursor: pointer;
+  transition:
+    width 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.dotActive {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--color-blue-50);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screenImg {
+    transition: none;
+  }
+}
