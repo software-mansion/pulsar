@@ -107,6 +107,54 @@ test("parse follows the interpolated line cadence (3 shots * 3 harmonics = 9 osc
   });
 });
 
+test("every on-window uses the same fixed carrier frequency and amplitude regardless of duration", async () => {
+  // Web haptics drive the motor at one fixed frequency and amplitude; only the
+  // on/off timing varies. A short pulse and a long pulse must therefore produce
+  // the same pitch and the same loudness — they differ only in how long the
+  // oscillators run.
+  await withAudioMocks({}, async ({ captures }) => {
+    const generator = new AudioGenerator();
+
+    const peakVolume = (gainNode) =>
+      gainNode.gain.calls.find((call) => call.method === "linearRampToValueAtTime")?.value;
+
+    // The onset chirp value and its steady target, recorded in order on the
+    // oscillator's frequency param.
+    const onsetFrequency = (oscillator) =>
+      oscillator.frequency.calls.find((call) => call.method === "setValueAtTime")?.value;
+    const steadyFrequency = (oscillator) =>
+      oscillator.frequency.calls.find((call) => call.method === "exponentialRampToValueAtTime")
+        ?.value;
+
+    await generator.parse([{ type: "continuous", timestamp: 0, duration: 40 }]);
+    const shortContext = captures.offlineContexts[captures.offlineContexts.length - 1];
+    const shortFundamental = shortContext.createdOscillators[0];
+    const shortEnvelope = shortContext.createdGainNodes[1]; // [0] is the master gain
+
+    await generator.parse([{ type: "continuous", timestamp: 0, duration: 180 }]);
+    const longContext = captures.offlineContexts[captures.offlineContexts.length - 1];
+    const longFundamental = longContext.createdOscillators[0];
+    const longEnvelope = longContext.createdGainNodes[1];
+
+    // Fixed frequency: both the onset chirp and the steady carrier it settles
+    // onto are identical across durations and positive. The chirp overshoots the
+    // carrier, so the onset is higher than the steady value.
+    assert.ok(steadyFrequency(shortFundamental) > 0);
+    assert.ok(onsetFrequency(shortFundamental) > steadyFrequency(shortFundamental));
+    assert.equal(onsetFrequency(shortFundamental), onsetFrequency(longFundamental));
+    assert.equal(steadyFrequency(shortFundamental), steadyFrequency(longFundamental));
+
+    // Fixed amplitude: the envelope peaks at the same volume across durations.
+    assert.ok(peakVolume(shortEnvelope) > 0);
+    assert.equal(peakVolume(shortEnvelope), peakVolume(longEnvelope));
+
+    // The oscillators still run for the full length of each on-window, so the
+    // only thing that changed between the two renders is the timing.
+    assert.equal(shortFundamental.stopTime - shortFundamental.startTime, 0.04);
+    assert.equal(longFundamental.stopTime - longFundamental.startTime, 0.18);
+  });
+});
+
 test("parse THROWS 'Web Audio API is not available' when AudioContext constructor is missing but OfflineAudioContext exists", async () => {
   await withAudioMocks({ missingContext: true, keepOffline: true }, async () => {
     const generator = new AudioGenerator();

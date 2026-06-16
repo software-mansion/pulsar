@@ -29,17 +29,6 @@
   --fs-xl: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b1226;
-    --surface: #131d3a;
-    --text: #e7efff;
-    --muted: #95a8d4;
-    --border: #28365e;
-    --shadow-card: -3px 3px 0 var(--color-blue-50);
-  }
-}
-
 * {
   box-sizing: border-box;
 }

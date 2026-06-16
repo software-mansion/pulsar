@@ -25,7 +25,7 @@ export function VisitComposer({ className }: VisitComposerProps) {
           </div>
           <img src={screenshot.src} />
           <br />
-          <a className={styles.link} href={`${BASE_PATH}/presets-playground`}>Visit our composer</a>
+          <a className={styles.link} href={`${BASE_PATH}/presets-playground/`}>Visit our composer</a>
         </div>
       </div>
     </div>

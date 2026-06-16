@@ -817,7 +817,14 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        background: 'var(--bg)'
+      }}
+    >
       <div
         className="row"
         style={{ padding: '8px 10px 0', gap: 0, borderBottom: '1px solid var(--border)' }}

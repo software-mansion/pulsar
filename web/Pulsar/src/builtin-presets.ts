@@ -1,6 +1,5 @@
 import type {
   HapticContinuousSegment,
-  HapticLineSegment,
   HapticPattern,
   HapticPulseSegment,
 } from "./types.ts";
@@ -22,19 +21,6 @@ const p = (
   duration,
   intensity,
   frequency,
-});
-
-const l = (
-  timestamp: number,
-  duration: number,
-  intensity: Array<[number, number]>,
-  frequency: Array<[number, number]>,
-): HapticLineSegment => ({
-  type: "line",
-  timestamp,
-  duration,
-  intensity: intensity.map(([time, value]) => ({ time, value })),
-  frequency: frequency.map(([time, value]) => ({ time, value })),
 });
 
 const taps = (start: number, count: number, gap: number, duration: number): HapticContinuousSegment[] => {

@@ -26,9 +26,9 @@ export function TopBar() {
           <span>Pulsar</span>
         </div>
         <div className={styles.menuItems}>
-          <a href={`${BASE_PATH}/presets-playground`}>Presets</a>
-          <a href={`${BASE_PATH}/getting-started`}>Getting started</a>
-          <a href={`${BASE_PATH}/sdk/overview`}>Docs</a>
+          <a href={`${BASE_PATH}/presets-playground/`}>Presets</a>
+          <a href={`${BASE_PATH}/getting-started/`}>Getting started</a>
+          <a href={`${BASE_PATH}/sdk/overview/`}>Docs</a>
         </div>
         <a href="https://github.com/software-mansion/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
@@ -55,13 +55,13 @@ export function TopBar() {
               />
             </div>
             <nav className={styles.mobileMenuItems}>
-              <a href={`${BASE_PATH}/presets-playground`} onClick={closeMenu}>
+              <a href={`${BASE_PATH}/presets-playground/`} onClick={closeMenu}>
                 Presets
               </a>
-              <a href={`${BASE_PATH}/getting-started`} onClick={closeMenu}>
+              <a href={`${BASE_PATH}/getting-started/`} onClick={closeMenu}>
                 Getting started
               </a>
-              <a href={`${BASE_PATH}/sdk/overview`} onClick={closeMenu}>
+              <a href={`${BASE_PATH}/sdk/overview/`} onClick={closeMenu}>
                 Docs
               </a>
             </nav>
