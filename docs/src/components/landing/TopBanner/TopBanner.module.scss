@@ -1,4 +1,5 @@
 @use 'sass:math';
+@use 'sass:list';
 
 .banner {
   border: solid 2px var(--color-blue-50);
@@ -140,8 +141,6 @@
         pointer-events: none;
         transform-origin: center;
         will-change: transform, opacity;
-        // Base opacity for the faint resting rings (was the circles'
-        // opacity="0.1" attribute). Animated states override this.
         opacity: 0.1;
       }
     }
@@ -292,11 +291,6 @@
 
 .svgWave {
   z-index: 0;
-  // The wrapper must stay transparent: the color classes (.red/.yellow/.green)
-  // set background-color and are applied to this element too, but only the
-  // .banner background should show that color (and it fades via .banner's
-  // transition). Without this the wrapper would snap to the new color a few
-  // frames before the banner finishes its transition.
   background-color: transparent;
   circle {
     transition: all 0.2s;
@@ -304,15 +298,8 @@
 }
 
 // --------------------------------------------------
-// Ring animations
-//
-// Motion (transform + opacity) is animated on the .ring <svg> roots so it runs
-// entirely on the compositor — no per-frame layout/paint. Stroke-width, which
-// cannot be composited, stays on the inner <circle> and is kept in lockstep
-// with the motion via identical duration / delay / timing-function.
+// wave animation
 // --------------------------------------------------
-
-// wave ----------------------------------------------
 $wave-delays: 0s, 0.5s, 1s, 1.5s, 2s;
 
 .wave .ring {
@@ -324,7 +311,7 @@ $wave-delays: 0s, 0.5s, 1s, 1.5s, 2s;
 @for $i from 1 through 5 {
   .wave .ring:nth-child(#{$i}) {
     animation-name: wave-#{$i};
-    animation-delay: nth($wave-delays, $i);
+    animation-delay: list.nth($wave-delays, $i);
   }
 }
 
@@ -346,7 +333,9 @@ $wave-delays: 0s, 0.5s, 1s, 1.5s, 2s;
 @include waveGenerator('4');
 @include waveGenerator('5');
 
-// heartbeat -----------------------------------------
+// --------------------------------------------------
+// heartbeat animation
+// --------------------------------------------------
 $heartbeat-delays: 0.32s, 0.24s, 0.16s, 0.08s, 0s;
 
 .heartbeat .ring {
@@ -363,7 +352,7 @@ $heartbeat-delays: 0.32s, 0.24s, 0.16s, 0.08s, 0s;
 }
 
 @for $i from 1 through 5 {
-  $delay: nth($heartbeat-delays, $i);
+  $delay: list.nth($heartbeat-delays, $i);
   .heartbeat .ring:nth-child(#{$i}) {
     animation-name: heartbeat-motion-#{$i};
     animation-delay: $delay;
@@ -423,7 +412,9 @@ $heartbeat-delays: 0.32s, 0.24s, 0.16s, 0.08s, 0s;
 @include heartbeatGenerator('4');
 @include heartbeatGenerator('5');
 
-// sonar ---------------------------------------------
+// --------------------------------------------------
+// sonar animation
+// --------------------------------------------------
 $sonar-delays: 1.12s, 0.84s, 0.56s, 0.28s, 0s;
 
 .sonar .ring {
@@ -440,7 +431,7 @@ $sonar-delays: 1.12s, 0.84s, 0.56s, 0.28s, 0s;
 }
 
 @for $i from 1 through 5 {
-  $delay: nth($sonar-delays, $i);
+  $delay: list.nth($sonar-delays, $i);
   .sonar .ring:nth-child(#{$i}) {
     animation-name: sonar-motion-#{$i};
     animation-delay: $delay;
@@ -485,7 +476,9 @@ $sonar-delays: 1.12s, 0.84s, 0.56s, 0.28s, 0s;
 @include sonarGenerator('4');
 @include sonarGenerator('5');
 
-// quake ---------------------------------------------
+// --------------------------------------------------
+// quake animation
+// --------------------------------------------------
 $quake-durations: 0.07s, 0.09s, 0.06s, 0.11s, 0.08s;
 
 .quake .ring {
@@ -504,7 +497,7 @@ $quake-durations: 0.07s, 0.09s, 0.06s, 0.11s, 0.08s;
 @for $i from 1 through 5 {
   .quake .ring:nth-child(#{$i}) {
     animation-name: quake-#{$i};
-    animation-duration: nth($quake-durations, $i);
+    animation-duration: list.nth($quake-durations, $i);
   }
 }
 

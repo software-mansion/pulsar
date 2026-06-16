@@ -176,12 +176,6 @@ export function TopBanner() {
           </div>
         </div>
 
-        {/*
-          Each ring is its own <svg> layer so the animations run purely on the
-          compositor (transform + opacity on the svg root) instead of animating
-          SVG sub-element geometry, which forces a full style/layout/paint pass
-          every frame and janks on mobile GPUs.
-        */}
         <div
           className={`${styles.svgWave} ${colorClass} ${backgroundAnimation}`}
           aria-hidden="true"
