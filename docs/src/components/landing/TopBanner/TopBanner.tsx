@@ -176,65 +176,38 @@ export function TopBanner() {
           </div>
         </div>
 
-        <svg
+        {/*
+          Each ring is its own <svg> layer so the animations run purely on the
+          compositor (transform + opacity on the svg root) instead of animating
+          SVG sub-element geometry, which forces a full style/layout/paint pass
+          every frame and janks on mobile GPUs.
+        */}
+        <div
           className={`${styles.svgWave} ${colorClass} ${backgroundAnimation}`}
-          width="1000"
-          height="1000"
-          viewBox="0 0 1200 1200"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
         >
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="500"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="400"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="300"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="200"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="100"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-        </svg>
+          {[500, 400, 300, 200, 100].map((r) => (
+            <svg
+              key={r}
+              className={styles.ring}
+              width="1000"
+              height="1000"
+              viewBox="0 0 1200 1200"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="600"
+                cy="600"
+                r={r}
+                fill="#87CCE8"
+                stroke="#2B85AB"
+                strokeMiterlimit="16"
+                strokeDasharray="8 8"
+              />
+            </svg>
+          ))}
+        </div>
       </div>
 
       <SoundBar />
