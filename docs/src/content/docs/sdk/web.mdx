@@ -40,20 +40,19 @@ head:
 
 import { Tabs, TabItem, Code, Aside } from '@astrojs/starlight/components';
 import CollapsibleList from '../../../components/CollapsibleList.astro';
+import { SegmentSignal } from '../../../components/SegmentSignal/SegmentSignal';
 
-The Pulsar Web SDK (`pulsar-haptics`) brings haptic feedback to the browser through the same building blocks as the native SDKs — `Presets`, `PatternComposer`, and `RealtimeComposer`. It is a lightweight, framework-agnostic TypeScript library that works in vanilla JS, React, Vue, Svelte, Solid, or anything else, and ships full TypeScript types plus a first-class React hooks adapter.
+The Pulsar Web SDK (`pulsar-haptics`) brings haptic feedback to the browser through the same building blocks as the native SDKs - `Presets`, `PatternComposer`, and `RealtimeComposer`. It is a lightweight, framework-agnostic TypeScript library that works in vanilla JS, React, Vue, Svelte, Solid, or anything else, and ships full TypeScript types plus a first-class React hooks adapter.
 
 On the web there is no native control over haptic intensity or frequency, so Pulsar simulates those dimensions with PWM-style vibration timing on top of the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate) (`navigator.vibrate`): longer vibration shots feel stronger, and shorter pauses feel higher-frequency. When real vibration is unavailable, Pulsar can play an audio simulation of the pattern instead, so you can still preview the shape of a haptic on a desktop or any device without a vibration motor.
 
 <Aside type="caution" title="No real vibration on iOS / iPadOS">
-  Web haptics rely on the **Web Vibration API** (`navigator.vibrate`). **Apple does not implement the Web Vibration API in Safari on iOS or iPadOS**, so real vibration does **not** fire on iPhone or iPad browsers. This is an Apple platform restriction, not a limitation of Pulsar — there is nothing the library (or any web library) can do to enable it.
-
-  The upside: Pulsar's audio fallback still lets users **hear** a preview of the pattern on iOS, and real haptics work on Android (Chrome, Firefox, and other Chromium-based browsers) and any browser that implements the Vibration API. For real haptics on Apple devices, use the native [iOS](/sdk/ios) or [React Native](/sdk/react-native) SDKs.
+  Web haptics rely on the **Web Vibration API** (`navigator.vibrate`). **Apple does not implement the Web Vibration API in Safari on iOS or iPadOS**, so real vibration does **not** fire on iPhone or iPad browsers. This is an Apple platform restriction, not a limitation of Pulsar - there is nothing the library (or any web library) can do to enable it.
 </Aside>
 
 ## Requirements
 
-- A modern browser that supports the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate) (`navigator.vibrate`) for real haptics — Chrome, Edge, Firefox, and Chromium-based mobile browsers. See [Browser support](#browser-support) for details.
+- A browser that supports the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate) (`navigator.vibrate`). See [Browser support](#browser-support) for details.
 - React `>=16.8.0` is an **optional** peer dependency, required only if you use the `pulsar-haptics/react` hooks.
 
 ## Installation
@@ -69,7 +68,12 @@ Latest available version: `0.1.1`
       lang="bash"
       frame="terminal"
     />
-    React is an optional peer dependency — install it only if you use the `pulsar-haptics/react` hooks.
+    or if you want to use React hooks:
+    <Code
+      code="npm install pulsar-haptics/react"
+      lang="bash"
+      frame="terminal"
+    />
   </TabItem>
   <TabItem label="CDN">
     Drop a `<script>` tag in your page to use the library straight from a CDN. The browser build exposes a global `Pulsar` object with all named exports.
@@ -89,7 +93,7 @@ Latest available version: `0.1.1`
 
 ## Presets
 
-A collection of ready-to-use haptic patterns — the simplest way to add feedback. The package ships a `Presets` singleton you can use directly:
+A collection of ready-to-use haptic patterns - the simplest way to add feedback.
 
 ```ts
 import { Presets } from 'pulsar-haptics';
@@ -181,7 +185,7 @@ Want to hear and feel every preset? Browse the full gallery on the [Web preset p
 
 ## Custom patterns
 
-For one-shot haptics that aren't covered by a preset, build your own pattern with `PatternComposer`. Get a fresh composer from a `Pulsar` instance (or construct one directly), `parse()` a pattern, then `play()` it.
+You can build your own pattern with `PatternComposer`. Get a composer from a `Pulsar` instance, `parse()` a pattern, then `play()` it.
 
 ```ts
 import { Pulsar } from 'pulsar-haptics';
@@ -202,7 +206,11 @@ composer.play();
 
 ### Pattern segments
 
-A `HapticPattern` is an array of segments. Every segment starts at `timestamp` milliseconds from the beginning of playback and lasts `duration` milliseconds; overlapping segments are merged into a single vibration timeline. There are three segment types:
+A `HapticPattern` is an array of segments. Every segment starts at `timestamp` milliseconds from the beginning of playback and lasts `duration` milliseconds; overlapping segments are merged into a single vibration timeline. There are three segment types.
+
+Because the Web Vibration API only knows *on* and *off*, Pulsar encodes intensity and frequency as a PWM-style square wave — the actual `navigator.vibrate` timeline below is generated by `PatternComposer` itself. Switch segment types and drag the sliders to see (and feel) how each parameter reshapes the signal:
+
+<SegmentSignal client:load />
 
 #### `continuous`
 
@@ -280,7 +288,7 @@ composer.play();
 
 ## Realtime haptics
 
-For gesture-driven or continuously evolving feedback, use `RealtimeComposer`. Call `set(intensity, frequency)` on every gesture update — the underlying PWM loop starts on the first call and reads the latest values on each cycle, so it's safe to call at high frequency (e.g. on every `pointermove`). Call `stop()` when the gesture ends.
+For gesture-driven or continuously evolving feedback, use `RealtimeComposer`. Call `set(intensity, frequency)` on every gesture update - the underlying PWM loop starts on the first call and reads the latest values on each cycle, so it's safe to call at high frequency (e.g. on every `pointermove`). Call `stop()` when the gesture ends.
 
 ```ts
 import { Pulsar } from 'pulsar-haptics';
@@ -297,7 +305,7 @@ window.addEventListener('pointermove', (e) => {
 window.addEventListener('pointerup', () => realtime.stop());
 ```
 
-`RealtimeComposer` also exposes `isPlaying()` and `getCurrentValues()`. In React, prefer the [`useRealtimeComposer()`](#react) hook — it owns the composer per-component and stops it automatically on unmount.
+`RealtimeComposer` also exposes `isPlaying()` and `getCurrentValues()`. In React, prefer the [`useRealtimeComposer()`](#react) hook - it owns the composer per-component and stops it automatically on unmount.
 
 ---
 
@@ -373,7 +381,7 @@ import { Pulsar } from 'pulsar-haptics';
 const pulsar = new Pulsar();
 
 if (!pulsar.isHapticsSupported()) {
-  // No vibration motor (e.g. desktop or iOS Safari) — let users hear a preview.
+  // No vibration motor (e.g. desktop or iOS Safari) - let users hear a preview.
   pulsar.enableSound(true);
 }
 ```
@@ -384,7 +392,7 @@ if (!pulsar.isHapticsSupported()) {
 
 `navigator.vibrate` is required for real haptic output and is available in **Chrome, Edge, Firefox, and Chromium-based mobile browsers**. Use `pulsar.isHapticsSupported()` (or `useHapticsSupport()` in React) to feature-detect at runtime.
 
-Where the Vibration API is missing — most notably **Safari on iOS and iPadOS**, where Apple does not implement it (see the note at the top of this page), and on desktop browsers with no vibration motor — Pulsar can play an **audio simulation** of the pattern instead. Enable it with `pulsar.enableSound(true)` so users can still hear the shape of a haptic. For real haptics on Apple hardware, reach for the native [iOS](/sdk/ios) or [React Native](/sdk/react-native) SDKs.
+Where the Vibration API is missing - most notably **Safari on iOS and iPadOS**, where Apple does not implement it (see the note at the top of this page), and on desktop browsers with no vibration motor - Pulsar can play an **audio simulation** of the pattern instead. Enable it with `pulsar.enableSound(true)` so users can still hear the shape of a haptic. For real haptics on Apple hardware, reach for the native [iOS](/sdk/ios) or [React Native](/sdk/react-native) SDKs.
 
 ---
 
