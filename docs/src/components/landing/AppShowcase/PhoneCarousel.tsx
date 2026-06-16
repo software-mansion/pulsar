@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react';
 import styles from './AppShowcase.module.scss';
+import homeScreen from '../../../assets/landing-page/app-screens/screen-home.png';
 import presetsScreen from '../../../assets/landing-page/app-screens/screen-presets.png';
 import playgroundScreen from '../../../assets/landing-page/app-screens/screen-playground.png';
 import demosScreen from '../../../assets/landing-page/app-screens/screen-demos.png';
-import balloonScreen from '../../../assets/landing-page/app-screens/screen-balloon.png';
-import countdownScreen from '../../../assets/landing-page/app-screens/screen-countdown.png';
 
 const screens = [
+  { src: homeScreen.src, alt: 'Pulsar app home screen' },
   { src: presetsScreen.src, alt: 'Pulsar app presets library screen' },
   { src: playgroundScreen.src, alt: 'Pulsar app haptics playground screen' },
   { src: demosScreen.src, alt: 'Pulsar app interactive demos screen' },
-  { src: balloonScreen.src, alt: 'Pulsar app balloon haptics demo screen' },
-  { src: countdownScreen.src, alt: 'Pulsar app countdown timer haptics demo screen' },
 ];
 
 const ROTATION_MS = 3500;
