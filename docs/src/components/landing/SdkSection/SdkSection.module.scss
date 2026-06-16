@@ -35,9 +35,10 @@
     justify-content: center;
 
     .row {
-      display: flex;
-      justify-content: center;
-      gap: 32px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      justify-items: center;
+      gap: 28px 32px;
 
       @media (max-width: 768px) {
         gap: 24px;
@@ -54,6 +55,7 @@
       align-items: center;
       gap: 12px;
       cursor: pointer;
+      text-decoration: none;
       transition: transform 0.2s ease;
 
       &:hover {
