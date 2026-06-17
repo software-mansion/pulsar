@@ -10,6 +10,19 @@ const versions = JSON.parse(
   await fs.readFile(path.join(repoRoot, 'sdk-versions.json'), 'utf8')
 );
 
+// Two distinct kinds of versions are kept in sync from sdk-versions.json:
+//
+//   1. Documentation / published versions — the version each framework SDK is
+//      published under (npm, Maven, pub.dev, CocoaPods). These drive the install
+//      snippets and version tables in the READMEs and docs below, plus the iOS
+//      core pod's own `s.version`.
+//
+//   2. Core Pulsar artifact dependency versions — the version of the core native
+//      Pulsar artifact (iOS `Pulsar-haptics` pod / Android `com.swmansion:pulsar`
+//      Maven artifact) that each wrapper framework (React Native, KMP, Flutter)
+//      depends on by default. These live under each framework's `pulsarCore` key
+//      in the config and are written into the build files below. They are recorded
+//      per framework, so a framework can intentionally pin a different core version.
 const files = [
   'README.md',
   'docs/src/content/docs/sdk/overview.mdx',
@@ -26,6 +39,12 @@ const files = [
   'kmp/Pulsar/README.md',
   'flutter/pulsar/README.md',
   'web/Pulsar/README.md',
+  // Core Pulsar artifact dependency versions (see note above).
+  'react-native/react-native-pulsar/Pulsar.podspec',
+  'react-native/react-native-pulsar/android/build.gradle',
+  'kmp/Pulsar/library/build.gradle.kts',
+  'flutter/pulsar/ios/pulsar.podspec',
+  'flutter/pulsar/android/build.gradle.kts',
 ];
 
 function replaceGeneratedSection(content, key, replacement) {
@@ -103,6 +122,39 @@ function syncIosPodspecVersion(content) {
   }
 
   return content.replace(pattern, `$1${versions.ios.version}$3`);
+}
+
+// Rewrites the default value of the `pulsar_ios_pod_version` assignment that
+// wrapper podspecs use to depend on the published `Pulsar-haptics` pod, e.g.
+//   pulsar_ios_pod_version = ENV["PULSAR_IOS_POD_VERSION"] || "1.1.4"
+// Handles both single- and double-quoted styles.
+function syncPulsarIosPodVersion(content, version, label) {
+  const pattern =
+    /(pulsar_ios_pod_version = ENV\[['"]PULSAR_IOS_POD_VERSION['"]\] \|\| )(['"])([^'"]+)\2/;
+
+  if (!pattern.test(content)) {
+    throw new Error(`Missing pulsar_ios_pod_version assignment in ${label}`);
+  }
+
+  return content.replace(pattern, `$1$2${version}$2`);
+}
+
+// Rewrites the default value passed to (get)StringPropertyOrEnv for the
+// PULSAR_ANDROID_MAVEN_VERSION key, which wrapper Gradle builds use to depend on
+// the published `com.swmansion:pulsar` Maven artifact, e.g.
+//   getStringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.2")
+//   stringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1")
+function syncPulsarAndroidMavenVersion(content, version, label) {
+  const pattern =
+    /(["']PULSAR_ANDROID_MAVEN_VERSION["'],\s*")([^"]+)(")/;
+
+  if (!pattern.test(content)) {
+    throw new Error(
+      `Missing PULSAR_ANDROID_MAVEN_VERSION default in ${label}`
+    );
+  }
+
+  return content.replace(pattern, `$1${version}$3`);
 }
 
 function getAndroidVersionLine() {
@@ -209,6 +261,47 @@ for (const relativeFile of files) {
     relativeFile === 'README.md'
   ) {
     content = replaceGeneratedSection(content, 'WEB_VERSION', getWebVersionLine());
+  }
+
+  // Core Pulsar artifact dependency versions in the wrapper build files.
+  if (relativeFile === 'react-native/react-native-pulsar/Pulsar.podspec') {
+    content = syncPulsarIosPodVersion(
+      content,
+      versions.reactNative.pulsarCore.iosPodVersion,
+      relativeFile
+    );
+  }
+
+  if (relativeFile === 'react-native/react-native-pulsar/android/build.gradle') {
+    content = syncPulsarAndroidMavenVersion(
+      content,
+      versions.reactNative.pulsarCore.androidMavenVersion,
+      relativeFile
+    );
+  }
+
+  if (relativeFile === 'kmp/Pulsar/library/build.gradle.kts') {
+    content = syncPulsarAndroidMavenVersion(
+      content,
+      versions.kmp.pulsarCore.androidMavenVersion,
+      relativeFile
+    );
+  }
+
+  if (relativeFile === 'flutter/pulsar/ios/pulsar.podspec') {
+    content = syncPulsarIosPodVersion(
+      content,
+      versions.flutter.pulsarCore.iosPodVersion,
+      relativeFile
+    );
+  }
+
+  if (relativeFile === 'flutter/pulsar/android/build.gradle.kts') {
+    content = syncPulsarAndroidMavenVersion(
+      content,
+      versions.flutter.pulsarCore.androidMavenVersion,
+      relativeFile
+    );
   }
 
   await fs.writeFile(absoluteFile, content);
