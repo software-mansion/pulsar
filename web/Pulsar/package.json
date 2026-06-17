@@ -1,6 +1,6 @@
 {
   "name": "pulsar-haptics",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A TypeScript library for playing haptics on web devices — works in vanilla JS, React, and any modern framework.",
   "license": "MIT",
   "type": "module",
