@@ -76,12 +76,9 @@ test("isHapticsAvailable() returns true when navigator.vibrate is a function", (
   });
 });
 
-// --- coarse-pointer (non-touch device) gate -------------------------------
-// Settings.canActuallyVibrate() skips vibration on devices without a coarse
-// pointer (e.g. desktops with a mouse). It reads `window.matchMedia` at call
-// time, so we install a stub window to exercise each branch. Node has no
-// `window` global, so all the tests above implicitly hit the
-// `window === undefined → true` branch — these pin the rest.
+// Coarse-pointer (non-touch device) gate: canActuallyVibrate() reads
+// window.matchMedia at call time. The tests above all hit the
+// `window === undefined → true` branch; these pin the rest.
 
 test("isHapticsAvailable() bypasses the coarse-pointer gate when window is undefined (Node/SSR)", () => {
   withNavigator({ vibrate: () => true }, () => {
@@ -131,8 +128,6 @@ test("isHapticsAvailable() queries matchMedia with exactly '(pointer: coarse)'",
 });
 
 test("isHapticsAvailable() short-circuits before matchMedia when navigator.vibrate is missing", () => {
-  // The coarse-pointer gate is the LAST condition in the && chain, so an absent
-  // navigator must skip matchMedia entirely.
   const { window, queries } = makeWindow({ matches: true });
   withNavigator({}, () => {
     withWindow(window, () => {

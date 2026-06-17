@@ -1,25 +1,11 @@
-// Helpers for installing, deleting, and restoring globalThis.window inside tests.
-//
-// Settings.canActuallyVibrate() reads `window` (and `window.matchMedia`) at call
-// time to skip vibration on non-touch devices:
-//
-//   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-//     return true;
-//   }
-//   return window.matchMedia("(pointer: coarse)").matches;
-//
-// Node has no `window` global, so without these helpers every test silently
-// exercises only the `window === undefined` branch. These helpers let tests
-// install a stub `window` (with or without matchMedia) and restore the previous
-// state precisely — including the common case where `window` was never an own
-// property of globalThis to begin with.
+// Install, delete, and restore globalThis.window so tests can exercise
+// Settings.canActuallyVibrate(), which reads window.matchMedia at call time.
+// Node has no `window`, so without this every test only hits the
+// `window === undefined` branch.
 
 const WIN = "window";
 
-// Stack of saved states so nested installs don't clobber each other. Each entry
-// is one of:
-//   { kind: "own", descriptor }   — there was an own property; re-define it.
-//   { kind: "absent" }            — there was no own property; delete after.
+// Stack of prior states: { kind: "own", descriptor } or { kind: "absent" }.
 const stack = [];
 
 function snapshot() {
@@ -42,12 +28,7 @@ function applySnapshot(entry) {
   }
 }
 
-/**
- * Replace globalThis.window with a stub. The previous descriptor (or its
- * absence) is pushed onto an internal stack. Call restoreWindow() to undo.
- *
- * @param {object} stub The replacement window value (commonly { matchMedia }).
- */
+/** Replace globalThis.window with a stub; restoreWindow() undoes it. */
 export function installWindow(stub) {
   stack.push(snapshot());
   Object.defineProperty(globalThis, WIN, {
@@ -57,10 +38,7 @@ export function installWindow(stub) {
   });
 }
 
-/**
- * Restore the most recent window state saved by installWindow/deleteWindow.
- * Returns true if a state was restored, false if the stack was empty.
- */
+/** Restore the most recent window state. Returns false if the stack was empty. */
 export function restoreWindow() {
   const entry = stack.pop();
   if (!entry) {
@@ -70,10 +48,7 @@ export function restoreWindow() {
   return true;
 }
 
-/**
- * Remove globalThis.window entirely (so `typeof window === "undefined"`),
- * remembering the previous state so restoreWindow() can put it back.
- */
+/** Remove globalThis.window entirely; restoreWindow() puts it back. */
 export function deleteWindow() {
   stack.push(snapshot());
   try {
@@ -87,15 +62,7 @@ export function deleteWindow() {
   }
 }
 
-/**
- * Install a window stub, run an (async) function, and ALWAYS restore the
- * previous window state in a finally block — even if fn throws/rejects.
- *
- * @template T
- * @param {object} stub The replacement window value.
- * @param {() => Promise<T> | T} fn
- * @returns {Promise<T>}
- */
+/** Install a window stub, run fn, and always restore in a finally block. */
 export async function withWindow(stub, fn) {
   installWindow(stub);
   try {
@@ -105,14 +72,7 @@ export async function withWindow(stub, fn) {
   }
 }
 
-/**
- * Remove globalThis.window, run an (async) function, and ALWAYS restore the
- * previous window state in a finally block.
- *
- * @template T
- * @param {() => Promise<T> | T} fn
- * @returns {Promise<T>}
- */
+/** Remove globalThis.window, run fn, and always restore in a finally block. */
 export async function withoutWindow(fn) {
   deleteWindow();
   try {
@@ -123,16 +83,9 @@ export async function withoutWindow(fn) {
 }
 
 /**
- * Build a window stub whose matchMedia() records every query string and returns
- * a MediaQueryList-like object with the given `matches` value. The returned
- * `queries` array is the live record of every query string passed to
- * matchMedia, in call order.
- *
- * Pass `matchMedia: null` to build a window WITHOUT a matchMedia function (to
- * exercise the `typeof window.matchMedia !== "function"` fallback branch).
- *
- * @param {{ matches?: boolean, matchMedia?: null }} [options]
- * @returns {{ window: object, queries: string[] }}
+ * Build a window stub whose matchMedia() records queried strings into `queries`
+ * and reports the given `matches`. Pass `matchMedia: null` for a window with no
+ * matchMedia function.
  */
 export function makeWindow({ matches = true, matchMedia } = {}) {
   const queries = [];
