@@ -127,28 +127,82 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
         return VibrationEffect.createWaveform(timings, amplitudes, -1)
     }
 
+    /**
+     * Fallback for devices without amplitude control. Instead of collapsing every
+     * non-zero control point into one solid buzz (which discards the intensity level
+     * and the frequency entirely), this simulates both through PWM duty-cycling: each
+     * control point's intensity becomes the ON pulse length and its sharpness becomes
+     * the OFF gap, tiled across the timeline. This is the on/off-only equivalent of the
+     * web PatternComposer and lets continuous presets keep a sense of strength and
+     * pulse rate on older ERM phones.
+     *
+     * createWaveform(timings, -1) plays the array as alternating OFF, ON, OFF, ON...,
+     * where the first value is the initial wait before the first vibration.
+     */
     @RequiresApi(Build.VERSION_CODES.O)
     private fun convertToTimingWaveform(controlPoints: List<ControlPoint>): VibrationEffect? {
-        var timings = longArrayOf(0)
-        var isVibrating = false
-
-        controlPoints.forEach {
-            val duration = it.duration
-            val shouldVibrate = it.intensity > 0
-
-            if (shouldVibrate != isVibrating) {
-            timings += duration
-            isVibrating = shouldVibrate
-            } else if (timings.isNotEmpty()) {
-            timings[timings.lastIndex] += duration
-            }
-        }
-
-        if (!hasPlayableWaveform(timings)) {
+        if (controlPoints.isEmpty()) {
             return null
         }
 
-        return VibrationEffect.createWaveform(timings, -1)
+        val totalDuration = controlPoints.sumOf { it.duration }
+        if (totalDuration <= 0L) {
+            return null
+        }
+
+        val timings = arrayListOf(0L)
+        var lastIsOn = false
+
+        fun append(duration: Long, isOn: Boolean) {
+            if (duration <= 0L) {
+                return
+            }
+            if (isOn == lastIsOn) {
+                timings[timings.lastIndex] += duration
+            } else {
+                timings.add(duration)
+                lastIsOn = isOn
+            }
+        }
+
+        var cursor = 0L
+        var index = 0
+        var segmentEnd = controlPoints[0].duration
+
+        while (cursor < totalDuration) {
+            while (index < controlPoints.lastIndex && cursor >= segmentEnd) {
+                index++
+                segmentEnd += controlPoints[index].duration
+            }
+            val point = controlPoints[index]
+
+            if (point.intensity <= 0f) {
+                // Silence: stay off until the end of this control point (or the pattern).
+                val gap = minOf(segmentEnd, totalDuration) - cursor
+                append(gap, false)
+                cursor += gap
+                continue
+            }
+
+            val remaining = totalDuration - cursor
+            val shot = minOf(PwmTimingSimulator.shotLength(point.intensity, remaining), remaining)
+            append(shot, true)
+            cursor += shot
+
+            if (cursor < totalDuration) {
+                val pauseBudget = totalDuration - cursor
+                val pause = minOf(PwmTimingSimulator.pauseLength(point.sharpness, pauseBudget), pauseBudget)
+                append(pause, false)
+                cursor += pause
+            }
+        }
+
+        val result = timings.toLongArray()
+        if (!hasPlayableWaveform(result)) {
+            return null
+        }
+
+        return VibrationEffect.createWaveform(result, -1)
     }
 
     private fun hasPlayableWaveform(timings: LongArray): Boolean {
