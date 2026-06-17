@@ -10,6 +10,7 @@ import {
   restoreNavigator,
   makeVibrateRecorder,
 } from "./helpers/navigator.js";
+import { withWindow, makeWindow } from "./helpers/window.js";
 import { resetSettings } from "./helpers/reset-settings.js";
 
 test.beforeEach(() => {
@@ -47,6 +48,17 @@ test("isHapticsSupported returns true when navigator.vibrate is a function", () 
 
   withNavigator({ vibrate: () => true }, () => {
     assert.equal(pulsar.isHapticsSupported(), true);
+  });
+});
+
+test("isHapticsSupported returns false on a fine-pointer (non-touch) device even when navigator.vibrate exists", () => {
+  const pulsar = new Pulsar();
+  const { window } = makeWindow({ matches: false });
+
+  withNavigator({ vibrate: () => true }, () => {
+    withWindow(window, () => {
+      assert.equal(pulsar.isHapticsSupported(), false);
+    });
   });
 });
 
