@@ -4,6 +4,7 @@
   "description": "Root orchestrator for Pulsar — no runtime deps, dev scripts only.",
   "scripts": {
     "install:all": "scripts/install.sh",
+    "sync:versions": "node scripts/sync-sdk-versions.mjs",
     "lint": "scripts/lint.sh",
     "lint:js": "scripts/lint-js.sh",
     "lint:kotlin": "scripts/lint-kotlin.sh",
