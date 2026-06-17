@@ -44,7 +44,7 @@ Presets.System.impactMedium();
 ### Web
 
 <!-- GENERATED:WEB_VERSION_START -->
-Latest available version: `0.1.1`
+Latest available version: `0.2.0`
 <!-- GENERATED:WEB_VERSION_END -->
 
 ```bash
