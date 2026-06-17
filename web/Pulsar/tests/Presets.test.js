@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { Preset, Presets } from "../src/Presets.ts";
+import { Preset, PresetsManager } from "../src/Presets.ts";
 import { BUILTIN_PRESETS } from "../src/builtin-presets.ts";
 import Settings from "../src/Settings.ts";
 
@@ -27,27 +27,27 @@ test.beforeEach(() => {
 });
 
 test("list includes the core built-in preset names", () => {
-  const presets = new Presets();
+  const presets = new PresetsManager();
   const names = presets.list();
 
-  for (const expected of ["tap", "doubleTap", "success", "warning", "heartbeat"]) {
+  for (const expected of ["tap", "doubleTap", "longPress", "alarm", "heartbeat"]) {
     assert.ok(names.includes(expected), `expected list to include "${expected}"`);
   }
 });
 
 test("get returns the SAME Preset instance across repeated calls and exposes name + exact pattern", () => {
-  const presets = new Presets();
+  const presets = new PresetsManager();
 
   const first = presets.get("tap");
   const second = presets.get("tap");
 
   assert.equal(first, second, "get('tap') must return the same instance");
   assert.equal(first.name, "tap");
-  assert.deepEqual(first.pattern, [{ type: "continuous", timestamp: 0, duration: 30 }]);
+  assert.deepEqual(first.pattern, [{ type: "continuous", timestamp: 0, duration: 35 }]);
 });
 
 test("get throws Error with message 'Unknown haptic preset: missing' for unknown names", () => {
-  const presets = new Presets();
+  const presets = new PresetsManager();
 
   assert.throws(
     () => presets.get("missing"),
@@ -57,13 +57,13 @@ test("get throws Error with message 'Unknown haptic preset: missing' for unknown
 });
 
 test("has returns true for a registered preset name", () => {
-  const presets = new Presets();
+  const presets = new PresetsManager();
 
   assert.equal(presets.has("tap"), true);
 });
 
 test("has returns false for an unregistered preset name", () => {
-  const presets = new Presets();
+  const presets = new PresetsManager();
 
   assert.equal(presets.has("definitelyNotAPreset"), false);
 });
@@ -75,13 +75,13 @@ test("has returns true for inherited Object.prototype keys (current contract —
   // This is the documented prototype-name caveat from the API inventory; the
   // assertion here makes the caveat explicit. Swap `in` for `Object.hasOwn`
   // (or a null-prototype map) in src/Presets.ts to tighten this.
-  const presets = new Presets();
+  const presets = new PresetsManager();
 
   assert.equal(presets.has("toString"), true);
 });
 
 test("all returns Preset instances in the same order as list()", () => {
-  const presets = new Presets();
+  const presets = new PresetsManager();
 
   const names = presets.list();
   const items = presets.all();
@@ -101,7 +101,7 @@ test("play('doubleTap') uses the haptics-only path and never touches the audio m
 
   await withAudioMocks(async ({ getAudioContexts, getOfflineContexts }) => {
     await withNavigator(nav, async () => {
-      const presets = new Presets();
+      const presets = new PresetsManager();
 
       const result = await presets.play("doubleTap");
 
@@ -131,7 +131,7 @@ test("play('doubleTap') uses the haptics-only path and never touches the audio m
 test("play('tap') falls back to audio when navigator is absent", async () => {
   await withAudioMocks(async ({ getAudioContexts, getOfflineContexts }) => {
     await withoutNavigator(async () => {
-      const presets = new Presets();
+      const presets = new PresetsManager();
 
       const result = await presets.play("tap");
 
@@ -155,7 +155,7 @@ test("play respects soundEnabled=false — no audio fallback runs", async () => 
     await withoutNavigator(async () => {
       Settings.enableSound(false);
 
-      const presets = new Presets();
+      const presets = new PresetsManager();
       const result = await presets.play("tap");
 
       assert.deepEqual(result, {
@@ -190,7 +190,7 @@ test("play(A) then play(B) stops A's audio fallback when B starts", async () => 
   // cancelling A's still-active source.
   await withAudioMocks({ autoEndOnStart: false }, async ({ getAudioContexts }) => {
     await withoutNavigator(async () => {
-      const presets = new Presets();
+      const presets = new PresetsManager();
 
       // Kick off A and drain microtasks until A has reached the audio-play
       // phase and has a live BufferSource. We do that by awaiting a few empty
@@ -264,7 +264,7 @@ test("play(A) then play(B) does NOT cancel A's haptic vibration (no navigator.vi
 
   await withAudioMocks(async () => {
     await withNavigator(nav, async () => {
-      const presets = new Presets();
+      const presets = new PresetsManager();
 
       await presets.play("tap");
       await presets.play("doubleTap");
@@ -291,7 +291,7 @@ test("Presets.stop fires stop handlers + navigator.vibrate(0) AND stops tracked 
     // First: drive a play that goes through the audio fallback path so the
     // registry has a currentlyPlaying with a live BufferSource. We need
     // haptics absent for the fallback to engage.
-    const presets = new Presets();
+    const presets = new PresetsManager();
 
     await withoutNavigator(async () => {
       // Schedule but don't await — keeps BufferSource alive past the call.
@@ -338,7 +338,7 @@ test("Presets.stop fires stop handlers + navigator.vibrate(0) AND stops tracked 
 
 test("Presets.stop returns false when navigator.vibrate is unavailable AND no audio is in flight", async () => {
   await withoutNavigator(() => {
-    const presets = new Presets();
+    const presets = new PresetsManager();
 
     // Fresh registry, no play() yet — currentlyPlaying is null.
     const result = presets.stop();
@@ -358,7 +358,7 @@ test("Presets.stop on a fresh registry with no currentlyPlaying returns whatever
   const { navigator: nav, calls } = makeVibrateRecorder({ result: true });
 
   await withNavigator(nav, () => {
-    const presets = new Presets();
+    const presets = new PresetsManager();
 
     const result = presets.stop();
 
@@ -370,7 +370,7 @@ test("Presets.stop on a fresh registry with no currentlyPlaying returns whatever
   // Presets.stop should also return false on a fresh registry.
   const denied = makeVibrateRecorder({ result: false });
   await withNavigator(denied.navigator, () => {
-    const presets = new Presets();
+    const presets = new PresetsManager();
 
     const result = presets.stop();
 
@@ -386,7 +386,7 @@ test("smoke: every BUILTIN_PRESETS entry is reachable via get() and play() witho
 
   await withAudioMocks(async () => {
     await withNavigator(nav, async () => {
-      const presets = new Presets();
+      const presets = new PresetsManager();
       const names = presets.list();
 
       // Every key of BUILTIN_PRESETS should show up in list().
