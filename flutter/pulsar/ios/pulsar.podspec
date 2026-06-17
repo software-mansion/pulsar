@@ -2,7 +2,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 # Run `pod lib lint pulsar.podspec` to validate before publishing.
 #
-pulsar_ios_pod_version = ENV['PULSAR_IOS_POD_VERSION'] || '1.1.2'
+pulsar_ios_pod_version = ENV['PULSAR_IOS_POD_VERSION'] || '1.1.2' # pulsar-sync:flutter-pulsar-ios
 
 Pod::Spec.new do |s|
   s.name             = 'pulsar'
