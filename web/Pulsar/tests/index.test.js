@@ -44,8 +44,9 @@ test("Preset is exported as a class", () => {
   assert.equal(pulsarHaptics.Preset, Preset);
 });
 
-test("Presets is exported as a class", () => {
-  assert.equal(typeof pulsarHaptics.Presets, "function");
+test("Presets is exported as the shared singleton instance (not a class)", () => {
+  assert.equal(typeof pulsarHaptics.Presets, "object");
+  assert.notEqual(pulsarHaptics.Presets, null);
   assert.equal(pulsarHaptics.Presets, Presets);
 });
 

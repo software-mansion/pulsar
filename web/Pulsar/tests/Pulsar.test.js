@@ -153,8 +153,8 @@ test("smoke: pulsar.getPresets().play('tap') forwards the parsed pattern to navi
   await withNavigator(navigator, async () => {
     const result = await pulsar.getPresets().play("tap");
 
-    // tap is [{ type: "continuous", timestamp: 0, duration: 30 }] → parsed [30].
-    assert.deepEqual(calls, [[30]]);
+    // tap is [{ type: "continuous", timestamp: 0, duration: 35 }] → parsed [35].
+    assert.deepEqual(calls, [[35]]);
     assert.equal(result.haptics, true);
     assert.equal(result.usedAudioFallback, false);
   });
