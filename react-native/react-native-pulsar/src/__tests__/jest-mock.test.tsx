@@ -1,6 +1,5 @@
-// Exercises the shipped Jest mock (../../jest-mock.js). Consumers wire it up via
-// `jest.mock('react-native-pulsar', () => require('react-native-pulsar/jest-mock'))`;
-// here we require it directly since we are inside the package.
+// Consumers wire this up as require('react-native-pulsar/jest-mock'); inside the
+// package we require it directly.
 jest.mock('react-native-pulsar', () => require('../../jest-mock'), {
   virtual: true,
 });
@@ -22,7 +21,6 @@ describe('react-native-pulsar/jest-mock', () => {
 
     expect(Presets.System.impactLight).toHaveBeenCalledTimes(1);
     expect(Presets.System.Android.effectClick).toHaveBeenCalledTimes(1);
-    // Same reference on repeated access (children are cached).
     expect(Presets.System.impactLight).toBe(Presets.System.impactLight);
   });
 

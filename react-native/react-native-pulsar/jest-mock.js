@@ -1,27 +1,12 @@
 /**
- * Ready-to-use Jest mock for `react-native-pulsar`.
- *
- * `react-native-pulsar` is backed by a TurboModule, so importing it inside a
- * Jest environment throws (`TurboModuleRegistry.getEnforcing('RNPulsar')`
- * cannot find the native module, and the hooks rely on `react-native-worklets`).
- * This mock replaces the whole public API with no-op `jest.fn()`s so tests that
- * render components using Pulsar can run on Node without a device.
- *
- * Usage (see the React Native SDK docs for details):
- *
- *   jest.mock('react-native-pulsar', () =>
- *     require('react-native-pulsar/jest-mock')
- *   );
- *
- * or globally, from a Jest `setupFiles` entry:
+ * Ready-to-use Jest mock for `react-native-pulsar`. Replaces the whole public
+ * API with no-op `jest.fn()`s so tests can run on Node without a native module.
  *
  *   jest.mock('react-native-pulsar', () =>
  *     require('react-native-pulsar/jest-mock')
  *   );
  */
 
-// Enums are real values (mirrors src/NativeRNPulsar.ts) so comparisons keep
-// working in tests.
 const HapticSupport = {
   NO_SUPPORT: 0,
   LIMITED_SUPPORT: 1,
@@ -36,33 +21,19 @@ const RealtimeComposerStrategy = {
   ENVELOPE_WITH_DISCRETE_PRIMITIVES: 3,
 };
 
-/**
- * Builds a deeply nested mock that is both callable and traversable. Every leaf
- * is a stable `jest.fn()`, and intermediate nodes (e.g. `Presets.System`) are
- * proxies, so any path you reach is a `jest.fn()` you can assert on:
- *
- *   Presets.System.impactLight();
- *   expect(Presets.System.impactLight).toHaveBeenCalled();
- *
- * Children are cached per path, so repeated access returns the same mock.
- */
+// Deeply nested mock: every leaf (at any depth, e.g. Presets.System.impactLight)
+// is a stable jest.fn(), so any preset path is callable and assertable.
 function createDeepMock() {
   const cache = new Map();
   const target = jest.fn();
   return new Proxy(target, {
     get(fn, prop) {
-      if (prop === '__isPulsarMock') {
-        return true;
-      }
-      // `received.calls` is how Jest sniffs for a Jasmine spy. A jest.fn() has
-      // no `calls` of its own, so without this guard the catch-all below would
-      // hand back a truthy callable and Jest would mis-detect every leaf as a
-      // spy, breaking matchers like `toHaveBeenCalledTimes`.
+      // Jest sniffs `received.calls.all` to detect a Jasmine spy; without this
+      // the catch-all would return a truthy callable and break matchers like
+      // toHaveBeenCalledTimes.
       if (prop === 'calls') {
         return undefined;
       }
-      // Preserve jest.fn() internals (mock, mockReturnValue, _isMockFunction, …)
-      // and symbol access (e.g. Symbol.iterator) so the leaf behaves like a fn.
       if (typeof prop === 'symbol' || prop in fn) {
         return fn[prop];
       }
@@ -74,8 +45,6 @@ function createDeepMock() {
   });
 }
 
-// `Presets` has 150+ nested entries; the deep mock covers all of them without
-// having to enumerate every preset name.
 const Presets = createDeepMock();
 
 const Settings = {
