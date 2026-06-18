@@ -147,8 +147,6 @@
 
     .phoneBackground {
       z-index: 1;
-      background-color: var(--color-blue-50);
-      border-radius: 24px;
       transform: translateX(55px) translateY(130px);
       position: relative;
 
@@ -158,14 +156,6 @@
 
       @media (max-width: 1000px) {
         transform: translateX(0) translateY(0);
-      }
-
-      @media (max-width: 768px) {
-        border-radius: 16px;
-      }
-
-      @media (max-width: 480px) {
-        border-radius: 12px;
       }
 
       .decorativeIcons {
@@ -201,6 +191,9 @@
         border: solid 2px var(--color-blue-50);
         border-radius: 24px;
         background-color: white;
+        // Hard offset shadow replaces the old static background wrapper, so the
+        // blue depth shakes together with the phone during the vibrate animation.
+        box-shadow: -10px 8px 0 var(--color-blue-50);
         transform: translateX(10px) translateY(-8px);
         padding-bottom: 300px;
         box-sizing: border-box;
@@ -924,6 +917,57 @@ $quake-durations: 0.07s, 0.09s, 0.06s, 0.11s, 0.08s;
   }
   100% {
     transform: translate(0, 0) scale(1);
+  }
+}
+
+// --------------------------------------------------
+// phone vibrate animation
+// --------------------------------------------------
+// Keyframes keep the phone's base offset (translateX(10px) translateY(-8px))
+// and add a quick shake on top. Because CSS animations override the static
+// transform set on .phone, this re-uses that same base so the phone doesn't
+// jump when the animation starts or ends.
+.vibrate {
+  animation: phoneVibrate 0.45s linear;
+}
+
+@keyframes phoneVibrate {
+  0%,
+  100% {
+    transform: translateX(10px) translateY(-8px) rotate(0deg);
+  }
+  10% {
+    transform: translateX(8px) translateY(-10px) rotate(-0.7deg);
+  }
+  20% {
+    transform: translateX(12px) translateY(-6px) rotate(0.7deg);
+  }
+  30% {
+    transform: translateX(7px) translateY(-9px) rotate(-0.6deg);
+  }
+  40% {
+    transform: translateX(13px) translateY(-7px) rotate(0.6deg);
+  }
+  50% {
+    transform: translateX(8px) translateY(-10px) rotate(-0.4deg);
+  }
+  60% {
+    transform: translateX(12px) translateY(-6px) rotate(0.4deg);
+  }
+  70% {
+    transform: translateX(9px) translateY(-9px) rotate(-0.25deg);
+  }
+  80% {
+    transform: translateX(11px) translateY(-7px) rotate(0.25deg);
+  }
+  90% {
+    transform: translateX(10px) translateY(-8px) rotate(-0.1deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vibrate {
+    animation: none;
   }
 }
 

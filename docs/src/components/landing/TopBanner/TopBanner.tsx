@@ -10,7 +10,7 @@ import { Button } from '../Button/Button';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 import { SoundBar } from '../SoundBar/SoundBar';
 import { Presets } from 'pulsar-haptics';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 declare global {
   interface Window {
@@ -28,6 +28,17 @@ export function TopBanner() {
   const [confettiInstances, setConfettiInstances] = useState<number[]>([]);
   const [backgroundAnimation, setBackgroundAnimation] = useState(styles.wave);
   const [showDecorativeIcons, setShowDecorativeIcons] = useState(true);
+  const phoneRef = useRef<HTMLDivElement>(null);
+
+  // Re-trigger the CSS vibrate animation on every press, even rapid repeats:
+  // remove the class, force a reflow, then re-add so the animation restarts.
+  function triggerVibration() {
+    const el = phoneRef.current;
+    if (!el) return;
+    el.classList.remove(styles.vibrate);
+    void el.offsetWidth;
+    el.classList.add(styles.vibrate);
+  }
 
   function handleAnimationEffect(
     effect: '' | 'stars' | 'angels' | 'confetti',
@@ -112,7 +123,7 @@ export function TopBanner() {
             </div>
           )}
 
-          <div className={styles.phone}>
+          <div ref={phoneRef} className={styles.phone}>
             <div className={styles.notch}></div>
             <div className={styles.buttonHolder}>
               <div className={styles.row}>
@@ -120,6 +131,7 @@ export function TopBanner() {
                   emoji="emoji1"
                   onClick={() => {
                     Presets.sway();
+                    triggerVibration();
                     setColorClass('');
                     setBackgroundAnimation(styles.wave);
                     handleAnimationEffect('');
@@ -133,6 +145,7 @@ export function TopBanner() {
                   emoji="emoji2"
                   onClick={() => {
                     Presets.trill();
+                    triggerVibration();
                     setColorClass(styles.yellow);
                     setBackgroundAnimation(styles.sonar);
                     handleAnimationEffect('stars');
@@ -149,6 +162,7 @@ export function TopBanner() {
                   emoji="emoji3"
                   onClick={() => {
                     Presets.smash();
+                    triggerVibration();
                     setColorClass(styles.red);
                     setBackgroundAnimation(styles.quake);
                     handleAnimationEffect('confetti');
@@ -162,6 +176,7 @@ export function TopBanner() {
                   emoji="emoji4"
                   onClick={() => {
                     Presets.heartbeat();
+                    triggerVibration();
                     setColorClass(styles.green);
                     setBackgroundAnimation(styles.heartbeat);
                     handleAnimationEffect('angels');
