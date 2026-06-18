@@ -194,7 +194,7 @@ export const rightColumn: Testimonial[] = [
   x(
     'Meltohamy 𓂆',
     'm090009',
-    'https://pbs.twimg.com/profile_images/1926012601093275648/m7_Q7fKj_400x400.jpg',
+    'https://pbs.twimg.com/profile_images/2060083168699670528/arEOmkeU_400x400.jpg',
     'https://x.com/m090009/status/2042255893111374190',
     "There's one for Android too, you guys are awesome"
   ),
