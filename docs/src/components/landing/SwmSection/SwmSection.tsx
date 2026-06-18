@@ -11,7 +11,7 @@ import social_fb from '../../../assets/landing-page/social_fb.png';
 import social_git from '../../../assets/landing-page/social_git.png';
 import social_ig from '../../../assets/landing-page/social_ig.png';
 import social_in from '../../../assets/landing-page/social_in.png';
-import social_x from '../../../assets/landing-page/social_x.png';
+import social_x from '../../../assets/landing-page/social_x.svg';
 import social_yt from '../../../assets/landing-page/social_yt.png';
 import arrow from '../../../assets/landing-page/footer_arrow.svg';
 
@@ -40,7 +40,7 @@ export function SwmSection({ className }: { className?: string }) {
         </Card>
 
         <div className={styles.iconBar}>
-          <a href="https://twitter.com/swmansion" target="_blank">
+          <a href="https://x.com/swmansion" target="_blank">
             <img src={social_x.src} />
           </a>
           <a href="https://www.facebook.com/SoftwareMansion/" target="_blank">
