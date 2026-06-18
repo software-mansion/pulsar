@@ -191,8 +191,6 @@
         border: solid 2px var(--color-blue-50);
         border-radius: 24px;
         background-color: white;
-        // Hard offset shadow replaces the old static background wrapper, so the
-        // blue depth shakes together with the phone during the vibrate animation.
         box-shadow: -10px 8px 0 var(--color-blue-50);
         transform: translateX(10px) translateY(-8px);
         padding-bottom: 300px;
@@ -923,10 +921,6 @@ $quake-durations: 0.07s, 0.09s, 0.06s, 0.11s, 0.08s;
 // --------------------------------------------------
 // phone vibrate animation
 // --------------------------------------------------
-// Keyframes keep the phone's base offset (translateX(10px) translateY(-8px))
-// and add a quick shake on top. Because CSS animations override the static
-// transform set on .phone, this re-uses that same base so the phone doesn't
-// jump when the animation starts or ends.
 .vibrate {
   animation: phoneVibrate 0.45s linear;
 }

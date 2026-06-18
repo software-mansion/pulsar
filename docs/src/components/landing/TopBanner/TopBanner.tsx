@@ -30,8 +30,6 @@ export function TopBanner() {
   const [showDecorativeIcons, setShowDecorativeIcons] = useState(true);
   const phoneRef = useRef<HTMLDivElement>(null);
 
-  // Re-trigger the CSS vibrate animation on every press, even rapid repeats:
-  // remove the class, force a reflow, then re-add so the animation restarts.
   function triggerVibration() {
     const el = phoneRef.current;
     if (!el) return;
