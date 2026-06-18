@@ -5,6 +5,7 @@ import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { Button } from '../Button/Button';
 
 import swm_logo from '../../../assets/swm-logo.svg';
+import social_discord from '../../../assets/landing-page/social_discord.svg';
 import social_drb from '../../../assets/landing-page/social_drb.png';
 import social_fb from '../../../assets/landing-page/social_fb.png';
 import social_git from '../../../assets/landing-page/social_git.png';
@@ -56,6 +57,9 @@ export function SwmSection({ className }: { className?: string }) {
           </a>
           <a href="https://www.linkedin.com/company/software-mansion/" target="_blank">
             <img src={social_in.src} />
+          </a>
+          <a href="https://discord.gg/PtsUSUKrqU" target="_blank">
+            <img src={social_discord.src} />
           </a>
           <a href="https://dribbble.com/softwaremansion" target="_blank">
             <img src={social_drb.src} />
