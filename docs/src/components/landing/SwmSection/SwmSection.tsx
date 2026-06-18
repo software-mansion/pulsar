@@ -6,13 +6,13 @@ import { Button } from '../Button/Button';
 
 import swm_logo from '../../../assets/swm-logo.svg';
 import social_discord from '../../../assets/landing-page/social_discord.svg';
-import social_drb from '../../../assets/landing-page/social_drb.png';
-import social_fb from '../../../assets/landing-page/social_fb.png';
+import social_drb from '../../../assets/landing-page/social_drb.svg';
+import social_fb from '../../../assets/landing-page/social_fb.svg';
 import social_git from '../../../assets/landing-page/social_git.png';
-import social_ig from '../../../assets/landing-page/social_ig.png';
-import social_in from '../../../assets/landing-page/social_in.png';
+import social_ig from '../../../assets/landing-page/social_ig.svg';
+import social_in from '../../../assets/landing-page/social_in.svg';
 import social_x from '../../../assets/landing-page/social_x.svg';
-import social_yt from '../../../assets/landing-page/social_yt.png';
+import social_yt from '../../../assets/landing-page/social_yt.svg';
 import arrow from '../../../assets/landing-page/footer_arrow.svg';
 
 export function SwmSection({ className }: { className?: string }) {
