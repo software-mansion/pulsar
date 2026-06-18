@@ -229,7 +229,7 @@ export const rightColumn: Testimonial[] = [
   x(
     'Clem ent',
     'clement___10',
-    'https://pbs.twimg.com/profile_images/2034410428327952384/W7fhYywz_400x400.jpg',
+    'https://pbs.twimg.com/profile_images/2057349147989078016/uiIceaTX_400x400.jpg',
     'https://x.com/clement___10/status/2042570012301390177',
     'banger'
   ),
