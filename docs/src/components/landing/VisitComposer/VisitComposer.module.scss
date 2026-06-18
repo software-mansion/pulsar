@@ -71,13 +71,23 @@
           padding: 12px 0;
         }
       }
-      img {
-        max-width: 90%;
-        margin-bottom: 15px;
+      .optionsBar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 25px;
+
+        @media (max-width: 768px) {
+          justify-content: center;
+        }
       }
-      .link {
-        font-size: var(--font-size-lg);
-        text-decoration: underline;
+      // enlarge the reused SelectBox headers within this section only
+      .selectBox > div:first-child {
+        font-size: var(--font-size-xs);
+        padding: 9px 14px;
+      }
+      .button {
+        display: inline-block;
       }
     }
   }
