@@ -7,6 +7,7 @@ import {
   deleteNavigator,
   restoreNavigator,
 } from "./helpers/navigator.js";
+import { withWindow, withoutWindow, makeWindow } from "./helpers/window.js";
 import { resetSettings } from "./helpers/reset-settings.js";
 
 test.beforeEach(() => {
@@ -72,6 +73,67 @@ test("isHapticsAvailable() returns false when navigator.vibrate is not a functio
 test("isHapticsAvailable() returns true when navigator.vibrate is a function", () => {
   withNavigator({ vibrate: () => true }, () => {
     assert.equal(Settings.isHapticsAvailable(), true);
+  });
+});
+
+// Coarse-pointer (non-touch device) gate: canActuallyVibrate() reads
+// window.matchMedia at call time. The tests above all hit the
+// `window === undefined → true` branch; these pin the rest.
+
+test("isHapticsAvailable() bypasses the coarse-pointer gate when window is undefined (Node/SSR)", () => {
+  withNavigator({ vibrate: () => true }, () => {
+    withoutWindow(() => {
+      assert.equal(typeof globalThis.window, "undefined");
+      assert.equal(Settings.isHapticsAvailable(), true);
+    });
+  });
+});
+
+test("isHapticsAvailable() bypasses the coarse-pointer gate when window has no matchMedia", () => {
+  const { window } = makeWindow({ matchMedia: null });
+  withNavigator({ vibrate: () => true }, () => {
+    withWindow(window, () => {
+      assert.equal(typeof globalThis.window.matchMedia, "undefined");
+      assert.equal(Settings.isHapticsAvailable(), true);
+    });
+  });
+});
+
+test("isHapticsAvailable() returns true on a coarse-pointer (touch) device", () => {
+  const { window } = makeWindow({ matches: true });
+  withNavigator({ vibrate: () => true }, () => {
+    withWindow(window, () => {
+      assert.equal(Settings.isHapticsAvailable(), true);
+    });
+  });
+});
+
+test("isHapticsAvailable() returns false on a fine-pointer (non-touch) device even when navigator.vibrate exists", () => {
+  const { window } = makeWindow({ matches: false });
+  withNavigator({ vibrate: () => true }, () => {
+    withWindow(window, () => {
+      assert.equal(Settings.isHapticsAvailable(), false);
+    });
+  });
+});
+
+test("isHapticsAvailable() queries matchMedia with exactly '(pointer: coarse)'", () => {
+  const { window, queries } = makeWindow({ matches: true });
+  withNavigator({ vibrate: () => true }, () => {
+    withWindow(window, () => {
+      Settings.isHapticsAvailable();
+      assert.deepEqual(queries, ["(pointer: coarse)"]);
+    });
+  });
+});
+
+test("isHapticsAvailable() short-circuits before matchMedia when navigator.vibrate is missing", () => {
+  const { window, queries } = makeWindow({ matches: true });
+  withNavigator({}, () => {
+    withWindow(window, () => {
+      assert.equal(Settings.isHapticsAvailable(), false);
+      assert.deepEqual(queries, [], "matchMedia must not be consulted when vibrate is unavailable");
+    });
   });
 });
 

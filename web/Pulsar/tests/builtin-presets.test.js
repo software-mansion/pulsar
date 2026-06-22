@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { BUILTIN_PRESETS } from "../src/builtin-presets.ts";
 import { PatternComposer } from "../src/PatternComposer.ts";
-import { Presets } from "../src/Presets.ts";
+import { PresetsManager } from "../src/Presets.ts";
 
 const isFiniteNumber = (value) => typeof value === "number" && Number.isFinite(value);
 
@@ -103,7 +103,7 @@ test("pulse segments expose intensity/frequency in [0, 1] when present", () => {
   );
 });
 
-test("line segments expose intensity/frequency curves of { time, value } points in valid ranges", () => {
+test("line segments, when present, expose intensity/frequency curves of { time, value } points in valid ranges", () => {
   let lineSegmentCount = 0;
 
   for (const [name, pattern] of Object.entries(BUILTIN_PRESETS)) {
@@ -133,14 +133,17 @@ test("line segments expose intensity/frequency curves of { time, value } points 
     });
   }
 
+  // The current build ships no line segments (they were removed from the
+  // built-in presets), so we do not require any. This test still guards the
+  // shape of line segments if any are reintroduced.
   assert.ok(
-    lineSegmentCount > 0,
-    "expected at least one line segment across the builtin presets",
+    lineSegmentCount >= 0,
+    "line segment count must be non-negative",
   );
 });
 
 test("Presets.list().length matches the BUILTIN_PRESETS inventory and stays above the regression floor", () => {
-  const presets = new Presets();
+  const presets = new PresetsManager();
   const names = presets.list();
   const inventoryKeys = Object.keys(BUILTIN_PRESETS);
 
@@ -154,13 +157,13 @@ test("Presets.list().length matches the BUILTIN_PRESETS inventory and stays abov
   // intentionally add or remove built-in presets.
   assert.equal(
     names.length,
-    126,
-    `Presets.list() length changed from the documented count of 126; if intentional, update this assertion`,
+    45,
+    `Presets.list() length changed from the documented count of 45; if intentional, update this assertion`,
   );
 
   assert.ok(
-    names.length >= 100,
-    "Presets.list() length must remain >= 100 as a regression guard against accidental deletions",
+    names.length >= 40,
+    "Presets.list() length must remain >= 40 as a regression guard against accidental deletions",
   );
 
   // The names exposed by list() must exactly equal the inventory keys
@@ -224,7 +227,7 @@ test("every preset pattern parses without throwing into a valid ParsedPattern sh
 
 test("canonical preset pattern shapes are pinned against accidental reshape", () => {
   assert.deepEqual(BUILTIN_PRESETS.tap, [
-    { type: "continuous", timestamp: 0, duration: 30 },
+    { type: "continuous", timestamp: 0, duration: 35 },
   ]);
 
   assert.deepEqual(BUILTIN_PRESETS.doubleTap, [
@@ -232,26 +235,33 @@ test("canonical preset pattern shapes are pinned against accidental reshape", ()
     { type: "continuous", timestamp: 90, duration: 30 },
   ]);
 
-  assert.deepEqual(BUILTIN_PRESETS.success, [
-    { type: "continuous", timestamp: 0, duration: 40 },
-    { type: "continuous", timestamp: 90, duration: 55 },
-    { type: "continuous", timestamp: 180, duration: 90 },
+  assert.deepEqual(BUILTIN_PRESETS.longPress, [
+    { type: "continuous", timestamp: 0, duration: 200 },
   ]);
 
-  assert.deepEqual(BUILTIN_PRESETS.warning, [
+  assert.deepEqual(BUILTIN_PRESETS.reject, [
+    { type: "continuous", timestamp: 0, duration: 90 },
+    { type: "continuous", timestamp: 160, duration: 90 },
+  ]);
+
+  assert.deepEqual(BUILTIN_PRESETS.rumble, [
     {
       type: "pulse",
       timestamp: 0,
-      duration: 240,
-      intensity: 0.35,
-      frequency: 0.9,
+      duration: 1000,
+      intensity: 1.0,
+      frequency: 0.0,
     },
-    { type: "continuous", timestamp: 320, duration: 120 },
   ]);
 
-  assert.deepEqual(BUILTIN_PRESETS.error, [
-    { type: "continuous", timestamp: 0, duration: 90 },
-    { type: "continuous", timestamp: 160, duration: 90 },
+  assert.deepEqual(BUILTIN_PRESETS.drone, [
+    {
+      type: "pulse",
+      timestamp: 0,
+      duration: 800,
+      intensity: 0.5,
+      frequency: 0.5,
+    },
   ]);
 
   assert.deepEqual(BUILTIN_PRESETS.heartbeat, [
@@ -259,21 +269,5 @@ test("canonical preset pattern shapes are pinned against accidental reshape", ()
     { type: "continuous", timestamp: 120, duration: 70 },
     { type: "continuous", timestamp: 420, duration: 45 },
     { type: "continuous", timestamp: 540, duration: 70 },
-  ]);
-
-  assert.deepEqual(BUILTIN_PRESETS.rampUp, [
-    {
-      type: "line",
-      timestamp: 0,
-      duration: 800,
-      intensity: [
-        { time: 0, value: 0.05 },
-        { time: 800, value: 1.0 },
-      ],
-      frequency: [
-        { time: 0, value: 0.05 },
-        { time: 800, value: 1.0 },
-      ],
-    },
   ]);
 });

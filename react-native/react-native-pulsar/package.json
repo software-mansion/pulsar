@@ -11,11 +11,13 @@
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
+    "./jest-mock": "./jest-mock.js",
     "./package.json": "./package.json"
   },
   "files": [
     "src",
     "lib",
+    "jest-mock.js",
     "android",
     "ios",
     "cpp",

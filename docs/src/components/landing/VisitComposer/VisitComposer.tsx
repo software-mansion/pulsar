@@ -2,7 +2,11 @@ import styles from './VisitComposer.module.scss';
 
 import { BASE_PATH } from '../../../../config';
 import star from '../../../assets/landing-page/star.svg';
-import screenshot from '../../../assets/landing-page/screenshot.png';
+import { Button } from '../Button/Button';
+import { SelectBox } from '../../../content/docs/components/SelectBox/SelectBox';
+import { TagsInfo } from '../../../content/docs/components/PresetsList/Tags';
+
+const SYSTEM_PRESET_OPTIONS = ['iOS', 'Android Primitives', 'Android Effects', 'Android Vendor'];
 
 interface VisitComposerProps {
   className?: string;
@@ -23,9 +27,31 @@ export function VisitComposer({ className }: VisitComposerProps) {
             Choosing the right one isn't obvious. We know this, so we prepared a composer that will
             make your choice much easier.
           </div>
-          <img src={screenshot.src} />
-          <br />
-          <a className={styles.link} href={`${BASE_PATH}/presets-playground/`}>Visit our composer</a>
+
+          <div className={styles.optionsBar}>
+            {TagsInfo.map((group) => (
+              <SelectBox
+                key={group.groupName}
+                className={styles.selectBox}
+                title={group.groupName}
+                options={group.tags.map((tag) => ({ label: tag.name, checked: false }))}
+                onOptionChange={() => {}}
+              />
+            ))}
+            <SelectBox
+              className={styles.selectBox}
+              title="System presets"
+              options={SYSTEM_PRESET_OPTIONS.map((name) => ({ label: name, checked: false }))}
+              onOptionChange={() => {}}
+              wide
+            />
+          </div>
+
+          <Button
+            className={styles.button}
+            label="Visit our composer"
+            url={`${BASE_PATH}/presets-playground/`}
+          />
         </div>
       </div>
     </div>

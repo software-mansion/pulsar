@@ -20,12 +20,33 @@ const files = [
   'docs/src/content/docs/sdk/flutter.mdx',
   'docs/src/content/docs/sdk/web.mdx',
   'iOS/Pulsar/README.md',
-  'iOS/Pulsar/Pulsar-haptics.podspec',
   'Android/Pulsar/README.md',
   'react-native/react-native-pulsar/README.md',
   'kmp/Pulsar/README.md',
   'flutter/pulsar/README.md',
   'web/Pulsar/README.md',
+];
+
+// Version assignments tagged with an inline `pulsar-sync:<key>` comment. The
+// version on the marked line is replaced with the value from sdk-versions.json,
+// which keeps the sync robust without per-file regexes.
+const markedVersions = [
+  { file: 'iOS/Pulsar/Pulsar-haptics.podspec', key: 'ios-version', version: versions.ios.version },
+  { file: 'Android/Pulsar/build.gradle.kts', key: 'android-version', version: versions.android.version },
+  { file: 'react-native/react-native-pulsar/Pulsar.podspec', key: 'rn-pulsar-ios', version: versions.reactNative.pulsarCore.iosPodVersion },
+  { file: 'react-native/react-native-pulsar/android/build.gradle', key: 'rn-pulsar-android', version: versions.reactNative.pulsarCore.androidMavenVersion },
+  { file: 'kmp/Pulsar/library/build.gradle.kts', key: 'kmp-version', version: versions.kmp.version },
+  { file: 'kmp/Pulsar/library/build.gradle.kts', key: 'kmp-pulsar-android', version: versions.kmp.pulsarCore.androidMavenVersion },
+  { file: 'flutter/pulsar/pubspec.yaml', key: 'flutter-version', version: versions.flutter.version },
+  { file: 'flutter/pulsar/ios/pulsar.podspec', key: 'flutter-pulsar-ios', version: versions.flutter.pulsarCore.iosPodVersion },
+  { file: 'flutter/pulsar/android/build.gradle.kts', key: 'flutter-pulsar-android', version: versions.flutter.pulsarCore.androidMavenVersion },
+];
+
+// package.json files cannot carry marker comments, so their top-level `version`
+// field is updated directly.
+const jsonVersions = [
+  { file: 'react-native/react-native-pulsar/package.json', version: versions.reactNative.version },
+  { file: 'web/Pulsar/package.json', version: versions.web.version },
 ];
 
 function replaceGeneratedSection(content, key, replacement) {
@@ -95,16 +116,6 @@ pod 'Pulsar-haptics', '~> ${versions.ios.version}'
 \`\`\``;
 }
 
-function syncIosPodspecVersion(content) {
-  const pattern = /(s\.version\s*=\s*')([^']+)(')/;
-
-  if (!pattern.test(content)) {
-    throw new Error('Missing iOS podspec version assignment');
-  }
-
-  return content.replace(pattern, `$1${versions.ios.version}$3`);
-}
-
 function getAndroidVersionLine() {
   return `Latest available version: \`${versions.android.version}\``;
 }
@@ -144,6 +155,33 @@ dependencies:
 \`\`\``;
 }
 
+function syncMarkedVersion(content, key, version, label) {
+  const marker = `pulsar-sync:${key}`;
+  const semver = /\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?/;
+  const lines = content.split('\n');
+  const index = lines.findIndex((line) => line.includes(marker));
+
+  if (index === -1) {
+    throw new Error(`Missing "${marker}" marker in ${label}`);
+  }
+  if (!semver.test(lines[index])) {
+    throw new Error(`No version found on the "${marker}" line in ${label}`);
+  }
+
+  lines[index] = lines[index].replace(semver, version);
+  return lines.join('\n');
+}
+
+function syncJsonVersion(content, version, label) {
+  const pattern = /("version":\s*")[^"]+(")/;
+
+  if (!pattern.test(content)) {
+    throw new Error(`Missing "version" field in ${label}`);
+  }
+
+  return content.replace(pattern, `$1${version}$2`);
+}
+
 for (const relativeFile of files) {
   const absoluteFile = path.join(repoRoot, relativeFile);
   let content = await fs.readFile(absoluteFile, 'utf8');
@@ -163,10 +201,6 @@ for (const relativeFile of files) {
 
   if (relativeFile === 'iOS/Pulsar/README.md') {
     content = replaceGeneratedSection(content, 'IOS_COCOAPODS_INSTALL_SNIPPET', getIosCocoaPodsSnippet());
-  }
-
-  if (relativeFile === 'iOS/Pulsar/Pulsar-haptics.podspec') {
-    content = syncIosPodspecVersion(content);
   }
 
   if (
@@ -212,6 +246,18 @@ for (const relativeFile of files) {
   }
 
   await fs.writeFile(absoluteFile, content);
+}
+
+for (const { file, key, version } of markedVersions) {
+  const absoluteFile = path.join(repoRoot, file);
+  const content = await fs.readFile(absoluteFile, 'utf8');
+  await fs.writeFile(absoluteFile, syncMarkedVersion(content, key, version, file));
+}
+
+for (const { file, version } of jsonVersions) {
+  const absoluteFile = path.join(repoRoot, file);
+  const content = await fs.readFile(absoluteFile, 'utf8');
+  await fs.writeFile(absoluteFile, syncJsonVersion(content, version, file));
 }
 
 console.log('Synchronized SDK versions from sdk-versions.json');

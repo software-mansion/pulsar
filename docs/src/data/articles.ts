@@ -10,6 +10,15 @@ export type Article = {
 
 export const articles: Article[] = [
   {
+    title: 'What Is the Difference Between iOS and Android Haptics',
+    shortTitle: 'iOS vs Android Haptics',
+    url: 'https://swmansion.com/blog/what-is-the-difference-between-i-os-and-android-haptics/',
+    source: 'Software Mansion Blog',
+    publishedAt: 'Jun 18, 2026',
+    imageUrl: 'https://strapi-production-5f3f.up.railway.app/uploads/BLOGPOST_i_O_Svs_Android_Haptics_1_bfa763feaf.png',
+    imageAlt: 'Banner for the article What Is the Difference Between iOS and Android Haptics',
+  },
+  {
     title: 'How Haptic Feedback Affects Sales, Trust, and Product Perception',
     shortTitle: 'How Haptic Feedback Affects Sales, Trust, and Product Perception',
     url: 'https://swmansion.com/blog/how-haptic-feedback-affects-sales-trust-and-product-perception/',
