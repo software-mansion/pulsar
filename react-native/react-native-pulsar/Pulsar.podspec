@@ -2,7 +2,7 @@ require "json"
 require "fileutils"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
-pulsar_ios_pod_version = ENV["PULSAR_IOS_POD_VERSION"] || "1.1.4"
+pulsar_ios_pod_version = ENV["PULSAR_IOS_POD_VERSION"] || "1.1.4" # pulsar-sync:rn-pulsar-ios
 
 # By default depend on the published `Pulsar-haptics` CocoaPod.
 # Set USE_LOCAL_PULSAR_IOS=1 to build against the in-repo `iOS/Pulsar` sources instead.

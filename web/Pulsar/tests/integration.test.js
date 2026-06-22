@@ -24,8 +24,8 @@ test("Pulsar.getPresets().play('tap') dispatches the parsed pattern through navi
     const pulsar = new Pulsar();
     const result = await pulsar.getPresets().play("tap");
 
-    // Built-in "tap" preset is a single continuous 30ms segment.
-    assert.deepEqual(calls, [[30]]);
+    // Built-in "tap" preset is a single continuous 35ms segment.
+    assert.deepEqual(calls, [[35]]);
     assert.deepEqual(result, {
       haptics: true,
       audio: false,
@@ -62,9 +62,9 @@ test("Pulsar.getPresets().play('tap') falls back to AudioGenerator when navigato
       assert.equal(parseCalls.length, 1);
       assert.equal(playCalls, 1);
       // The parsed pattern passed to AudioGenerator is the original HapticPattern,
-      // i.e. the built-in tap definition (a continuous 30ms segment at t=0).
+      // i.e. the built-in tap definition (a continuous 35ms segment at t=0).
       assert.deepEqual(parseCalls[0], [
-        { type: "continuous", timestamp: 0, duration: 30 },
+        { type: "continuous", timestamp: 0, duration: 35 },
       ]);
     });
   } finally {

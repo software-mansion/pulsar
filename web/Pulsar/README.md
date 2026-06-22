@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/software-mansion/pulsar/blob/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
+  <img src="https://github.com/software-mansion/pulsar/raw/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
 </p>
 
 # pulsar-haptics
@@ -11,7 +11,7 @@ Works in any modern browser, in any framework — React, Vue, Svelte, Solid, van
 ## Install
 
 <!-- GENERATED:WEB_VERSION_START -->
-Latest available version: `0.1.1`
+Latest available version: `0.2.0`
 <!-- GENERATED:WEB_VERSION_END -->
 
 ```bash

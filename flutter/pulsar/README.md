@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/software-mansion/pulsar/blob/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
+  <img src="https://github.com/software-mansion/pulsar/raw/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
 </p>
 
 A haptic feedback SDK for Flutter. Pulsar gives you 150+ ready-to-play presets, a pattern composer for fully custom sequences, and a realtime composer for gesture-driven feedback — all behind a single Dart-friendly API that bridges to native CoreHaptics on iOS and the platform vibrator on Android.

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { Pulsar } from "../src/Pulsar.ts";
-import { Presets } from "../src/Presets.ts";
+import { Presets, PresetsManager } from "../src/Presets.ts";
 import { PatternComposer } from "../src/PatternComposer.ts";
 import { RealtimeComposer } from "../src/RealtimeComposer.ts";
 import { AudioGenerator } from "../src/AudioGenerator.ts";
@@ -98,7 +98,8 @@ test("usePresets returns the same Presets registry as useHaptics().getPresets()"
     haptics: useHaptics(),
   }));
   try {
-    assert.ok(result.current.presets instanceof Presets);
+    assert.ok(result.current.presets instanceof PresetsManager);
+    assert.equal(result.current.presets, Presets);
     assert.equal(result.current.presets, result.current.haptics.getPresets());
   } finally {
     unmount();
