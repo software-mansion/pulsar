@@ -1,0 +1,29 @@
+{
+  "name": "Morse",
+  "description": "Deliberate and coded, suited for signaling or distinct notifications.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Pattern",
+    "Short",
+    "Web"
+  ],
+  "duration": 345,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 110,
+      "duration": 140
+    },
+    {
+      "type": "continuous",
+      "timestamp": 310,
+      "duration": 35
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "Windup",
+  "description": "Tightening and energizing, ideal for charging, accelerating or building tension.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Ramp",
+    "Extended",
+    "Web"
+  ],
+  "duration": 945,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 620,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 780,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 860,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 910,
+      "duration": 35
+    }
+  ]
+}

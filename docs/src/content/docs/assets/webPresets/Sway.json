@@ -1,0 +1,28 @@
+{
+  "name": "Sway",
+  "description": "Soothing and unhurried, suited for calm, restful or ambient feedback.",
+  "tags": [
+    "Gentle",
+    "Soft",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1500,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 600,
+      "intensity": 0.3,
+      "frequency": 0.2
+    },
+    {
+      "type": "pulse",
+      "timestamp": 900,
+      "duration": 600,
+      "intensity": 0.3,
+      "frequency": 0.2
+    }
+  ]
+}

@@ -7,6 +7,9 @@ import Preview from '../components/preview/Preview.astro';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {/* Headless embed surface (loaded inside Figma with a ?token= param) — keep
+        it out of search results entirely. Also excluded from the sitemap. */}
+    <meta name="robots" content="noindex" />
     <title>Pulsar Figma Preview</title>
   </head>
   <body>

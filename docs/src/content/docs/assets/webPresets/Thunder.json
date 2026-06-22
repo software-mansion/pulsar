@@ -1,0 +1,28 @@
+{
+  "name": "Thunder",
+  "description": "Brooding and powerful, ideal for ominous or climactic moments.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Long",
+    "Web"
+  ],
+  "duration": 1800,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 900,
+      "intensity": 0.65,
+      "frequency": 0.3
+    },
+    {
+      "type": "pulse",
+      "timestamp": 700,
+      "duration": 1100,
+      "intensity": 0.75,
+      "frequency": 0.35
+    }
+  ]
+}

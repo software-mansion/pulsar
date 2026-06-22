@@ -1,6 +1,6 @@
 {
   "name": "pulsar-haptics",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A TypeScript library for playing haptics on web devices — works in vanilla JS, React, and any modern framework.",
   "license": "MIT",
   "type": "module",
@@ -36,6 +36,9 @@
     "example": "vite --host",
     "build": "vite build && vite build --config vite.react.config.ts && tsc -p tsconfig.build.json --emitDeclarationOnly --declaration --declarationDir dist && node scripts/rewrite-dts-extensions.mjs",
     "test": "node --test --experimental-strip-types tests/*.test.js",
+    "presets:json": "node --experimental-strip-types scripts/generate-presets.ts",
+    "presets:images": "node --experimental-strip-types scripts/generate-images.ts",
+    "presets": "npm run presets:json && npm run presets:images",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "clean": "rm -rf dist node_modules .turbo *.tsbuildinfo",

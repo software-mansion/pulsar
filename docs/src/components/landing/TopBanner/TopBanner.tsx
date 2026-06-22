@@ -9,7 +9,8 @@ import arrowIcon from '../../../assets/landing-page/arrow.svg';
 import { Button } from '../Button/Button';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 import { SoundBar } from '../SoundBar/SoundBar';
-import { useState } from 'react';
+import { Presets } from 'pulsar-haptics';
+import { useRef, useState } from 'react';
 
 declare global {
   interface Window {
@@ -27,6 +28,15 @@ export function TopBanner() {
   const [confettiInstances, setConfettiInstances] = useState<number[]>([]);
   const [backgroundAnimation, setBackgroundAnimation] = useState(styles.wave);
   const [showDecorativeIcons, setShowDecorativeIcons] = useState(true);
+  const phoneRef = useRef<HTMLDivElement>(null);
+
+  function triggerVibration() {
+    const el = phoneRef.current;
+    if (!el) return;
+    el.classList.remove(styles.vibrate);
+    void el.offsetWidth;
+    el.classList.add(styles.vibrate);
+  }
 
   function handleAnimationEffect(
     effect: '' | 'stars' | 'angels' | 'confetti',
@@ -78,14 +88,14 @@ export function TopBanner() {
         <div className={styles.buttonHolder}>
           <Button
             label="Preset playground"
-            url={`${BASE_PATH}/presets-playground`}
+            url={`${BASE_PATH}/presets-playground/`}
             className={styles.fullWidth}
             onClick={() => window.posthog?.capture('preset_playground_cta_clicked')}
           />
           <Button
             label="Read the docs"
             variant="filled"
-            url={`${BASE_PATH}/getting-started`}
+            url={`${BASE_PATH}/getting-started/`}
             className={styles.fullWidth}
             onClick={() => window.posthog?.capture('docs_cta_clicked')}
           />
@@ -111,13 +121,15 @@ export function TopBanner() {
             </div>
           )}
 
-          <div className={styles.phone}>
+          <div ref={phoneRef} className={styles.phone}>
             <div className={styles.notch}></div>
             <div className={styles.buttonHolder}>
               <div className={styles.row}>
                 <EmojiButton
                   emoji="emoji1"
                   onClick={() => {
+                    Presets.sway();
+                    triggerVibration();
                     setColorClass('');
                     setBackgroundAnimation(styles.wave);
                     handleAnimationEffect('');
@@ -130,6 +142,8 @@ export function TopBanner() {
                 <EmojiButton
                   emoji="emoji2"
                   onClick={() => {
+                    Presets.trill();
+                    triggerVibration();
                     setColorClass(styles.yellow);
                     setBackgroundAnimation(styles.sonar);
                     handleAnimationEffect('stars');
@@ -145,6 +159,8 @@ export function TopBanner() {
                 <EmojiButton
                   emoji="emoji3"
                   onClick={() => {
+                    Presets.smash();
+                    triggerVibration();
                     setColorClass(styles.red);
                     setBackgroundAnimation(styles.quake);
                     handleAnimationEffect('confetti');
@@ -157,6 +173,8 @@ export function TopBanner() {
                 <EmojiButton
                   emoji="emoji4"
                   onClick={() => {
+                    Presets.heartbeat();
+                    triggerVibration();
                     setColorClass(styles.green);
                     setBackgroundAnimation(styles.heartbeat);
                     handleAnimationEffect('angels');
@@ -171,65 +189,32 @@ export function TopBanner() {
           </div>
         </div>
 
-        <svg
+        <div
           className={`${styles.svgWave} ${colorClass} ${backgroundAnimation}`}
-          width="1000"
-          height="1000"
-          viewBox="0 0 1200 1200"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
         >
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="500"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="400"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="300"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="200"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-          <circle
-            opacity="0.1"
-            cx="600"
-            cy="600"
-            r="100"
-            fill="#87CCE8"
-            stroke="#2B85AB"
-            strokeMiterlimit="16"
-            strokeDasharray="8 8"
-          />
-        </svg>
+          {[500, 400, 300, 200, 100].map((r) => (
+            <svg
+              key={r}
+              className={styles.ring}
+              width="1000"
+              height="1000"
+              viewBox="0 0 1200 1200"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="600"
+                cy="600"
+                r={r}
+                fill="#87CCE8"
+                stroke="#2B85AB"
+                strokeMiterlimit="16"
+                strokeDasharray="8 8"
+              />
+            </svg>
+          ))}
+        </div>
       </div>
 
       <SoundBar />

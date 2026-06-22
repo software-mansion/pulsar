@@ -63,22 +63,34 @@ const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
 // project; the client remembers the revision it last synced (its "base") so it
 // can detect when the row changed underneath it and reconcile.
 
-// POST the preview payload to the server and return a fresh token + revision.
-async function createProject(payload: unknown): Promise<{ token: string; revision: number }> {
+// POST the preview payload. Returns the secret edit token, a read-only
+// publicToken for share links, and the revision.
+async function createProject(
+  payload: unknown
+): Promise<{ token: string; publicToken: string; revision: number }> {
   const res = await fetch(`${API_SERVER_URL}/figma-project`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ config: payload })
   });
   const data = (await res.json().catch(() => null)) as
-    | { success: boolean; token?: string; revision?: number; error?: string; detail?: string }
+    | {
+        success: boolean;
+        token?: string;
+        publicToken?: string;
+        revision?: number;
+        error?: string;
+        detail?: string;
+      }
     | null;
   if (!res.ok) {
     const msg = data?.error ?? `Server responded ${res.status}`;
     throw new Error(data?.detail ? `${msg} (${data.detail})` : msg);
   }
-  if (!data?.success || !data.token) throw new Error(data?.error || 'No token returned');
-  return { token: data.token, revision: data.revision ?? 0 };
+  if (!data?.success || !data.token || !data.publicToken) {
+    throw new Error(data?.error || 'No token returned');
+  }
+  return { token: data.token, publicToken: data.publicToken, revision: data.revision ?? 0 };
 }
 
 // Result of a conditional update: applied (new revision), gone (404, caller
@@ -116,20 +128,20 @@ async function updateProject(
   return { kind: 'ok', revision: data.revision ?? 0 };
 }
 
-// Outcome of a GET: the stored snapshot, a revoked (private) link, or a missing
-// row. The plugin is the link's owner, so it still keeps the token on 'private'
-// (the user can re-share to re-open it) — only 'missing' means forget the token.
+// Outcome of an owner GET: the stored snapshot, a revoked (private) link, or a
+// missing row. Only 'missing' means forget the token. ('private' is only
+// reachable against an older server that still 403s the owner read.)
 type FetchResult =
-  | { kind: 'ok'; config: unknown; revision: number; isPublic: boolean }
+  | { kind: 'ok'; config: unknown; revision: number; isPublic: boolean; publicToken: string | null }
   | { kind: 'private' }
   | { kind: 'missing' };
 
-// GET the stored config + revision for a token.
+// GET the owner's project by its secret edit token. Also returns the read-only
+// publicToken so the plugin can (re)learn the share token for a legacy share.
 async function fetchProject(token: string): Promise<FetchResult> {
   const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`);
   if (res.status === 404) return { kind: 'missing' };
-  // 403 = the row exists but its link was made private. The owner still holds
-  // the token; treat it as a known-private project rather than a lost one.
+  // Only an older (pre-split) server 403s the owner read; treat as private.
   if (res.status === 403) return { kind: 'private' };
   const data = (await res.json().catch(() => null)) as
     | {
@@ -137,6 +149,7 @@ async function fetchProject(token: string): Promise<FetchResult> {
         config?: unknown;
         revision?: number;
         isPublic?: boolean;
+        publicToken?: string;
         error?: string;
         detail?: string;
       }
@@ -150,7 +163,8 @@ async function fetchProject(token: string): Promise<FetchResult> {
     kind: 'ok',
     config: data.config ?? null,
     revision: data.revision ?? 0,
-    isPublic: data.isPublic ?? true
+    isPublic: data.isPublic ?? true,
+    publicToken: data.publicToken ?? null
   };
 }
 
@@ -217,9 +231,11 @@ export default function App() {
   // different design file gets its own server row instead of overwriting the
   // first. Resolved from figma.fileKey (or the file-key override).
   const fileKeyRef = useRef<string>('');
-  // Current file's server token. Kept in a ref so the (rebound) preview-data
-  // and doc-changed handlers always read the latest value.
+  // Current file's secret edit token (write access). Kept in a ref so the
+  // (rebound) preview-data and doc-changed handlers always read the latest value.
   const tokenRef = useRef<string | null>(null);
+  // Current file's read-only share token — what goes into share links/QRs.
+  const publicTokenRef = useRef<string | null>(null);
   // Server revision our local state is based on (for conflict detection).
   const baseRevisionRef = useRef<number | null>(null);
   // stableStringify of the payload we last successfully pushed — lets us skip a
@@ -292,12 +308,14 @@ export default function App() {
   const handleProject = async (m: {
     fileKey: string;
     token: string | null;
+    publicToken: string | null;
     config: unknown | null;
     baseRevision: number | null;
     isPublic: boolean;
   }) => {
     fileKeyRef.current = m.fileKey;
     tokenRef.current = m.token;
+    publicTokenRef.current = m.publicToken;
     baseRevisionRef.current = m.baseRevision;
     // Seed the toggle from the cached value; the server-fetch branch below
     // reconciles it with the source of truth when there's a token to check.
@@ -313,6 +331,16 @@ export default function App() {
           baseRevisionRef.current = got.revision;
           lastSyncedJsonRef.current = stableStringify(got.config);
           setIsPublic(got.isPublic);
+          // Recover/refresh the read-only share token from the server.
+          if (got.publicToken && got.publicToken !== publicTokenRef.current) {
+            publicTokenRef.current = got.publicToken;
+            send({
+              type: 'persist-project-token',
+              fileKey: m.fileKey,
+              token: m.token,
+              publicToken: got.publicToken
+            });
+          }
           send({ type: 'persist-project-visibility', fileKey: m.fileKey, isPublic: got.isPublic });
           send({
             type: 'persist-project-cache',
@@ -332,6 +360,7 @@ export default function App() {
         } else {
           // Token no longer exists server-side — forget it; nothing is shared.
           tokenRef.current = null;
+          publicTokenRef.current = null;
           lastSyncedJsonRef.current = null;
           baseRevisionRef.current = null;
           setSyncStatus('idle');
@@ -513,11 +542,12 @@ export default function App() {
       // allowed — i.e. a background auto-sync of a never-shared file).
       const ensurePublished = async (allowCreate: boolean): Promise<string | null> => {
         const json = stableStringify(payload);
-        const adopt = (t: string, revision: number) => {
+        const adopt = (t: string, publicToken: string, revision: number) => {
           tokenRef.current = t;
+          publicTokenRef.current = publicToken;
           baseRevisionRef.current = revision;
           lastSyncedJsonRef.current = json;
-          send({ type: 'persist-project-token', fileKey, token: t });
+          send({ type: 'persist-project-token', fileKey, token: t, publicToken });
           send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
         };
 
@@ -528,7 +558,7 @@ export default function App() {
         if (!token) {
           if (!allowCreate) return null;
           const created = await createProject(payload);
-          adopt(created.token, created.revision);
+          adopt(created.token, created.publicToken, created.revision);
           return created.token;
         }
 
@@ -548,7 +578,7 @@ export default function App() {
             return null;
           }
           const created = await createProject(payload);
-          adopt(created.token, created.revision);
+          adopt(created.token, created.publicToken, created.revision);
           return created.token;
         }
         // Conflict: someone changed the row since our base. The server is the
@@ -570,7 +600,7 @@ export default function App() {
             return null;
           }
           const created = await createProject(payload);
-          adopt(created.token, created.revision);
+          adopt(created.token, created.publicToken, created.revision);
           return created.token;
         }
         // Lost a second race — bail; the next change will retry from the new base.
@@ -611,14 +641,33 @@ export default function App() {
         send({ type: 'persist-project-visibility', fileKey, isPublic: true });
         void setProjectVisibility(token, true).catch(() => {});
 
+        // Everything we hand out carries the read-only public token, never the
+        // edit token. Recover it from the server if not cached (e.g. legacy share).
+        let publicToken = publicTokenRef.current;
+        if (!publicToken) {
+          const got = await fetchProject(token);
+          if (got.kind === 'ok' && got.publicToken) {
+            publicToken = got.publicToken;
+            publicTokenRef.current = publicToken;
+            send({ type: 'persist-project-token', fileKey, token, publicToken });
+          }
+        }
+        if (!publicToken) {
+          send({
+            type: 'notify',
+            message: 'Could not resolve the share link. Try “Sync now” and retry.'
+          });
+          return;
+        }
+
         // Strip any existing query/hash so we don't duplicate or stack tokens
         // when the user has manually visited the preview before.
         const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
-        const url = `${base}?token=${encodeURIComponent(token)}`;
+        const url = `${base}?token=${encodeURIComponent(publicToken)}`;
         // The QR is scanned by a phone with PulsarApp installed. Encode the
         // app's deep-link scheme instead of the web URL so it routes straight
         // into the in-app Figma WebView screen.
-        const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(token)}`;
+        const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(publicToken)}`;
         if (purpose === 'copy') {
           const ok = copyToClipboard(url);
           send({
@@ -626,10 +675,9 @@ export default function App() {
             message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
           });
         } else if (purpose === 'copy-token') {
-          // Just the raw token — handy for pasting into other figma-preview URLs
-          // (e.g. a local dev instance), debugging, or sharing the token by itself
-          // without a particular host.
-          const ok = copyToClipboard(token);
+          // Just the raw read-only token — handy for pasting into other
+          // figma-preview URLs (e.g. a local dev instance) or debugging.
+          const ok = copyToClipboard(publicToken);
           send({
             type: 'notify',
             message: ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.'
@@ -769,7 +817,14 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        background: 'var(--bg)'
+      }}
+    >
       <div
         className="row"
         style={{ padding: '8px 10px 0', gap: 0, borderBottom: '1px solid var(--border)' }}

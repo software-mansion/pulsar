@@ -1,0 +1,28 @@
+{
+  "name": "Croak",
+  "description": "Goofy and rough-edged, suited for quirky or comedic feedback.",
+  "tags": [
+    "Substantial",
+    "Soft",
+    "Impulses",
+    "Short",
+    "Web"
+  ],
+  "duration": 520,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 140,
+      "intensity": 0.4,
+      "frequency": 0.9
+    },
+    {
+      "type": "pulse",
+      "timestamp": 380,
+      "duration": 140,
+      "intensity": 0.4,
+      "frequency": 0.9
+    }
+  ]
+}

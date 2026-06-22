@@ -80,42 +80,6 @@
       }
     }
   }
-
-  .iconBar {
-    padding: 70px 0 60px 0;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    box-sizing: border-box;
-    width: 100%;
-
-    @media (max-width: 768px) {
-      padding: 40px 0 30px 0;
-    }
-
-    @media (max-width: 480px) {
-      padding: 20px 0 16px 0;
-    }
-
-    img {
-      width: 24px;
-      height: 24px;
-      margin: 9px;
-      flex-shrink: 0;
-
-      @media (max-width: 768px) {
-        width: 20px;
-        height: 20px;
-        margin: 6px;
-      }
-
-      @media (max-width: 480px) {
-        width: 18px;
-        height: 18px;
-        margin: 4px;
-      }
-    }
-  }
 }
 
 .cardBackground {

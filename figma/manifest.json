@@ -6,7 +6,7 @@
   "capabilities": [],
   "enableProposedApi": false,
   "documentAccess": "dynamic-page",
-  "enablePrivatePluginApi": true,
+  "enablePrivatePluginApi": false,
   "editorType": ["figma"],
   "ui": "dist/ui.html",
   "networkAccess": {

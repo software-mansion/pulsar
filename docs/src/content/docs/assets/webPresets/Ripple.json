@@ -1,0 +1,94 @@
+{
+  "name": "Ripple",
+  "description": "Flowing and expansive, suited for cascading or rippling feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 2860,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 60,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 120,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 180,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 500,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 560,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 620,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 680,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1200,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1260,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1320,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1380,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 2200,
+      "duration": 60
+    },
+    {
+      "type": "continuous",
+      "timestamp": 2400,
+      "duration": 60
+    },
+    {
+      "type": "continuous",
+      "timestamp": 2600,
+      "duration": 60
+    },
+    {
+      "type": "continuous",
+      "timestamp": 2800,
+      "duration": 60
+    }
+  ]
+}

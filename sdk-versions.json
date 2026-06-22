@@ -9,14 +9,29 @@
   },
   "reactNative": {
     "version": "1.6.1",
-    "packageName": "react-native-pulsar"
+    "packageName": "react-native-pulsar",
+    "pulsarCore": {
+      "iosPodVersion": "1.1.4",
+      "androidMavenVersion": "1.1.2"
+    }
   },
   "kmp": {
     "version": "0.0.3",
-    "mavenCoordinate": "com.swmansion:pulsar-kmp"
+    "mavenCoordinate": "com.swmansion:pulsar-kmp",
+    "pulsarCore": {
+      "androidMavenVersion": "1.1.1"
+    }
   },
   "flutter": {
     "version": "0.0.3",
-    "packageName": "pulsar_haptics"
+    "packageName": "pulsar_haptics",
+    "pulsarCore": {
+      "iosPodVersion": "1.1.2",
+      "androidMavenVersion": "1.1.1"
+    }
+  },
+  "web": {
+    "version": "0.2.0",
+    "packageName": "pulsar-haptics"
   }
 }

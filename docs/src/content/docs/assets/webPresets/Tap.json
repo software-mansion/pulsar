@@ -1,0 +1,19 @@
+{
+  "name": "Tap",
+  "description": "Clean and immediate, ideal for confirming a selection or a basic button press.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulse",
+    "Short",
+    "Web"
+  ],
+  "duration": 35,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 35
+    }
+  ]
+}

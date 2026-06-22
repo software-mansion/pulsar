@@ -1,0 +1,59 @@
+{
+  "name": "Popcorn",
+  "description": "Playful and unpredictable, suited for lively, bursty or random feedback.",
+  "tags": [
+    "Gentle",
+    "Flexible",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1165,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 280,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 520,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 680,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 820,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 920,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1010,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1080,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1140,
+      "duration": 25
+    }
+  ]
+}

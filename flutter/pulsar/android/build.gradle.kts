@@ -36,7 +36,7 @@ fun getStringPropertyOrEnv(name: String, defaultValue: String): String {
 // artifact. Set USE_LOCAL_PULSAR_ANDROID=1 to compile against the in-repo sources
 // under Android/Pulsar instead (useful when iterating on the native SDK).
 val useLocalPulsarAndroid = getStringPropertyOrEnv("USE_LOCAL_PULSAR_ANDROID", "0") == "1"
-val pulsarAndroidVersion = getStringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1")
+val pulsarAndroidVersion = getStringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1") // pulsar-sync:flutter-pulsar-android
 val localPulsarAndroidSourceDir = file("../../../Android/Pulsar/src/main/java")
 
 if (useLocalPulsarAndroid) {

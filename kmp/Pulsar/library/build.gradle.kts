@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.swmansion"
-version = System.getenv("LIB_VERSION") ?: "0.0.1"
+version = System.getenv("LIB_VERSION") ?: "0.0.3" // pulsar-sync:kmp-version
 
 fun stringPropertyOrEnv(name: String, defaultValue: String): String =
     (findProperty(name) as String?) ?: System.getenv(name) ?: defaultValue
@@ -17,7 +17,7 @@ fun stringPropertyOrEnv(name: String, defaultValue: String): String =
 // Android: by default depend on the published `com.swmansion:pulsar` Maven artifact.
 // Set USE_LOCAL_PULSAR_ANDROID=1 to compile against the local `Android/Pulsar` sources instead.
 val useLocalPulsarAndroid = stringPropertyOrEnv("USE_LOCAL_PULSAR_ANDROID", "0") == "1"
-val pulsarAndroidVersion = stringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1")
+val pulsarAndroidVersion = stringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.1") // pulsar-sync:kmp-pulsar-android
 val localPulsarAndroidSourceDir = rootDir.resolve("../../Android/Pulsar/src/main/java")
 
 // When compiling the local Android sources we must also provide the `com.swmansion.pulsar.BuildConfig`

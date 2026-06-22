@@ -262,13 +262,22 @@ a sub-frame.
 
 ## Per-file tokens & live-preview sync
 
-The share token is **per design file**, not global. Storage in `clientStorage`
-(all main-thread, in `src/main/code.ts`):
+Each design file has **two** tokens, not global. **Edit token** = the owner's
+secret; grants write access (PUT config, PATCH visibility) and the owner read.
+Kept only in the plugin, **never** put in a URL. **Public token** = read-only;
+the only thing handed out in share links / QR / deep links. The preview & app
+read through `GET /figma-project/public/:publicToken`, which can view but never
+modify. This is what stops a shared link from letting a viewer edit/delete the
+project. Storage in `clientStorage` (all main-thread, in `src/main/code.ts`):
 
-- `pulsar:previewTokens` → `{ [fileKey]: token }`. Small and **never evicted** —
-  losing it orphans a server row. Replaces the old single `pulsar:previewToken`
-  (which made every file reuse one row); that legacy key is migrated into the
-  map for the first file that asks, then deleted.
+- `pulsar:previewTokens` → `{ [fileKey]: editToken }`. Small and **never
+  evicted** — losing it orphans a server row. Replaces the old single
+  `pulsar:previewToken` (which made every file reuse one row); that legacy key
+  is migrated into the map for the first file that asks, then deleted.
+- `pulsar:previewPublicTokens` → `{ [fileKey]: publicToken }`. The read-only
+  share token, paired by `fileKey`. Also never evicted. Recovered from the
+  server (the owner GET returns it) if missing — e.g. a reinstall, or a legacy
+  share created before the split.
 - `pulsar:project:<fileKey>` → `{ config, baseRevision, lastAccess }`. The
   cached payload + the server revision it synced at. These are the **only**
   thing evicted (oldest `lastAccess` first) when `clientStorage` hits its quota
@@ -419,20 +428,41 @@ discrete + continuous arrays. It's not an icon — never replace it with an
 
 ## Backend (docs/server)
 
-Express + PostgreSQL. Four routes that matter here: `POST /figma-project`,
-`PUT /figma-project/:token`, `GET /figma-project/:token`, and
-`PATCH /figma-project/:token/visibility`. Schema:
+Express + PostgreSQL. Routes that matter here, split by which token they take:
+
+- **Owner (secret edit `token`)** — write + owner read:
+  - `POST /figma-project` → creates a row, returns `{ token, publicToken, revision }`.
+  - `PUT /figma-project/:token` → config sync.
+  - `PATCH /figma-project/:token/visibility` → flip `is_public`.
+  - `GET /figma-project/:token` → owner read. Returns the config **regardless of
+    `is_public`** (the owner always sees their own) plus `publicToken` so the
+    plugin can rebuild share links.
+- **Public (read-only `publicToken`)** — share path:
+  - `GET /figma-project/public/:publicToken` → the **only** read used by the
+    preview app & PulsarApp WebView. Honours `is_public` (403 when revoked) and
+    never grants writes. Registered before the owner `/:token` route so the
+    literal `public` segment isn't captured as a token param.
+
+Schema:
 
 ```sql
 CREATE TABLE figma_projects (
-  token TEXT PRIMARY KEY,
-  config TEXT NOT NULL,         -- JSON-serialized PreviewPayload
+  token TEXT PRIMARY KEY,        -- secret EDIT token (owner only, never shared)
+  public_token TEXT,             -- read-only SHARE token (in links/QR); indexed
+  config TEXT NOT NULL,          -- JSON-serialized PreviewPayload
   revision BIGINT NOT NULL DEFAULT 0,  -- monotonic, bumped on every PUT
   is_public BOOLEAN NOT NULL DEFAULT TRUE,  -- share-link visibility (see below)
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
+
+`public_token` was added via `ALTER TABLE … ADD COLUMN IF NOT EXISTS`, then
+backfilled `public_token = token` for pre-split rows so already-distributed
+share links keep working. (Those legacy links stay writable — their token is
+both edit and public — because the owner still holds that same token; the
+exposure predates the split and can't be closed without breaking the owner. New
+projects get a fresh, distinct, read-only `public_token`.)
 
 ### Share-link visibility (`is_public`)
 
@@ -441,10 +471,12 @@ server-side source of truth (added via `ALTER TABLE … ADD COLUMN IF NOT EXISTS
 defaulting `TRUE` so pre-feature rows stay viewable):
 
 - `POST` always creates public (`is_public = TRUE`).
-- `GET` returns **403 `{ error: 'private' }`** when `is_public` is false — the
-  config is never served for a revoked link, even to a token holder. When public
-  it adds `isPublic: true` to the body. The preview app maps 403 → a dedicated
-  "This preview is private" empty state (distinct from 404 → "no design loaded").
+- The **public** `GET …/public/:publicToken` returns **403 `{ error: 'private' }`**
+  when `is_public` is false — the config is never served for a revoked link to a
+  share-token holder. When public it adds `isPublic: true` to the body. The
+  preview app maps 403 → a dedicated "This preview is private" empty state
+  (distinct from 404 → "no design loaded"). The **owner** `GET /:token` ignores
+  `is_public` (the owner reconciles their own project even while private).
 - `PATCH …/visibility` body `{ isPublic: boolean }` flips the flag. It touches
   `updated_at` (keeps the TTL fresh) but **leaves `revision` alone** — visibility
   isn't config, so toggling must not provoke an optimistic-concurrency conflict

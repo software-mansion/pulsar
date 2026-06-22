@@ -37,8 +37,8 @@ export interface BindingMeta {
 export type Settings = {
   soundInEdit: boolean;
   compactLayout: boolean;
-  // Optional manual file-key override, used when figma.fileKey is unavailable
-  // (e.g. the plugin is not private / enablePrivatePluginApi is off).
+  // Optional manual file-key override. Secondary fallback only consulted when the
+  // main thread's minted key is absent; also allows manual cross-file pairing.
   fileKeyOverride: string;
   // Optional override for the live-preview app base URL. Empty string uses the
   // built-in default (vite-dev → localhost:5173, prod → docs.swmansion.com).
@@ -115,7 +115,8 @@ export type UiToMain =
   // fileKey so opening the plugin in another design file gets its own token
   // instead of clobbering the first file's shared preview.
   | { type: 'get-project'; fileKey: string }
-  | { type: 'persist-project-token'; fileKey: string; token: string }
+  // Persist this file's tokens: secret edit `token` + read-only `publicToken`.
+  | { type: 'persist-project-token'; fileKey: string; token: string; publicToken: string }
   | { type: 'persist-project-cache'; fileKey: string; config: unknown; baseRevision: number | null }
   // Persist just the share-link visibility for a file (the public/private
   // toggle), without rewriting the cached config. Keyed by fileKey like the
@@ -134,9 +135,7 @@ export type MainToUi =
       type: 'init';
       settings: Settings;
       hapticsToken: string | null;
-      // Current document's file key (figma.fileKey), or null when unavailable
-      // (e.g. enablePrivatePluginApi off). Lets the UI request this file's
-      // project state immediately on load.
+      // Stable per-document key minted by the main thread (root pluginData).
       fileKey: string | null;
       favourites: string[];
       customPresets: CatalogEntry[];
@@ -149,7 +148,11 @@ export type MainToUi =
   | {
       type: 'project';
       fileKey: string;
+      // Secret edit token, or null when the file has never been shared.
       token: string | null;
+      // Read-only share token, or null when unknown (never shared, or a legacy
+      // share the cold-start reconcile hasn't recovered yet).
+      publicToken: string | null;
       config: unknown | null;
       baseRevision: number | null;
       // Last-known share-link visibility for this file. Defaults to true (public)

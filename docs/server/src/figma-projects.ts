@@ -43,11 +43,12 @@ export async function __closePoolForTests(): Promise<void> {
 }
 
 // Create the table once at startup (see server.ts). ADD COLUMN IF NOT EXISTS
-// lets older deployments pick up `revision` without a manual migration.
+// lets older deployments pick up new columns without a manual migration.
 export async function ensureFigmaProjectsTable(): Promise<void> {
   await getPool().query(
     `CREATE TABLE IF NOT EXISTS figma_projects (
       token TEXT PRIMARY KEY,
+      public_token TEXT,
       config TEXT NOT NULL,
       revision BIGINT NOT NULL DEFAULT 0,
       is_public BOOLEAN NOT NULL DEFAULT TRUE,
@@ -64,6 +65,23 @@ export async function ensureFigmaProjectsTable(): Promise<void> {
   await getPool().query(
     'ALTER TABLE figma_projects ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT TRUE',
   );
+  // Read-only share token, distinct from the secret edit `token`. Backfill
+  // pre-split rows to `token` so links already in the wild keep resolving.
+  await getPool().query(
+    'ALTER TABLE figma_projects ADD COLUMN IF NOT EXISTS public_token TEXT',
+  );
+  await getPool().query(
+    'UPDATE figma_projects SET public_token = token WHERE public_token IS NULL',
+  );
+  // Index for the public read lookup. Swallow failures — pg-mem (tests) lacks
+  // CREATE INDEX IF NOT EXISTS, and it's an optimisation, not a correctness need.
+  try {
+    await getPool().query(
+      'CREATE INDEX IF NOT EXISTS figma_projects_public_token_idx ON figma_projects (public_token)',
+    );
+  } catch (err) {
+    console.warn('skipping public_token index creation:', err);
+  }
 }
 
 function generateToken(): string {
@@ -110,10 +128,11 @@ function schedulePurge(): void {
 export interface FigmaProjectSnapshot {
   config: string;
   revision: number;
-  // When false the share link is revoked: GET refuses to serve the config so
-  // anyone holding the token can no longer view the preview. Owners flip this
-  // from the plugin; sharing again re-publishes (sets it back to true).
+  // When false the share link is revoked: the public read route refuses to
+  // serve the config. The owner read (by edit token) ignores this flag.
   isPublic: boolean;
+  // Read-only share token, returned to the owner to build share links/QRs.
+  publicToken: string;
 }
 
 // Result of toggling a project's visibility. `not_found` mirrors update's shape
@@ -130,14 +149,15 @@ export type FigmaProjectUpdateResult =
 
 export async function createFigmaProject(
   config: string,
-): Promise<{ token: string; revision: number }> {
+): Promise<{ token: string; publicToken: string; revision: number }> {
   const token = generateToken();
+  const publicToken = generateToken();
   const result = await getPool().query<{ revision: string }>(
-    'INSERT INTO figma_projects (token, config, revision) VALUES ($1, $2, 0) RETURNING revision',
-    [token, config],
+    'INSERT INTO figma_projects (token, public_token, config, revision) VALUES ($1, $2, $3, 0) RETURNING revision',
+    [token, publicToken, config],
   );
   schedulePurge();
-  return { token, revision: Number(result.rows[0]?.revision ?? 0) };
+  return { token, publicToken, revision: Number(result.rows[0]?.revision ?? 0) };
 }
 
 // Bump a project's config + revision. When `baseRevision` is given the update
@@ -186,12 +206,47 @@ export async function setFigmaProjectVisibility(
   return { kind: 'ok', isPublic: result.rows[0].is_public };
 }
 
+// Look up a project by its secret edit token (owner operations + owner read).
 export async function getFigmaProject(token: string): Promise<FigmaProjectSnapshot | null> {
-  const result = await getPool().query<{ config: string; revision: string; is_public: boolean }>(
-    'SELECT config, revision, is_public FROM figma_projects WHERE token = $1',
+  const result = await getPool().query<{
+    config: string;
+    revision: string;
+    is_public: boolean;
+    public_token: string;
+  }>(
+    'SELECT config, revision, is_public, public_token FROM figma_projects WHERE token = $1',
     [token],
   );
   const row = result.rows[0];
   if (!row) return null;
-  return { config: row.config, revision: Number(row.revision), isPublic: row.is_public };
+  return {
+    config: row.config,
+    revision: Number(row.revision),
+    isPublic: row.is_public,
+    publicToken: row.public_token,
+  };
+}
+
+// Look up a project by its read-only public token (the share path; the route
+// layer enforces is_public on top of this).
+export async function getFigmaProjectByPublicToken(
+  publicToken: string,
+): Promise<FigmaProjectSnapshot | null> {
+  const result = await getPool().query<{
+    config: string;
+    revision: string;
+    is_public: boolean;
+    public_token: string;
+  }>(
+    'SELECT config, revision, is_public, public_token FROM figma_projects WHERE public_token = $1',
+    [publicToken],
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  return {
+    config: row.config,
+    revision: Number(row.revision),
+    isPublic: row.is_public,
+    publicToken: row.public_token,
+  };
 }

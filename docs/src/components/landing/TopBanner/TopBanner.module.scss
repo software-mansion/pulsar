@@ -1,4 +1,5 @@
 @use 'sass:math';
+@use 'sass:list';
 
 .banner {
   border: solid 2px var(--color-blue-50);
@@ -119,21 +120,33 @@
       max-width: 100%;
     }
 
-    svg {
+    .svgWave {
       pointer-events: none;
       transform: translateX(5%) translateY(-15%);
       position: absolute;
+      width: 1000px;
+      height: 1000px;
 
       @media (max-width: 1000px) {
         transform: translateX(0%) translateY(-50%);
         width: 1300px;
+        height: 1300px;
+      }
+
+      .ring {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        transform-origin: center;
+        will-change: transform, opacity;
+        opacity: 0.1;
       }
     }
 
     .phoneBackground {
       z-index: 1;
-      background-color: var(--color-blue-50);
-      border-radius: 24px;
       transform: translateX(55px) translateY(130px);
       position: relative;
 
@@ -143,14 +156,6 @@
 
       @media (max-width: 1000px) {
         transform: translateX(0) translateY(0);
-      }
-
-      @media (max-width: 768px) {
-        border-radius: 16px;
-      }
-
-      @media (max-width: 480px) {
-        border-radius: 12px;
       }
 
       .decorativeIcons {
@@ -186,6 +191,7 @@
         border: solid 2px var(--color-blue-50);
         border-radius: 24px;
         background-color: white;
+        box-shadow: -10px 8px 0 var(--color-blue-50);
         transform: translateX(10px) translateY(-8px);
         padding-bottom: 300px;
         box-sizing: border-box;
@@ -276,6 +282,7 @@
 
 .svgWave {
   z-index: 0;
+  background-color: transparent;
   circle {
     transition: all 0.2s;
   }
@@ -284,32 +291,19 @@
 // --------------------------------------------------
 // wave animation
 // --------------------------------------------------
-.wave circle {
+$wave-delays: 0s, 0.5s, 1s, 1.5s, 2s;
+
+.wave .ring {
   animation-duration: 4s;
   animation-timing-function: ease-out;
   animation-iteration-count: infinite;
-  transform-box: fill-box;
-  transform-origin: center;
 }
 
-.wave circle:nth-child(1) {
-  animation-name: wave-1;
-}
-.wave circle:nth-child(2) {
-  animation-name: wave-2;
-  animation-delay: 0.5s;
-}
-.wave circle:nth-child(3) {
-  animation-name: wave-3;
-  animation-delay: 1s;
-}
-.wave circle:nth-child(4) {
-  animation-name: wave-4;
-  animation-delay: 1.5s;
-}
-.wave circle:nth-child(5) {
-  animation-name: wave-5;
-  animation-delay: 2s;
+@for $i from 1 through 5 {
+  .wave .ring:nth-child(#{$i}) {
+    animation-name: wave-#{$i};
+    animation-delay: list.nth($wave-delays, $i);
+  }
 }
 
 @mixin waveGenerator($prefix) {
@@ -333,39 +327,35 @@
 // --------------------------------------------------
 // heartbeat animation
 // --------------------------------------------------
-.heartbeat circle {
-  stroke-width: 1;
+$heartbeat-delays: 0.32s, 0.24s, 0.16s, 0.08s, 0s;
+
+.heartbeat .ring {
   opacity: 0.1;
   animation-duration: 1.2s;
   animation-timing-function: ease-out;
   animation-iteration-count: infinite;
-  transform-box: fill-box;
-  transform-origin: center;
+}
+.heartbeat .ring circle {
+  stroke-width: 1;
+  animation-duration: 1.2s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
 }
 
-.heartbeat circle:nth-child(1) {
-  animation-name: heartbeat-1;
-  animation-delay: 0.32s;
-}
-.heartbeat circle:nth-child(2) {
-  animation-name: heartbeat-2;
-  animation-delay: 0.24s;
-}
-.heartbeat circle:nth-child(3) {
-  animation-name: heartbeat-3;
-  animation-delay: 0.16s;
-}
-.heartbeat circle:nth-child(4) {
-  animation-name: heartbeat-4;
-  animation-delay: 0.08s;
-}
-.heartbeat circle:nth-child(5) {
-  animation-name: heartbeat-5;
-  animation-delay: 0s;
+@for $i from 1 through 5 {
+  $delay: list.nth($heartbeat-delays, $i);
+  .heartbeat .ring:nth-child(#{$i}) {
+    animation-name: heartbeat-motion-#{$i};
+    animation-delay: $delay;
+  }
+  .heartbeat .ring:nth-child(#{$i}) circle {
+    animation-name: heartbeat-stroke-#{$i};
+    animation-delay: $delay;
+  }
 }
 
 @mixin heartbeatGenerator($prefix) {
-  @keyframes heartbeat-#{$prefix} {
+  @keyframes heartbeat-motion-#{$prefix} {
     0% {
       transform: scale(1);
       opacity: 0.1;
@@ -373,12 +363,10 @@
     14% {
       transform: scale(1.08);
       opacity: 0.25;
-      stroke-width: 2;
     }
     28% {
       transform: scale(0.97);
       opacity: 0.15;
-      stroke-width: 1;
     }
     42% {
       transform: scale(1.04);
@@ -393,6 +381,20 @@
       opacity: 0.12;
     }
   }
+  @keyframes heartbeat-stroke-#{$prefix} {
+    0% {
+      stroke-width: 1;
+    }
+    14% {
+      stroke-width: 2;
+    }
+    28% {
+      stroke-width: 1;
+    }
+    100% {
+      stroke-width: 1;
+    }
+  }
 }
 
 @include heartbeatGenerator('1');
@@ -404,52 +406,56 @@
 // --------------------------------------------------
 // sonar animation
 // --------------------------------------------------
-.sonar circle {
-  stroke-width: 1.2;
+$sonar-delays: 1.12s, 0.84s, 0.56s, 0.28s, 0s;
+
+.sonar .ring {
   opacity: 0;
   animation-timing-function: ease-out;
   animation-iteration-count: infinite;
   animation-duration: 2.8s;
-  transform-box: fill-box;
-  transform-origin: center;
+}
+.sonar .ring circle {
+  stroke-width: 1.2;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+  animation-duration: 2.8s;
 }
 
-.sonar circle:nth-child(1) {
-  animation-name: sonar-1;
-  animation-delay: 1.12s;
-}
-.sonar circle:nth-child(2) {
-  animation-name: sonar-2;
-  animation-delay: 0.84s;
-}
-.sonar circle:nth-child(3) {
-  animation-name: sonar-3;
-  animation-delay: 0.56s;
-}
-.sonar circle:nth-child(4) {
-  animation-name: sonar-4;
-  animation-delay: 0.28s;
-}
-.sonar circle:nth-child(5) {
-  animation-name: sonar-5;
-  animation-delay: 0s;
+@for $i from 1 through 5 {
+  $delay: list.nth($sonar-delays, $i);
+  .sonar .ring:nth-child(#{$i}) {
+    animation-name: sonar-motion-#{$i};
+    animation-delay: $delay;
+  }
+  .sonar .ring:nth-child(#{$i}) circle {
+    animation-name: sonar-stroke-#{$i};
+    animation-delay: $delay;
+  }
 }
 
 @mixin sonarGenerator($prefix) {
-  @keyframes sonar-#{$prefix} {
+  @keyframes sonar-motion-#{$prefix} {
     0% {
       opacity: 0;
       transform: scale(0.2);
-      stroke-width: 3;
     }
     12% {
       opacity: 0.45;
       transform: scale(1);
-      stroke-width: 1.2;
     }
     100% {
       opacity: 0;
       transform: scale(1.2);
+    }
+  }
+  @keyframes sonar-stroke-#{$prefix} {
+    0% {
+      stroke-width: 3;
+    }
+    12% {
+      stroke-width: 1.2;
+    }
+    100% {
       stroke-width: 0.3;
     }
   }
@@ -464,41 +470,26 @@
 // --------------------------------------------------
 // quake animation
 // --------------------------------------------------
-.quake circle {
-  stroke-width: 1;
+$quake-durations: 0.07s, 0.09s, 0.06s, 0.11s, 0.08s;
+
+.quake .ring {
   opacity: 0.1;
-  animation-duration: 0.1s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-  transform-box: fill-box;
-  transform-origin: center;
 }
 
-.quake circle:nth-child(odd) {
+.quake .ring:nth-child(odd) {
   animation-direction: alternate;
 }
-.quake circle:nth-child(even) {
+.quake .ring:nth-child(even) {
   animation-direction: alternate-reverse;
 }
-.quake circle:nth-child(1) {
-  animation-name: quake-1;
-  animation-duration: 0.07s;
-}
-.quake circle:nth-child(2) {
-  animation-name: quake-2;
-  animation-duration: 0.09s;
-}
-.quake circle:nth-child(3) {
-  animation-name: quake-3;
-  animation-duration: 0.06s;
-}
-.quake circle:nth-child(4) {
-  animation-name: quake-4;
-  animation-duration: 0.11s;
-}
-.quake circle:nth-child(5) {
-  animation-name: quake-5;
-  animation-duration: 0.08s;
+
+@for $i from 1 through 5 {
+  .quake .ring:nth-child(#{$i}) {
+    animation-name: quake-#{$i};
+    animation-duration: list.nth($quake-durations, $i);
+  }
 }
 
 @mixin quakeGenerator($prefix) {
@@ -924,6 +915,53 @@
   }
   100% {
     transform: translate(0, 0) scale(1);
+  }
+}
+
+// --------------------------------------------------
+// phone vibrate animation
+// --------------------------------------------------
+.vibrate {
+  animation: phoneVibrate 0.45s linear;
+}
+
+@keyframes phoneVibrate {
+  0%,
+  100% {
+    transform: translateX(10px) translateY(-8px) rotate(0deg);
+  }
+  10% {
+    transform: translateX(8px) translateY(-10px) rotate(-0.7deg);
+  }
+  20% {
+    transform: translateX(12px) translateY(-6px) rotate(0.7deg);
+  }
+  30% {
+    transform: translateX(7px) translateY(-9px) rotate(-0.6deg);
+  }
+  40% {
+    transform: translateX(13px) translateY(-7px) rotate(0.6deg);
+  }
+  50% {
+    transform: translateX(8px) translateY(-10px) rotate(-0.4deg);
+  }
+  60% {
+    transform: translateX(12px) translateY(-6px) rotate(0.4deg);
+  }
+  70% {
+    transform: translateX(9px) translateY(-9px) rotate(-0.25deg);
+  }
+  80% {
+    transform: translateX(11px) translateY(-7px) rotate(0.25deg);
+  }
+  90% {
+    transform: translateX(10px) translateY(-8px) rotate(-0.1deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vibrate {
+    animation: none;
   }
 }
 

@@ -1,0 +1,44 @@
+{
+  "name": "Waltz",
+  "description": "Graceful and lilting, suited for elegant, rhythmic or musical feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1110,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 70
+    },
+    {
+      "type": "continuous",
+      "timestamp": 220,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 420,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 660,
+      "duration": 70
+    },
+    {
+      "type": "continuous",
+      "timestamp": 880,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1080,
+      "duration": 30
+    }
+  ]
+}

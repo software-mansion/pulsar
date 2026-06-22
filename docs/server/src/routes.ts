@@ -3,6 +3,7 @@ import { ConnectionManager } from './connection-manager';
 import {
   createFigmaProject,
   getFigmaProject,
+  getFigmaProjectByPublicToken,
   setFigmaProjectVisibility,
   updateFigmaProject,
 } from './figma-projects';
@@ -57,7 +58,8 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     });
   });
 
-  // Create a project row; returns its token + revision.
+  // Create a project row. Returns the secret edit `token` plus a read-only
+  // `publicToken` for share links.
   router.post(
     '/figma-project',
     async (req: Request<{}, {}, FigmaProjectBody>, res: Response) => {
@@ -67,8 +69,8 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
       }
       const serialized = typeof config === 'string' ? config : JSON.stringify(config);
       try {
-        const { token, revision } = await createFigmaProject(serialized);
-        res.json({ success: true, token, revision });
+        const { token, publicToken, revision } = await createFigmaProject(serialized);
+        res.json({ success: true, token, publicToken, revision });
       } catch (err) {
         console.error('createFigmaProject failed:', err);
         res.status(500).json({ success: false, error: 'Failed to create figma project' });
@@ -154,7 +156,38 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
     },
   );
 
-  // Fetch a project's config + revision by token.
+  // Public, read-only share route (the preview app + PulsarApp WebView read
+  // here). Registered before `/:token` so the `public` segment isn't captured as
+  // a token param. Never writes; honours visibility (403 when revoked).
+  router.get(
+    '/figma-project/public/:publicToken',
+    async (req: Request<{ publicToken: string }>, res: Response) => {
+      const { publicToken } = req.params;
+      try {
+        const snapshot = await getFigmaProjectByPublicToken(publicToken);
+        if (snapshot === null) {
+          return res.status(404).json({ success: false, error: 'Project not found' });
+        }
+        // Revoked link: 403 (distinct from 404) so the preview can tailor its message.
+        if (!snapshot.isPublic) {
+          return res.status(403).json({ success: false, error: 'private' });
+        }
+        let parsed: unknown = snapshot.config;
+        try {
+          parsed = JSON.parse(snapshot.config);
+        } catch {
+          // not JSON — return the raw string
+        }
+        res.json({ success: true, config: parsed, revision: snapshot.revision, isPublic: true });
+      } catch (err) {
+        console.error('getFigmaProject (public) failed:', err);
+        res.status(500).json({ success: false, error: 'Failed to fetch figma project' });
+      }
+    },
+  );
+
+  // Owner read by the secret edit token (plugin cold-start reconcile). Returns
+  // the config regardless of visibility and hands back the publicToken.
   router.get('/figma-project/:token', async (req: Request<{ token: string }>, res: Response) => {
     const { token } = req.params;
     try {
@@ -162,19 +195,19 @@ export function getRoutes(connectionManager: ConnectionManager): Router {
       if (snapshot === null) {
         return res.status(404).json({ success: false, error: 'Project not found' });
       }
-      // Private link: the row exists but the owner revoked access. Refuse to
-      // serve the config to anyone holding the token (403, distinct from the
-      // 404 "no such project" so the preview can show a tailored message).
-      if (!snapshot.isPublic) {
-        return res.status(403).json({ success: false, error: 'private' });
-      }
       let parsed: unknown = snapshot.config;
       try {
         parsed = JSON.parse(snapshot.config);
       } catch {
         // not JSON — return the raw string
       }
-      res.json({ success: true, config: parsed, revision: snapshot.revision, isPublic: true });
+      res.json({
+        success: true,
+        config: parsed,
+        revision: snapshot.revision,
+        isPublic: snapshot.isPublic,
+        publicToken: snapshot.publicToken,
+      });
     } catch (err) {
       console.error('getFigmaProject failed:', err);
       res.status(500).json({ success: false, error: 'Failed to fetch figma project' });

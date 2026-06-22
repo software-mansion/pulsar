@@ -1,0 +1,26 @@
+{
+  "name": "Surface",
+  "description": "Emergent and refreshing, suited for spawning, appearing or surfacing feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Ramp",
+    "Extended",
+    "Web"
+  ],
+  "duration": 610,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 500,
+      "intensity": 0.25,
+      "frequency": 0.5
+    },
+    {
+      "type": "continuous",
+      "timestamp": 540,
+      "duration": 70
+    }
+  ]
+}

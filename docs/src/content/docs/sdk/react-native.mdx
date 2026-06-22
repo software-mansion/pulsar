@@ -676,3 +676,93 @@ import { Settings, RealtimeComposerStrategy } from 'react-native-pulsar';
 
 Settings.setRealtimeComposerStrategy(RealtimeComposerStrategy.PRIMITIVE_COMPLEX);
 ```
+
+---
+
+## Testing with Jest
+
+`react-native-pulsar` is backed by a TurboModule and relies on `react-native-worklets`. In a Jest environment there is no native module to bind to, so importing the library directly throws (`TurboModuleRegistry.getEnforcing('RNPulsar')` cannot find the native module). To keep tests for components that use Pulsar running on Node, the package ships a ready-to-use mock.
+
+### Ready-to-use mock
+
+The mock lives at `react-native-pulsar/jest-mock`. It replaces the entire public API — `Presets`, `Settings`, the hooks, and the enums — with no-op [`jest.fn()`](https://jestjs.io/docs/mock-functions) implementations, so nothing tries to reach a native module. You don't have to enumerate the 150+ presets yourself: every preset (at any nesting depth, e.g. `Presets.System.Android.effectClick`) is a `jest.fn()` you can assert on.
+
+Wire it up with `jest.mock`, either per test file or globally for the whole suite.
+
+<Tabs>
+  <TabItem label="Per test file">
+    Add this at the top of any test file that imports `react-native-pulsar`:
+
+    ```ts
+    jest.mock('react-native-pulsar', () =>
+      require('react-native-pulsar/jest-mock')
+    );
+    ```
+  </TabItem>
+  <TabItem label="Globally">
+    Register the mock once in a Jest setup file so it applies to every test.
+
+    ```js
+    // jest.setup.js
+    jest.mock('react-native-pulsar', () =>
+      require('react-native-pulsar/jest-mock')
+    );
+    ```
+
+    Then reference that file from your Jest config:
+
+    ```js
+    // jest.config.js
+    module.exports = {
+      preset: 'react-native',
+      setupFiles: ['<rootDir>/jest.setup.js'],
+    };
+    ```
+  </TabItem>
+</Tabs>
+
+### Asserting that haptics fired
+
+Because every export is a `jest.fn()`, you can assert that your component triggered the haptic you expect:
+
+```tsx
+import { render, fireEvent } from '@testing-library/react-native';
+import { Presets } from 'react-native-pulsar';
+import LikeButton from '../LikeButton';
+
+jest.mock('react-native-pulsar', () =>
+  require('react-native-pulsar/jest-mock')
+);
+
+it('plays a success haptic when liked', () => {
+  const { getByRole } = render(<LikeButton />);
+
+  fireEvent.press(getByRole('button'));
+
+  expect(Presets.System.notificationSuccess).toHaveBeenCalledTimes(1);
+});
+```
+
+The hooks are mocked too. `useRealtimeComposer`, `usePatternComposer`, and `useAdaptiveHaptics` each return an object whose methods (`play`, `stop`, `set`, …) are `jest.fn()`s, so components that call them render without errors.
+
+### Customizing return values
+
+The mock ships with sensible defaults — for example `Settings.getHapticsSupportLevel()` returns `HapticSupport.ADVANCED_SUPPORT`, and `isActive()` / `isParsed()` return `false`. Override any of them in a test when you need to exercise a different code path:
+
+```ts
+import { Settings, HapticSupport } from 'react-native-pulsar';
+
+jest.mock('react-native-pulsar', () =>
+  require('react-native-pulsar/jest-mock')
+);
+
+it('falls back when the device has no haptics', () => {
+  (Settings.getHapticsSupportLevel as jest.Mock).mockReturnValue(
+    HapticSupport.NO_SUPPORT
+  );
+
+  // ...assert your fallback UI / behavior
+});
+```
+
+Call `jest.clearAllMocks()` in `afterEach` (or set `clearMocks: true` in your Jest config) to reset call counts between tests.

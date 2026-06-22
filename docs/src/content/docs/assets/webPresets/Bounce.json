@@ -1,0 +1,34 @@
+{
+  "name": "Bounce",
+  "description": "Light and settling, suited for drops, coins or landing feedback.",
+  "tags": [
+    "Substantial",
+    "Flexible",
+    "Impulses",
+    "Short",
+    "Web"
+  ],
+  "duration": 392,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 180,
+      "duration": 30
+    },
+    {
+      "type": "continuous",
+      "timestamp": 290,
+      "duration": 25
+    },
+    {
+      "type": "continuous",
+      "timestamp": 370,
+      "duration": 22
+    }
+  ]
+}

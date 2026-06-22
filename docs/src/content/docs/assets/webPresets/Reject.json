@@ -1,0 +1,24 @@
+{
+  "name": "Reject",
+  "description": "Blunt and disapproving, ideal for errors, denials or invalid actions.",
+  "tags": [
+    "Bold",
+    "Rigid",
+    "Impulses",
+    "Short",
+    "Web"
+  ],
+  "duration": 250,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 90
+    },
+    {
+      "type": "continuous",
+      "timestamp": 160,
+      "duration": 90
+    }
+  ]
+}

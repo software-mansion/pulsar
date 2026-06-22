@@ -1,0 +1,28 @@
+{
+  "name": "Trill",
+  "description": "Bright and inviting, ideal for incoming calls or attention-grabbing alerts.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1100,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 400,
+      "intensity": 0.9,
+      "frequency": 0.95
+    },
+    {
+      "type": "pulse",
+      "timestamp": 700,
+      "duration": 400,
+      "intensity": 0.9,
+      "frequency": 0.95
+    }
+  ]
+}

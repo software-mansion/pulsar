@@ -1,0 +1,26 @@
+{
+  "name": "Smash",
+  "description": "Violent and jarring, ideal for collisions or destructive events.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 880,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 250
+    },
+    {
+      "type": "pulse",
+      "timestamp": 280,
+      "duration": 600,
+      "intensity": 0.4,
+      "frequency": 0.7
+    }
+  ]
+}

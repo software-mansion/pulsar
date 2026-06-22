@@ -1,0 +1,415 @@
+---
+title: Web SDK
+description: Add haptic feedback to your web app with Pulsar – a lightweight, open-source haptics library for the browser, with built-in audio fallback.
+head:
+  - tag: title
+    content: "Web Haptic Feedback Library: Presets & Custom Patterns | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar - a rich haptics presets library for Swift, Kotlin, React Native, Flutter & Web"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "Rich and ready-to-use haptics library\nPresets that you can hear and feel with Live Preview."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar - a rich haptics presets library for Swift, Kotlin, React Native, Flutter & Web"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "Rich and ready-to-use haptics library\nPresets that you can hear and feel with Live Preview."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+import { Tabs, TabItem, Code, Aside } from '@astrojs/starlight/components';
+import CollapsibleList from '../../../components/CollapsibleList.astro';
+import { SegmentSignal } from '../../../components/SegmentSignal/SegmentSignal';
+
+The Pulsar Web SDK (`pulsar-haptics`) brings haptic feedback to the browser through the same building blocks as the native SDKs - `Presets`, `PatternComposer`, and `RealtimeComposer`. It is a lightweight, framework-agnostic TypeScript library that works in vanilla JS, React, Vue, Svelte, Solid, or anything else, and ships full TypeScript types plus a first-class React hooks adapter.
+
+On the web there is no native control over haptic intensity or frequency, so Pulsar simulates those dimensions with PWM-style vibration timing on top of the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate) (`navigator.vibrate`): longer vibration shots feel stronger, and shorter pauses feel higher-frequency. When real vibration is unavailable, Pulsar can play an audio simulation of the pattern instead, so you can still preview the shape of a haptic on a desktop or any device without a vibration motor.
+
+<Aside type="caution" title="No real vibration on iOS / iPadOS">
+  Web haptics rely on the **Web Vibration API** (`navigator.vibrate`). **Apple does not implement the Web Vibration API in Safari on iOS or iPadOS**, so real vibration does **not** fire on iPhone or iPad browsers. This is an Apple platform restriction, not a limitation of Pulsar - there is nothing the library (or any web library) can do to enable it.
+</Aside>
+
+## Requirements
+
+- A browser that supports the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate) (`navigator.vibrate`). See [Browser support](#browser-support) for details.
+- React `>=16.8.0` is an **optional** peer dependency, required only if you use the `pulsar-haptics/react` hooks.
+
+## Installation
+
+{/* GENERATED:WEB_VERSION_START */}
+Latest available version: `0.2.0`
+{/* GENERATED:WEB_VERSION_END */}
+
+<Tabs>
+  <TabItem label="npm" icon="npm">
+    <Code
+      code="npm install pulsar-haptics"
+      lang="bash"
+      frame="terminal"
+    />
+    or if you want to use React hooks:
+    <Code
+      code="npm install pulsar-haptics/react"
+      lang="bash"
+      frame="terminal"
+    />
+  </TabItem>
+  <TabItem label="CDN">
+    Drop a `<script>` tag in your page to use the library straight from a CDN. The browser build exposes a global `Pulsar` object with all named exports.
+    <Code
+      code={`<script src="https://unpkg.com/pulsar-haptics"></script>
+<script>
+  // Named exports live on the global Pulsar object.
+  Pulsar.Presets.tap();
+  const pulsar = new Pulsar.Pulsar();
+</script>`}
+      lang="html"
+    />
+  </TabItem>
+</Tabs>
+
+---
+
+## Presets
+
+A collection of ready-to-use haptic patterns - the simplest way to add feedback.
+
+```ts
+import { Presets } from 'pulsar-haptics';
+
+Presets.tap();
+Presets.doubleTap();
+Presets.warDrum();
+```
+
+Or reach the same shared registry through a `Pulsar` instance:
+
+```ts
+import { Pulsar } from 'pulsar-haptics';
+
+const pulsar = new Pulsar();
+const presets = pulsar.getPresets();
+
+presets.drone();
+```
+
+Each built-in preset is exposed as a no-arg method named after the preset (in camelCase). You can also play a preset by name with `Presets.play(name)`:
+
+```ts
+import { Presets } from 'pulsar-haptics';
+
+await Presets.play('tap');
+```
+
+Every preset method returns a `Promise<PresetPlaybackResult>` describing whether real haptics fired, whether the audio fallback was used, or both.
+
+### Built-in presets
+
+<CollapsibleList
+  items={[
+    "alarm",
+    "alert",
+    "bounce",
+    "burp",
+    "clatter",
+    "clockwork",
+    "connect",
+    "crescendo",
+    "croak",
+    "deflate",
+    "doubleTap",
+    "drone",
+    "drumroll",
+    "finale",
+    "flutter",
+    "foghorn",
+    "fury",
+    "heartbeat",
+    "knockout",
+    "longPress",
+    "morse",
+    "pendulum",
+    "popcorn",
+    "reject",
+    "ripple",
+    "rumble",
+    "shatter",
+    "shudder",
+    "siren",
+    "skip",
+    "smash",
+    "sneeze",
+    "softTap",
+    "surface",
+    "sway",
+    "tap",
+    "thunder",
+    "timeout",
+    "trill",
+    "tripleTap",
+    "unwind",
+    "waltz",
+    "warble",
+    "warDrum",
+    "windup",
+  ]}
+  initialItems={8}
+  columns={2}
+  code
+/>
+
+Want to hear and feel every preset? Browse the full gallery on the [Web preset playground](/web-presets-playground).
+
+---
+
+## Custom patterns
+
+You can build your own pattern with `PatternComposer`. Get a composer from a `Pulsar` instance, `parse()` a pattern, then `play()` it.
+
+```ts
+import { Pulsar } from 'pulsar-haptics';
+
+const pulsar = new Pulsar();
+const composer = pulsar.getPatternComposer();
+
+composer.parse([
+  { type: 'continuous', timestamp: 0, duration: 40 },
+  { type: 'continuous', timestamp: 90, duration: 55 },
+  { type: 'continuous', timestamp: 180, duration: 90 },
+]);
+
+composer.play();
+```
+
+`PatternComposer` also exposes `stop()` and `getPattern()` (the compiled `navigator.vibrate` timeline). You can also construct it directly with `new PatternComposer()`.
+
+### Pattern segments
+
+A `HapticPattern` is an array of segments. Every segment starts at `timestamp` milliseconds from the beginning of playback and lasts `duration` milliseconds; overlapping segments are merged into a single vibration timeline. There are three segment types.
+
+Because the Web Vibration API only knows *on* and *off*, Pulsar encodes intensity and frequency as a PWM-style square wave — the actual `navigator.vibrate` timeline below is generated by `PatternComposer` itself. Switch segment types and drag the sliders to see (and feel) how each parameter reshapes the signal:
+
+<SegmentSignal client:load />
+
+#### `continuous`
+
+One uninterrupted vibration block.
+
+```ts
+type HapticContinuousSegment = {
+  type: 'continuous';
+  timestamp: number; // ms from pattern start
+  duration: number;  // ms
+};
+```
+
+#### `pulse`
+
+A square-wave block of repeated shots and pauses. Higher `intensity` makes each shot longer; higher `frequency` makes the pauses shorter. Both are optional and default to `0.5`.
+
+```ts
+type HapticPulseSegment = {
+  type: 'pulse';
+  timestamp: number;  // ms from pattern start
+  duration: number;   // ms
+  intensity?: number; // 0–1, shot length
+  frequency?: number; // 0–1, pause spacing
+};
+```
+
+#### `line`
+
+Like `pulse`, but `intensity` and `frequency` evolve over time using linearly interpolated control points.
+
+```ts
+type HapticValuePoint = {
+  time: number;  // ms from segment start (0–duration)
+  value: number; // 0–1
+};
+
+type HapticLineSegment = {
+  type: 'line';
+  timestamp: number; // ms from pattern start
+  duration: number;  // ms
+  intensity: HapticValuePoint[];
+  frequency: HapticValuePoint[];
+};
+```
+
+**Example**
+
+```ts
+import { PatternComposer, type HapticPattern } from 'pulsar-haptics';
+
+const pattern: HapticPattern = [
+  { type: 'continuous', timestamp: 0, duration: 45 },
+  {
+    type: 'line',
+    timestamp: 80,
+    duration: 300,
+    intensity: [
+      { time: 0, value: 0.2 },
+      { time: 300, value: 1 },
+    ],
+    frequency: [
+      { time: 0, value: 0.3 },
+      { time: 300, value: 0.8 },
+    ],
+  },
+];
+
+const composer = new PatternComposer();
+composer.parse(pattern);
+composer.play();
+```
+
+---
+
+## Realtime haptics
+
+For gesture-driven or continuously evolving feedback, use `RealtimeComposer`. Call `set(intensity, frequency)` on every gesture update - the underlying PWM loop starts on the first call and reads the latest values on each cycle, so it's safe to call at high frequency (e.g. on every `pointermove`). Call `stop()` when the gesture ends.
+
+```ts
+import { Pulsar } from 'pulsar-haptics';
+
+const pulsar = new Pulsar();
+const realtime = pulsar.getRealtimeComposer();
+
+window.addEventListener('pointermove', (e) => {
+  const intensity = e.clientX / window.innerWidth;
+  const frequency = e.clientY / window.innerHeight;
+  realtime.set(intensity, frequency);
+});
+
+window.addEventListener('pointerup', () => realtime.stop());
+```
+
+`RealtimeComposer` also exposes `isPlaying()` and `getCurrentValues()`. In React, prefer the [`useRealtimeComposer()`](#react) hook - it owns the composer per-component and stops it automatically on unmount.
+
+---
+
+## React
+
+The `pulsar-haptics/react` entry point provides hooks for React components. They share a single `Pulsar` instance and own per-component composers that stop automatically on unmount.
+
+| Hook | Returns | Use for |
+| ---- | ------- | ------- |
+| `useHaptics()` | shared `Pulsar` instance | direct access to the root API |
+| `usePresets()` | shared `Presets` registry | listing / playing built-in presets |
+| `usePreset(name)` | `() => Promise<PresetPlaybackResult>` | a stable callback for a single preset |
+| `useHapticsSupport()` | `boolean` (SSR-safe) | feature-gating UI |
+| `usePatternComposer(pattern?)` | `{ play, stop, parse, getPattern, isParsed }` | one-shot custom patterns; auto-parses on mount |
+| `useRealtimeComposer()` | `{ set, stop, isPlaying, getCurrentValues }` | continuous gesture-driven haptics; auto-stops on unmount |
+| `useAudioGenerator(pattern?)` | `{ parse, play, stop, isPlaying, getBufferInfo }` | render a pattern to audio and play it back; auto-stops on unmount |
+
+### Example
+
+```tsx
+import { usePreset, useHapticsSupport } from 'pulsar-haptics/react';
+
+function LikeButton() {
+  const playTap = usePreset('tap');
+  const supported = useHapticsSupport();
+
+  return (
+    <button onClick={playTap}>
+      Like {supported ? '' : '(audio preview)'}
+    </button>
+  );
+}
+```
+
+```tsx
+import { usePatternComposer, type HapticPattern } from 'pulsar-haptics/react';
+
+const heartbeat: HapticPattern = [
+  { type: 'continuous', timestamp: 0, duration: 45 },
+  { type: 'continuous', timestamp: 120, duration: 70 },
+];
+
+function Heart() {
+  const composer = usePatternComposer(heartbeat);
+  return <button onClick={composer.play}>Beat</button>;
+}
+```
+
+---
+
+## Settings
+
+Global configuration is exposed both on the `Pulsar` instance and on the standalone `Settings` object.
+
+```ts
+import { Pulsar, Settings } from 'pulsar-haptics';
+
+const pulsar = new Pulsar();
+```
+
+| Method | Description |
+| ------ | ----------- |
+| `pulsar.isHapticsSupported()` / `Settings.isHapticsAvailable()` | Returns `true` if the browser exposes real Web Vibration support |
+| `pulsar.enableHaptics(state: boolean)` / `Settings.enableHaptics(state)` | Enable or disable all haptic output |
+| `pulsar.enableSound(state: boolean)` / `Settings.enableSound(state)` | Enable or disable the audio simulation fallback |
+| `pulsar.stopHaptics()` / `Settings.stopHaptics()` | Stop all currently playing haptics |
+
+When real vibration isn't available but sound is enabled, presets fall back to playing an audio simulation of the pattern. Toggle that behavior with `enableSound(...)`, and feature-detect real haptics with `isHapticsSupported()`.
+
+```ts
+import { Pulsar } from 'pulsar-haptics';
+
+const pulsar = new Pulsar();
+
+if (!pulsar.isHapticsSupported()) {
+  // No vibration motor (e.g. desktop or iOS Safari) - let users hear a preview.
+  pulsar.enableSound(true);
+}
+```
+
+---
+
+## Browser support
+
+`navigator.vibrate` is required for real haptic output and is available in **Chrome, Edge, Firefox, and Chromium-based mobile browsers**. Use `pulsar.isHapticsSupported()` (or `useHapticsSupport()` in React) to feature-detect at runtime.
+
+Where the Vibration API is missing - most notably **Safari on iOS and iPadOS**, where Apple does not implement it (see the note at the top of this page), and on desktop browsers with no vibration motor - Pulsar can play an **audio simulation** of the pattern instead. Enable it with `pulsar.enableSound(true)` so users can still hear the shape of a haptic. For real haptics on Apple hardware, reach for the native [iOS](/sdk/ios) or [React Native](/sdk/react-native) SDKs.
+
+---
+
+## API reference
+
+The main entry point (`pulsar-haptics`) is the `Pulsar` class (default export). Named exports:
+
+| Export | Description |
+| ------ | ----------- |
+| `Pulsar` | Main entry; exposes presets, pattern composer, realtime composer, and global settings |
+| `Presets` | Ready-to-use singleton of built-in haptic patterns; call `Presets.tap()` or `Presets.play('tap')` |
+| `Preset` | A single playable preset (`name`, `pattern`, `play()`, `stop()`) |
+| `PatternComposer` | Build and play one-shot custom patterns from segment descriptors |
+| `RealtimeComposer` | Continuously update intensity/frequency for gesture-driven haptics |
+| `AudioGenerator` | Render a `HapticPattern` to an audible `AudioBuffer` for the fallback / standalone use |
+| `Settings` | Global haptics/sound enable flags and availability detection |
+
+Exported types: `HapticPattern`, `HapticContinuousSegment`, `HapticPulseSegment`, `HapticLineSegment`, `HapticValuePoint`, `ParsedPattern`, `PresetName`, `PresetPlaybackResult`, `AudioBufferInfo`.
+
+The React entry point (`pulsar-haptics/react`) re-exports all of the above plus the hooks documented in the [React](#react) section.

@@ -44,8 +44,10 @@ export async function readPayload(): Promise<PayloadResult> {
   const token = getTokenFromUrl();
   if (!token) return { status: 'no-token' };
   try {
+    // Read through the public, read-only route. The `?token=` in a share link is
+    // the project's read-only public token; it can view but never modify.
     const res = await fetch(
-      `${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`,
+      `${API_SERVER_URL}/figma-project/public/${encodeURIComponent(token)}`,
     );
     // 403 = the owner made this preview private. Surface it distinctly so the UI
     // can explain the link was revoked rather than showing "no design loaded".

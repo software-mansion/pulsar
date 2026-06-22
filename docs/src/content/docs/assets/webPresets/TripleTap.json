@@ -1,0 +1,29 @@
+{
+  "name": "TripleTap",
+  "description": "Light and playful, suited for multi-step confirmations or lighthearted feedback.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Short",
+    "Web"
+  ],
+  "duration": 188,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 28
+    },
+    {
+      "type": "continuous",
+      "timestamp": 80,
+      "duration": 28
+    },
+    {
+      "type": "continuous",
+      "timestamp": 160,
+      "duration": 28
+    }
+  ]
+}

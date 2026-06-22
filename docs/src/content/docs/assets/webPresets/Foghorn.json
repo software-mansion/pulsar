@@ -1,0 +1,29 @@
+{
+  "name": "Foghorn",
+  "description": "Grave and insistent, ideal for steady, attention-holding signaling.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 640,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 200
+    },
+    {
+      "type": "continuous",
+      "timestamp": 220,
+      "duration": 200
+    },
+    {
+      "type": "continuous",
+      "timestamp": 440,
+      "duration": 200
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Timeout",
+  "description": "Conclusive and clear, ideal for ending intervals or session boundaries.",
+  "tags": [
+    "Substantial",
+    "Rigid",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 415,
+  "pattern": [
+    {
+      "type": "continuous",
+      "timestamp": 0,
+      "duration": 180
+    },
+    {
+      "type": "continuous",
+      "timestamp": 280,
+      "duration": 35
+    },
+    {
+      "type": "continuous",
+      "timestamp": 380,
+      "duration": 35
+    }
+  ]
+}

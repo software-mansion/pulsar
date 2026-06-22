@@ -29,6 +29,9 @@ const TOKEN_KEY = 'pulsar:hapticsToken';
 // NEVER evicted to reclaim quota. Replaces the old single global
 // `pulsar:previewToken`, which made every file reuse (and overwrite) one row.
 const PROJECT_TOKENS_KEY = 'pulsar:previewTokens';
+// Per-file read-only share tokens: { [fileKey]: publicToken }. Kept separate
+// from the edit tokens so the share URL never carries the secret. Never evicted.
+const PROJECT_PUBLIC_TOKENS_KEY = 'pulsar:previewPublicTokens';
 // Legacy single global preview token (pre per-file). Migrated lazily into the
 // per-file map for the first file that asks, then deleted.
 const LEGACY_PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
@@ -39,6 +42,9 @@ const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 const WINDOW_SIZE_KEY = 'pulsar:windowSize';
+// Stable per-document id stored in root pluginData; replaces `figma.fileKey`,
+// which needs the private plugin API. Synced to all collaborators.
+const FILE_ID_KEY = 'pulsar:fileId';
 
 const DEFAULT_SIZE = { width: 380, height: 640 };
 // Clamp the persisted size so a stored value can't shrink the UI below a
@@ -73,6 +79,16 @@ figma.clientStorage.getAsync(WINDOW_SIZE_KEY).then((raw) => {
 
 function postToUi(msg: MainToUi) {
   figma.ui.postMessage(msg);
+}
+
+// Resolve the stable per-file key, minting and persisting one on first use.
+function resolveFileKey(): string {
+  let id = figma.root.getPluginData(FILE_ID_KEY);
+  if (!id) {
+    id = `f${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+    figma.root.setPluginData(FILE_ID_KEY, id);
+  }
+  return id;
 }
 
 async function loadSettings(): Promise<Settings> {
@@ -120,6 +136,24 @@ async function setProjectToken(fileKey: string, token: string): Promise<void> {
   const tokens = await loadProjectTokens();
   tokens[fileKey] = token;
   await figma.clientStorage.setAsync(PROJECT_TOKENS_KEY, tokens);
+}
+
+async function loadProjectPublicTokens(): Promise<Record<string, string>> {
+  const raw = await figma.clientStorage.getAsync(PROJECT_PUBLIC_TOKENS_KEY);
+  return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
+}
+
+// Resolve the read-only share token for a file. Null for legacy shares (pre
+// public-token); the plugin recovers it from the server on the next reconcile.
+async function getProjectPublicToken(fileKey: string): Promise<string | null> {
+  const tokens = await loadProjectPublicTokens();
+  return tokens[fileKey] ?? null;
+}
+
+async function setProjectPublicToken(fileKey: string, publicToken: string): Promise<void> {
+  const tokens = await loadProjectPublicTokens();
+  tokens[fileKey] = publicToken;
+  await figma.clientStorage.setAsync(PROJECT_PUBLIC_TOKENS_KEY, tokens);
 }
 
 async function getProjectCache(fileKey: string): Promise<ProjectCache | null> {
@@ -510,7 +544,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         type: 'init',
         settings,
         hapticsToken,
-        fileKey: figma.fileKey ?? null,
+        fileKey: resolveFileKey(),
         favourites,
         customPresets
       });
@@ -518,14 +552,16 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     }
     case 'get-project': {
-      const [token, cache] = await Promise.all([
+      const [token, publicToken, cache] = await Promise.all([
         getProjectToken(msg.fileKey),
+        getProjectPublicToken(msg.fileKey),
         getProjectCache(msg.fileKey)
       ]);
       postToUi({
         type: 'project',
         fileKey: msg.fileKey,
         token,
+        publicToken,
         config: cache ? cache.config : null,
         baseRevision: cache ? cache.baseRevision : null,
         // Default to public for legacy caches with no stored visibility.
@@ -534,7 +570,10 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     }
     case 'persist-project-token':
-      await setProjectToken(msg.fileKey, msg.token);
+      await Promise.all([
+        setProjectToken(msg.fileKey, msg.token),
+        setProjectPublicToken(msg.fileKey, msg.publicToken)
+      ]);
       break;
     case 'persist-project-cache':
       // Cache is best-effort; never let a quota failure crash the handler.
@@ -586,7 +625,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       postToUi({
         type: 'preview-data',
         purpose: msg.purpose,
-        fileKey: figma.fileKey ?? null,
+        fileKey: resolveFileKey(),
         presentNodeId: present ? present.id : null,
         presentNodeBox: present ? boxOf(present) : null,
         bindings,

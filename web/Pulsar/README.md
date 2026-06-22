@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/software-mansion/pulsar/raw/main/docs/src/assets/og.png" alt="Pulsar - Rich and ready-to use haptics library" />
+</p>
+
 # pulsar-haptics
 
 A lightweight TypeScript library for playing haptic feedback on the web, with optional audio fallback for devices that don't support the Vibration API.
@@ -5,6 +9,10 @@ A lightweight TypeScript library for playing haptic feedback on the web, with op
 Works in any modern browser, in any framework — React, Vue, Svelte, Solid, vanilla JS — and ships with ESM, CJS, UMD, and IIFE builds plus full TypeScript types and a first-class React hooks adapter.
 
 ## Install
+
+<!-- GENERATED:WEB_VERSION_START -->
+Latest available version: `0.2.0`
+<!-- GENERATED:WEB_VERSION_END -->
 
 ```bash
 npm install pulsar-haptics

@@ -9,6 +9,7 @@ import '../styles/index.css';
 import commonStyle from '../components/landing/common.module.scss';
 import { VisitPlayground } from '../components/landing/VisitPlayground/VisitPlayground';
 import { SdkSection } from '../components/landing/SdkSection/SdkSection';
+import { AppShowcase } from '../components/landing/AppShowcase/AppShowcase';
 import { Articles } from '../components/landing/Articles/Articles';
 import { Testimonials } from '../components/landing/Testimonials/Testimonials';
 import { SwmSection } from '../components/landing/SwmSection/SwmSection';
@@ -35,6 +36,10 @@ import arrowIcon from '../assets/landing-page/arrow.svg';
     />
     <meta name="keywords" content="haptic feedback android, haptic feedback android, react native haptic feedback, ios haptics, react native haptics, ios haptic feedback, haptics feedback, android haptic feedback, haptic feedback react native, swiftui haptic feedback, haptics" />
     <title>Pulsar: Haptic Feedback Library for Swift, Kotlin & React Native</title>
+    {/* Self-referencing canonical so tracking-param variants (e.g. ?ref=...)
+        consolidate to the clean root URL. Starlight pages get this automatically;
+        this hand-rolled landing page needs it set explicitly. */}
+    <link rel="canonical" href={new URL(`${BASE_PATH}/`, Astro.site).href} />
     <link rel="icon" type="image/svg+xml" href={`${BASE_PATH}/logo.svg`} />
     <link rel="preload" as="image" type="image/svg+xml" href={swmLogo.src} />
     <link rel="preload" as="image" type="image/svg+xml" href={starIcon.src} />
@@ -70,14 +75,18 @@ Presets that you can hear and feel with Live Preview." />
         subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
       />
       <PresetsList client:load />
-      <Button label="See all presets" url={`${BASE_PATH}/presets-playground`} />
-      <VisitComposer className={commonStyle.spaceTopMedium} />
+      <Button label="See all presets" url={`${BASE_PATH}/presets-playground/`} />
+      <VisitComposer client:load className={commonStyle.spaceTopMedium} />
     </BasicLayout>
 
     <VisitPlayground className={commonStyle.spaceTopLarge} />
 
     <BasicLayout className={commonStyle.spaceTopLarge}>
       <SdkSection />
+    </BasicLayout>
+
+    <BasicLayout className={commonStyle.spaceTopLarge}>
+      <AppShowcase client:visible />
     </BasicLayout>
 
     <BasicLayout className={commonStyle.spaceTopLarge}>
@@ -92,7 +101,7 @@ Presets that you can hear and feel with Live Preview." />
 
 <script is:inline define:vars={{ basePath: BASE_PATH }}>
   document.addEventListener('DOMContentLoaded', function () {
-    var seeAllBtn = document.querySelector(`a[href="${basePath}/presets-playground"]`);
+    var seeAllBtn = document.querySelector(`a[href="${basePath}/presets-playground/"]`);
     if (seeAllBtn) {
       seeAllBtn.addEventListener('click', function () {
         window.posthog?.capture('see_all_presets_clicked');

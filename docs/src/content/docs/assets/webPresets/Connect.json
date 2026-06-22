@@ -1,0 +1,33 @@
+{
+  "name": "Connect",
+  "description": "Welcoming and resolved, suited for connecting, answering or linking feedback.",
+  "tags": [
+    "Bold",
+    "Flexible",
+    "Pattern",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1370,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 400,
+      "intensity": 0.85,
+      "frequency": 0.95
+    },
+    {
+      "type": "pulse",
+      "timestamp": 600,
+      "duration": 400,
+      "intensity": 0.85,
+      "frequency": 0.95
+    },
+    {
+      "type": "continuous",
+      "timestamp": 1300,
+      "duration": 70
+    }
+  ]
+}

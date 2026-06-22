@@ -1,0 +1,35 @@
+{
+  "name": "Alert",
+  "description": "Urgent and insistent, ideal for warnings that demand immediate attention.",
+  "tags": [
+    "Bold",
+    "Soft",
+    "Impulses",
+    "Extended",
+    "Web"
+  ],
+  "duration": 1010,
+  "pattern": [
+    {
+      "type": "pulse",
+      "timestamp": 0,
+      "duration": 250,
+      "intensity": 0.9,
+      "frequency": 1
+    },
+    {
+      "type": "pulse",
+      "timestamp": 380,
+      "duration": 250,
+      "intensity": 0.9,
+      "frequency": 1
+    },
+    {
+      "type": "pulse",
+      "timestamp": 760,
+      "duration": 250,
+      "intensity": 0.9,
+      "frequency": 1
+    }
+  ]
+}
