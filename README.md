@@ -14,14 +14,16 @@ A haptic feedback SDK for iOS, Android, React Native, Kotlin Multiplatform, Flut
 
 ## Packages
 
-| Platform | Package |
-|----------|---------|
-| React Native | [![npm](https://img.shields.io/npm/v/react-native-pulsar)](https://www.npmjs.com/package/react-native-pulsar) |
-| iOS | [Swift Package](https://github.com/software-mansion-labs/pulsar-ios) |
-| Android | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar) |
-| Kotlin Multiplatform | [Maven Central](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) |
-| Flutter | [pub.dev](https://pub.dev/packages/pulsar_haptics) |
-| Web | [![npm](https://img.shields.io/npm/v/pulsar-haptics)](https://www.npmjs.com/package/pulsar-haptics) |
+| Platform | Package | Documentation |
+|----------|---------|---------------|
+| React Native | [![npm](https://img.shields.io/npm/v/react-native-pulsar)](https://www.npmjs.com/package/react-native-pulsar) | [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) |
+| iOS | [![Swift Package](https://img.shields.io/github/v/release/software-mansion-labs/pulsar-ios?label=swift%20package)](https://github.com/software-mansion-labs/pulsar-ios) | [iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios) |
+| Android | [![Maven Central](https://img.shields.io/maven-central/v/com.swmansion/pulsar)](https://central.sonatype.com/artifact/com.swmansion/pulsar) | [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) |
+| Kotlin Multiplatform | [![Maven Central](https://img.shields.io/maven-central/v/com.swmansion/pulsar-kmp)](https://central.sonatype.com/artifact/com.swmansion/pulsar-kmp) | [Kotlin Multiplatform SDK](https://docs.swmansion.com/pulsar/sdk/kmp) |
+| Flutter | [![pub.dev](https://img.shields.io/pub/v/pulsar_haptics)](https://pub.dev/packages/pulsar_haptics) | [Flutter SDK](https://docs.swmansion.com/pulsar/sdk/flutter) |
+| Web | [![npm](https://img.shields.io/npm/v/pulsar-haptics)](https://www.npmjs.com/package/pulsar-haptics) | [Web SDK](https://docs.swmansion.com/pulsar/sdk/web/) |
+
+Full API reference and guides are available at the [documentation site](https://docs.swmansion.com/pulsar). Start with the [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) for core concepts: types of haptics, preloading, and caching.
 
 ## Quick start
 
@@ -152,17 +154,6 @@ import 'package:pulsar_haptics/pulsar.dart';
 final pulsar = Pulsar();
 await pulsar.getPresets().hammer();
 ```
-
-## Documentation
-
-Full API reference and guides are available at the [documentation site](https://docs.swmansion.com/pulsar).
-
-- [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) - Core concepts: types of haptics, preloading, and caching
-- [iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios) - Swift API reference
-- [Android SDK](https://docs.swmansion.com/pulsar/sdk/android) - Kotlin API reference
-- [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
-- [Kotlin Multiplatform SDK](https://docs.swmansion.com/pulsar/sdk/kmp) - Kotlin Multiplatform API reference
-- [Flutter SDK](https://docs.swmansion.com/pulsar/sdk/flutter) - Dart API reference
 
 <!-- ## AI Skills
 
