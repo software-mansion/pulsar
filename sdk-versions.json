@@ -1,10 +1,10 @@
 {
   "ios": {
-    "version": "1.1.4",
+    "version": "1.2.0",
     "swiftPackageUrl": "https://github.com/software-mansion-labs/pulsar-ios"
   },
   "android": {
-    "version": "1.1.2",
+    "version": "1.2.0",
     "mavenCoordinate": "com.swmansion:pulsar"
   },
   "reactNative": {
