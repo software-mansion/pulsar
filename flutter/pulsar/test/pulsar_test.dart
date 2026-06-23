@@ -81,9 +81,6 @@ class MockPulsarPlatform
   Future<bool> presetExists(String presetName) async => true;
 
   @override
-  Future<void> realtimeStart({RealtimeComposerStrategy? strategy}) async {}
-
-  @override
   Future<bool> realtimeIsActive({RealtimeComposerStrategy? strategy}) async =>
       false;
 
@@ -98,7 +95,6 @@ class MockPulsarPlatform
   Future<void> realtimeSet(
     double amplitude,
     double frequency, {
-    bool startIfNeeded = false,
     RealtimeComposerStrategy? strategy,
   }) async {}
 

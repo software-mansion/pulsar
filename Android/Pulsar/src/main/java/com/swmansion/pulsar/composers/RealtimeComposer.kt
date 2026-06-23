@@ -18,12 +18,8 @@ class RealtimeComposer(
         RealtimeComposerStrategy.PRIMITIVE_COMPLEX -> RealtimePrimitiveComplexComposer(engine, compatibilityMode)
     }
 
-    override fun start() {
-        delegate.start()
-    }
-
-    override fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean) {
-        delegate.set(amplitude, frequency, startIfNeeded)
+    override fun set(amplitude: Float, frequency: Float) {
+        delegate.set(amplitude, frequency)
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {

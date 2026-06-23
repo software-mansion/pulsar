@@ -62,7 +62,6 @@ const Settings = {
 };
 
 const useRealtimeComposer = jest.fn(() => ({
-  start: jest.fn(),
   set: jest.fn(),
   playDiscrete: jest.fn(),
   stop: jest.fn(),

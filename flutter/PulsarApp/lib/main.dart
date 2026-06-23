@@ -67,9 +67,7 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
   Future<void> _onSliderChange(double value) async {
     setState(() => _amplitude = value);
     try {
-      await _pulsar
-          .getRealtimeComposer()
-          .set(_amplitude, _frequency, startIfNeeded: true);
+      await _pulsar.getRealtimeComposer().set(_amplitude, _frequency);
     } catch (_) {}
   }
 
