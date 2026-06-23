@@ -1,0 +1,14 @@
+/* Bottom-right drag affordance for resizing the plugin window. */
+.resize-handle {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  height: 22px;
+  /* Above the floating scroll-to-top FAB (z-index 1000) so it never steals the
+     corner. */
+  z-index: 1001;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.resize-handle img { display: block; }

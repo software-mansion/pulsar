@@ -1,3 +1,4 @@
+import styles from './AddCustomPreset.module.css';
 import { useEffect, useState } from 'react';
 import type { CatalogEntry } from '../../shared/types';
 import {
@@ -60,18 +61,18 @@ export default function AddCustomPreset({
         </span>
         <span className="acc-title">Custom presets</span>
         {customPresets.length > 0 && (
-          <span className="tag active" style={{ margin: 0 }}>{customPresets.length}</span>
+          <span className="tag active tag-flush">{customPresets.length}</span>
         )}
         <span className="acc-chevron" aria-hidden="true">
           <img src={iconChevron} alt="" />
         </span>
       </summary>
 
-      <div className="col acc-body" style={{ gap: 8 }}>
+      <div className="col acc-body">
         <div>
           <div className="acc-label">{editingId ? 'Editing preset (JSON)' : 'Paste preset JSON'}</div>
           <textarea
-            className="preset-editor"
+            className={styles['preset-editor']}
             rows={8}
             spellCheck={false}
             value={json}
@@ -81,7 +82,7 @@ export default function AddCustomPreset({
             }}
           />
         </div>
-        {error && <span className="preset-error">{error}</span>}
+        {error && <span className={styles['preset-error']}>{error}</span>}
         <div className="row">
           <button className="primary" onClick={submit} disabled={!json.trim()}>
             {editingId ? 'Save changes' : 'Add to presets'}
@@ -97,15 +98,15 @@ export default function AddCustomPreset({
           <div>
             <div className="acc-sep" />
             <div className="acc-label">Your presets</div>
-            <div className="col" style={{ gap: 6 }}>
+            <div className={`col ${styles['custom-preset-list']}`}>
               {customPresets.map((e) => (
-                <div key={e.id} className="preset-row">
-                  <img className="preset-row-icon" src={iconWaveform} alt="" />
-                  <span className="preset-row-name" title={e.data.name}>
+                <div key={e.id} className={styles['preset-row']}>
+                  <img className={styles['preset-row-icon']} src={iconWaveform} alt="" />
+                  <span className={styles['preset-row-name']} title={e.data.name}>
                     {e.data.name}
                   </span>
                   <button
-                    className="icon-btn"
+                    className={styles['icon-btn']}
                     title="Edit"
                     aria-label="Edit preset"
                     onClick={() => setEditingId(e.id)}
@@ -114,7 +115,7 @@ export default function AddCustomPreset({
                     <img src={iconPencil} alt="" />
                   </button>
                   <button
-                    className="icon-btn"
+                    className={styles['icon-btn']}
                     title="Remove"
                     aria-label="Remove preset"
                     onClick={() => {

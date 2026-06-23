@@ -1,0 +1,280 @@
+/* Shared foundation for the plugin UI: design tokens, element resets, base
+   controls (buttons, inputs, switch), and cross-component primitives (utility
+   layout helpers, tags, accordion building blocks). Component-specific styles
+   live in per-component CSS files imported by each component. */
+
+/* Pulsar docs-inspired theme tokens. Mirrors docs/src/styles/index.css. */
+:root {
+  --color-primary: #001a72;
+  --color-blue-10: #e1f3fa;
+  --color-blue-20: #b5e1f1;
+  --color-blue-30: #87cce8;
+  --color-blue-50: #38acdd;
+  --color-blue-60: #2b85ab;
+  --color-yellow-60: #ffe780;
+  --color-green-50: #1f9d57;
+
+  --bg: #fbfeff;
+  --surface: #ffffff;
+  --text: var(--color-primary);
+  --muted: #5a6a8a;
+  --border: var(--color-blue-20);
+  --accent: var(--color-blue-50);
+
+  --radius-sm: 2px;
+  --radius: 4px;
+  --shadow-card: -3px 3px 0 var(--color-blue-50);
+  --shadow-press: 0 0 0 transparent;
+
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
+  --fs-2xs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Buttons ---- */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  /* Docs button: blue-50 border + same-color offset edge, light face. */
+  border: 2px solid var(--color-blue-50);
+  background: var(--surface);
+  color: var(--color-primary);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  box-shadow: -2px 2px 0 var(--color-blue-50);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+button:active {
+  box-shadow: none;
+  transform: translate(-1px, 1px);
+  box-shadow: -1px 1px 0 var(--color-blue-50);
+}
+/* Unfilled docs variant — same border + offset shadow, lighter label. */
+button.ghost { font-weight: 500; }
+/* Filled docs variant — blue-20 face. */
+button.primary { background: var(--color-blue-20); }
+button.icon { padding: 4px 8px; }
+button.icon svg { display: block; }
+/* Label + icon button used in the preset detail action row and phone panel. */
+button.preset-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---- Inputs ---- */
+input[type='text'], input[type='url'], textarea {
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+}
+input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50); }
+
+/* Toggle switch — a checkbox restyled as an iOS-style switch. */
+input.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border: none;
+  border-radius: 20px;
+  background: var(--color-blue-20);
+  position: relative;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+input.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 120ms ease;
+}
+input.switch:checked { background: var(--color-blue-50); }
+input.switch:checked::after { transform: translateX(14px); }
+
+/* ---- Tags ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 8px;
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  line-height: 100%;
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-blue-20);
+  margin: 0 4px 4px 0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.tag.active {
+  background: var(--color-blue-50);
+  color: white;
+  border-color: var(--color-blue-50);
+}
+/* Drop the trailing margin for tags laid out with flex `gap` instead. */
+.tag.tag-flush { margin: 0; }
+
+/* Panel header title shared by the Bound + Live preview tabs. */
+.panel-title { font-weight: 700; font-size: var(--fs-lg); }
+
+/* Bound indicator — deliberately distinct from tag pills: solid navy chip.
+   Shared by the preset cards and the Bound-components panel. */
+.bound-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 3px;
+  padding: 2px 6px;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.star { display: block; font-size: var(--fs-lg); line-height: 1; }
+
+/* ---- Accordions — shared building blocks for Filters / Custom presets / Phone.
+   The grouped-card chrome that wraps them lives in App.css. ---- */
+details.accordion { border-top: 1px solid var(--border); padding-top: 8px; }
+/* Accordion disclosure caret — hide the native marker. */
+details.accordion > summary { list-style: none; cursor: pointer; user-select: none; }
+details.accordion > summary::-webkit-details-marker { display: none; }
+
+.acc-row > summary.acc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--color-primary);
+  transition: background 120ms ease;
+}
+.acc-row > summary.acc-head:hover { background: var(--color-blue-10); }
+.acc-row[open] > summary.acc-head {
+  background: var(--color-blue-10);
+  box-shadow: inset 3px 0 0 var(--color-blue-50);
+}
+.acc-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  background: var(--color-blue-10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.acc-row[open] > summary.acc-head .acc-icon { background: var(--surface); }
+.acc-icon img { display: block; width: 15px; height: 15px; }
+.acc-title { flex: 1; }
+.acc-chevron { flex-shrink: 0; display: flex; }
+.acc-chevron img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  transition: transform 120ms ease;
+}
+.acc-row[open] > summary.acc-head .acc-chevron img { transform: rotate(180deg); opacity: 0.85; }
+.acc-body { padding: 10px }
+
+/* Accordion body internals — shared sub-blocks. */
+.acc-label {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-blue-60);
+  margin-bottom: 6px;
+}
+.acc-sep { height: 1px; background: var(--color-blue-10); margin: 10px 0; }
+.chips-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---- Layout utilities ---- */
+.row { display: flex; align-items: center; gap: 8px; }
+.col { display: flex; flex-direction: column; gap: 8px; }
+.spacer { flex: 1; }
+.muted { color: var(--muted); }
+.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: var(--fs-xs); }
+.scroll { overflow-y: auto; scrollbar-width: thin; }
+hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+
+/* Brand mark (shared by the header and any future placements). */
+.pulsar-logo { display: block; }
+
+/* Shared preset-card chrome — the signature blue-10 fill / blue-50 border +
+   offset shadow. Lives in the global layer because it's reused by the
+   Bound-components panel and gets a flash highlight applied imperatively from
+   App when a preset is scrolled to. Card-private layout is in PresetCard's
+   module. */
+.preset-card {
+  padding: 10px;
+  margin: 0 8px 20px 8px;
+  background: var(--color-blue-10);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  box-sizing: border-box;
+}
+/* Flatten the offset shadow on buttons inside a card for a subtler look. */
+.preset-card button { box-shadow: none; border-width: 1px; }
+.preset-card button:active { box-shadow: none; border-width: 1px; }
+/* Scroll-to flash — pulses the border + shadow green and the bg white, then
+   eases back to the card's natural styling. */
+.preset-card.preset-flash { animation: preset-flash-card 1.2s ease-out; }
+@keyframes preset-flash-card {
+  0%, 30% {
+    border-color: var(--color-green-50);
+    box-shadow: -3px 3px 0 var(--color-green-50);
+    background: var(--surface);
+  }
+  100% {
+    border-color: var(--color-blue-50);
+    box-shadow: var(--shadow-card);
+    background: var(--color-blue-10);
+  }
+}

@@ -1,0 +1,130 @@
+/* App shell — top tab bar, the scroll-to-top FAB, the presets-tab controls
+   group wrapper, and the modal backdrop/card chrome the preset detail renders
+   into. */
+
+/* Root column that fills the plugin iframe. */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+/* Header row holding the brand and the tabs. */
+.app-header {
+  padding: 8px 10px 0;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--color-primary);
+  padding-bottom: 8px;
+}
+
+/* Top navigation tabs — underline indicator on the active tab. */
+.tab {
+  padding: 4px 2px 8px;
+  margin-left: 14px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: capitalize;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-blue-50);
+}
+
+/* Presets list controls — results count + sound toggle + layout switch. */
+.list-toolbar { padding: 4px 8px; gap: 6px; margin-top: 8px; }
+.list-toolbar-meta { font-size: var(--fs-xs); }
+.list-toolbar-toggle {
+  gap: 6px;
+  margin-left: 8px;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  user-select: none;
+}
+.preset-scroll { flex: 1; }
+.preset-list { padding-top: 8px; }
+.preset-list-empty { padding: 16px; }
+
+/* Floating scroll-to-top, mirrors the docs preset-list button. */
+button.scroll-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--color-blue-50);
+  box-shadow: var(--shadow-card);
+}
+button.scroll-top:hover {
+  box-shadow: -4px 4px 0 var(--color-blue-50);
+  transform: translate(1px, -1px);
+}
+button.scroll-top:active { box-shadow: none; transform: translate(-3px, 3px); }
+
+/* Grouped controls card — Filters / Custom presets / Phone share one bordered
+   panel below the search box, replacing the old loose accordion rows. */
+.controls-section {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.controls-search { position: relative; }
+.controls-search-clear { position: absolute; right: 4px; top: 4px; margin: 0; }
+.controls-card {
+  margin-top: 8px;
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+/* Neutralise the standalone .accordion divider/padding so rows sit flush in the
+   card, separated by hairlines instead. */
+.controls-card > :global(.acc-row) { border-top: 1px solid var(--color-blue-10); padding-top: 0; }
+.controls-card > :global(.acc-row):first-child { border-top: none; }
+
+/* Modal — covers the plugin iframe, with the dialog as a card.
+   The plugin window is narrow (default 380 px) and user-resizable. The dialog
+   should fill almost the whole iframe rather than getting capped at a fixed
+   max-width, so a 12 px backdrop inset is the only breathing room — the card
+   itself uses `width: 100%` with no cap. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 26, 114, 0.35);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 12px;
+  overflow: auto;
+}
+.modal-card {
+  background: var(--surface);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

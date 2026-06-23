@@ -1,0 +1,18 @@
+/* Filters accordion body — favourites switch row + tag groups. The accordion
+   chrome itself is shared (common.css). */
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+.filter-toggle :global(.star) { color: var(--color-primary); }
+.filter-toggle-label { flex: 1; }
+.filter-group { margin-bottom: 12px; }
+.filter-group--flush { margin-bottom: 0; }

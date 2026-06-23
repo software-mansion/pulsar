@@ -1,3 +1,4 @@
+import styles from './ResizeHandle.module.css';
 import { useRef } from 'react';
 import { send } from '../figmaBridge';
 import gripIcon from '../assets/icon-resize-grip.svg';
@@ -50,20 +51,9 @@ export default function ResizeHandle() {
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       title="Drag to resize"
-      style={{
-        position: 'fixed',
-        right: 0,
-        bottom: 0,
-        width: 22,
-        height: 22,
-        // Above the floating scroll-to-top FAB (z-index 1000) so it never
-        // steals the corner.
-        zIndex: 1001,
-        cursor: 'nwse-resize',
-        touchAction: 'none'
-      }}
+      className={styles['resize-handle']}
     >
-      <img src={gripIcon} alt="" width={22} height={22} style={{ display: 'block' }} />
+      <img src={gripIcon} alt="" width={22} height={22} />
     </div>
   );
 }

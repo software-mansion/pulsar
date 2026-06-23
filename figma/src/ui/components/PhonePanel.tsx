@@ -1,3 +1,4 @@
+import styles from './PhonePanel.module.css';
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import iconSmartphone from '../assets/icon-smartphone.svg';
@@ -166,7 +167,7 @@ export default function PhonePanel({
         </span>
         <span className="acc-title">Phone</span>
         {paired && (
-          <span className={`tag ${connected ? 'active' : ''}`} style={{ margin: 0 }}>
+          <span className={`tag tag-flush ${connected ? 'active' : ''}`}>
             {connected ? 'Connected' : 'Offline'}
           </span>
         )}
@@ -175,18 +176,18 @@ export default function PhonePanel({
         </span>
       </summary>
 
-      <div className="col acc-body" style={{ gap: 8 }}>
+      <div className="col acc-body">
         {paired ? (
-          <div className="phone-card">
-            <span className="phone-card-ic">
+          <div className={styles['phone-card']}>
+            <span className={styles['phone-card-ic']}>
               <img src={iconSmartphone} alt="" />
             </span>
-            <div className="phone-card-main">
-              <div className="phone-card-title">
-                <span className={`status-dot ${connected ? 'ok' : 'err'}`} />
+            <div className={styles['phone-card-main']}>
+              <div className={styles['phone-card-title']}>
+                <span className={`${styles['status-dot']} ${connected ? styles['ok'] : styles['err']}`} />
                 {connected ? 'Connected' : 'Phone offline'}
               </div>
-              <p className="phone-card-text">
+              <p className={styles['phone-card-text']}>
                 {connected
                   ? 'Your phone will play each preset as you preview it.'
                   : 'Paired, but your phone isn’t reachable. Open the Pulsar app to reconnect.'}
@@ -197,16 +198,16 @@ export default function PhonePanel({
         ) : (
           <>
             {phase === 'idle' && (
-              <div className="phone-card">
-                <span className="phone-card-ic">
+              <div className={styles['phone-card']}>
+                <span className={styles['phone-card-ic']}>
                   <img src={iconSmartphone} alt="" />
                 </span>
-                <div className="phone-card-main">
-                  <div className="phone-card-title">
-                    <span className="status-dot" />
+                <div className={styles['phone-card-main']}>
+                  <div className={styles['phone-card-title']}>
+                    <span className={styles['status-dot']} />
                     Not connected
                   </div>
-                  <p className="phone-card-text">
+                  <p className={styles['phone-card-text']}>
                     Pair the Pulsar app to feel real haptics on your device while you preview a preset.
                   </p>
                   <button className="primary preset-action-btn" onClick={startPairing}>
@@ -218,13 +219,13 @@ export default function PhonePanel({
             )}
 
             {phase === 'requesting' && (
-              <div className="phone-card">
-                <span className="phone-card-ic">
+              <div className={styles['phone-card']}>
+                <span className={styles['phone-card-ic']}>
                   <img src={iconSmartphone} alt="" />
                 </span>
-                <div className="phone-card-main">
-                  <div className="phone-card-title">
-                    <span className="status-dot" />
+                <div className={styles['phone-card-main']}>
+                  <div className={styles['phone-card-title']}>
+                    <span className={styles['status-dot']} />
                     Requesting channel…
                   </div>
                 </div>
@@ -232,13 +233,13 @@ export default function PhonePanel({
             )}
 
             {phase === 'awaiting-phone' && (
-              <div className="phone-await">
-                {qrDataUrl && <img className="phone-qr" src={qrDataUrl} alt="Scan with Pulsar" />}
-                <div className="row" style={{ gap: 8 }}>
+              <div className={styles['phone-await']}>
+                {qrDataUrl && <img className={styles['phone-qr']} src={qrDataUrl} alt="Scan with Pulsar" />}
+                <div className="row">
                   <span className="muted">Code</span>
-                  <span className="mono" style={{ fontWeight: 700, letterSpacing: '0.08em' }}>{code}</span>
+                  <span className={`mono ${styles['phone-code']}`}>{code}</span>
                 </div>
-                <p className="phone-card-text" style={{ marginBottom: 0 }}>
+                <p className={`${styles['phone-card-text']} ${styles['phone-await-hint']}`}>
                   Open the Pulsar mobile app and scan the QR (or enter the code).
                 </p>
                 <button className="ghost" onClick={disconnect}>Cancel</button>
@@ -246,16 +247,16 @@ export default function PhonePanel({
             )}
 
             {phase === 'error' && (
-              <div className="phone-card">
-                <span className="phone-card-ic">
+              <div className={styles['phone-card']}>
+                <span className={styles['phone-card-ic']}>
                   <img src={iconSmartphone} alt="" />
                 </span>
-                <div className="phone-card-main">
-                  <div className="phone-card-title">
-                    <span className="status-dot err" />
+                <div className={styles['phone-card-main']}>
+                  <div className={styles['phone-card-title']}>
+                    <span className={`${styles['status-dot']} ${styles['err']}`} />
                     Couldn’t connect
                   </div>
-                  <p className="phone-card-text">{error ?? 'Unknown error.'}</p>
+                  <p className={styles['phone-card-text']}>{error ?? 'Unknown error.'}</p>
                   <button className="ghost" onClick={startPairing}>Retry</button>
                 </div>
               </div>

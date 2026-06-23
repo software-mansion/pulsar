@@ -1,0 +1,89 @@
+/* In-plugin toasts — bottom-anchored stack of transient notifications. Replaces
+   figma.notify(), which renders outside the plugin window and is easy to miss.
+   Each card slides in, auto-dismisses after a per-level timeout (paused while
+   hovered), shows a draining progress bar, and can be closed early with its ×
+   button. Sits above the modal (z 100) and scroll-top (z 1000). */
+.toast-viewport {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* Let clicks fall through the gaps between cards to the UI underneath. */
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 2px solid var(--toast-accent);
+  border-radius: var(--radius);
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  animation: toast-in 180ms ease;
+}
+.toast--leaving { animation: toast-out 180ms ease forwards; }
+.toast-icon { flex-shrink: 0; width: 18px; height: 18px; color: var(--toast-accent); }
+.toast-icon svg { display: block; width: 18px; height: 18px; }
+.toast-message {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+  font-weight: 500;
+  word-break: break-word;
+}
+.toast-close {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin: -2px -2px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.toast-close:hover { color: var(--color-primary); box-shadow: none; transform: none; }
+.toast-close:active { box-shadow: none; transform: scale(0.85); }
+.toast-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--toast-accent);
+  opacity: 0.5;
+  transform-origin: left center;
+  animation: toast-progress linear forwards;
+}
+
+.toast--info { --toast-accent: var(--color-blue-50); }
+.toast--success { --toast-accent: var(--color-green-50); }
+.toast--warning { --toast-accent: #c9871f; }
+.toast--error { --toast-accent: #d23f34; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(8px); }
+}
+@keyframes toast-progress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}

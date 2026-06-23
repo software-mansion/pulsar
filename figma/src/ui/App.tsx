@@ -1,3 +1,4 @@
+import styles from './App.module.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import PRESETS from './presets-data';
@@ -841,28 +842,9 @@ export default function App() {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        background: 'var(--bg)'
-      }}
-    >
-      <div
-        className="row"
-        style={{ padding: '8px 10px 0', gap: 0, borderBottom: '1px solid var(--border)' }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            fontWeight: 700,
-            color: 'var(--color-primary)',
-            paddingBottom: 8
-          }}
-        >
+    <div className={styles['app-shell']}>
+      <div className={`row ${styles['app-header']}`}>
+        <div className={styles['app-brand']}>
           <PulsarLogo size={22} />
           <span>Pulsar</span>
         </div>
@@ -870,7 +852,7 @@ export default function App() {
         {(['presets', 'bound', 'preview'] as const).map((t) => (
           <span
             key={t}
-            className={`tab ${tab === t ? 'active' : ''}`}
+            className={`${styles['tab']} ${tab === t ? styles['active'] : ''}`}
             onClick={() => {
               setTab(t);
               setOpenId(null);
@@ -892,13 +874,12 @@ export default function App() {
 
       {tab === 'presets' && (
         <div
-          className="scroll"
-          style={{ flex: 1 }}
+          className={`scroll ${styles['preset-scroll']}`}
           ref={scrollRef}
           onScroll={(e) => setShowScrollTop(e.currentTarget.scrollTop > 300)}
         >
-          <div className="controls-section">
-            <div className="controls-search">
+          <div className={styles['controls-section']}>
+            <div className={styles['controls-search']}>
               <input
                 type="text"
                 placeholder="Search presets by name or description…"
@@ -907,15 +888,14 @@ export default function App() {
               />
               {filter.search.length > 0 && (
                 <span
-                  className="tag"
-                  style={{ position: 'absolute', right: 4, top: 4, margin: 0 }}
+                  className={`tag ${styles['controls-search-clear']}`}
                   onClick={() => setFilter({ ...filter, search: '' })}
                 >
                   Clear
                 </span>
               )}
             </div>
-            <div className="controls-card">
+            <div className={styles['controls-card']}>
               <Filters
                 state={filter}
                 setState={setFilter}
@@ -935,11 +915,10 @@ export default function App() {
               />
             </div>
           </div>
-          <div className="row" style={{ padding: '4px 8px', gap: 6, marginTop: 8 }}>
-            <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>{filtered.length} results</span>
+          <div className={`row ${styles['list-toolbar']}`}>
+            <span className={`muted ${styles['list-toolbar-meta']}`}>{filtered.length} results</span>
             <label
-              className="row"
-              style={{ gap: 6, marginLeft: 8, fontSize: 'var(--fs-xs)', cursor: 'pointer', userSelect: 'none' }}
+              className={`row ${styles['list-toolbar-toggle']}`}
               title="Play audio when selecting a bound node in the editor"
             >
               Sound
@@ -951,7 +930,7 @@ export default function App() {
               />
             </label>
             <div className="spacer" />
-            <span className="muted" style={{ fontSize: 'var(--fs-xs)' }}>Layout:</span>
+            <span className={`muted ${styles['list-toolbar-meta']}`}>Layout:</span>
             <button
               className={`icon ${settings.compactLayout ? 'ghost' : 'primary'}`}
               title="Full cards"
@@ -969,7 +948,7 @@ export default function App() {
               <img src={iconLayoutCompact} alt="" width={16} height={16} />
             </button>
           </div>
-          <div style={{ paddingTop: 8 }}>
+          <div className={styles['preset-list']}>
             {filtered.map((e) => (
               <PresetCard
                 key={e.id}
@@ -984,7 +963,7 @@ export default function App() {
               />
             ))}
             {filtered.length === 0 && (
-              <p className="muted" style={{ padding: 16 }}>No presets match.</p>
+              <p className={`muted ${styles['preset-list-empty']}`}>No presets match.</p>
             )}
           </div>
         </div>
@@ -992,7 +971,7 @@ export default function App() {
 
       {tab === 'presets' && !openEntry && showScrollTop && (
         <button
-          className="scroll-top"
+          className={styles['scroll-top']}
           aria-label="Scroll to top"
           onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
         >
@@ -1001,8 +980,8 @@ export default function App() {
       )}
 
       {openEntry && (
-        <div className="modal-backdrop" onClick={() => setOpenId(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className={styles['modal-backdrop']} onClick={() => setOpenId(null)}>
+          <div className={styles['modal-card']} onClick={(e) => e.stopPropagation()}>
             <PresetDetail
               entry={openEntry}
               onClose={() => setOpenId(null)}

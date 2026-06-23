@@ -1,0 +1,51 @@
+/* Phone pairing panel — status card shared by every pairing state, plus the
+   awaiting-pair QR layout. */
+.phone-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+}
+.phone-card-ic {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phone-card-ic img { display: block; width: 20px; height: 20px; }
+.phone-card-main { flex: 1; min-width: 0; }
+.phone-card-title { font-size: var(--fs-sm); font-weight: 600; margin-bottom: 3px; }
+.phone-card-text { font-size: var(--fs-xs); color: var(--color-blue-60); line-height: 1.45; margin: 0 0 10px; }
+.phone-card-text:last-child { margin-bottom: 0; }
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.status-dot.ok { background: #1d9e75; }
+.status-dot.err { background: #d85a30; }
+/* Awaiting-pair (QR) layout. */
+.phone-await {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.phone-qr { width: 200px; height: 200px; border-radius: var(--radius); background: var(--surface); }
+/* Pairing code — emphasised monospace with wide tracking. */
+.phone-code { font-weight: 700; letter-spacing: 0.08em; }
+.phone-await-hint { margin-bottom: 0; }

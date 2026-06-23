@@ -1,3 +1,4 @@
+import styles from './PresetCard.module.css';
 import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
 import iconPlay from '../assets/icon-play.svg';
@@ -31,7 +32,7 @@ export default function PresetCard({
   // Lighter, borderless favourite star — shared by both layouts.
   const favButton = (
     <button
-      className="fav-plain"
+      className={styles['fav-plain']}
       title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
       aria-pressed={isFavourite}
       onClick={onToggleFavourite}
@@ -41,26 +42,26 @@ export default function PresetCard({
   );
 
   const boundBadge = isBound ? (
-    <span className="bound-badge" style={{ flexShrink: 0 }}>● bound</span>
+    <span className="bound-badge">● bound</span>
   ) : null;
 
   if (compact) {
     // One dense bordered line: play · name · scrolling tags · duration · fav · bind.
     return (
-      <div className="preset-row-compact" data-preset-id={entry.id}>
+      <div className={styles['preset-row-compact']} data-preset-id={entry.id}>
         <button className="ghost icon" onClick={onPlay} title="Play">
           <img src={iconPlay} alt="" width={14} height={14} />
         </button>
-        <span className="preset-row-compact-name" onClick={onOpen} title={data.name}>
+        <span className={styles['preset-row-compact-name']} onClick={onOpen} title={data.name}>
           {data.name}
         </span>
         {boundBadge}
-        <div className="preset-row-compact-tags">
+        <div className={styles['preset-row-compact-tags']}>
           {data.tags.map((t) => (
-            <span className="tag" key={t} style={{ margin: 0 }}>{t}</span>
+            <span className="tag tag-flush" key={t}>{t}</span>
           ))}
         </div>
-        <span className="muted preset-row-compact-dur" title="Pattern duration">
+        <span className={`muted ${styles['preset-row-compact-dur']}`} title="Pattern duration">
           {formatDuration(data.duration)}
         </span>
         {favButton}
@@ -76,10 +77,10 @@ export default function PresetCard({
   // docked in its bottom-right corner.
   return (
     <div className="preset-card" data-preset-id={entry.id}>
-      <div className="preset-card-head">
-        <span className="preset-card-name">{data.name}</span>
+      <div className={styles['preset-card-head']}>
+        <span className={styles['preset-card-name']}>{data.name}</span>
         {boundBadge}
-        <span className="preset-dur" title="Pattern duration">
+        <span className={styles['preset-dur']} title="Pattern duration">
           <img src={iconClock} alt="" />
           {formatDuration(data.duration)}
         </span>
@@ -95,13 +96,13 @@ export default function PresetCard({
         </button>
       </div>
       {data.tags.length > 0 && (
-        <div className="preset-card-tags">
+        <div className={styles['preset-card-tags']}>
           {data.tags.map((t) => (
-            <span className="tag" key={t} style={{ margin: 0 }}>{t}</span>
+            <span className="tag tag-flush" key={t}>{t}</span>
           ))}
         </div>
       )}
-      <div className="wv-panel">
+      <div className={styles['wv-panel']}>
         <Visualization data={data} />
       </div>
     </div>

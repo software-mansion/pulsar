@@ -1,3 +1,4 @@
+import styles from './Toast.module.css';
 import {
   createContext,
   useCallback,
@@ -42,7 +43,7 @@ const DEFAULT_DURATION: Record<ToastLevel, number> = {
 // At most this many toasts stack at once; a burst trims the oldest.
 const MAX_TOASTS = 4;
 
-// Length of the slide-in / slide-out animation (keep in sync with theme.css).
+// Length of the slide-in / slide-out animation (keep in sync with Toast.css).
 const LEAVE_MS = 180;
 
 const ToastContext = createContext<ToastApi | null>(null);
@@ -74,7 +75,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="toast-viewport" role="region" aria-label="Notifications">
+      <div className={styles['toast-viewport']} role="region" aria-label="Notifications">
         {toasts.map((t) => (
           <ToastCard key={t.id} toast={t} onClose={() => dismiss(t.id)} />
         ))}
@@ -109,17 +110,17 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
 
   return (
     <div
-      className={`toast toast--${level}${leaving ? ' toast--leaving' : ''}`}
+      className={`${styles['toast']} ${styles[`toast--${level}`]}${leaving ? ` ${styles['toast--leaving']}` : ''}`}
       role={level === 'error' || level === 'warning' ? 'alert' : 'status'}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <span className="toast-icon" aria-hidden>
+      <span className={styles['toast-icon']} aria-hidden>
         {ICONS[level]}
       </span>
-      <span className="toast-message">{message}</span>
+      <span className={styles['toast-message']}>{message}</span>
       <button
-        className="toast-close"
+        className={styles['toast-close']}
         onClick={beginClose}
         title="Dismiss"
         aria-label="Dismiss notification"
@@ -128,7 +129,7 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
       </button>
       {duration > 0 && (
         <span
-          className="toast-progress"
+          className={styles['toast-progress']}
           style={{
             animationDuration: `${duration}ms`,
             animationPlayState: paused || leaving ? 'paused' : 'running'
