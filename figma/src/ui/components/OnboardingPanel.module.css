@@ -1,0 +1,25 @@
+/* Onboarding / help tab. Placeholder layout for now — real step-by-step usage
+   notes and explanations of the confusing parts will be filled in later. */
+.onboarding-panel { padding: 16px; gap: 14px; flex: 1; min-height: 0; }
+.onboarding-intro { margin: 4px 0 0; font-size: var(--fs-xs); line-height: 1.5; }
+.onboarding-card {
+  position: relative;
+  padding: 12px;
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+}
+.onboarding-card-title { font-weight: 600; font-size: var(--fs-sm); margin-bottom: 4px; }
+.onboarding-card-body { margin: 0; font-size: var(--fs-xs); line-height: 1.45; }
+.onboarding-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--color-blue-60);
+  background: var(--surface);
+  border: 1px dashed var(--color-blue-20);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+}

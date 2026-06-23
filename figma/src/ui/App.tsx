@@ -14,6 +14,7 @@ import PresetCard from './components/PresetCard';
 import PresetDetail from './components/PresetDetail';
 import LivePreviewPanel from './components/LivePreviewPanel';
 import BoundComponentsPanel from './components/BoundComponentsPanel';
+import OnboardingPanel from './components/OnboardingPanel';
 import AddCustomPreset from './components/AddCustomPreset';
 import PhonePanel, { broadcastToPhone } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
@@ -25,7 +26,7 @@ import iconLayoutFull from './assets/icon-layout-full.svg';
 import iconLayoutCompact from './assets/icon-layout-compact.svg';
 import iconArrowUp from './assets/icon-arrow-up.svg';
 
-type Tab = 'presets' | 'bound' | 'preview';
+type Tab = 'presets' | 'bound' | 'preview' | 'onboarding';
 
 // Live-preview sync state, surfaced as a pill in the Live preview tab.
 //   idle     — nothing shared for this file yet (no server row).
@@ -849,7 +850,7 @@ export default function App() {
           <span>Pulsar</span>
         </div>
         <div className="spacer" />
-        {(['presets', 'bound', 'preview'] as const).map((t) => (
+        {(['presets', 'bound', 'preview', 'onboarding'] as const).map((t) => (
           <span
             key={t}
             className={`${styles['tab']} ${tab === t ? styles['active'] : ''}`}
@@ -858,19 +859,21 @@ export default function App() {
               setOpenId(null);
             }}
           >
-            {t === 'bound' ? 'components' : t}
+            {t === 'bound' ? 'components' : t === 'preview' ? 'share' : t}
           </span>
         ))}
       </div>
 
-      {/* Sticky selection section — sits above the scrollable list on every tab
-          so the selected node + its bound preset stay visible while scrolling. */}
-      <SelectionBar
-        selection={selection}
-        onUnbind={() => send({ type: 'unbind-preset' })}
-        onFocusComponent={() => selection && send({ type: 'focus-node', nodeId: selection.id })}
-        onOpenPreset={() => selection?.binding && goToPreset(selection.binding.presetId)}
-      />
+      {/* Sticky selection section — sits above the scrollable list, showing the
+          selected node + its bound preset. Only relevant on the Presets tab. */}
+      {tab === 'presets' && (
+        <SelectionBar
+          selection={selection}
+          onUnbind={() => send({ type: 'unbind-preset' })}
+          onFocusComponent={() => selection && send({ type: 'focus-node', nodeId: selection.id })}
+          onOpenPreset={() => selection?.binding && goToPreset(selection.binding.presetId)}
+        />
+      )}
 
       {tab === 'presets' && (
         <div
@@ -1023,6 +1026,8 @@ export default function App() {
           onClearQr={() => setShareQr(null)}
         />
       )}
+
+      {tab === 'onboarding' && <OnboardingPanel />}
 
       <ResizeHandle />
     </div>
