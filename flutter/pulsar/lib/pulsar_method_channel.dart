@@ -114,21 +114,13 @@ class MethodChannelPulsar extends PulsarPlatform {
   // ── RealtimeComposer ────────────────────────────────────────────────────────
 
   @override
-  Future<void> realtimeStart({RealtimeComposerStrategy? strategy}) =>
-      methodChannel.invokeMethod('RealtimeComposer_start', {
-        if (strategy != null) 'strategy': strategy.index,
-      });
-
-  @override
   Future<void> realtimeSet(
     double amplitude,
     double frequency, {
-    bool startIfNeeded = false,
     RealtimeComposerStrategy? strategy,
   }) => methodChannel.invokeMethod('RealtimeComposer_set', {
     'amplitude': amplitude,
     'frequency': frequency,
-    'startIfNeeded': startIfNeeded,
     if (strategy != null) 'strategy': strategy.index,
   });
 

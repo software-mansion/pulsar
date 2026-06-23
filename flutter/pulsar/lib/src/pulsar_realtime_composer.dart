@@ -4,9 +4,7 @@ part of 'package:pulsar_haptics/pulsar.dart';
 ///
 /// Ideal for gesture-driven feedback (e.g. sliders, drag gestures).
 /// ```dart
-/// // Start the composer before sending updates
-/// await pulsar.getRealtimeComposer().start();
-/// // Update haptic as the user drags
+/// // Start/update haptic as the user drags
 /// await pulsar.getRealtimeComposer().set(0.8, 0.5);
 /// // Stop when the gesture ends
 /// await pulsar.getRealtimeComposer().stop();
@@ -16,26 +14,11 @@ class PulsarRealtimeComposer {
 
   final RealtimeComposerStrategy? strategy;
 
-  /// Start the realtime composer. Must be called before [set] has any effect.
-  /// Calling [set] on a composer that is not started (or already stopped) is a no-op.
-  Future<void> start() =>
-      PulsarPlatform.instance.realtimeStart(strategy: strategy);
-
-  /// Update continuous haptic parameters. The composer must be started via
-  /// [start] first; otherwise this call has no effect — unless
-  /// [startIfNeeded] is `true`, in which case the composer is started
-  /// automatically before applying the new parameters.
+  /// Set continuous haptic parameters. Starts automatically if not already active.
   /// [amplitude] and [frequency] are in the range 0.0–1.0.
-  Future<void> set(
-    double amplitude,
-    double frequency, {
-    bool startIfNeeded = false,
-  }) => PulsarPlatform.instance.realtimeSet(
-    amplitude,
-    frequency,
-    startIfNeeded: startIfNeeded,
-    strategy: strategy,
-  );
+  Future<void> set(double amplitude, double frequency) => PulsarPlatform
+      .instance
+      .realtimeSet(amplitude, frequency, strategy: strategy);
 
   /// Stop the continuous haptic.
   Future<void> stop() =>

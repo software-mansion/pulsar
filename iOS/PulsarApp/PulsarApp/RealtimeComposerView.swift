@@ -176,10 +176,9 @@ struct RealtimeComposerView: View {
     
     func handleDrag(at location: CGPoint) {
         pointerLocation = location
-
+        
         if !isDragging {
             isDragging = true
-            composer?.start()
         }
         composer?.set(amplitude: getIntensity(), frequency: getSharpness())
     }

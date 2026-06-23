@@ -1,6 +1,5 @@
 import { useIsFocused } from 'expo-router';
 import { useEffect } from 'react';
-import { Settings } from 'react-native-pulsar';
 import { useSharedValue } from 'react-native-reanimated';
 import { runOnUIAsync } from 'react-native-worklets';
 
@@ -11,14 +10,21 @@ export function useHapticsScreenActivity(composer: Composer) {
   const isScreenActive = useSharedValue(isFocused);
 
   useEffect(() => {
-    isScreenActive.value = isFocused;
-
     if (!isFocused) {
+      runOnUIAsync((isFocused) => {
+        isScreenActive.value = isFocused;
+        composer.stop();
+      }, isFocused);
+    } else {
+      isScreenActive.value = isFocused;
+    }
+    
+    return () => {
       runOnUIAsync(() => {
+        isScreenActive.value = false;
         composer.stop();
       });
-      Settings.stopHaptics();
-    }
+    };
   }, [composer, isFocused, isScreenActive]);
 
   return isScreenActive;
