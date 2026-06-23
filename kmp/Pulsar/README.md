@@ -26,4 +26,4 @@ Useful commands:
 GitHub Actions publishing:
 - Workflow: `.github/workflows/publish-kmp-library.yml`
 - Required repository secrets: `MAVEN_USERNAME`, `MAVEN_PASSWORD`, `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE`
-- Published version is taken from the workflow `version` input via `LIB_VERSION`
+- Published version is read from `sdk-versions.json` and synced into `library/build.gradle.kts`
