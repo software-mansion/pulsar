@@ -412,7 +412,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50);
 /* Signature Pulsar docs preset card: blue-10 fill, blue-50 border + offset shadow. */
 .preset-card {
   padding: 10px;
-  margin: 0 8px 8px;
+  margin: 0 8px 20px 8px;
   background: var(--color-blue-10);
   border: 2px solid var(--color-blue-50);
   border-radius: var(--radius);
@@ -454,6 +454,16 @@ button.fav-plain .star { color: inherit; }
 /* Expanded card — name + duration + star + actions share the top line; the
    waveform sits below with the play button docked in its corner. */
 .preset-card-head { display: flex; align-items: center; gap: 8px; }
+/* Equal-height action buttons (Details · Play · Add) on the head row; widths
+   vary with content (icon vs "Add" label). */
+.preset-card-head button:not(.fav-plain) {
+  height: 28px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 .preset-card-name {
   flex: 1;
   min-width: 0;

@@ -2,7 +2,6 @@ import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
 import iconPlay from '../assets/icon-play.svg';
 import iconClock from '../assets/icon-clock.svg';
-import iconLink from '../assets/icon-link.svg';
 import iconInfo from '../assets/icon-info.svg';
 
 const formatDuration = (ms: number) =>
@@ -65,8 +64,8 @@ export default function PresetCard({
           {formatDuration(data.duration)}
         </span>
         {favButton}
-        <button className="primary icon" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
-          <img src={iconLink} alt="" width={14} height={14} />
+        <button className="primary" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+          Add
         </button>
       </div>
     );
@@ -88,8 +87,11 @@ export default function PresetCard({
         <button className="ghost icon" onClick={onOpen} title="Details" aria-label="Open details">
           <img src={iconInfo} alt="" width={14} height={14} />
         </button>
-        <button className="primary icon" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
-          <img src={iconLink} alt="" width={14} height={14} />
+        <button className="ghost icon" onClick={onPlay} title="Play" aria-label="Play">
+          <img src={iconPlay} alt="" width={14} height={14} />
+        </button>
+        <button className="primary" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+          Add
         </button>
       </div>
       {data.tags.length > 0 && (
@@ -101,9 +103,6 @@ export default function PresetCard({
       )}
       <div className="wv-panel">
         <Visualization data={data} />
-        <button className="ghost icon wv-play" onClick={onPlay} title="Play">
-          <img src={iconPlay} alt="" width={14} height={14} />
-        </button>
       </div>
     </div>
   );
