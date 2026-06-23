@@ -47,7 +47,7 @@ export default function PresetCard({
   if (compact) {
     // One dense bordered line: play · name · scrolling tags · duration · fav · bind.
     return (
-      <div className="preset-row-compact">
+      <div className="preset-row-compact" data-preset-id={entry.id}>
         <button className="ghost icon" onClick={onPlay} title="Play">
           <img src={iconPlay} alt="" width={14} height={14} />
         </button>
@@ -75,7 +75,7 @@ export default function PresetCard({
   // sit on the top line; the waveform is the hero below with the play button
   // docked in its bottom-right corner.
   return (
-    <div className="preset-card">
+    <div className="preset-card" data-preset-id={entry.id}>
       <div className="preset-card-head">
         <span className="preset-card-name">{data.name}</span>
         {boundBadge}

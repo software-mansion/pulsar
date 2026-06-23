@@ -3,7 +3,12 @@ import QRCode from 'qrcode';
 import PRESETS from './presets-data';
 import { CUSTOM_TAG, type BoundItem, type CatalogEntry, type SelectionInfo, type Settings } from '../shared/types';
 import { onMessage, send } from './figmaBridge';
-import Filters, { applyFilter, useFilterStateInit, type FilterState } from './components/Filters';
+import Filters, {
+  applyFilter,
+  filterRevealing,
+  useFilterStateInit,
+  type FilterState
+} from './components/Filters';
 import PresetCard from './components/PresetCard';
 import PresetDetail from './components/PresetDetail';
 import LivePreviewPanel from './components/LivePreviewPanel';
@@ -774,6 +779,37 @@ export default function App() {
     });
   };
 
+  // Jump from the selection bar to a bound preset: switch to the list, clear any
+  // filters hiding it, play it, and scroll it into view (the effect below does
+  // the scrolling once the entry is actually rendered).
+  const [scrollToId, setScrollToId] = useState<string | null>(null);
+  const goToPreset = (presetId: string) => {
+    const entry = presetById.get(presetId);
+    if (!entry) return;
+    playEntry(entry);
+    setOpenId(null);
+    setTab('presets');
+    setFavouritesOnly(false);
+    setFilter(filterRevealing(entry));
+    setScrollToId(presetId);
+  };
+
+  // Scroll to (and briefly flash) the requested preset once it's in the list.
+  // Runs after `filtered` updates so the reset filter has rendered the card.
+  useEffect(() => {
+    if (!scrollToId || tab !== 'presets') return;
+    const el = scrollRef.current?.querySelector<HTMLElement>(
+      `[data-preset-id="${CSS.escape(scrollToId)}"]`
+    );
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.remove('preset-flash');
+    // Reflow so the animation restarts even if the class was just present.
+    void el.offsetWidth;
+    el.classList.add('preset-flash');
+    setScrollToId(null);
+  }, [scrollToId, tab, filtered]);
+
   // Escape closes the open preset-info modal.
   useEffect(() => {
     if (!openId) return;
@@ -845,12 +881,14 @@ export default function App() {
         ))}
       </div>
 
-      {tab !== 'presets' && (
-        <SelectionBar
-          selection={selection}
-          onUnbind={() => send({ type: 'unbind-preset' })}
-        />
-      )}
+      {/* Sticky selection section — sits above the scrollable list on every tab
+          so the selected node + its bound preset stay visible while scrolling. */}
+      <SelectionBar
+        selection={selection}
+        onUnbind={() => send({ type: 'unbind-preset' })}
+        onFocusComponent={() => selection && send({ type: 'focus-node', nodeId: selection.id })}
+        onOpenPreset={() => selection?.binding && goToPreset(selection.binding.presetId)}
+      />
 
       {tab === 'presets' && (
         <div
@@ -859,10 +897,6 @@ export default function App() {
           ref={scrollRef}
           onScroll={(e) => setShowScrollTop(e.currentTarget.scrollTop > 300)}
         >
-          <SelectionBar
-            selection={selection}
-            onUnbind={() => send({ type: 'unbind-preset' })}
-          />
           <div className="controls-section">
             <div className="controls-search">
               <input

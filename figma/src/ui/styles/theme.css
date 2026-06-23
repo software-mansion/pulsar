@@ -7,6 +7,7 @@
   --color-blue-50: #38acdd;
   --color-blue-60: #2b85ab;
   --color-yellow-60: #ffe780;
+  --color-green-50: #1f9d57;
 
   --bg: #fbfeff;
   --surface: #ffffff;
@@ -815,6 +816,73 @@ hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Selection bar — the sticky strip above the list showing the selected node and
+   its bound preset. Both names are interactive: the component name reveals the
+   node on the canvas, the preset name jumps to + plays it. They're styled as
+   bordered chips so it's obvious they're clickable. */
+.sel-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+button.sel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 130px;
+  padding: 1px 6px;
+  border: 1px solid var(--color-blue-50);
+  border-radius: var(--radius-sm);
+  background: var(--color-blue-10);
+  box-shadow: none;
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The label text itself ellipsizes; the icon stays fixed. */
+button.sel-link > img { flex-shrink: 0; display: block; }
+button.sel-link:hover { background: var(--color-blue-20); box-shadow: none; transform: none; }
+button.sel-link:active { box-shadow: none; transform: scale(0.97); }
+/* Preset chip — dashed border to read as "action" (plays on click). */
+button.sel-link--preset { background: var(--surface); border-style: dashed; }
+button.sel-link--preset:hover { background: var(--color-blue-10); }
+.sel-arrow { color: var(--muted); flex-shrink: 0; }
+
+/* Brief flash on the preset card we just scrolled to, so the user can spot it.
+   Pulses the existing border + offset shadow green (kept, not removed) and the
+   background white, then eases back to each card type's natural styling. */
+.preset-card.preset-flash { animation: preset-flash-card 1.2s ease-out; }
+.preset-row-compact.preset-flash { animation: preset-flash-row 1.2s ease-out; }
+@keyframes preset-flash-card {
+  0%, 30% {
+    border-color: var(--color-green-50);
+    box-shadow: -3px 3px 0 var(--color-green-50);
+    background: var(--surface);
+  }
+  100% {
+    border-color: var(--color-blue-50);
+    box-shadow: var(--shadow-card);
+    background: var(--color-blue-10);
+  }
+}
+@keyframes preset-flash-row {
+  0%, 30% {
+    border-color: var(--color-green-50);
+    box-shadow: -2px 2px 0 var(--color-green-50);
+    background: var(--surface);
+  }
+  100% {
+    border-color: var(--color-blue-20);
+    box-shadow: none;
+    background: var(--surface);
+  }
 }
 
 /* ── In-plugin toasts ──────────────────────────────────────────────────────

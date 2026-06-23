@@ -195,3 +195,24 @@ export function useFilterStateInit(): FilterState {
     []
   );
 }
+
+// Build a filter state that surfaces `entry` in the list, clearing any search /
+// tag filters and selecting the right dataset (user/custom by default, or the
+// matching system-preset group for bundled iOS/Android presets). Used when the
+// user jumps to a bound preset from the selection bar.
+export function filterRevealing(entry: CatalogEntry): FilterState {
+  const state: FilterState = { search: '', tags: new Set(), systemPresets: new Set() };
+  if (entry.category === 'system') {
+    if (entry.platform === 'ios') {
+      state.systemPresets.add('iOS');
+    } else if (entry.platform === 'android') {
+      for (const [label, tag] of Object.entries(ANDROID_SYSTEM_TAG)) {
+        if (entry.data.tags.includes(tag)) {
+          state.systemPresets.add(label);
+          break;
+        }
+      }
+    }
+  }
+  return state;
+}
