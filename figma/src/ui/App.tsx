@@ -13,6 +13,7 @@ import PhonePanel, { broadcastToPhone } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
 import PulsarLogo from './components/PulsarLogo';
 import ResizeHandle from './components/ResizeHandle';
+import { useToast } from './components/Toast';
 import { playPreset, stopAll } from './audio/player';
 import iconLayoutFull from './assets/icon-layout-full.svg';
 import iconLayoutCompact from './assets/icon-layout-compact.svg';
@@ -220,6 +221,7 @@ function copyToClipboard(text: string): boolean {
 }
 
 export default function App() {
+  const { notify } = useToast();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [hapticsToken, setHapticsToken] = useState<string | null>(null);
   // Live link to the paired phone (PhonePanel reports this). Broadcasting only
@@ -292,6 +294,7 @@ export default function App() {
       if (m.type === 'bound-list') setBoundItems(m.items);
       if (m.type === 'project') void handleProject(m);
       if (m.type === 'doc-changed') handleDocChanged();
+      if (m.type === 'toast') notify(m.message, { level: m.level, duration: m.duration });
       // play-preset and preview-data are handled in separate effects that
       // re-bind when settings/token change, so they always read fresh values.
     });
@@ -477,11 +480,10 @@ export default function App() {
         m.fileKey ?? (settings.fileKeyOverride ? extractFileKey(settings.fileKeyOverride) : '');
       if (!fileKey) {
         if (silent) return;
-        send({
-          type: 'notify',
-          message:
-            'No file key available. Paste this file’s share URL in Settings → Live preview (File key override).'
-        });
+        notify(
+          'No file key available. Paste this file’s share URL in Settings → Live preview (File key override).',
+          { level: 'warning' }
+        );
         return;
       }
       fileKeyRef.current = fileKey;
@@ -524,7 +526,7 @@ export default function App() {
           setSyncStatus(tokenRef.current ? 'synced' : 'idle');
           return;
         }
-        send({ type: 'notify', message: 'No haptic bindings on this page yet.' });
+        notify('No haptic bindings on this page yet.', { level: 'info' });
         return;
       }
       const payload = {
@@ -616,10 +618,7 @@ export default function App() {
         } catch (err) {
           setSyncStatus('error');
           if (!silent) {
-            send({
-              type: 'notify',
-              message: `Could not upload preview data: ${(err as Error).message}`
-            });
+            notify(`Could not upload preview data: ${(err as Error).message}`, { level: 'error' });
           }
           return;
         }
@@ -653,10 +652,7 @@ export default function App() {
           }
         }
         if (!publicToken) {
-          send({
-            type: 'notify',
-            message: 'Could not resolve the share link. Try “Sync now” and retry.'
-          });
+          notify('Could not resolve the share link. Try “Sync now” and retry.', { level: 'error' });
           return;
         }
 
@@ -670,17 +666,15 @@ export default function App() {
         const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(publicToken)}`;
         if (purpose === 'copy') {
           const ok = copyToClipboard(url);
-          send({
-            type: 'notify',
-            message: ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.'
+          notify(ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.', {
+            level: ok ? 'success' : 'error'
           });
         } else if (purpose === 'copy-token') {
           // Just the raw read-only token — handy for pasting into other
           // figma-preview URLs (e.g. a local dev instance) or debugging.
           const ok = copyToClipboard(publicToken);
-          send({
-            type: 'notify',
-            message: ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.'
+          notify(ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.', {
+            level: ok ? 'success' : 'error'
           });
         } else if (purpose === 'qr') {
           try {
@@ -696,10 +690,7 @@ export default function App() {
             setShareQr(dataUrl);
           } catch {
             setShareQr(null);
-            send({
-              type: 'notify',
-              message: 'Could not generate a QR code for the share link.'
-            });
+            notify('Could not generate a QR code for the share link.', { level: 'error' });
           }
         } else {
           send({ type: 'open-external', url });
@@ -746,18 +737,15 @@ export default function App() {
       if (!ok) {
         setIsPublic(!next);
         send({ type: 'persist-project-visibility', fileKey, isPublic: !next });
-        send({
-          type: 'notify',
-          message: 'Could not update the preview’s visibility. Please try again.'
-        });
+        notify('Could not update the preview’s visibility. Please try again.', { level: 'error' });
         return;
       }
-      send({
-        type: 'notify',
-        message: next
+      notify(
+        next
           ? 'Preview link is public — anyone with the link can view it.'
-          : 'Preview link is now private — the link won’t work until you share again.'
-      });
+          : 'Preview link is now private — the link won’t work until you share again.',
+        { level: 'success' }
+      );
     })();
   };
 

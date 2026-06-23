@@ -10,6 +10,7 @@ import type {
   PreviewBinding,
   SelectionInfo,
   Settings,
+  ToastLevel,
   UiToMain
 } from '../shared/types';
 
@@ -79,6 +80,13 @@ figma.clientStorage.getAsync(WINDOW_SIZE_KEY).then((raw) => {
 
 function postToUi(msg: MainToUi) {
   figma.ui.postMessage(msg);
+}
+
+// Surface feedback as an in-plugin toast (the UI renders these prominently)
+// rather than figma.notify(), which appears outside the plugin window and is
+// easy to miss. The plugin UI is always open while the plugin runs.
+function notifyUi(message: string, level?: ToastLevel) {
+  postToUi({ type: 'toast', message, level });
 }
 
 // Resolve the stable per-file key, minting and persisting one on first use.
@@ -329,7 +337,7 @@ async function collectBoundItems(): Promise<BoundItem[]> {
 async function focusNode(nodeId: string) {
   const node = await figma.getNodeByIdAsync(nodeId);
   if (!node || node.type === 'PAGE' || node.type === 'DOCUMENT' || node.removed) {
-    figma.notify('That component no longer exists.');
+    notifyUi('That component no longer exists.', 'error');
     return;
   }
   // Make sure its page is current (documents can have multiple pages).
@@ -435,7 +443,7 @@ function pushSelection() {
 function bindToSelection(binding: BindingMeta) {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) {
-    figma.notify('Select exactly one node to bind a preset.');
+    notifyUi('Select exactly one node to bind a preset.', 'warning');
     return;
   }
   const node = sel[0];
@@ -445,7 +453,7 @@ function bindToSelection(binding: BindingMeta) {
   node.setPluginData(BINDING_NEGATED_KEY, '');
   node.setPluginData(BINDING_KEY, JSON.stringify(binding));
   node.setRelaunchData({ play: `Pulsar: ${binding.presetName}` });
-  figma.notify(`Bound "${binding.presetName}" to ${node.name}`);
+  notifyUi(`Bound "${binding.presetName}" to ${node.name}`, 'success');
   pushSelection();
 }
 
@@ -492,7 +500,7 @@ function unbindSelection() {
     node.setPluginData(BINDING_KEY, '');
     node.setRelaunchData({});
   }
-  figma.notify('Preset unbound.');
+  notifyUi('Preset unbound.', 'success');
   pushSelection();
 }
 
@@ -654,8 +662,5 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       }
       break;
     }
-    case 'notify':
-      figma.notify(msg.message);
-      break;
   }
 };

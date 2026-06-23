@@ -101,6 +101,10 @@ export interface BoundItem {
 //     for files the user never chose to share).
 export type PreviewPurpose = 'open' | 'copy' | 'copy-token' | 'qr' | 'sync' | 'autosync';
 
+// Severity of an in-plugin toast. Drives its accent colour, icon, and default
+// auto-dismiss timeout (see the UI's Toast component).
+export type ToastLevel = 'info' | 'success' | 'warning' | 'error';
+
 // Messages: UI -> Main
 export type UiToMain =
   | { type: 'ui-ready' }
@@ -126,8 +130,7 @@ export type UiToMain =
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
   | { type: 'open-external'; url: string }
-  | { type: 'resize'; width: number; height: number; commit?: boolean }
-  | { type: 'notify'; message: string };
+  | { type: 'resize'; width: number; height: number; commit?: boolean };
 
 // Messages: Main -> UI
 export type MainToUi =
@@ -163,6 +166,11 @@ export type MainToUi =
   // The Figma document changed. The UI debounces this into a background
   // auto-sync so the server snapshot stays fresh as the designer edits.
   | { type: 'doc-changed' }
+  // Ask the UI to surface an in-plugin toast. Used for plugin-originated
+  // feedback (bind/unbind results, missing-node errors) that previously went to
+  // the easy-to-miss figma.notify(). `duration` overrides the per-level default
+  // (ms); 0 keeps the toast until the user dismisses it.
+  | { type: 'toast'; message: string; level?: ToastLevel; duration?: number }
   | {
       type: 'preview-data';
       // Echoed back from the originating request so the handler knows what to do.
