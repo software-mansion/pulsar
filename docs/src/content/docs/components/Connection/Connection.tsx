@@ -55,11 +55,12 @@ export default function Connection() {
   const ws = useRef<WebSocket | null>(null);
   const connectionName = getConnectionName();
 
-  // Host-qualified deep link (the `connect` host is registered in the app's
-  // Android intent filters) carrying the producer name for the phone's list.
+  // Root-scheme deep link, kept backward compatible with apps already in the
+  // stores (they route `pulsarapp:///` to their home screen and read `code`
+  // there). The `&name=` is additive — older apps ignore it.
   const deepLinkUrl =
     channel !== 'Loading...'
-      ? `pulsarapp://connect?code=${channel}&name=${encodeURIComponent(connectionName)}`
+      ? `pulsarapp:///?code=${channel}&name=${encodeURIComponent(connectionName)}`
       : '';
 
   function createChannel() {

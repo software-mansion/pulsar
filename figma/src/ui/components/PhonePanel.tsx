@@ -91,10 +91,14 @@ export default function PhonePanel({
   // (connect host). Both carry the producer name for the phone's connection list.
   useEffect(() => {
     if (!code) return;
+    // With a preview token: `figma` host so the app opens the live preview and
+    // pairs. Without one: the root scheme (not the `connect` host), so the QR
+    // stays backward compatible with apps already in the stores — they route
+    // `pulsarapp:///` to their home screen and pair from `code` there.
     const deepLink = pairPreviewToken
       ? `pulsarapp://figma?token=${encodeURIComponent(pairPreviewToken)}` +
         `&code=${encodeURIComponent(code)}&name=${encodeURIComponent(CONNECTION_NAME)}`
-      : `pulsarapp://connect?code=${encodeURIComponent(code)}&name=${encodeURIComponent(CONNECTION_NAME)}`;
+      : `pulsarapp:///?code=${encodeURIComponent(code)}&name=${encodeURIComponent(CONNECTION_NAME)}`;
     QRCode.toDataURL(deepLink, {
       margin: 1,
       color: { dark: '#001a72', light: '#e1f3fa' },

@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useEffect, useRef } from 'react';
 import { Linking, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Button from './Button';
 import { Icon } from './Icon';
@@ -19,6 +19,10 @@ interface Props {
 export default function QRScanner({ visible, onClose, onScan }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const scannedRef = useRef(false);
+  // Captured here (inside the SafeAreaProvider) rather than inside the Modal —
+  // safe-area context doesn't reach a RN Modal's separate window, so reading it
+  // there would yield 0 and leave the close button under the status bar / notch.
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (!visible) return;
@@ -69,11 +73,11 @@ export default function QRScanner({ visible, onClose, onScan }: Props) {
           </View>
         )}
 
-        <SafeAreaView style={styles.topBar} edges={['top']}>
+        <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
           <TouchableOpacity onPress={onClose} hitSlop={12} style={styles.closeBtn}>
             <Icon name="x" size={28} color="#FFFFFF" />
           </TouchableOpacity>
-        </SafeAreaView>
+        </View>
       </View>
     </Modal>
   );
