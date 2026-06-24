@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import type { CatalogEntry } from '../../shared/types';
 import iconSliders from '../assets/icon-sliders-horizontal.svg';
 import iconChevron from '../assets/icon-chevron-down.svg';
+import iconInfo from '../assets/icon-info.svg';
 
 // Tag grouping mirrors the docs `TagsInfo`. Within a group selections are OR'd;
 // across groups they are AND'd.
@@ -36,12 +37,14 @@ export default function Filters({
   state,
   setState,
   favouritesOnly,
-  onFavouritesOnlyChange
+  onFavouritesOnlyChange,
+  onShowTagsGuide
 }: {
   state: FilterState;
   setState: (s: FilterState) => void;
   favouritesOnly: boolean;
   onFavouritesOnlyChange: (v: boolean) => void;
+  onShowTagsGuide: () => void;
 }) {
   const update = (patch: Partial<FilterState>) => setState({ ...state, ...patch });
 
@@ -65,7 +68,24 @@ export default function Filters({
         <span className="acc-icon">
           <img src={iconSliders} alt="" />
         </span>
-        <span className="acc-title">Filters</span>
+        <span className="acc-title">
+          Filters
+          {/* Opens the tags guide. Lives inside <summary>, so swallow the click
+              to stop it toggling the accordion. */}
+          <button
+            type="button"
+            className={styles['tags-info-btn']}
+            title="Learn more about tags"
+            aria-label="Learn more about tags"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onShowTagsGuide();
+            }}
+          >
+            <img src={iconInfo} alt="" width={14} height={14} />
+          </button>
+        </span>
         {activeCount > 0 && (
           <span className="tag active tag-flush">{activeCount}</span>
         )}
