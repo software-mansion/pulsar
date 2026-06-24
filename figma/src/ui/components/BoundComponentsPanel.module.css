@@ -1,0 +1,57 @@
+/* Bound tab — scrollable panel, intro copy, empty state, and the per-binding
+   cards (which reuse .preset-card chrome). */
+.bound-panel { padding: 12px; flex: 1; min-height: 0; }
+.bound-intro { margin: 0; font-size: var(--fs-xs); }
+.bound-empty { padding: 16px 2px; }
+.bound-groups { margin-top: 4px; }
+.bound-item { cursor: pointer; margin-bottom: 8px; }
+.bound-item-row { gap: 6px; }
+.bound-item-name { font-weight: 700; color: var(--color-primary); }
+.bound-item-sub {
+  font-size: var(--fs-xs);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bound-tab grouping — one section per top-level Figma frame that owns at
+   least one binding. Mirrors the preview's .screen-group treatment so the
+   "Bound" panel and the preview's "Haptic elements" sidebar read as the same
+   panel rendered in different chromes. */
+.bound-group { margin-bottom: 14px; }
+.bound-group:last-child { margin-bottom: 0; }
+.bound-group-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.bound-group-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bound-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 6px;
+  height: 16px;
+  border-radius: 10px;
+  background: var(--color-blue-10);
+  color: var(--color-blue-60);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}

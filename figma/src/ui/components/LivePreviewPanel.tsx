@@ -1,3 +1,4 @@
+import styles from './LivePreviewPanel.module.css';
 import type { Settings } from '../../shared/types';
 import type { SyncStatus } from '../App';
 import iconExternalLink from '../assets/icon-external-link.svg';
@@ -37,6 +38,8 @@ const SYNC_META: Record<SyncStatus, { label: string; dot: string; pulse?: boolea
 };
 
 export default function LivePreviewPanel({
+  figmaFileKey,
+  onFigmaFileKeyChange,
   syncStatus,
   onSyncNow,
   isPublic,
@@ -51,6 +54,9 @@ export default function LivePreviewPanel({
 }: {
   settings: Settings;
   onChange: (next: Settings) => void;
+  // The real Figma file key (or share URL) for the embed, remembered per-file.
+  figmaFileKey: string;
+  onFigmaFileKeyChange: (next: string) => void;
   syncStatus: SyncStatus;
   onSyncNow: () => void;
   // Whether the share link is currently public (anyone with the link can view).
@@ -68,28 +74,48 @@ export default function LivePreviewPanel({
 }) {
   const sync = SYNC_META[syncStatus];
   return (
-    <div className="col" style={{ padding: 16, gap: 14 }}>
+    <div className={`col ${styles['preview-panel']}`}>
       <div>
-        <div style={{ fontWeight: 700, fontSize: 'var(--fs-lg)' }}>Live preview</div>
-        <p className="muted" style={{ margin: '4px 0 0', fontSize: 'var(--fs-xs)', lineHeight: 1.5 }}>
+        <div className="panel-title">Live preview</div>
+        <p className={`muted ${styles['preview-intro']}`}>
           Open the current design in the standalone preview app and feel the
           bound haptics when you tap an element.
+        </p>
+      </div>
+
+      {/* The preview embeds the real Figma file (embed.figma.com/proto/<key>),
+          but the plugin can't read the file key without the private API, so the
+          user pastes the file's share URL (or raw key) here. Required before a
+          preview can load. */}
+      <div className={styles['preview-filekey']}>
+        <label className={styles['preview-filekey-label']} htmlFor="figma-file-key">
+          Figma file key
+        </label>
+        <input
+          id="figma-file-key"
+          type="text"
+          placeholder="Paste this file’s link or key"
+          value={figmaFileKey}
+          onChange={(e) => onFigmaFileKeyChange(e.target.value)}
+        />
+        <p className={`muted ${styles['preview-filekey-hint']}`}>
+          Saved with this file — enter it once. From Figma use <b>Share → Copy link</b>.
         </p>
       </div>
 
       {/* Sync status: a coloured-dot pill plus an on-demand "Sync now" button.
           Bindings auto-save to the server (debounced); this row shows whether
           the shared link is currently up to date and lets the user force it. */}
-      <div className="preview-sync-row">
-        <span className="preview-sync-pill" title="Whether the shared preview matches your current design">
+      <div className={styles['preview-sync-row']}>
+        <span className={styles['preview-sync-pill']} title="Whether the shared preview matches your current design">
           <span
-            className={`preview-sync-dot${sync.pulse ? ' pulse' : ''}`}
+            className={`${styles['preview-sync-dot']}${sync.pulse ? ` ${styles['pulse']}` : ''}`}
             style={{ background: sync.dot }}
           />
           <span>{sync.label}</span>
         </span>
         <button
-          className="ghost icon preview-sync-now"
+          className={`ghost icon ${styles['preview-sync-now']}`}
           onClick={onSyncNow}
           disabled={syncStatus === 'syncing'}
           title="Push the current design to the server now"
@@ -100,7 +126,7 @@ export default function LivePreviewPanel({
             alt=""
             width={16}
             height={16}
-            className={syncStatus === 'syncing' ? 'preview-sync-spin' : undefined}
+            className={syncStatus === 'syncing' ? styles['preview-sync-spin'] : undefined}
           />
         </button>
       </div>
@@ -109,22 +135,19 @@ export default function LivePreviewPanel({
           preview; flip it off to revoke access without losing the share token.
           Any share action below re-opens it. Disabled until the file has been
           shared at least once (no server row to gate yet). */}
-      <div className={`preview-visibility-row${isShared ? '' : ' disabled'}`}>
+      <div className={`${styles['preview-visibility-row']}${isShared ? '' : ` ${styles['disabled']}`}`}>
         <img
           src={isPublic ? iconGlobe : iconLock}
           alt=""
           width={16}
           height={16}
-          style={{ flexShrink: 0, marginTop: 1 }}
+          className={styles['preview-visibility-icon']}
         />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 'var(--fs-sm)' }}>
+        <div className={styles['preview-visibility-main']}>
+          <div className={styles['preview-visibility-title']}>
             {isPublic ? 'Anyone with the link can view' : 'Link is private'}
           </div>
-          <p
-            className="muted"
-            style={{ margin: '2px 0 0', fontSize: 'var(--fs-xs)', lineHeight: 1.45 }}
-          >
+          <p className={`muted ${styles['preview-visibility-text']}`}>
             {isShared
               ? isPublic
                 ? 'Turn off to revoke the link. Sharing again re-opens it.'
@@ -151,7 +174,7 @@ export default function LivePreviewPanel({
 
       {/* Primary action — full-width, icon-prefixed. */}
       <button
-        className="primary preview-cta"
+        className={`primary ${styles['preview-cta']}`}
         onClick={onShowLivePreview}
         title="Open the live preview in this browser"
       >
@@ -160,9 +183,9 @@ export default function LivePreviewPanel({
       </button>
 
       {/* Secondary actions — two equal columns. */}
-      <div className="row preview-secondary-row">
+      <div className={`row ${styles['preview-secondary-row']}`}>
         <button
-          className="ghost preview-secondary"
+          className={`ghost ${styles['preview-secondary']}`}
           onClick={onCopyShareLink}
           title="Copy the share link to the clipboard"
         >
@@ -170,7 +193,7 @@ export default function LivePreviewPanel({
           <span>Copy link</span>
         </button>
         <button
-          className="ghost preview-secondary"
+          className={`ghost ${styles['preview-secondary']}`}
           onClick={onShowQrCode}
           title="Show a QR code that opens the preview on your phone"
         >
@@ -183,7 +206,7 @@ export default function LivePreviewPanel({
           token into a different host (local-dev preview, debug tooling) without
           the full URL boilerplate. */}
       <button
-        className="ghost preview-tertiary"
+        className={`ghost ${styles['preview-tertiary']}`}
         onClick={onCopyShareToken}
         title="Copy just the share token (no URL) to the clipboard"
       >
@@ -201,20 +224,20 @@ export default function LivePreviewPanel({
          * lightColor matches the codebox fill (set in App.tsx) so the
          * modules blend seamlessly into the panel.
          */
-        <div className="preview-qr-card">
-          <div className="preview-qr-box">
+        <div className={styles['preview-qr-card']}>
+          <div className={styles['preview-qr-box']}>
             <button
-              className="preview-qr-close"
+              className={styles['preview-qr-close']}
               onClick={onClearQr}
               title="Hide QR code"
               aria-label="Hide QR code"
             >
               <img src={iconClose} alt="" width={14} height={14} />
             </button>
-            <div className="preview-qr-prompt">
+            <div className={styles['preview-qr-prompt']}>
               Scan with your phone to open the live preview
             </div>
-            <div className="preview-qr-wrap">
+            <div className={styles['preview-qr-wrap']}>
               <img
                 src={qrDataUrl}
                 alt="Scan to open the live preview on your phone"

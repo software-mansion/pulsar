@@ -1,3 +1,4 @@
+import styles from './PresetDetail.module.css';
 import { useEffect, useState } from 'react';
 import type { CatalogEntry } from '../../shared/types';
 import { CUSTOM_TAG } from '../../shared/types';
@@ -61,20 +62,20 @@ export default function PresetDetail({
 
   return (
     <>
-      <header className="modal-head">
-        <div className="modal-head-text">
-          <div className="modal-title">{entry.data.name}</div>
+      <header className={styles['modal-head']}>
+        <div className={styles['modal-head-text']}>
+          <div className={styles['modal-title']}>{entry.data.name}</div>
         </div>
-        <button className="modal-close" onClick={onClose} title="Close (Esc)" aria-label="Close">
+        <button className={styles['modal-close']} onClick={onClose} title="Close (Esc)" aria-label="Close">
           <img src={iconClose} alt="" width={14} height={14} />
         </button>
       </header>
 
-      <div className="modal-body">
+      <div className={styles['modal-body']}>
         {/* Action row — Play / Phone / Bind. These are plugin-specific and
             have no counterpart in the preview's modal. Bind is the primary
             CTA (filled blue-20). */}
-        <div className="row preset-actions">
+        <div className={`row ${styles['preset-actions']}`}>
           <button className="ghost preset-action-btn" onClick={onPlay} title="Play this preset locally">
             <img src={iconPlay} alt="" width={14} height={14} />
             <span>Play</span>
@@ -98,12 +99,12 @@ export default function PresetDetail({
         {/* Tags row — Custom pill comes first when applicable, then any other
             tags as white pills, matching the preview's filter order. */}
         {(entry.data.tags.length > 0 || isCustom) && (
-          <div className="tags-row">
-            {isCustom && <span className="tag tag-custom">Custom</span>}
+          <div className={styles['tags-row']}>
+            {isCustom && <span className={`tag ${styles['tag-custom']}`}>Custom</span>}
             {entry.data.tags
               .filter((t) => t !== CUSTOM_TAG)
               .map((t) => (
-                <span key={t} className="tag tag-white">
+                <span key={t} className={`tag ${styles['tag-white']}`}>
                   {t}
                 </span>
               ))}
@@ -117,29 +118,29 @@ export default function PresetDetail({
         <Visualization data={entry.data} height={80} />
 
         {entry.data.description && (
-          <p className="modal-description">{entry.data.description}</p>
+          <p className={styles['modal-description']}>{entry.data.description}</p>
         )}
 
-        <section className="modal-section">
-          <div className="modal-section-head">
+        <section className={styles['modal-section']}>
+          <div className={styles['modal-section-head']}>
             <h3>Usage</h3>
           </div>
-          <div className="docs-tabs">
+          <div className={styles['docs-tabs']}>
             {LANGS.map((l) => (
               <button
                 key={l}
                 type="button"
-                className={`docs-tab${lang === l ? ' active' : ''}`}
+                className={`${styles['docs-tab']}${lang === l ? ` ${styles['active']}` : ''}`}
                 onClick={() => setLang(l)}
               >
                 {l}
               </button>
             ))}
           </div>
-          <div className="code-block-wrap">
-            <pre className="code-block">{snippet}</pre>
+          <div className={styles['code-block-wrap']}>
+            <pre className={styles['code-block']}>{snippet}</pre>
             <button
-              className="code-copy-btn"
+              className={styles['code-copy-btn']}
               onClick={() => copy(snippet, 'snippet')}
               title="Copy"
               aria-label={copiedKey === 'snippet' ? 'Copied' : 'Copy'}
@@ -154,14 +155,14 @@ export default function PresetDetail({
           </div>
         </section>
 
-        <section className="modal-section">
-          <div className="modal-section-head">
+        <section className={styles['modal-section']}>
+          <div className={styles['modal-section-head']}>
             <h3>Raw pattern data</h3>
           </div>
-          <div className="code-block-wrap">
-            <pre className="code-block">{json}</pre>
+          <div className={styles['code-block-wrap']}>
+            <pre className={styles['code-block']}>{json}</pre>
             <button
-              className="code-copy-btn"
+              className={styles['code-copy-btn']}
               onClick={() => copy(json, 'json')}
               title="Copy"
               aria-label={copiedKey === 'json' ? 'Copied' : 'Copy'}

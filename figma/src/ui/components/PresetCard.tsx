@@ -1,8 +1,8 @@
+import styles from './PresetCard.module.css';
 import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
 import iconPlay from '../assets/icon-play.svg';
 import iconClock from '../assets/icon-clock.svg';
-import iconLink from '../assets/icon-link.svg';
 import iconInfo from '../assets/icon-info.svg';
 
 const formatDuration = (ms: number) =>
@@ -32,7 +32,7 @@ export default function PresetCard({
   // Lighter, borderless favourite star — shared by both layouts.
   const favButton = (
     <button
-      className="fav-plain"
+      className={styles['fav-plain']}
       title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
       aria-pressed={isFavourite}
       onClick={onToggleFavourite}
@@ -42,31 +42,31 @@ export default function PresetCard({
   );
 
   const boundBadge = isBound ? (
-    <span className="bound-badge" style={{ flexShrink: 0 }}>● bound</span>
+    <span className="bound-badge">● bound</span>
   ) : null;
 
   if (compact) {
     // One dense bordered line: play · name · scrolling tags · duration · fav · bind.
     return (
-      <div className="preset-row-compact">
+      <div className={styles['preset-row-compact']} data-preset-id={entry.id}>
         <button className="ghost icon" onClick={onPlay} title="Play">
           <img src={iconPlay} alt="" width={14} height={14} />
         </button>
-        <span className="preset-row-compact-name" onClick={onOpen} title={data.name}>
+        <span className={styles['preset-row-compact-name']} onClick={onOpen} title={data.name}>
           {data.name}
         </span>
         {boundBadge}
-        <div className="preset-row-compact-tags">
+        <div className={styles['preset-row-compact-tags']}>
           {data.tags.map((t) => (
-            <span className="tag" key={t} style={{ margin: 0 }}>{t}</span>
+            <span className="tag tag-flush" key={t}>{t}</span>
           ))}
         </div>
-        <span className="muted preset-row-compact-dur" title="Pattern duration">
+        <span className={`muted ${styles['preset-row-compact-dur']}`} title="Pattern duration">
           {formatDuration(data.duration)}
         </span>
         {favButton}
-        <button className="primary icon" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
-          <img src={iconLink} alt="" width={14} height={14} />
+        <button className="primary" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+          Add
         </button>
       </div>
     );
@@ -76,11 +76,11 @@ export default function PresetCard({
   // sit on the top line; the waveform is the hero below with the play button
   // docked in its bottom-right corner.
   return (
-    <div className="preset-card">
-      <div className="preset-card-head">
-        <span className="preset-card-name">{data.name}</span>
+    <div className="preset-card" data-preset-id={entry.id}>
+      <div className={styles['preset-card-head']}>
+        <span className={styles['preset-card-name']}>{data.name}</span>
         {boundBadge}
-        <span className="preset-dur" title="Pattern duration">
+        <span className={styles['preset-dur']} title="Pattern duration">
           <img src={iconClock} alt="" />
           {formatDuration(data.duration)}
         </span>
@@ -88,22 +88,22 @@ export default function PresetCard({
         <button className="ghost icon" onClick={onOpen} title="Details" aria-label="Open details">
           <img src={iconInfo} alt="" width={14} height={14} />
         </button>
-        <button className="primary icon" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
-          <img src={iconLink} alt="" width={14} height={14} />
+        <button className="ghost icon" onClick={onPlay} title="Play" aria-label="Play">
+          <img src={iconPlay} alt="" width={14} height={14} />
+        </button>
+        <button className="primary" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+          Add
         </button>
       </div>
       {data.tags.length > 0 && (
-        <div className="preset-card-tags">
+        <div className={styles['preset-card-tags']}>
           {data.tags.map((t) => (
-            <span className="tag" key={t} style={{ margin: 0 }}>{t}</span>
+            <span className="tag tag-flush" key={t}>{t}</span>
           ))}
         </div>
       )}
-      <div className="wv-panel">
+      <div className={styles['wv-panel']}>
         <Visualization data={data} />
-        <button className="ghost icon wv-play" onClick={onPlay} title="Play">
-          <img src={iconPlay} alt="" width={14} height={14} />
-        </button>
       </div>
     </div>
   );

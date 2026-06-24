@@ -1,3 +1,4 @@
+import styles from './Visualization.module.css';
 import { useId, useMemo } from 'react';
 import type { PresetData } from '../../shared/types';
 
@@ -60,12 +61,7 @@ export default function Visualization({
       width="100%"
       height={H}
       preserveAspectRatio="none"
-      style={{
-        background: 'white',
-        border: '1px solid var(--color-blue-10)',
-        borderRadius: 8,
-        padding: 4
-      }}
+      className={styles['visualization-svg']}
     >
       {hasFreq && (
         <defs>

@@ -1,3 +1,4 @@
+import styles from './Filters.module.css';
 import { useMemo } from 'react';
 import type { CatalogEntry } from '../../shared/types';
 import iconSliders from '../assets/icon-sliders-horizontal.svg';
@@ -66,12 +67,11 @@ export default function Filters({
         </span>
         <span className="acc-title">Filters</span>
         {activeCount > 0 && (
-          <span className="tag active" style={{ margin: 0 }}>{activeCount}</span>
+          <span className="tag active tag-flush">{activeCount}</span>
         )}
         {activeCount > 0 && (
           <span
-            className="tag"
-            style={{ margin: 0 }}
+            className="tag tag-flush"
             onClick={(e) => {
               e.preventDefault();
               update({ tags: new Set(), systemPresets: new Set() });
@@ -87,9 +87,9 @@ export default function Filters({
 
       <div className="acc-body">
         {/* Favourites — styled toggle-switch row. */}
-        <label className="filter-toggle">
+        <label className={styles['filter-toggle']}>
           <span className="star">★</span>
-          <span style={{ flex: 1 }}>Favourites only</span>
+          <span className={styles['filter-toggle-label']}>Favourites only</span>
           <input
             type="checkbox"
             className="switch"
@@ -101,14 +101,13 @@ export default function Filters({
         <div className="acc-sep" />
 
         {TAG_GROUPS.map((g) => (
-          <div key={g.groupName} className="filter-group">
+          <div key={g.groupName} className={styles['filter-group']}>
             <div className="acc-label">{g.groupName}</div>
             <div className="chips-row">
               {g.tags.map((t) => (
                 <span
                   key={t}
-                  className={`tag ${state.tags.has(t) ? 'active' : ''}`}
-                  style={{ margin: 0 }}
+                  className={`tag tag-flush ${state.tags.has(t) ? 'active' : ''}`}
                   onClick={() => toggleTag(t)}
                 >
                   {t}
@@ -120,14 +119,13 @@ export default function Filters({
 
         <div className="acc-sep" />
 
-        <div className="filter-group" style={{ marginBottom: 0 }}>
+        <div className={`${styles['filter-group']} ${styles['filter-group--flush']}`}>
           <div className="acc-label">System presets</div>
           <div className="chips-row">
             {SYSTEM_PRESETS.map((s) => (
               <span
                 key={s}
-                className={`tag ${state.systemPresets.has(s) ? 'active' : ''}`}
-                style={{ margin: 0 }}
+                className={`tag tag-flush ${state.systemPresets.has(s) ? 'active' : ''}`}
                 onClick={() => toggleSystem(s)}
               >
                 {s}
@@ -194,4 +192,25 @@ export function useFilterStateInit(): FilterState {
     () => ({ search: '', tags: new Set<string>(), systemPresets: new Set<string>() }),
     []
   );
+}
+
+// Build a filter state that surfaces `entry` in the list, clearing any search /
+// tag filters and selecting the right dataset (user/custom by default, or the
+// matching system-preset group for bundled iOS/Android presets). Used when the
+// user jumps to a bound preset from the selection bar.
+export function filterRevealing(entry: CatalogEntry): FilterState {
+  const state: FilterState = { search: '', tags: new Set(), systemPresets: new Set() };
+  if (entry.category === 'system') {
+    if (entry.platform === 'ios') {
+      state.systemPresets.add('iOS');
+    } else if (entry.platform === 'android') {
+      for (const [label, tag] of Object.entries(ANDROID_SYSTEM_TAG)) {
+        if (entry.data.tags.includes(tag)) {
+          state.systemPresets.add(label);
+          break;
+        }
+      }
+    }
+  }
+  return state;
 }

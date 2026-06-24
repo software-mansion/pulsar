@@ -1,0 +1,223 @@
+/* Preset detail modal — the docs-styled dialog rendered inside App's
+   .modal-card chrome: header bar, scrollable body, action row, SDK snippet
+   tabs and code blocks. */
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--color-blue-20);
+  background: var(--color-blue-10);
+}
+.modal-head-text { flex: 1; min-width: 0; }
+.modal-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.25;
+}
+.modal-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  color: var(--color-primary);
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.modal-close:hover {
+  background: var(--color-blue-10);
+  border-color: var(--color-blue-50);
+  box-shadow: -2px 2px 0 var(--color-blue-50);
+  transform: translate(1px, -1px);
+}
+.modal-close:active { transform: translate(-1px, 1px); box-shadow: none; }
+
+.modal-body {
+  padding: 14px 16px 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+/* Stop flex from squashing children whose natural height is taller than the
+   visible body — we already overflow-y:auto, so vertical scroll handles the
+   excess. Without this the Visualization SVG (and any other intrinsically
+   sized child) gets shrunk by the column flex algorithm before scrolling
+   kicks in, which is what made the haptic waveform render as a 10-px sliver. */
+.modal-body > * { flex-shrink: 0; }
+.modal-description {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--color-primary);
+}
+
+/* Plugin-only action row above the tags — Play / Phone / Bind. */
+.preset-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Section block — Usage / Raw pattern data. */
+.modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.modal-section-head h3 {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+/* SDK tab strip — Pulsar-style underline tabs, distinct from the plugin's
+   top-level .tab so theming the modal doesn't leak. */
+.docs-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--color-blue-10);
+}
+.docs-tab {
+  padding: 5px 10px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  box-shadow: none;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.docs-tab:hover { color: var(--color-primary); transform: none; box-shadow: none; }
+.docs-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-blue-50);
+  background: var(--color-blue-10);
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+}
+.docs-tab:active { transform: none; box-shadow: none; }
+
+/* Code block — wraps long lines (no horizontal scroll) and uses the docs
+   CodeTabs.contentArea recipe (blue-10 fill, DM Mono). */
+.code-block {
+  background: var(--color-blue-10);
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  margin: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--color-primary);
+}
+
+/* Copy-to-clipboard affordance docked in the top-right corner of a code
+   block — mirrors the docs preset modal (.copyButton over .jsonContainer).
+   Resets the signature button chrome down to a flat icon chip that blends into
+   the blue-10 code surface and masks the text scrolling beneath it. */
+.code-block-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.code-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-blue-10);
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.code-copy-btn img { display: block; width: 16px; height: 16px; }
+.code-copy-btn:hover {
+  background: var(--color-blue-20);
+  box-shadow: none;
+  transform: none;
+}
+.code-copy-btn:active {
+  box-shadow: none;
+  transform: scale(0.9);
+}
+
+/* Tags row inside the modal — same recipe as preview's. */
+.tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+/* White-faced variant (used for ordinary tags inside the modal). */
+:global(.tag).tag-white {
+  background: var(--surface);
+  margin: 0;
+  cursor: default;
+}
+/* Custom-preset accent — blue-20 fill, no border, signals user-defined. */
+:global(.tag).tag-custom {
+  margin: 0;
+  padding: 4px 10px;
+  background: var(--color-blue-20);
+  border: none;
+  color: var(--color-primary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: default;
+}
+
+/* Docs-aligned scrollbars on every scrollable surface inside the modal.
+   Thin transparent track, blue-tinted thumb that darkens on hover. */
+.modal-body,
+.code-block {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue-20) transparent;
+}
+.modal-body::-webkit-scrollbar,
+.code-block::-webkit-scrollbar { width: 8px; height: 8px; }
+.modal-body::-webkit-scrollbar-track,
+.code-block::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb,
+.code-block::-webkit-scrollbar-thumb {
+  background: var(--color-blue-20);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.modal-body::-webkit-scrollbar-thumb:hover,
+.code-block::-webkit-scrollbar-thumb:hover {
+  background: var(--color-blue-30);
+  background-clip: padding-box;
+}

@@ -7,6 +7,6 @@ import logoUrl from '../assets/pulsar-logo.svg';
 
 export default function PulsarLogo({ size = 24 }: { size?: number }) {
   return (
-    <img src={logoUrl} alt="" width={size} height={size} style={{ display: 'block' }} />
+    <img className="pulsar-logo" src={logoUrl} alt="" width={size} height={size} />
   );
 }

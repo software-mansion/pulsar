@@ -1,0 +1,71 @@
+/* App shell — root layout, top tab bar, and the modal backdrop/card chrome the
+   preset detail renders into. Presets-tab styling lives in PresetsTab's module. */
+
+/* Root column that fills the plugin iframe. */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+/* Header row holding the brand and the tabs. */
+.app-header {
+  padding: 8px 10px 0;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--color-primary);
+  padding-bottom: 8px;
+}
+
+/* Top navigation tabs — underline indicator on the active tab. */
+.tab {
+  padding: 4px 2px 8px;
+  margin-left: 14px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: capitalize;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-blue-50);
+}
+
+/* Modal — covers the plugin iframe, with the dialog as a card.
+   The plugin window is narrow (default 380 px) and user-resizable. The dialog
+   should fill almost the whole iframe rather than getting capped at a fixed
+   max-width, so a 12 px backdrop inset is the only breathing room — the card
+   itself uses `width: 100%` with no cap. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 26, 114, 0.35);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 12px;
+  overflow: auto;
+}
+.modal-card {
+  background: var(--surface);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

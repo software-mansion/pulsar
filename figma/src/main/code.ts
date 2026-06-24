@@ -10,6 +10,7 @@ import type {
   PreviewBinding,
   SelectionInfo,
   Settings,
+  ToastLevel,
   UiToMain
 } from '../shared/types';
 
@@ -45,6 +46,11 @@ const WINDOW_SIZE_KEY = 'pulsar:windowSize';
 // Stable per-document id stored in root pluginData; replaces `figma.fileKey`,
 // which needs the private plugin API. Synced to all collaborators.
 const FILE_ID_KEY = 'pulsar:fileId';
+// The real Figma file key (or share URL) the user pasted for this document, used
+// to build the live-preview embed. We can't read it automatically without the
+// private API, so we remember it in root pluginData — per-file and synced to all
+// collaborators, so it only ever needs to be entered once per file.
+const FIGMA_FILE_KEY = 'pulsar:figmaFileKey';
 
 const DEFAULT_SIZE = { width: 380, height: 640 };
 // Clamp the persisted size so a stored value can't shrink the UI below a
@@ -81,6 +87,13 @@ function postToUi(msg: MainToUi) {
   figma.ui.postMessage(msg);
 }
 
+// Surface feedback as an in-plugin toast (the UI renders these prominently)
+// rather than figma.notify(), which appears outside the plugin window and is
+// easy to miss. The plugin UI is always open while the plugin runs.
+function notifyUi(message: string, level?: ToastLevel) {
+  postToUi({ type: 'toast', message, level });
+}
+
 // Resolve the stable per-file key, minting and persisting one on first use.
 function resolveFileKey(): string {
   let id = figma.root.getPluginData(FILE_ID_KEY);
@@ -89,6 +102,15 @@ function resolveFileKey(): string {
     figma.root.setPluginData(FILE_ID_KEY, id);
   }
   return id;
+}
+
+// The user-supplied real Figma file key (or share URL) for this document, stored
+// in root pluginData so it's remembered per-file and shared with collaborators.
+function getFigmaFileKey(): string {
+  return figma.root.getPluginData(FIGMA_FILE_KEY);
+}
+function setFigmaFileKey(value: string): void {
+  figma.root.setPluginData(FIGMA_FILE_KEY, value);
 }
 
 async function loadSettings(): Promise<Settings> {
@@ -329,7 +351,7 @@ async function collectBoundItems(): Promise<BoundItem[]> {
 async function focusNode(nodeId: string) {
   const node = await figma.getNodeByIdAsync(nodeId);
   if (!node || node.type === 'PAGE' || node.type === 'DOCUMENT' || node.removed) {
-    figma.notify('That component no longer exists.');
+    notifyUi('That component no longer exists.', 'error');
     return;
   }
   // Make sure its page is current (documents can have multiple pages).
@@ -435,7 +457,7 @@ function pushSelection() {
 function bindToSelection(binding: BindingMeta) {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) {
-    figma.notify('Select exactly one node to bind a preset.');
+    notifyUi('Select exactly one node to bind a preset.', 'warning');
     return;
   }
   const node = sel[0];
@@ -445,7 +467,7 @@ function bindToSelection(binding: BindingMeta) {
   node.setPluginData(BINDING_NEGATED_KEY, '');
   node.setPluginData(BINDING_KEY, JSON.stringify(binding));
   node.setRelaunchData({ play: `Pulsar: ${binding.presetName}` });
-  figma.notify(`Bound "${binding.presetName}" to ${node.name}`);
+  notifyUi(`Bound "${binding.presetName}" to ${node.name}`, 'success');
   pushSelection();
 }
 
@@ -492,7 +514,7 @@ function unbindSelection() {
     node.setPluginData(BINDING_KEY, '');
     node.setRelaunchData({});
   }
-  figma.notify('Preset unbound.');
+  notifyUi('Preset unbound.', 'success');
   pushSelection();
 }
 
@@ -545,6 +567,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         settings,
         hapticsToken,
         fileKey: resolveFileKey(),
+        figmaFileKey: getFigmaFileKey(),
         favourites,
         customPresets
       });
@@ -619,6 +642,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'persist-custom-presets':
       await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
       break;
+    case 'persist-file-key':
+      setFigmaFileKey(msg.figmaFileKey);
+      break;
     case 'request-preview-data': {
       const { bindings, frames } = await collectPreviewBindings();
       const present = pickPresentNode();
@@ -654,8 +680,5 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       }
       break;
     }
-    case 'notify':
-      figma.notify(msg.message);
-      break;
   }
 };

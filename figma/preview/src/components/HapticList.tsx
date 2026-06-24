@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import type { ElementInfo, FrameInfo } from '../types';
 
 export function HapticList({
@@ -10,7 +10,8 @@ export function HapticList({
   activeId,
   onActivate,
   onPlay,
-  onShowDetails
+  onShowDetails,
+  footer
 }: {
   elements: ElementInfo[];
   frames: Map<string, FrameInfo>;
@@ -21,6 +22,8 @@ export function HapticList({
   onActivate: (id: string) => void;
   onPlay: (id: string) => void;
   onShowDetails: (id: string) => void;
+  // Optional pinned content below the scrollable list (e.g. the open-on-phone QR).
+  footer?: ReactNode;
 }) {
   // Group elements by their owning frame id, then sort groups so the currently
   // presented frame comes first and the rest follow in document order (insertion
@@ -124,6 +127,7 @@ export function HapticList({
           ))
         )}
       </div>
+      {footer}
     </aside>
   );
 }
