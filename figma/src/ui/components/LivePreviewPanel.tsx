@@ -3,9 +3,7 @@ import type { Settings } from '../../shared/types';
 import type { SyncStatus } from '../App';
 import iconExternalLink from '../assets/icon-external-link.svg';
 import iconLink from '../assets/icon-link.svg';
-import iconQrCode from '../assets/icon-qr-code.svg';
 import iconKey from '../assets/icon-key.svg';
-import iconClose from '../assets/icon-close.svg';
 import iconGlobe from '../assets/icon-globe.svg';
 import iconLock from '../assets/icon-lock.svg';
 import iconRefresh from '../assets/icon-refresh.svg';
@@ -47,10 +45,7 @@ export default function LivePreviewPanel({
   onToggleVisibility,
   onShowLivePreview,
   onCopyShareLink,
-  onCopyShareToken,
-  onShowQrCode,
-  qrDataUrl,
-  onClearQr
+  onCopyShareToken
 }: {
   settings: Settings;
   onChange: (next: Settings) => void;
@@ -68,9 +63,6 @@ export default function LivePreviewPanel({
   onShowLivePreview: () => void;
   onCopyShareLink: () => void;
   onCopyShareToken: () => void;
-  onShowQrCode: () => void;
-  qrDataUrl: string | null;
-  onClearQr: () => void;
 }) {
   const sync = SYNC_META[syncStatus];
   return (
@@ -182,7 +174,9 @@ export default function LivePreviewPanel({
         <span>Open in browser</span>
       </button>
 
-      {/* Secondary actions — two equal columns. */}
+      {/* Secondary action — copy the share link. The phone-pairing QR now lives
+          in the Presets tab's Phone panel (it also carries the playback code),
+          so there's no separate preview QR here. */}
       <div className={`row ${styles['preview-secondary-row']}`}>
         <button
           className={`ghost ${styles['preview-secondary']}`}
@@ -191,14 +185,6 @@ export default function LivePreviewPanel({
         >
           <img src={iconLink} alt="" width={14} height={14} />
           <span>Copy link</span>
-        </button>
-        <button
-          className={`ghost ${styles['preview-secondary']}`}
-          onClick={onShowQrCode}
-          title="Show a QR code that opens the preview on your phone"
-        >
-          <img src={iconQrCode} alt="" width={14} height={14} />
-          <span>QR code</span>
         </button>
       </div>
 
@@ -213,39 +199,6 @@ export default function LivePreviewPanel({
         <img src={iconKey} alt="" width={14} height={14} />
         <span>Copy share token</span>
       </button>
-
-      {qrDataUrl && (
-        /*
-         * Mirrors the docs Connection.tsx codebox: a white card (the docs
-         * .content layer) wrapping a blue-10 inner panel (.codebox) that
-         * holds a centred prompt above the QR. The close affordance is a
-         * small square button in the codebox's top-right corner — same
-         * placement and ergonomics as the docs widget. The QR's own
-         * lightColor matches the codebox fill (set in App.tsx) so the
-         * modules blend seamlessly into the panel.
-         */
-        <div className={styles['preview-qr-card']}>
-          <div className={styles['preview-qr-box']}>
-            <button
-              className={styles['preview-qr-close']}
-              onClick={onClearQr}
-              title="Hide QR code"
-              aria-label="Hide QR code"
-            >
-              <img src={iconClose} alt="" width={14} height={14} />
-            </button>
-            <div className={styles['preview-qr-prompt']}>
-              Scan with your phone to open the live preview
-            </div>
-            <div className={styles['preview-qr-wrap']}>
-              <img
-                src={qrDataUrl}
-                alt="Scan to open the live preview on your phone"
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

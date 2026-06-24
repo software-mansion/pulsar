@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import QRCode from 'qrcode';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CUSTOM_TAG, type CatalogEntry, type Settings } from '../../shared/types';
 import { onMessage, send } from '../figmaBridge';
 import { copyToClipboard } from '../lib/clipboard';
@@ -69,7 +68,22 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
   // Defaults to public (the historical behaviour) and is reconciled with the
   // server on cold start and on every explicit share.
   const [isPublic, setIsPublic] = useState(true);
-  const [shareQr, setShareQr] = useState<string | null>(null);
+  // Mirror of publicTokenRef as state so the phone-pairing panel can react when
+  // a share token first appears (or changes) for this file and fold it into the
+  // unified QR / relay it over an already-paired connection.
+  const [publicToken, setPublicToken] = useState<string | null>(null);
+  const rememberPublicToken = useCallback((t: string | null) => {
+    publicTokenRef.current = t;
+    setPublicToken(t);
+  }, []);
+  // Resolver for an in-flight ensureShared() request (the 'pair' purpose), so
+  // the async preview-data round-trip can hand its result back to the caller.
+  const pairResolveRef = useRef<((t: string | null) => void) | null>(null);
+  const settlePair = useCallback((t: string | null) => {
+    const r = pairResolveRef.current;
+    pairResolveRef.current = null;
+    r?.(t);
+  }, []);
 
   // Cold-start reconcile for a file. The server is the source of truth: if we
   // have no local cache but do have a token, fetch the server copy and seed the
@@ -85,7 +99,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
   }) => {
     fileKeyRef.current = m.fileKey;
     tokenRef.current = m.token;
-    publicTokenRef.current = m.publicToken;
+    rememberPublicToken(m.publicToken);
     baseRevisionRef.current = m.baseRevision;
     // Seed the toggle from the cached value; the server-fetch branch below
     // reconciles it with the source of truth when there's a token to check.
@@ -103,7 +117,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
           setIsPublic(got.isPublic);
           // Recover/refresh the read-only share token from the server.
           if (got.publicToken && got.publicToken !== publicTokenRef.current) {
-            publicTokenRef.current = got.publicToken;
+            rememberPublicToken(got.publicToken);
             send({
               type: 'persist-project-token',
               fileKey: m.fileKey,
@@ -130,7 +144,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         } else {
           // Token no longer exists server-side — forget it; nothing is shared.
           tokenRef.current = null;
-          publicTokenRef.current = null;
+          rememberPublicToken(null);
           lastSyncedJsonRef.current = null;
           baseRevisionRef.current = null;
           setSyncStatus('idle');
@@ -188,6 +202,9 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
       if (m.type !== 'preview-data') return;
       const purpose = m.purpose;
       const silent = purpose === 'autosync';
+      // ensureShared() request: resolve the file's public token (or null when
+      // the file isn't preview-ready) and pair code-only without UI nagging.
+      const isPair = purpose === 'pair';
 
       // Two distinct keys:
       //  - `fileKey`: the plugin's stable minted id (m.fileKey), used purely to
@@ -199,6 +216,12 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
       const fileKey = m.fileKey ?? '';
       const embedFileKey = figmaFileKey ? extractFileKey(figmaFileKey) : '';
       if (!fileKey || !embedFileKey) {
+        // Pairing proceeds code-only when the file isn't preview-ready — resolve
+        // null without nagging the user with a warning toast.
+        if (isPair) {
+          settlePair(null);
+          return;
+        }
         if (silent) return;
         notify(
           'Add this file’s key in the Share tab (Figma file key) to enable the live preview.',
@@ -241,6 +264,12 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         });
       }
       if (elements.length === 0) {
+        // No bindings → nothing to preview. Pair code-only, quietly.
+        if (isPair) {
+          settlePair(null);
+          setSyncStatus(tokenRef.current ? 'synced' : 'idle');
+          return;
+        }
         if (silent || purpose === 'sync') {
           // Nothing to publish. Don't touch the (possibly stale) server row.
           setSyncStatus(tokenRef.current ? 'synced' : 'idle');
@@ -267,7 +296,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         const json = stableStringify(payload);
         const adopt = (t: string, publicToken: string, revision: number) => {
           tokenRef.current = t;
-          publicTokenRef.current = publicToken;
+          rememberPublicToken(publicToken);
           baseRevisionRef.current = revision;
           lastSyncedJsonRef.current = json;
           send({ type: 'persist-project-token', fileKey, token: t, publicToken });
@@ -338,6 +367,10 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
           token = await ensurePublished(!silent);
         } catch (err) {
           setSyncStatus('error');
+          if (isPair) {
+            settlePair(null);
+            return;
+          }
           if (!silent) {
             notify(`Could not upload preview data: ${(err as Error).message}`, { level: 'error' });
           }
@@ -345,6 +378,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         }
         if (!token) {
           // Background auto-sync of a file that was never shared — nothing to do.
+          if (isPair) settlePair(null);
           setSyncStatus('idle');
           return;
         }
@@ -363,28 +397,36 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
 
         // Everything we hand out carries the read-only public token, never the
         // edit token. Recover it from the server if not cached (e.g. legacy share).
-        let publicToken = publicTokenRef.current;
-        if (!publicToken) {
+        // Named `shareToken` to avoid shadowing the hook-level `publicToken` state.
+        let shareToken = publicTokenRef.current;
+        if (!shareToken) {
           const got = await fetchProject(token);
           if (got.kind === 'ok' && got.publicToken) {
-            publicToken = got.publicToken;
-            publicTokenRef.current = publicToken;
-            send({ type: 'persist-project-token', fileKey, token, publicToken });
+            shareToken = got.publicToken;
+            rememberPublicToken(shareToken);
+            send({ type: 'persist-project-token', fileKey, token, publicToken: shareToken });
           }
         }
-        if (!publicToken) {
+        if (!shareToken) {
+          if (isPair) {
+            settlePair(null);
+            return;
+          }
           notify('Could not resolve the share link. Try “Sync now” and retry.', { level: 'error' });
+          return;
+        }
+
+        // Pairing only needs the public token (the visibility was just re-opened
+        // above) — hand it back and stop before building share URLs.
+        if (isPair) {
+          settlePair(shareToken);
           return;
         }
 
         // Strip any existing query/hash so we don't duplicate or stack tokens
         // when the user has manually visited the preview before.
         const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
-        const url = `${base}?token=${encodeURIComponent(publicToken)}`;
-        // The QR is scanned by a phone with PulsarApp installed. Encode the
-        // app's deep-link scheme instead of the web URL so it routes straight
-        // into the in-app Figma WebView screen.
-        const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(publicToken)}`;
+        const url = `${base}?token=${encodeURIComponent(shareToken)}`;
         if (purpose === 'copy') {
           const ok = copyToClipboard(url);
           notify(ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.', {
@@ -393,33 +435,17 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         } else if (purpose === 'copy-token') {
           // Just the raw read-only token — handy for pasting into other
           // figma-preview URLs (e.g. a local dev instance) or debugging.
-          const ok = copyToClipboard(publicToken);
+          const ok = copyToClipboard(shareToken);
           notify(ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.', {
             level: ok ? 'success' : 'error'
           });
-        } else if (purpose === 'qr') {
-          try {
-            const dataUrl = await QRCode.toDataURL(appDeepLink, {
-              margin: 1,
-              width: 240,
-              errorCorrectionLevel: 'L',
-              // Match the docs Connection.tsx palette: navy modules on a blue-10
-              // background so the code visually merges into the .preview-qr-box
-              // panel below (which uses the same blue-10 fill).
-              color: { dark: '#001a72', light: '#e1f3fa' }
-            });
-            setShareQr(dataUrl);
-          } catch {
-            setShareQr(null);
-            notify('Could not generate a QR code for the share link.', { level: 'error' });
-          }
         } else {
           send({ type: 'open-external', url });
         }
       });
     });
     return off;
-  }, [figmaFileKey, settings.previewBaseUrlOverride, presetById, notify]);
+  }, [figmaFileKey, settings.previewBaseUrlOverride, presetById, notify, settlePair]);
 
   // Called from the `init` message handler once the file key is resolved: pull
   // this file's persisted token + cached config (or settle to idle).
@@ -432,10 +458,23 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
   const showInLivePreview = () => send({ type: 'request-preview-data', purpose: 'open' });
   const copyShareLink = () => send({ type: 'request-preview-data', purpose: 'copy' });
   const copyShareToken = () => send({ type: 'request-preview-data', purpose: 'copy-token' });
-  const showQrCode = () => {
-    setShareQr(null);
-    send({ type: 'request-preview-data', purpose: 'qr' });
-  };
+  // Resolve the file's read-only share token for the unified phone-pairing QR,
+  // publishing the project first if needed. Resolves null when the file isn't
+  // preview-ready (no Figma file key / no bindings) so the caller pairs the
+  // phone with the code alone.
+  const ensureShared = useCallback((): Promise<string | null> => {
+    // Supersede any in-flight pairing request.
+    settlePair(null);
+    return new Promise<string | null>((resolve) => {
+      pairResolveRef.current = resolve;
+      setSyncStatus('syncing');
+      send({ type: 'request-preview-data', purpose: 'pair' });
+      // Safety net: never leave the caller hanging if no reply ever arrives.
+      setTimeout(() => {
+        if (pairResolveRef.current === resolve) settlePair(null);
+      }, 8000);
+    });
+  }, [settlePair]);
   // On-demand sync: flush any pending debounce and publish now (creating a
   // token if this file hasn't been shared yet).
   const syncNow = () => {
@@ -481,14 +520,15 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
   return {
     syncStatus,
     isPublic,
-    shareQr,
+    // The current file's read-only share token (null until shared), surfaced so
+    // the phone-pairing panel can fold it into the unified QR / relay it.
+    publicToken,
+    ensureShared,
     initProject,
     showInLivePreview,
     copyShareLink,
     copyShareToken,
-    showQrCode,
     syncNow,
-    setVisibility,
-    clearQr: () => setShareQr(null)
+    setVisibility
   };
 }

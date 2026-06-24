@@ -19,13 +19,49 @@ declare global {
   }
 }
 
+// Human label the phone shows for this producer in its connection list
+// (e.g. "Google Chrome Windows"). Best-effort from the browser's userAgent.
+function getConnectionName(): string {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const os = /Win/i.test(ua)
+    ? 'Windows'
+    : /Mac/i.test(ua)
+      ? 'macOS'
+      : /Android/i.test(ua)
+        ? 'Android'
+        : /iPhone|iPad|iPod/i.test(ua)
+          ? 'iOS'
+          : /Linux/i.test(ua)
+            ? 'Linux'
+            : '';
+  const browser = /Edg/i.test(ua)
+    ? 'Microsoft Edge'
+    : /OPR|Opera/i.test(ua)
+      ? 'Opera'
+      : /Firefox/i.test(ua)
+        ? 'Firefox'
+        : /Chrome/i.test(ua)
+          ? 'Google Chrome'
+          : /Safari/i.test(ua)
+            ? 'Safari'
+            : 'Browser';
+  return os ? `${browser} ${os}` : browser;
+}
+
 export default function Connection() {
   const [paired, setPaired] = useState<boolean>(false);
   const [channel, setChannel] = useState<number | string>('Loading...');
   const [status, setStatus] = useState<boolean>(false);
   const ws = useRef<WebSocket | null>(null);
+  const connectionName = getConnectionName();
 
-  const deepLinkUrl = channel !== 'Loading...' ? `pulsarapp:///?code=${channel}` : '';
+  // Root-scheme deep link, kept backward compatible with apps already in the
+  // stores (they route `pulsarapp:///` to their home screen and read `code`
+  // there). The `&name=` is additive — older apps ignore it.
+  const deepLinkUrl =
+    channel !== 'Loading...'
+      ? `pulsarapp:///?code=${channel}&name=${encodeURIComponent(connectionName)}`
+      : '';
 
   function createChannel() {
     setChannel('Loading...');
@@ -48,11 +84,14 @@ export default function Connection() {
     if (localStorage.getItem('hapticsToken')) {
       token = localStorage.getItem('hapticsToken');
     }
+    // Advertise the producer name on the handshake; the server relays it to the
+    // phone on (re)establish. Additive — older servers ignore it.
+    const nameParam = `&name=${encodeURIComponent(getConnectionName())}`;
     let params = '';
     if (token) {
-      params = `&action=reuse_connection&token=${token}`;
+      params = `&action=reuse_connection&token=${token}${nameParam}`;
     } else {
-      params = `&action=new_connection&code=${channelNumber}`;
+      params = `&action=new_connection&code=${channelNumber}${nameParam}`;
     }
 
     if (ws.current !== null) {

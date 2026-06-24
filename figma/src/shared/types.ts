@@ -99,7 +99,18 @@ export interface BoundItem {
 //   - 'autosync': debounced background save — only updates an *existing*
 //     project; never creates a token on its own (avoids spamming the backend
 //     for files the user never chose to share).
-export type PreviewPurpose = 'open' | 'copy' | 'copy-token' | 'qr' | 'sync' | 'autosync';
+// 'pair' resolves the file's share (public) token for the phone-pairing QR:
+//   publishes if needed (so the unified QR can carry the preview token), then
+//   hands the public token back to the caller via ensureShared(). Like 'qr'/'copy'
+//   it is an explicit share action, so it re-opens the link to the public.
+export type PreviewPurpose =
+  | 'open'
+  | 'copy'
+  | 'copy-token'
+  | 'qr'
+  | 'sync'
+  | 'autosync'
+  | 'pair';
 
 // Severity of an in-plugin toast. Drives its accent colour, icon, and default
 // auto-dismiss timeout (see the UI's Toast component).

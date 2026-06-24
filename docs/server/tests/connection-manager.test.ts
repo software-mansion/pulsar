@@ -8,6 +8,7 @@ class FakeWs {
   sent: string[] = [];
   closed = false;
   closeCode?: number;
+  metadata?: Record<string, any>;
   constructor(public id: string) {}
   send(data: string) {
     this.sent.push(data);
@@ -144,6 +145,72 @@ describe('ConnectionManager', () => {
       cm.reuseReceiverConnection(asWs(newReceiver), token);
       expect(hasType(newSender, 'connection_restored')).toBe(true);
       expect(hasType(newReceiver, 'connection_restored')).toBe(true);
+    });
+  });
+
+  // Additive producer identity: a sender may advertise a `name` and a Figma
+  // `previewToken`; the server relays them to the receiver on (re)establish.
+  describe('producer identity relay', () => {
+    it('relays the sender name + previewToken to the receiver on establish', () => {
+      const code = cm.getParingCode();
+      const sender = new FakeWs('s');
+      sender.metadata = { name: 'Figma Plugin macOS', previewToken: 'pub-123' };
+      const receiver = new FakeWs('r');
+      cm.createNewSenderConnection(asWs(sender), code);
+      cm.createNewReceiverConnection(asWs(receiver), code);
+
+      const est = firstOfType(receiver, 'connection_established');
+      expect(est.name).toBe('Figma Plugin macOS');
+      expect(est.previewToken).toBe('pub-123');
+      expect(typeof est.token).toBe('string');
+    });
+
+    it('relays the sender identity again on connection_restored', () => {
+      const { token } = pair();
+      const newSender = new FakeWs('s2');
+      newSender.metadata = { name: 'Google Chrome Windows' };
+      const newReceiver = new FakeWs('r2');
+      cm.reuseSenderConnection(asWs(newSender), token);
+      cm.reuseReceiverConnection(asWs(newReceiver), token);
+
+      const restored = firstOfType(newReceiver, 'connection_restored');
+      expect(restored.name).toBe('Google Chrome Windows');
+      expect(restored).not.toHaveProperty('previewToken');
+    });
+
+    it('omits identity fields entirely for a producer that advertised none (old client)', () => {
+      const code = cm.getParingCode();
+      const sender = new FakeWs('s'); // no metadata
+      const receiver = new FakeWs('r');
+      cm.createNewSenderConnection(asWs(sender), code);
+      cm.createNewReceiverConnection(asWs(receiver), code);
+
+      const est = firstOfType(receiver, 'connection_established');
+      // Byte-for-byte the legacy payload: just type + token.
+      expect(Object.keys(est).sort()).toEqual(['token', 'type']);
+    });
+  });
+
+  // One phone, many producers: each pairing is its own token, so a single
+  // receiver-side process holding N tokens gets each producer's broadcasts
+  // independently. This is the per-token independence the multi-connection
+  // phone client relies on — no shared-state crosstalk between tokens.
+  describe('multiple independent connections (N producers : 1 phone)', () => {
+    it('routes each producer broadcast only to its own token', () => {
+      const a = pair('senderA', 'phoneSockA');
+      const b = pair('senderB', 'phoneSockB');
+      expect(a.token).not.toBe(b.token);
+
+      const beforeA = a.receiver.sent.length;
+      const beforeB = b.receiver.sent.length;
+      expect(cm.broadcastChannel('Afterglow', a.token)).toBe('ok');
+
+      expect(frames(a.receiver).slice(beforeA)).toContainEqual({
+        type: 'broadcast',
+        message: 'Afterglow',
+      });
+      // The other producer's channel is untouched.
+      expect(frames(b.receiver).slice(beforeB)).toHaveLength(0);
     });
   });
 });

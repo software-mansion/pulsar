@@ -250,10 +250,19 @@ export class ConnectionManager {
     this.weakConnections.delete(code);
   }
 
+  // Additive producer identity relayed to the receiver (and harmlessly to the
+  // sender) on (re)establish. `undefined` fields are dropped by JSON.stringify,
+  // so a producer that advertised nothing yields the exact legacy payload.
+  private senderIdentity(connection: Connection): { name?: string; previewToken?: string } {
+    const meta = connection.sender?.metadata;
+    return { name: meta?.name, previewToken: meta?.previewToken };
+  }
+
   private sendTokenNotification(token: string, connection: Connection): void {
     const data = JSON.stringify({
       type: 'connection_established',
       token,
+      ...this.senderIdentity(connection),
     });
 
     if (connection.sender && connection.sender.readyState === WebSocket.OPEN) {
@@ -267,6 +276,7 @@ export class ConnectionManager {
   private sendConnectionRestoredNotification(connection: Connection): void {
     const data = JSON.stringify({
       type: 'connection_restored',
+      ...this.senderIdentity(connection),
     });
 
     if (connection.sender && connection.sender.readyState === WebSocket.OPEN) {
