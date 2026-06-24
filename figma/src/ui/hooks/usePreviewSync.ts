@@ -1,0 +1,482 @@
+import { useEffect, useRef, useState } from 'react';
+import QRCode from 'qrcode';
+import { CUSTOM_TAG, type CatalogEntry, type Settings } from '../../shared/types';
+import { onMessage, send } from '../figmaBridge';
+import { copyToClipboard } from '../lib/clipboard';
+import { extractFileKey } from '../lib/fileKey';
+import { stableStringify } from '../lib/stableStringify';
+import {
+  createProject,
+  fetchProject,
+  resolvePreviewBaseUrl,
+  setProjectVisibility,
+  updateProject
+} from '../lib/previewServer';
+import type { ToastOptions } from '../components/Toast';
+
+// Live-preview sync state, surfaced as a pill in the Live preview tab.
+//   idle     — nothing shared for this file yet (no server row).
+//   syncing  — a push/fetch is in flight.
+//   synced   — local state matches what's on the server.
+//   unsynced — local edits not yet pushed (a debounced save is pending).
+//   error    — last sync attempt failed (will retry on the next change).
+export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'unsynced' | 'error';
+
+type Notify = (message: string, opts?: ToastOptions) => void;
+
+interface Params {
+  // Latest settings — the publish handler reads the file-key + preview-URL
+  // overrides, so the effect rebinds when these change.
+  settings: Settings;
+  // Resolves a preset id to its pattern data when building the payload.
+  presetById: Map<string, CatalogEntry>;
+  notify: Notify;
+}
+
+// Owns everything about publishing the current document's bindings to the Pulsar
+// preview server and the share actions built on top of it (open / copy link /
+// copy token / QR / visibility toggle). Keeps the per-file token + revision
+// bookkeeping in refs so the (rebinding) message handlers always read fresh
+// values, and exposes the sync status + share affordances for the UI.
+export function usePreviewSync({ settings, presetById, notify }: Params) {
+  // --- Per-file server-sync state ---------------------------------------
+  // The file we're editing. Tokens + cached config are keyed by this so a
+  // different design file gets its own server row instead of overwriting the
+  // first. Resolved from figma.fileKey (or the file-key override).
+  const fileKeyRef = useRef<string>('');
+  // Current file's secret edit token (write access). Kept in a ref so the
+  // (rebound) preview-data and doc-changed handlers always read the latest value.
+  const tokenRef = useRef<string | null>(null);
+  // Current file's read-only share token — what goes into share links/QRs.
+  const publicTokenRef = useRef<string | null>(null);
+  // Server revision our local state is based on (for conflict detection).
+  const baseRevisionRef = useRef<number | null>(null);
+  // stableStringify of the payload we last successfully pushed — lets us skip a
+  // network round-trip when nothing actually changed.
+  const lastSyncedJsonRef = useRef<string | null>(null);
+  // Promise chain that serializes all publishes, so concurrent triggers (cold
+  // start + a doc-change) can't both create a token and orphan a server row.
+  const syncLockRef = useRef<Promise<void>>(Promise.resolve());
+  // Debounce timer for background auto-save.
+  const autosyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+  // Share-link visibility for the current file. true = anyone with the link can
+  // view; false = the link is revoked server-side until the user shares again.
+  // Defaults to public (the historical behaviour) and is reconciled with the
+  // server on cold start and on every explicit share.
+  const [isPublic, setIsPublic] = useState(true);
+  const [shareQr, setShareQr] = useState<string | null>(null);
+
+  // Cold-start reconcile for a file. The server is the source of truth: if we
+  // have no local cache but do have a token, fetch the server copy and seed the
+  // cache. Either way, finish by kicking a silent auto-sync so any local design
+  // drift since the last snapshot gets published (the Figma doc is live truth).
+  const handleProject = async (m: {
+    fileKey: string;
+    token: string | null;
+    publicToken: string | null;
+    config: unknown | null;
+    baseRevision: number | null;
+    isPublic: boolean;
+  }) => {
+    fileKeyRef.current = m.fileKey;
+    tokenRef.current = m.token;
+    publicTokenRef.current = m.publicToken;
+    baseRevisionRef.current = m.baseRevision;
+    // Seed the toggle from the cached value; the server-fetch branch below
+    // reconciles it with the source of truth when there's a token to check.
+    setIsPublic(m.isPublic);
+    if (m.config != null) {
+      lastSyncedJsonRef.current = stableStringify(m.config);
+      setSyncStatus(m.token ? 'synced' : 'idle');
+    } else if (m.token) {
+      setSyncStatus('syncing');
+      try {
+        const got = await fetchProject(m.token);
+        if (got.kind === 'ok') {
+          baseRevisionRef.current = got.revision;
+          lastSyncedJsonRef.current = stableStringify(got.config);
+          setIsPublic(got.isPublic);
+          // Recover/refresh the read-only share token from the server.
+          if (got.publicToken && got.publicToken !== publicTokenRef.current) {
+            publicTokenRef.current = got.publicToken;
+            send({
+              type: 'persist-project-token',
+              fileKey: m.fileKey,
+              token: m.token,
+              publicToken: got.publicToken
+            });
+          }
+          send({ type: 'persist-project-visibility', fileKey: m.fileKey, isPublic: got.isPublic });
+          send({
+            type: 'persist-project-cache',
+            fileKey: m.fileKey,
+            config: got.config,
+            baseRevision: got.revision
+          });
+          setSyncStatus('synced');
+        } else if (got.kind === 'private') {
+          // The link is revoked. Keep the token (the user can re-share to
+          // re-open it) and reflect the private state in the toggle. We can't
+          // read the server config while private, so leave lastSyncedJson empty
+          // — the next autosync will re-publish the live document's bindings.
+          setIsPublic(false);
+          send({ type: 'persist-project-visibility', fileKey: m.fileKey, isPublic: false });
+          setSyncStatus('synced');
+        } else {
+          // Token no longer exists server-side — forget it; nothing is shared.
+          tokenRef.current = null;
+          publicTokenRef.current = null;
+          lastSyncedJsonRef.current = null;
+          baseRevisionRef.current = null;
+          setSyncStatus('idle');
+        }
+      } catch {
+        setSyncStatus('error');
+      }
+    } else {
+      lastSyncedJsonRef.current = null;
+      setSyncStatus('idle');
+    }
+    send({ type: 'request-preview-data', purpose: 'autosync' });
+  };
+
+  // A local edit happened. Mark the file dirty (only meaningful once it has a
+  // token) and debounce a background save.
+  const handleDocChanged = () => {
+    if (tokenRef.current) setSyncStatus((s) => (s === 'syncing' ? s : 'unsynced'));
+    if (autosyncTimerRef.current) clearTimeout(autosyncTimerRef.current);
+    autosyncTimerRef.current = setTimeout(() => {
+      autosyncTimerRef.current = null;
+      send({ type: 'request-preview-data', purpose: 'autosync' });
+    }, 1500);
+  };
+
+  // Register the project + doc-changed handlers once (they only touch refs and
+  // setters, so they never need to rebind).
+  useEffect(() => {
+    const off = onMessage((m) => {
+      if (m.type === 'project') void handleProject(m);
+      if (m.type === 'doc-changed') handleDocChanged();
+    });
+    return off;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Handle a preview-data reply: build the payload, publish it to the server
+  // (create/update with conflict reconciliation), then carry out the action the
+  // request was made for. Rebind on changes so it reads fresh presets/preview
+  // URL/file-key override.
+  useEffect(() => {
+    // Serialize every publish through one promise chain. Two concurrent
+    // triggers (e.g. cold-start reconcile + a doc-change) must not both POST,
+    // which would create two server rows and orphan one.
+    const runExclusive = (fn: () => Promise<void>): Promise<void> => {
+      const next = syncLockRef.current.then(fn, fn);
+      syncLockRef.current = next.then(
+        () => {},
+        () => {}
+      );
+      return next;
+    };
+
+    const off = onMessage((m) => {
+      if (m.type !== 'preview-data') return;
+      const purpose = m.purpose;
+      const silent = purpose === 'autosync';
+
+      const fileKey =
+        m.fileKey ?? (settings.fileKeyOverride ? extractFileKey(settings.fileKeyOverride) : '');
+      if (!fileKey) {
+        if (silent) return;
+        notify(
+          'No file key available. Paste this file’s share URL in Settings → Live preview (File key override).',
+          { level: 'warning' }
+        );
+        return;
+      }
+      fileKeyRef.current = fileKey;
+
+      const bindings: Record<string, unknown> = {};
+      // owner maps every node id (a bound node and its descendants) to the bound
+      // node it belongs to, so a tap on a child resolves to the right element.
+      const owner: Record<string, string> = {};
+      // Pass 1: fill descendants so a tap on a child layer (text/icon) resolves
+      // to its bound ancestor. Pass 2: explicit node bindings win over inherited.
+      for (const b of m.bindings) {
+        const data = b.customPattern ?? presetById.get(b.presetId)?.data;
+        if (!data) continue;
+        for (const descId of b.descendantIds) {
+          bindings[descId] = data;
+          owner[descId] = b.nodeId;
+        }
+      }
+      // One entry per bound node, for the panel list + on-canvas highlights.
+      const elements = [];
+      for (const b of m.bindings) {
+        const data = b.customPattern ?? presetById.get(b.presetId)?.data;
+        if (!data) continue;
+        bindings[b.nodeId] = data;
+        owner[b.nodeId] = b.nodeId;
+        elements.push({
+          id: b.nodeId,
+          name: b.nodeName,
+          presetName: b.presetName,
+          box: b.box,
+          frameId: b.frameId,
+          // Marked custom when the binding inlines a custom pattern (always
+          // user-defined) or when the resolved preset carries the Custom tag.
+          isCustom: !!b.customPattern || (Array.isArray(data.tags) && data.tags.includes(CUSTOM_TAG))
+        });
+      }
+      if (elements.length === 0) {
+        if (silent || purpose === 'sync') {
+          // Nothing to publish. Don't touch the (possibly stale) server row.
+          setSyncStatus(tokenRef.current ? 'synced' : 'idle');
+          return;
+        }
+        notify('No haptic bindings on this page yet.', { level: 'info' });
+        return;
+      }
+      const payload = {
+        fileKey,
+        nodeId: m.presentNodeId,
+        frame: m.presentNodeBox,
+        elements,
+        owner,
+        bindings,
+        frames: m.frames
+      };
+
+      // Publish `payload` to the server, reconciling against its current state.
+      // Returns the token (or null when nothing is shared yet and create isn't
+      // allowed — i.e. a background auto-sync of a never-shared file).
+      const ensurePublished = async (allowCreate: boolean): Promise<string | null> => {
+        const json = stableStringify(payload);
+        const adopt = (t: string, publicToken: string, revision: number) => {
+          tokenRef.current = t;
+          publicTokenRef.current = publicToken;
+          baseRevisionRef.current = revision;
+          lastSyncedJsonRef.current = json;
+          send({ type: 'persist-project-token', fileKey, token: t, publicToken });
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
+        };
+
+        let token = tokenRef.current;
+        // Skip the round-trip when nothing actually changed since last sync.
+        if (token && json === lastSyncedJsonRef.current) return token;
+
+        if (!token) {
+          if (!allowCreate) return null;
+          const created = await createProject(payload);
+          adopt(created.token, created.publicToken, created.revision);
+          return created.token;
+        }
+
+        const res = await updateProject(token, payload, baseRevisionRef.current);
+        if (res.kind === 'ok') {
+          baseRevisionRef.current = res.revision;
+          lastSyncedJsonRef.current = json;
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: res.revision });
+          return token;
+        }
+        if (res.kind === 'gone') {
+          // Token vanished server-side. Recreate when allowed, else forget it.
+          if (!allowCreate) {
+            tokenRef.current = null;
+            baseRevisionRef.current = null;
+            lastSyncedJsonRef.current = null;
+            return null;
+          }
+          const created = await createProject(payload);
+          adopt(created.token, created.publicToken, created.revision);
+          return created.token;
+        }
+        // Conflict: someone changed the row since our base. The server is the
+        // source of truth for the base revision, so adopt it — but the Figma
+        // document is the live design, so re-publish our payload on top
+        // (last-writer-wins, now that we're rebased on the server's revision).
+        const forced = await updateProject(token, payload, res.revision);
+        if (forced.kind === 'ok') {
+          baseRevisionRef.current = forced.revision;
+          lastSyncedJsonRef.current = json;
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: forced.revision });
+          return token;
+        }
+        if (forced.kind === 'gone') {
+          if (!allowCreate) {
+            tokenRef.current = null;
+            baseRevisionRef.current = null;
+            lastSyncedJsonRef.current = null;
+            return null;
+          }
+          const created = await createProject(payload);
+          adopt(created.token, created.publicToken, created.revision);
+          return created.token;
+        }
+        // Lost a second race — bail; the next change will retry from the new base.
+        baseRevisionRef.current = forced.revision;
+        throw new Error('Sync conflict — will retry on the next change.');
+      };
+
+      void runExclusive(async () => {
+        setSyncStatus('syncing');
+        let token: string | null;
+        try {
+          token = await ensurePublished(!silent);
+        } catch (err) {
+          setSyncStatus('error');
+          if (!silent) {
+            notify(`Could not upload preview data: ${(err as Error).message}`, { level: 'error' });
+          }
+          return;
+        }
+        if (!token) {
+          // Background auto-sync of a file that was never shared — nothing to do.
+          setSyncStatus('idle');
+          return;
+        }
+        setSyncStatus('synced');
+
+        // Beyond the sync itself, share actions also need a URL / QR / clipboard.
+        if (purpose === 'autosync' || purpose === 'sync') return;
+
+        // Any explicit share re-opens the link to the public: if the user had
+        // made it private, handing the link out again necessarily makes it
+        // viewable, so flip the toggle back on. Optimistic + best-effort — the
+        // server is the source of truth, reconciled on the next cold start.
+        setIsPublic(true);
+        send({ type: 'persist-project-visibility', fileKey, isPublic: true });
+        void setProjectVisibility(token, true).catch(() => {});
+
+        // Everything we hand out carries the read-only public token, never the
+        // edit token. Recover it from the server if not cached (e.g. legacy share).
+        let publicToken = publicTokenRef.current;
+        if (!publicToken) {
+          const got = await fetchProject(token);
+          if (got.kind === 'ok' && got.publicToken) {
+            publicToken = got.publicToken;
+            publicTokenRef.current = publicToken;
+            send({ type: 'persist-project-token', fileKey, token, publicToken });
+          }
+        }
+        if (!publicToken) {
+          notify('Could not resolve the share link. Try “Sync now” and retry.', { level: 'error' });
+          return;
+        }
+
+        // Strip any existing query/hash so we don't duplicate or stack tokens
+        // when the user has manually visited the preview before.
+        const base = resolvePreviewBaseUrl(settings.previewBaseUrlOverride).replace(/[?#].*$/, '');
+        const url = `${base}?token=${encodeURIComponent(publicToken)}`;
+        // The QR is scanned by a phone with PulsarApp installed. Encode the
+        // app's deep-link scheme instead of the web URL so it routes straight
+        // into the in-app Figma WebView screen.
+        const appDeepLink = `pulsarapp://figma?token=${encodeURIComponent(publicToken)}`;
+        if (purpose === 'copy') {
+          const ok = copyToClipboard(url);
+          notify(ok ? 'Share link copied to clipboard.' : 'Could not copy the share link.', {
+            level: ok ? 'success' : 'error'
+          });
+        } else if (purpose === 'copy-token') {
+          // Just the raw read-only token — handy for pasting into other
+          // figma-preview URLs (e.g. a local dev instance) or debugging.
+          const ok = copyToClipboard(publicToken);
+          notify(ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.', {
+            level: ok ? 'success' : 'error'
+          });
+        } else if (purpose === 'qr') {
+          try {
+            const dataUrl = await QRCode.toDataURL(appDeepLink, {
+              margin: 1,
+              width: 240,
+              errorCorrectionLevel: 'L',
+              // Match the docs Connection.tsx palette: navy modules on a blue-10
+              // background so the code visually merges into the .preview-qr-box
+              // panel below (which uses the same blue-10 fill).
+              color: { dark: '#001a72', light: '#e1f3fa' }
+            });
+            setShareQr(dataUrl);
+          } catch {
+            setShareQr(null);
+            notify('Could not generate a QR code for the share link.', { level: 'error' });
+          }
+        } else {
+          send({ type: 'open-external', url });
+        }
+      });
+    });
+    return off;
+  }, [settings.fileKeyOverride, settings.previewBaseUrlOverride, presetById, notify]);
+
+  // Called from the `init` message handler once the file key is resolved: pull
+  // this file's persisted token + cached config (or settle to idle).
+  const initProject = (fileKey: string) => {
+    fileKeyRef.current = fileKey;
+    if (fileKey) send({ type: 'get-project', fileKey });
+    else setSyncStatus('idle');
+  };
+
+  const showInLivePreview = () => send({ type: 'request-preview-data', purpose: 'open' });
+  const copyShareLink = () => send({ type: 'request-preview-data', purpose: 'copy' });
+  const copyShareToken = () => send({ type: 'request-preview-data', purpose: 'copy-token' });
+  const showQrCode = () => {
+    setShareQr(null);
+    send({ type: 'request-preview-data', purpose: 'qr' });
+  };
+  // On-demand sync: flush any pending debounce and publish now (creating a
+  // token if this file hasn't been shared yet).
+  const syncNow = () => {
+    if (autosyncTimerRef.current) {
+      clearTimeout(autosyncTimerRef.current);
+      autosyncTimerRef.current = null;
+    }
+    setSyncStatus('syncing');
+    send({ type: 'request-preview-data', purpose: 'sync' });
+  };
+
+  // Flip the share-link visibility. Optimistic: update the toggle + local cache
+  // immediately, then PATCH the server. On failure, roll the toggle back and
+  // tell the user so the UI never claims a state the server didn't accept.
+  const setVisibility = (next: boolean) => {
+    const token = tokenRef.current;
+    const fileKey = fileKeyRef.current;
+    if (!token) return; // nothing shared yet — nothing to make private/public
+    setIsPublic(next);
+    send({ type: 'persist-project-visibility', fileKey, isPublic: next });
+    void (async () => {
+      let ok = false;
+      try {
+        ok = await setProjectVisibility(token, next);
+      } catch {
+        ok = false;
+      }
+      if (!ok) {
+        setIsPublic(!next);
+        send({ type: 'persist-project-visibility', fileKey, isPublic: !next });
+        notify('Could not update the preview’s visibility. Please try again.', { level: 'error' });
+        return;
+      }
+      notify(
+        next
+          ? 'Preview link is public — anyone with the link can view it.'
+          : 'Preview link is now private — the link won’t work until you share again.',
+        { level: 'success' }
+      );
+    })();
+  };
+
+  return {
+    syncStatus,
+    isPublic,
+    shareQr,
+    initProject,
+    showInLivePreview,
+    copyShareLink,
+    copyShareToken,
+    showQrCode,
+    syncNow,
+    setVisibility,
+    clearQr: () => setShareQr(null)
+  };
+}
