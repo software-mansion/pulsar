@@ -5,6 +5,17 @@
 .preview-panel { padding: 16px; gap: 14px; }
 .preview-intro { margin: 4px 0 0; font-size: var(--fs-xs); line-height: 1.5; }
 
+/* Figma file-key input — the real file key the embed needs. */
+.preview-filekey { display: flex; flex-direction: column; gap: 6px; }
+.preview-filekey-label {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-blue-60);
+}
+.preview-filekey-hint { margin: 0; font-size: var(--fs-2xs); line-height: 1.4; }
+
 button.preview-cta {
   display: inline-flex;
   align-items: center;

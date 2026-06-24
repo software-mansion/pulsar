@@ -130,6 +130,9 @@ export type UiToMain =
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
   | { type: 'open-external'; url: string }
+  // Persist the user-entered real Figma file key (or share URL) for this
+  // document into root pluginData (per-file, shared with collaborators).
+  | { type: 'persist-file-key'; figmaFileKey: string }
   | { type: 'resize'; width: number; height: number; commit?: boolean };
 
 // Messages: Main -> UI
@@ -140,6 +143,10 @@ export type MainToUi =
       hapticsToken: string | null;
       // Stable per-document key minted by the main thread (root pluginData).
       fileKey: string | null;
+      // The real Figma file key (or share URL) the user saved for this document,
+      // used to build the live-preview embed. Empty until entered. Stored in root
+      // pluginData, so it's per-file and shared with collaborators.
+      figmaFileKey: string;
       favourites: string[];
       customPresets: CatalogEntry[];
     }

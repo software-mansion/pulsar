@@ -46,6 +46,11 @@ const WINDOW_SIZE_KEY = 'pulsar:windowSize';
 // Stable per-document id stored in root pluginData; replaces `figma.fileKey`,
 // which needs the private plugin API. Synced to all collaborators.
 const FILE_ID_KEY = 'pulsar:fileId';
+// The real Figma file key (or share URL) the user pasted for this document, used
+// to build the live-preview embed. We can't read it automatically without the
+// private API, so we remember it in root pluginData — per-file and synced to all
+// collaborators, so it only ever needs to be entered once per file.
+const FIGMA_FILE_KEY = 'pulsar:figmaFileKey';
 
 const DEFAULT_SIZE = { width: 380, height: 640 };
 // Clamp the persisted size so a stored value can't shrink the UI below a
@@ -97,6 +102,15 @@ function resolveFileKey(): string {
     figma.root.setPluginData(FILE_ID_KEY, id);
   }
   return id;
+}
+
+// The user-supplied real Figma file key (or share URL) for this document, stored
+// in root pluginData so it's remembered per-file and shared with collaborators.
+function getFigmaFileKey(): string {
+  return figma.root.getPluginData(FIGMA_FILE_KEY);
+}
+function setFigmaFileKey(value: string): void {
+  figma.root.setPluginData(FIGMA_FILE_KEY, value);
 }
 
 async function loadSettings(): Promise<Settings> {
@@ -553,6 +567,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         settings,
         hapticsToken,
         fileKey: resolveFileKey(),
+        figmaFileKey: getFigmaFileKey(),
         favourites,
         customPresets
       });
@@ -626,6 +641,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'persist-custom-presets':
       await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
+      break;
+    case 'persist-file-key':
+      setFigmaFileKey(msg.figmaFileKey);
       break;
     case 'request-preview-data': {
       const { bindings, frames } = await collectPreviewBindings();

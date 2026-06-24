@@ -38,6 +38,8 @@ const SYNC_META: Record<SyncStatus, { label: string; dot: string; pulse?: boolea
 };
 
 export default function LivePreviewPanel({
+  figmaFileKey,
+  onFigmaFileKeyChange,
   syncStatus,
   onSyncNow,
   isPublic,
@@ -52,6 +54,9 @@ export default function LivePreviewPanel({
 }: {
   settings: Settings;
   onChange: (next: Settings) => void;
+  // The real Figma file key (or share URL) for the embed, remembered per-file.
+  figmaFileKey: string;
+  onFigmaFileKeyChange: (next: string) => void;
   syncStatus: SyncStatus;
   onSyncNow: () => void;
   // Whether the share link is currently public (anyone with the link can view).
@@ -75,6 +80,26 @@ export default function LivePreviewPanel({
         <p className={`muted ${styles['preview-intro']}`}>
           Open the current design in the standalone preview app and feel the
           bound haptics when you tap an element.
+        </p>
+      </div>
+
+      {/* The preview embeds the real Figma file (embed.figma.com/proto/<key>),
+          but the plugin can't read the file key without the private API, so the
+          user pastes the file's share URL (or raw key) here. Required before a
+          preview can load. */}
+      <div className={styles['preview-filekey']}>
+        <label className={styles['preview-filekey-label']} htmlFor="figma-file-key">
+          Figma file key
+        </label>
+        <input
+          id="figma-file-key"
+          type="text"
+          placeholder="Paste this file’s link or key"
+          value={figmaFileKey}
+          onChange={(e) => onFigmaFileKeyChange(e.target.value)}
+        />
+        <p className={`muted ${styles['preview-filekey-hint']}`}>
+          Saved with this file — enter it once. From Figma use <b>Share → Copy link</b>.
         </p>
       </div>
 

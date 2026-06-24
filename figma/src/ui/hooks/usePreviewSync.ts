@@ -25,9 +25,13 @@ export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'unsynced' | 'error';
 type Notify = (message: string, opts?: ToastOptions) => void;
 
 interface Params {
-  // Latest settings — the publish handler reads the file-key + preview-URL
-  // overrides, so the effect rebinds when these change.
+  // Latest settings — the publish handler reads the preview-URL override, so the
+  // effect rebinds when it changes.
   settings: Settings;
+  // The real Figma file key (or share URL) for this document, supplied by the
+  // user and remembered per-file. Needed to build the embed; the effect rebinds
+  // when it changes.
+  figmaFileKey: string;
   // Resolves a preset id to its pattern data when building the payload.
   presetById: Map<string, CatalogEntry>;
   notify: Notify;
@@ -38,7 +42,7 @@ interface Params {
 // copy token / QR / visibility toggle). Keeps the per-file token + revision
 // bookkeeping in refs so the (rebinding) message handlers always read fresh
 // values, and exposes the sync status + share affordances for the UI.
-export function usePreviewSync({ settings, presetById, notify }: Params) {
+export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: Params) {
   // --- Per-file server-sync state ---------------------------------------
   // The file we're editing. Tokens + cached config are keyed by this so a
   // different design file gets its own server row instead of overwriting the
@@ -185,12 +189,19 @@ export function usePreviewSync({ settings, presetById, notify }: Params) {
       const purpose = m.purpose;
       const silent = purpose === 'autosync';
 
-      const fileKey =
-        m.fileKey ?? (settings.fileKeyOverride ? extractFileKey(settings.fileKeyOverride) : '');
-      if (!fileKey) {
+      // Two distinct keys:
+      //  - `fileKey`: the plugin's stable minted id (m.fileKey), used purely to
+      //    key our server tokens/cache.
+      //  - `embedFileKey`: the *real* Figma file key the live preview needs to
+      //    build the embed.figma.com/proto/<key> URL. The plugin can't read it
+      //    without the private API, so the user supplies it via the file-key
+      //    override (a full share URL or raw key).
+      const fileKey = m.fileKey ?? '';
+      const embedFileKey = figmaFileKey ? extractFileKey(figmaFileKey) : '';
+      if (!fileKey || !embedFileKey) {
         if (silent) return;
         notify(
-          'No file key available. Paste this file’s share URL in Settings → Live preview (File key override).',
+          'Add this file’s key in the Share tab (Figma file key) to enable the live preview.',
           { level: 'warning' }
         );
         return;
@@ -239,7 +250,8 @@ export function usePreviewSync({ settings, presetById, notify }: Params) {
         return;
       }
       const payload = {
-        fileKey,
+        // The preview embeds this as the Figma file key — must be the real key.
+        fileKey: embedFileKey,
         nodeId: m.presentNodeId,
         frame: m.presentNodeBox,
         elements,
@@ -407,7 +419,7 @@ export function usePreviewSync({ settings, presetById, notify }: Params) {
       });
     });
     return off;
-  }, [settings.fileKeyOverride, settings.previewBaseUrlOverride, presetById, notify]);
+  }, [figmaFileKey, settings.previewBaseUrlOverride, presetById, notify]);
 
   // Called from the `init` message handler once the file key is resolved: pull
   // this file's persisted token + cached config (or settle to idle).

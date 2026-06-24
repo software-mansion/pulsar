@@ -16,7 +16,6 @@ import ResizeHandle from './components/ResizeHandle';
 import { useToast } from './components/Toast';
 import { usePreviewSync } from './hooks/usePreviewSync';
 import { DEFAULT_SETTINGS } from './lib/settings';
-import { extractFileKey } from './lib/fileKey';
 import { playPreset, stopAll } from './audio/player';
 
 // Re-exported for LivePreviewPanel (and anything else that imports it from here).
@@ -40,6 +39,9 @@ export default function App() {
   const [favouritesOnly, setFavouritesOnly] = useState(false);
   const [boundItems, setBoundItems] = useState<BoundItem[]>([]);
   const [customPresets, setCustomPresets] = useState<CatalogEntry[]>([]);
+  // The real Figma file key (or share URL) for this document — needed for the
+  // live-preview embed. Seeded from root pluginData on init, remembered per-file.
+  const [figmaFileKey, setFigmaFileKey] = useState('');
   // Set when jumping to a preset from the selection bar; PresetsTab scrolls to it.
   const [scrollToId, setScrollToId] = useState<string | null>(null);
 
@@ -54,7 +56,7 @@ export default function App() {
 
   // Live-preview / sharing sync — owns the server token bookkeeping and the
   // share affordances; listens for project / doc-changed / preview-data itself.
-  const previewSync = usePreviewSync({ settings, presetById, notify });
+  const previewSync = usePreviewSync({ settings, figmaFileKey, presetById, notify });
 
   // Wire up the bridge once for the messages App owns (init, selection, bound
   // list, toasts). Sync-related messages are handled inside usePreviewSync.
@@ -65,10 +67,11 @@ export default function App() {
         setHapticsToken(m.hapticsToken);
         setFavourites(new Set(m.favourites));
         setCustomPresets(m.customPresets ?? []);
-        // Resolve this file's key and pull its persisted token + cached config.
-        const fk =
-          m.fileKey ?? (m.settings.fileKeyOverride ? extractFileKey(m.settings.fileKeyOverride) : '');
-        previewSync.initProject(fk);
+        setFigmaFileKey(m.figmaFileKey ?? '');
+        // Pull this file's persisted token + cached config, keyed by the stable
+        // minted id (the server key). The real Figma file key for the embed is
+        // remembered separately per-file (figmaFileKey, see usePreviewSync).
+        previewSync.initProject(m.fileKey ?? '');
       }
       if (m.type === 'selection') setSelection(m.node);
       if (m.type === 'bound-list') setBoundItems(m.items);
@@ -96,6 +99,17 @@ export default function App() {
   useEffect(() => {
     send({ type: 'persist-haptics-token', token: hapticsToken });
   }, [hapticsToken]);
+
+  // Persist the per-file Figma file key on change, skipping the first render so
+  // we don't clobber the stored value before `init` arrives.
+  const [didInitFileKey, setDidInitFileKey] = useState(false);
+  useEffect(() => {
+    if (!didInitFileKey) {
+      setDidInitFileKey(true);
+      return;
+    }
+    send({ type: 'persist-file-key', figmaFileKey });
+  }, [figmaFileKey]);
 
   // Persist favourites on change, skipping the first render so we don't clobber
   // the stored set before `init` arrives from the main thread.
@@ -305,6 +319,8 @@ export default function App() {
         <LivePreviewPanel
           settings={settings}
           onChange={setSettings}
+          figmaFileKey={figmaFileKey}
+          onFigmaFileKeyChange={setFigmaFileKey}
           syncStatus={previewSync.syncStatus}
           onSyncNow={previewSync.syncNow}
           isPublic={previewSync.isPublic}
