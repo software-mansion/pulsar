@@ -355,3 +355,19 @@ export async function broadcastToPhone(token: string, presetName: string) {
     console.warn('broadcast failed', e);
   }
 }
+
+// Relay a structured object to the paired phone over the same channel. The
+// server JSON.parses the `message`, so an object survives the relay structured
+// (bare preset names stay strings — see connection-manager.broadcastChannel).
+// Used to push live haptics-config updates to an open live preview.
+export async function broadcastPreviewUpdate(token: string, payload: unknown) {
+  try {
+    await fetch(`${API_SERVER_URL}/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: JSON.stringify(payload), token })
+    });
+  } catch (e) {
+    console.warn('preview-update broadcast failed', e);
+  }
+}

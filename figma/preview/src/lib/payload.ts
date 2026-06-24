@@ -30,7 +30,7 @@ export function getTokenFromUrl(): string | null {
 //   - 'no-token' → no ?token= in the URL (the bare preview app).
 //   - 'missing'  → token present but the project is gone / unreadable (404 etc.).
 export type PayloadResult =
-  | { status: 'ok'; payload: PreviewPayload }
+  | { status: 'ok'; payload: PreviewPayload; revision: number }
   | { status: 'private' }
   | { status: 'no-token' }
   | { status: 'missing' };
@@ -53,18 +53,23 @@ export async function readPayload(): Promise<PayloadResult> {
     // can explain the link was revoked rather than showing "no design loaded".
     if (res.status === 403) return { status: 'private' };
     if (!res.ok) return { status: 'missing' };
-    const data = (await res.json()) as { success: boolean; config?: PreviewPayload | string };
+    const data = (await res.json()) as {
+      success: boolean;
+      config?: PreviewPayload | string;
+      revision?: number;
+    };
     if (!data.success || !data.config) return { status: 'missing' };
+    const revision = typeof data.revision === 'number' ? data.revision : 0;
     // Server returns the parsed object when storage was JSON; fall back to
     // parsing if it handed back a raw string for any reason.
     if (typeof data.config === 'string') {
       try {
-        return { status: 'ok', payload: JSON.parse(data.config) as PreviewPayload };
+        return { status: 'ok', payload: JSON.parse(data.config) as PreviewPayload, revision };
       } catch {
         return { status: 'missing' };
       }
     }
-    return { status: 'ok', payload: data.config };
+    return { status: 'ok', payload: data.config, revision };
   } catch {
     return { status: 'missing' };
   }

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FrameInfo, NodeBox, PresetData, PreviewPayload } from './types';
 import { getTokenFromUrl, readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
+import { applyDiff, type HapticsDiff } from './lib/applyDiff';
+import { useHostUpdates } from './lib/useHostUpdates';
 import { useFigmaMessages } from './lib/useFigmaMessages';
 import { useFullscreen } from './lib/useFullscreen';
 import { useIsMobile } from './lib/useIsMobile';
@@ -37,10 +39,20 @@ export default function App() {
   // Set when the server reports the share link was made private (403). Drives a
   // dedicated empty state distinct from "no design loaded".
   const [isPrivate, setIsPrivate] = useState(false);
+  // The server revision our current `payload` reflects, and a mirror of the
+  // payload itself — both in refs so the (stable) host-update handlers below can
+  // read the latest values without re-binding the window message listener.
+  const revisionRef = useRef(0);
+  const payloadRef = useRef<PreviewPayload | null>(null);
+  useEffect(() => {
+    payloadRef.current = payload;
+  }, [payload]);
+
   useEffect(() => {
     let cancelled = false;
     readPayload().then((res) => {
       if (cancelled) return;
+      if (res.status === 'ok') revisionRef.current = res.revision;
       setPayload(res.status === 'ok' ? res.payload : null);
       setIsPrivate(res.status === 'private');
       setPayloadLoaded(true);
@@ -49,6 +61,54 @@ export default function App() {
       cancelled = true;
     };
   }, []);
+
+  // Re-pull the whole config from the server in place (no iframe reload). When a
+  // minimum revision is known, retry briefly to ride out read-after-write lag so
+  // we never settle on a snapshot older than the change that triggered us.
+  const refetch = useCallback(async (minRevision?: number) => {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const res = await readPayload();
+      if (res.status === 'ok') {
+        if (minRevision != null && res.revision < minRevision && attempt < 3) {
+          await new Promise((r) => setTimeout(r, 250));
+          continue;
+        }
+        revisionRef.current = res.revision;
+        payloadRef.current = res.payload;
+        setPayload(res.payload);
+        setIsPrivate(false);
+        setPayloadLoaded(true);
+        return;
+      }
+      if (res.status === 'private') {
+        payloadRef.current = null;
+        setPayload(null);
+        setIsPrivate(true);
+        setPayloadLoaded(true);
+      }
+      // 'missing' / 'no-token': leave the current state as-is and stop retrying.
+      return;
+    }
+  }, []);
+
+  // Apply a relayed delta in place when our revision is exactly the one the diff
+  // was computed against; otherwise we've missed an update (a gap) — refetch.
+  const onDiff = useCallback(
+    (fromRevision: number, toRevision: number, diff: HapticsDiff) => {
+      if (!payloadRef.current || revisionRef.current !== fromRevision) {
+        void refetch(toRevision);
+        return;
+      }
+      const next = applyDiff(payloadRef.current, diff);
+      payloadRef.current = next;
+      revisionRef.current = toRevision;
+      setPayload(next);
+    },
+    [refetch]
+  );
+  const onRefetch = useCallback((toRevision: number) => void refetch(toRevision), [refetch]);
+  const hostHandlers = useMemo(() => ({ onDiff, onRefetch }), [onDiff, onRefetch]);
+  useHostUpdates(hostHandlers);
 
   // Derived lookup maps (stable across renders).
   const { bindings, ownerMap, presentedId, frames } = useMemo(() => {

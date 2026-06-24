@@ -59,6 +59,20 @@ export interface ReceivedPattern {
   name: string;
 }
 
+// A live haptics-config update relayed by the Figma plugin over the paired
+// channel, destined for an open live preview. The payload is forwarded verbatim
+// to the WebView (figma.tsx); we only read `previewToken` (to match the right
+// open preview) here. `nonce` is monotonic so an identical repeat still
+// re-triggers the consumer effect.
+export interface PreviewUpdate {
+  kind: 'preview-haptics-diff' | 'preview-haptics-refetch';
+  previewToken?: string;
+  fromRevision?: number;
+  toRevision?: number;
+  diff?: unknown;
+  nonce: number;
+}
+
 interface ConnectionsContextValue {
   connections: Connection[];
   // Pair a new producer from a 4-digit code (manual entry or a scanned QR).
@@ -69,6 +83,9 @@ interface ConnectionsContextValue {
   reconnect: (id: string) => void;
   // Transient "preset received" banner, auto-cleared shortly after the last hit.
   lastReceived: ReceivedPattern | null;
+  // Most recent live haptics-config update relayed by a producer, for an open
+  // live preview to apply. Null until the first update arrives.
+  lastPreviewUpdate: PreviewUpdate | null;
 }
 
 const ConnectionsContext = createContext<ConnectionsContextValue | undefined>(undefined);
@@ -85,6 +102,7 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   const posthog = usePostHog();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [lastReceived, setLastReceived] = useState<ReceivedPattern | null>(null);
+  const [lastPreviewUpdate, setLastPreviewUpdate] = useState<PreviewUpdate | null>(null);
   // Gate persistence until the initial load runs, so the first (empty) render
   // doesn't clobber the stored list before it's restored.
   const [didLoad, setDidLoad] = useState(false);
@@ -95,6 +113,9 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   const appStateRef = useRef(AppState.currentState);
   const notifyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastUrlRef = useRef<string | null>(null);
+  // Monotonic counter so two identical preview updates still re-trigger the
+  // preview consumer (e.g. a binding toggled back and forth).
+  const previewNonceRef = useRef(0);
 
   useEffect(() => {
     connectionsRef.current = connections;
@@ -207,14 +228,35 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
             break;
           case 'pong':
             break;
-          case 'broadcast':
-            // Producers send a preset *name* (a string). Ignore anything else so
-            // a malformed/structured payload can never throw here.
-            if (typeof json.message === 'string') {
-              const found = playPattern(json.message);
-              notify(found, json.message);
+          case 'broadcast': {
+            // A producer sends either a preset *name* (a string, to play now) or
+            // a structured live-preview update (an object). Branch on the shape
+            // so neither path can throw on the other's payload.
+            const msg = json.message;
+            if (typeof msg === 'string') {
+              const found = playPattern(msg);
+              notify(found, msg);
+            } else if (
+              msg &&
+              typeof msg === 'object' &&
+              typeof (msg as { kind?: unknown }).kind === 'string' &&
+              (msg as { kind: string }).kind.startsWith('preview-haptics-')
+            ) {
+              // Forwarded verbatim to the open live preview (figma.tsx). Match on
+              // the producer-supplied previewToken, falling back to the one this
+              // connection advertised at pairing time.
+              const update = msg as Omit<PreviewUpdate, 'nonce'>;
+              const fallbackToken =
+                connectionsRef.current.find((c) => c.id === conn.id)?.previewToken ??
+                conn.previewToken;
+              setLastPreviewUpdate({
+                ...update,
+                previewToken: update.previewToken ?? fallbackToken,
+                nonce: ++previewNonceRef.current,
+              });
             }
             break;
+          }
         }
       };
 
@@ -394,7 +436,9 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ConnectionsContext.Provider value={{ connections, addByCode, remove, reconnect, lastReceived }}>
+    <ConnectionsContext.Provider
+      value={{ connections, addByCode, remove, reconnect, lastReceived, lastPreviewUpdate }}
+    >
       {children}
     </ConnectionsContext.Provider>
   );

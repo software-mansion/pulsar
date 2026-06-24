@@ -10,7 +10,7 @@ import PresetsTab from './components/PresetsTab';
 import LivePreviewPanel from './components/LivePreviewPanel';
 import BoundComponentsPanel from './components/BoundComponentsPanel';
 import OnboardingPanel from './components/OnboardingPanel';
-import { broadcastToPhone } from './components/PhonePanel';
+import { broadcastToPhone, broadcastPreviewUpdate } from './components/PhonePanel';
 import SelectionBar from './components/SelectionBar';
 import PulsarLogo from './components/PulsarLogo';
 import ResizeHandle from './components/ResizeHandle';
@@ -58,7 +58,18 @@ export default function App() {
 
   // Live-preview / sharing sync — owns the server token bookkeeping and the
   // share affordances; listens for project / doc-changed / preview-data itself.
-  const previewSync = usePreviewSync({ settings, figmaFileKey, presetById, notify });
+  // On every persisted publish it hands us a diff/refetch message to relay to an
+  // open live preview; we only broadcast it when a phone is actually connected
+  // (same gating as "play on phone").
+  const previewSync = usePreviewSync({
+    settings,
+    figmaFileKey,
+    presetById,
+    notify,
+    onPublished: (message) => {
+      if (hapticsToken && phoneConnected) broadcastPreviewUpdate(hapticsToken, message);
+    }
+  });
 
   // Wire up the bridge once for the messages App owns (init, selection, bound
   // list, toasts). Sync-related messages are handled inside usePreviewSync.

@@ -5,6 +5,12 @@ import { copyToClipboard } from '../lib/clipboard';
 import { extractFileKey } from '../lib/fileKey';
 import { stableStringify } from '../lib/stableStringify';
 import {
+  diffPayloads,
+  isEmptyDiff,
+  type PreviewPayload,
+  type PreviewUpdateMessage
+} from '../lib/diffPayload';
+import {
   createProject,
   fetchProject,
   resolvePreviewBaseUrl,
@@ -12,6 +18,12 @@ import {
   updateProject
 } from '../lib/previewServer';
 import type { ToastOptions } from '../components/Toast';
+
+// Above this serialized size a binding-config diff is considered "complicated"
+// and we tell the preview to refetch the whole config from the server instead
+// of relaying the delta — keeps a single socket message well under any payload
+// limit on the relay.
+const PREVIEW_DIFF_MAX_BYTES = 24_000;
 
 // Live-preview sync state, surfaced as a pill in the Live preview tab.
 //   idle     — nothing shared for this file yet (no server row).
@@ -34,6 +46,10 @@ interface Params {
   // Resolves a preset id to its pattern data when building the payload.
   presetById: Map<string, CatalogEntry>;
   notify: Notify;
+  // Called after a publish is persisted by the server (a new revision is
+  // confirmed) with a diff/refetch message to relay to an open live preview.
+  // The caller decides whether a phone is connected before broadcasting.
+  onPublished?: (message: PreviewUpdateMessage) => void;
 }
 
 // Owns everything about publishing the current document's bindings to the Pulsar
@@ -41,7 +57,7 @@ interface Params {
 // copy token / QR / visibility toggle). Keeps the per-file token + revision
 // bookkeeping in refs so the (rebinding) message handlers always read fresh
 // values, and exposes the sync status + share affordances for the UI.
-export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: Params) {
+export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onPublished }: Params) {
   // --- Per-file server-sync state ---------------------------------------
   // The file we're editing. Tokens + cached config are keyed by this so a
   // different design file gets its own server row instead of overwriting the
@@ -57,6 +73,15 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
   // stableStringify of the payload we last successfully pushed — lets us skip a
   // network round-trip when nothing actually changed.
   const lastSyncedJsonRef = useRef<string | null>(null);
+  // The payload object behind lastSyncedJsonRef — the basis we diff the next
+  // publish against when relaying a live update to the preview. Kept in lockstep
+  // with lastSyncedJsonRef (set/cleared together).
+  const lastSyncedPayloadRef = useRef<PreviewPayload | null>(null);
+  // Always-fresh handle to the publish callback so the (rebinding) preview-data
+  // effect never goes stale on it and we don't rebind just because the parent
+  // passes a new closure each render.
+  const onPublishedRef = useRef(onPublished);
+  onPublishedRef.current = onPublished;
   // Promise chain that serializes all publishes, so concurrent triggers (cold
   // start + a doc-change) can't both create a token and orphan a server row.
   const syncLockRef = useRef<Promise<void>>(Promise.resolve());
@@ -106,6 +131,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
     setIsPublic(m.isPublic);
     if (m.config != null) {
       lastSyncedJsonRef.current = stableStringify(m.config);
+      lastSyncedPayloadRef.current = m.config as PreviewPayload;
       setSyncStatus(m.token ? 'synced' : 'idle');
     } else if (m.token) {
       setSyncStatus('syncing');
@@ -114,6 +140,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         if (got.kind === 'ok') {
           baseRevisionRef.current = got.revision;
           lastSyncedJsonRef.current = stableStringify(got.config);
+          lastSyncedPayloadRef.current = got.config as PreviewPayload;
           setIsPublic(got.isPublic);
           // Recover/refresh the read-only share token from the server.
           if (got.publicToken && got.publicToken !== publicTokenRef.current) {
@@ -146,6 +173,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
           tokenRef.current = null;
           rememberPublicToken(null);
           lastSyncedJsonRef.current = null;
+          lastSyncedPayloadRef.current = null;
           baseRevisionRef.current = null;
           setSyncStatus('idle');
         }
@@ -154,6 +182,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
       }
     } else {
       lastSyncedJsonRef.current = null;
+      lastSyncedPayloadRef.current = null;
       setSyncStatus('idle');
     }
     send({ type: 'request-preview-data', purpose: 'autosync' });
@@ -294,11 +323,52 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
       // allowed — i.e. a background auto-sync of a never-shared file).
       const ensurePublished = async (allowCreate: boolean): Promise<string | null> => {
         const json = stableStringify(payload);
+        // Capture the basis to diff the live-preview update against before any
+        // branch below overwrites our last-synced snapshot.
+        const prevPayload = lastSyncedPayloadRef.current;
+        const prevRevision = baseRevisionRef.current;
+        const nextPayload = payload as unknown as PreviewPayload;
+
+        // Relay the just-persisted change to an open live preview. `forced` (we
+        // resolved a conflict by re-publishing on the server's revision) always
+        // refetches — our local basis may not match what the preview last read.
+        // Otherwise diff the render-relevant config and relay only the delta,
+        // falling back to a full refetch when there's no basis, the file key
+        // changed (a different prototype), or the diff is too large for one
+        // socket message. Only ever called once the server has confirmed the
+        // write (a new revision), so a refetch can't read stale data.
+        const emitUpdate = (toRevision: number, forced: boolean) => {
+          const cb = onPublishedRef.current;
+          if (!cb) return;
+          const previewToken = publicTokenRef.current ?? undefined;
+          if (
+            !forced &&
+            prevPayload != null &&
+            prevRevision != null &&
+            prevPayload.fileKey === nextPayload.fileKey
+          ) {
+            const diff = diffPayloads(prevPayload, nextPayload);
+            if (isEmptyDiff(diff)) return; // nothing the preview renders changed
+            if (stableStringify(diff).length <= PREVIEW_DIFF_MAX_BYTES) {
+              cb({
+                kind: 'preview-haptics-diff',
+                previewToken,
+                fromRevision: prevRevision,
+                toRevision,
+                diff
+              });
+              return;
+            }
+          }
+          cb({ kind: 'preview-haptics-refetch', previewToken, toRevision });
+        };
+
         const adopt = (t: string, publicToken: string, revision: number) => {
           tokenRef.current = t;
           rememberPublicToken(publicToken);
           baseRevisionRef.current = revision;
           lastSyncedJsonRef.current = json;
+          lastSyncedPayloadRef.current = nextPayload;
           send({ type: 'persist-project-token', fileKey, token: t, publicToken });
           send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
         };
@@ -308,6 +378,8 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         if (token && json === lastSyncedJsonRef.current) return token;
 
         if (!token) {
+          // Creating the project: no preview can be open against a token that
+          // didn't exist yet, so there's nothing to relay.
           if (!allowCreate) return null;
           const created = await createProject(payload);
           adopt(created.token, created.publicToken, created.revision);
@@ -318,7 +390,9 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         if (res.kind === 'ok') {
           baseRevisionRef.current = res.revision;
           lastSyncedJsonRef.current = json;
+          lastSyncedPayloadRef.current = nextPayload;
           send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: res.revision });
+          emitUpdate(res.revision, false);
           return token;
         }
         if (res.kind === 'gone') {
@@ -327,6 +401,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
             tokenRef.current = null;
             baseRevisionRef.current = null;
             lastSyncedJsonRef.current = null;
+            lastSyncedPayloadRef.current = null;
             return null;
           }
           const created = await createProject(payload);
@@ -341,7 +416,9 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
         if (forced.kind === 'ok') {
           baseRevisionRef.current = forced.revision;
           lastSyncedJsonRef.current = json;
+          lastSyncedPayloadRef.current = nextPayload;
           send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: forced.revision });
+          emitUpdate(forced.revision, true);
           return token;
         }
         if (forced.kind === 'gone') {
@@ -349,6 +426,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify }: P
             tokenRef.current = null;
             baseRevisionRef.current = null;
             lastSyncedJsonRef.current = null;
+            lastSyncedPayloadRef.current = null;
             return null;
           }
           const created = await createProject(payload);

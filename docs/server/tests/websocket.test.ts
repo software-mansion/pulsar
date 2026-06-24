@@ -76,6 +76,14 @@ describe('WebSocket pairing protocol', () => {
 
   function connect(query: string): WebSocket {
     const ws = new WebSocket(`${running.wsUrl}/?${query}`);
+    // Fire-and-forget sender sockets are never awaited. Closing one in afterEach
+    // while its handshake is still in flight makes ws emit an 'error'
+    // ("WebSocket was closed before the connection was established"); with no
+    // listener Node rethrows it as an unhandled error and fails whichever test
+    // just ran (nondeterministically, by handshake timing). A no-op handler
+    // keeps these expected teardown aborts benign. Tests that need to observe
+    // connection errors attach their own 'error' listener on top of this.
+    ws.on('error', () => {});
     sockets.push(ws);
     return ws;
   }
