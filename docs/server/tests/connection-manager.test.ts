@@ -100,6 +100,21 @@ describe('ConnectionManager', () => {
       expect(frames(receiver)).toContainEqual({ type: 'broadcast', message: 'hello' });
     });
 
+    it('relays a structured live-preview update object intact', () => {
+      const { receiver, token } = pair();
+      const before = receiver.sent.length;
+      const update = {
+        kind: 'preview-haptics-diff',
+        previewToken: 'pub-123',
+        fromRevision: 4,
+        toRevision: 5,
+        diff: { bindings: { set: { 'a:1': { name: 'breakingWave' } }, del: ['b:2'] } },
+      };
+      expect(cm.broadcastChannel(JSON.stringify(update), token)).toBe('ok');
+      const delivered = frames(receiver).slice(before);
+      expect(delivered).toContainEqual({ type: 'broadcast', message: update });
+    });
+
     it('returns an error string for an unknown token', () => {
       expect(cm.broadcastChannel('hi', 'unknown-token')).toBe(
         'Invalid token or no active connection found',

@@ -7,6 +7,7 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import type { Pattern } from 'react-native-pulsar';
 
 import { FIGMA_PREVIEW_URL } from '@/constants/Connection';
+import { useConnections } from '@/contexts/ConnectionsContext';
 import { usePlayPatternFromHost } from '@/src/haptics/playPattern';
 import { ThemedText } from '@/components/themed-text';
 import BasicLayout from '@/components/BasicLayout';
@@ -30,6 +31,24 @@ const fullscreenEdges = {
   bottom: 'off',
   right: 'off',
 };
+
+// Build a script that delivers a live haptics-config update into the preview.
+// The preview runs either at the top level (local dev) or inside an <iframe
+// srcdoc> (the production docs embed), so we post to the top document AND to
+// every child iframe's contentWindow — same-origin (the srcdoc inherits our
+// origin), so the post is allowed.
+function buildPreviewInjection(envelope: unknown): string {
+  // JSON is a valid JS expression on the ES2019+ engines these WebViews use
+  // (U+2028/U+2029 are legal in string literals), so embed it directly.
+  const json = JSON.stringify(envelope);
+  return (
+    `(function(){try{var u=${json};` +
+    `window.postMessage(u,'*');` +
+    `var f=document.querySelectorAll('iframe');` +
+    `for(var i=0;i<f.length;i++){try{f[i].contentWindow&&f[i].contentWindow.postMessage(u,'*');}catch(e){}}` +
+    `}catch(e){}})();true;`
+  );
+}
 
 // Figma tab. Two modes:
 //   1. Deep-linked from the Figma plugin (`pulsarapp://figma?token=<token>`)
@@ -60,6 +79,28 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   const webRef = useRef<WebView>(null);
   const playFromHost = usePlayPatternFromHost();
   const navigation = useNavigation();
+  const { lastPreviewUpdate } = useConnections();
+
+  // Deliver live haptics-config updates relayed by the plugin into the preview.
+  // Seed the handled nonce at mount so an update that arrived before this
+  // preview opened doesn't fire on first render; only newer ones inject.
+  const handledNonceRef = useRef<number | null>(lastPreviewUpdate?.nonce ?? null);
+  useEffect(() => {
+    const update = lastPreviewUpdate;
+    if (!update || handledNonceRef.current === update.nonce) return;
+    handledNonceRef.current = update.nonce;
+    // Ignore updates targeting a different preview than the one we're showing.
+    if (update.previewToken && update.previewToken !== token) return;
+    webRef.current?.injectJavaScript(
+      buildPreviewInjection({
+        type: 'pulsar-haptics-update',
+        kind: update.kind,
+        fromRevision: update.fromRevision,
+        toRevision: update.toRevision,
+        diff: update.diff,
+      })
+    );
+  }, [lastPreviewUpdate, token]);
 
   const [tabBarHidden, setTabBarHidden] = useState(false);
   useEffect(() => {
