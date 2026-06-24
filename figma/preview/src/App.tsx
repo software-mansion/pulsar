@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FrameInfo, NodeBox, PresetData, PreviewPayload } from './types';
-import { readPayload } from './lib/payload';
+import { getTokenFromUrl, readPayload } from './lib/payload';
 import { normalizeId } from './lib/ids';
 import { useFigmaMessages } from './lib/useFigmaMessages';
 import { useFullscreen } from './lib/useFullscreen';
@@ -10,6 +10,7 @@ import { playPreset, stopAll } from './audio/player';
 import { Header } from './components/Header';
 import { PrototypeView } from './components/PrototypeView';
 import { HapticList } from './components/HapticList';
+import { OpenOnPhone } from './components/OpenOnPhone';
 import { PresetDetailsModal } from './components/PresetDetailsModal';
 import fullscreenExitIcon from './assets/icon-fullscreen-exit.svg';
 import fullscreenIcon from './assets/icon-fullscreen.svg';
@@ -146,6 +147,15 @@ export default function App() {
   // `window.parent` (the docs /figma-preview page embeds us in an <iframe
   // srcdoc>); getHostBridge/detectAppHost resolve either — see lib/hostBridge.
   const isAppHost = useMemo(() => detectAppHost(), []);
+
+  // Deep link that opens this same preview in the Pulsar mobile app, carrying
+  // the current share token. Rendered as a QR in the sidebar so a desktop user
+  // can hop to their phone; pointless when we're already running inside the app.
+  const openOnPhoneLink = useMemo(() => {
+    if (isAppHost) return null;
+    const token = getTokenFromUrl();
+    return token ? `pulsarapp://figma?token=${encodeURIComponent(token)}` : null;
+  }, [isAppHost]);
 
   // When running inside the PulsarApp WebView the preview already fills the
   // WebView (mobile → implicit fullscreen), but the app's bottom tab bar still
@@ -332,6 +342,7 @@ export default function App() {
             onActivate={setActiveId}
             onPlay={playFromList}
             onShowDetails={setDetailsId}
+            footer={openOnPhoneLink ? <OpenOnPhone deepLink={openOnPhoneLink} /> : undefined}
           />
         )}
       </main>

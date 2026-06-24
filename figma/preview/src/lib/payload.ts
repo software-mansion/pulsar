@@ -11,7 +11,7 @@ const API_SERVER_URL = "https://pulsar-server.swmansion.com";
 // what the docs `/figma-preview` page (docs/src/components/preview/Preview.astro)
 // relies on to forward its own query string into the embed. Same-origin only;
 // any SecurityError on a cross-origin parent falls back to no token.
-function getTokenFromUrl(): string | null {
+export function getTokenFromUrl(): string | null {
   const own = new URLSearchParams(location.search).get('token');
   if (own) return own;
   if (window.parent !== window) {
