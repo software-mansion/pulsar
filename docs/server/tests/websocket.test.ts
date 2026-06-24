@@ -188,4 +188,58 @@ describe('WebSocket pairing protocol', () => {
       expect((await r2f.await(type('connection_restored'))).type).toBe('connection_restored');
     });
   });
+
+  describe('producer identity relay', () => {
+    it('relays sender name + previewToken to the receiver on connection_established', async () => {
+      running = await startServer();
+      const code = (await request(running.app).get('/create-channel')).body.code as string;
+      connect(
+        `type=sender&action=new_connection&code=${code}` +
+          `&name=${encodeURIComponent('Figma Plugin macOS')}&previewToken=pub-xyz`,
+      );
+      const receiver = connect(`type=receiver&action=new_connection&code=${code}`);
+      const rf = new Frames(receiver);
+      const est = await rf.await(type('connection_established'));
+      expect(est.name).toBe('Figma Plugin macOS');
+      expect(est.previewToken).toBe('pub-xyz');
+    });
+
+    it('omits identity fields when the producer advertises none (old client)', async () => {
+      running = await startServer();
+      const code = (await request(running.app).get('/create-channel')).body.code as string;
+      connect(`type=sender&action=new_connection&code=${code}`);
+      const receiver = connect(`type=receiver&action=new_connection&code=${code}`);
+      const rf = new Frames(receiver);
+      const est = await rf.await(type('connection_established'));
+      expect(Object.keys(est).sort()).toEqual(['token', 'type']);
+    });
+  });
+
+  // The phone holds two pairings at once (two receiver sockets, two tokens) and
+  // each producer's broadcast lands only on its own socket — the end-to-end
+  // proof behind the multi-connection phone client.
+  describe('multiple producers, one phone', () => {
+    it('delivers each producer broadcast to its own receiver socket', async () => {
+      running = await startServer();
+      const codeA = (await request(running.app).get('/create-channel')).body.code as string;
+      connect(`type=sender&action=new_connection&code=${codeA}&name=PluginA`);
+      const phoneA = connect(`type=receiver&action=new_connection&code=${codeA}`);
+      const phoneAf = new Frames(phoneA);
+      const tokenA = (await phoneAf.await(type('connection_established'))).token as string;
+
+      const codeB = (await request(running.app).get('/create-channel')).body.code as string;
+      connect(`type=sender&action=new_connection&code=${codeB}&name=BrowserB`);
+      const phoneB = connect(`type=receiver&action=new_connection&code=${codeB}`);
+      const phoneBf = new Frames(phoneB);
+      const tokenB = (await phoneBf.await(type('connection_established'))).token as string;
+
+      expect(tokenA).not.toBe(tokenB);
+
+      await request(running.app).post('/broadcast').send({ message: 'fromA', token: tokenA });
+      await request(running.app).post('/broadcast').send({ message: 'fromB', token: tokenB });
+
+      expect((await phoneAf.await(type('broadcast'))).message).toBe('fromA');
+      expect((await phoneBf.await(type('broadcast'))).message).toBe('fromB');
+    });
+  });
 });

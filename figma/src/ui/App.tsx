@@ -273,6 +273,8 @@ export default function App() {
           hapticsToken={hapticsToken}
           onHapticsTokenChange={setHapticsToken}
           onPhoneConnectedChange={setPhoneConnected}
+          ensureSharedPreview={previewSync.ensureShared}
+          previewToken={previewSync.publicToken}
           settings={settings}
           onSettingsChange={setSettings}
           filtered={filtered}
@@ -329,9 +331,6 @@ export default function App() {
           onShowLivePreview={previewSync.showInLivePreview}
           onCopyShareLink={previewSync.copyShareLink}
           onCopyShareToken={previewSync.copyShareToken}
-          onShowQrCode={previewSync.showQrCode}
-          qrDataUrl={previewSync.shareQr}
-          onClearQr={previewSync.clearQr}
         />
       )}
 

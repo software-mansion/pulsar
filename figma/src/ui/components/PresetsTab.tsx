@@ -21,6 +21,8 @@ export default function PresetsTab({
   hapticsToken,
   onHapticsTokenChange,
   onPhoneConnectedChange,
+  ensureSharedPreview,
+  previewToken,
   settings,
   onSettingsChange,
   filtered,
@@ -45,6 +47,12 @@ export default function PresetsTab({
   hapticsToken: string | null;
   onHapticsTokenChange: (token: string | null) => void;
   onPhoneConnectedChange: (connected: boolean) => void;
+  // Resolves (publishing if needed) this file's read-only preview token for the
+  // unified pairing QR, or null when the file isn't preview-ready.
+  ensureSharedPreview: () => Promise<string | null>;
+  // The current file's preview token, surfaced so an already-paired phone can be
+  // handed it once it becomes available.
+  previewToken: string | null;
   settings: Settings;
   onSettingsChange: (settings: Settings) => void;
   filtered: CatalogEntry[];
@@ -121,6 +129,8 @@ export default function PresetsTab({
               token={hapticsToken}
               onTokenChange={onHapticsTokenChange}
               onConnectedChange={onPhoneConnectedChange}
+              ensureSharedPreview={ensureSharedPreview}
+              previewToken={previewToken}
             />
           </div>
         </div>

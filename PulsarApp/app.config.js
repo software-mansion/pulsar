@@ -74,6 +74,16 @@ export default {
       },
     ],
     "expo-localization",
+    "expo-image",
+    [
+      "expo-camera",
+      {
+        cameraPermission:
+          "Allow Pulsar to use the camera to scan pairing QR codes.",
+        // QR scanning only — no audio capture, so don't request the microphone.
+        recordAudioAndroid: false,
+      },
+    ],
     [
       "react-native-nano-icons",
       {
