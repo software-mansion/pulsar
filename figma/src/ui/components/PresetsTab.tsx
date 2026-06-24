@@ -30,6 +30,7 @@ export default function PresetsTab({
   onPlay,
   onBind,
   onOpen,
+  onShowTagsGuide,
   modalOpen,
   scrollToId,
   onScrolledToPreset
@@ -54,6 +55,8 @@ export default function PresetsTab({
   onPlay: (entry: CatalogEntry) => void;
   onBind: (entry: CatalogEntry) => void;
   onOpen: (id: string) => void;
+  // Opens the "Tags guide" modal (info icon in the Filters header).
+  onShowTagsGuide: () => void;
   // Whether the preset-detail modal is open (hides the scroll-to-top FAB).
   modalOpen: boolean;
   // When set, scroll that preset into view + flash it (e.g. jumped to from the
@@ -110,6 +113,7 @@ export default function PresetsTab({
               setState={setFilter}
               favouritesOnly={favouritesOnly}
               onFavouritesOnlyChange={setFavouritesOnly}
+              onShowTagsGuide={onShowTagsGuide}
             />
             <AddCustomPreset
               customPresets={customPresets}

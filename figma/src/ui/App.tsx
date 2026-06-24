@@ -5,6 +5,7 @@ import type { BoundItem, CatalogEntry, SelectionInfo, Settings } from '../shared
 import { onMessage, send } from './figmaBridge';
 import { applyFilter, filterRevealing, useFilterStateInit, type FilterState } from './components/Filters';
 import PresetDetail from './components/PresetDetail';
+import TagsGuide from './components/TagsGuide';
 import PresetsTab from './components/PresetsTab';
 import LivePreviewPanel from './components/LivePreviewPanel';
 import BoundComponentsPanel from './components/BoundComponentsPanel';
@@ -34,6 +35,7 @@ export default function App() {
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
   const [tab, setTab] = useState<Tab>('presets');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [tagsGuideOpen, setTagsGuideOpen] = useState(false);
   const [filter, setFilter] = useState<FilterState>(useFilterStateInit());
   const [favourites, setFavourites] = useState<Set<string>>(new Set());
   const [favouritesOnly, setFavouritesOnly] = useState(false);
@@ -282,7 +284,8 @@ export default function App() {
           onPlay={playEntry}
           onBind={bindEntry}
           onOpen={setOpenId}
-          modalOpen={!!openEntry}
+          onShowTagsGuide={() => setTagsGuideOpen(true)}
+          modalOpen={!!openEntry || tagsGuideOpen}
           scrollToId={scrollToId}
           onScrolledToPreset={() => setScrollToId(null)}
         />
@@ -303,6 +306,14 @@ export default function App() {
               canPlayOnPhone={!!hapticsToken && phoneConnected}
               onBind={() => bindEntry(openEntry)}
             />
+          </div>
+        </div>
+      )}
+
+      {tagsGuideOpen && (
+        <div className={styles['modal-backdrop']} onClick={() => setTagsGuideOpen(false)}>
+          <div className={styles['modal-card']} onClick={(e) => e.stopPropagation()}>
+            <TagsGuide onClose={() => setTagsGuideOpen(false)} />
           </div>
         </div>
       )}
