@@ -1,0 +1,184 @@
+/* First-run onboarding tour - a full-window carousel rendered above everything
+   else. Mirrors the App modal chrome (blue-50 border + offset shadow) but owns
+   its own backdrop so it can sit on top of any tab, including other modals. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 26, 114, 0.45);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 12px;
+  overflow: auto;
+  animation: overlay-in 160ms ease-out both;
+}
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.card {
+  background: var(--surface);
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  gap: 14px;
+  animation: card-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Per-screen slide layer - holds the welcome screen or a feature step's
+   media + copy, and replays a directional slide-in on every navigation
+   (remounted via a React key). Owns the column gap the card used to apply
+   directly to media/body. */
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+.slide-next { animation-name: slide-from-right; }
+.slide-prev { animation-name: slide-from-left; }
+@keyframes slide-from-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-from-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Header: step counter on the left, escape hatch on the right. */
+.head { display: flex; align-items: center; }
+.step-count {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-blue-60);
+}
+.skip {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  box-shadow: none;
+  border-width: 1px;
+}
+.skip:active { box-shadow: none; }
+
+/* Demo media slot - real GIF or the labelled placeholder, kept at a stable
+   aspect ratio so swapping between steps doesn't jump the layout. */
+.media {
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.gif { display: block; width: 100%; height: auto; border-radius: var(--radius); }
+.gif-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  aspect-ratio: 16 / 10;
+  padding: 16px;
+  text-align: center;
+  color: var(--color-blue-60);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  background: var(--color-blue-10);
+  border: 1px dashed var(--color-blue-30);
+  border-radius: var(--radius);
+}
+/* Gently pulse the play glyph so the placeholder reads as a future demo. */
+.gif-placeholder img { opacity: 0.7; animation: play-pulse 2.4s ease-in-out infinite; }
+@keyframes play-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.12); opacity: 0.9; }
+}
+.gif-tag {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--surface);
+  background: var(--color-blue-50);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* Welcome screen - brand mark + greeting, centred and given the room the
+   feature steps spend on the demo media so the card height stays stable. */
+.welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 24px 8px;
+}
+/* Brand mark pops in slightly after the screen settles for a warmer greeting. */
+.welcome :global(.pulsar-logo) {
+  animation: logo-pop 460ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+}
+@keyframes logo-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Step copy. */
+.body { text-align: center; padding: 0 4px; }
+.title { margin: 0 0 6px; font-size: var(--fs-lg); font-weight: 700; color: var(--color-primary); }
+.text { margin: 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); }
+
+/* Progress dots - also clickable to jump to a step. */
+.dots { display: flex; justify-content: center; gap: 8px; }
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  box-shadow: none;
+  background: var(--color-blue-20);
+  transition: background 120ms ease, transform 120ms ease;
+}
+.dot:active { box-shadow: none; transform: none; }
+.dot-active { background: var(--color-blue-50); transform: scale(1.15); }
+
+/* Footer nav - Back on the left, primary action on the right. */
+.foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.foot button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.foot button:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
+.arrow-left { transform: rotate(90deg); }
+.arrow-right { transform: rotate(-90deg); }
+
+/* Respect users who ask for less motion - drop every entrance/loop animation
+   but keep the final (settled) state. */
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .card,
+  .screen,
+  .welcome :global(.pulsar-logo),
+  .gif-placeholder img {
+    animation: none;
+  }
+}

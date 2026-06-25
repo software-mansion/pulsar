@@ -126,6 +126,9 @@ export type UiToMain =
   | { type: 'persist-haptics-token'; token: string | null }
   | { type: 'persist-favourites'; favourites: string[] }
   | { type: 'persist-custom-presets'; presets: CatalogEntry[] }
+  // Mark the first-run onboarding tour as seen so it doesn't auto-open again.
+  // Stored per-user in clientStorage (not per-file), so the tour shows once.
+  | { type: 'persist-onboarding-seen'; seen: boolean }
   // Per-file project state. The server token and cached config are keyed by
   // fileKey so opening the plugin in another design file gets its own token
   // instead of clobbering the first file's shared preview.
@@ -163,6 +166,9 @@ export type MainToUi =
       figmaFileKey: string;
       favourites: string[];
       customPresets: CatalogEntry[];
+      // Whether the first-run onboarding tour has already been shown. False
+      // (the default) makes the UI auto-open the tour on first launch.
+      onboardingSeen: boolean;
     }
   | { type: 'selection'; node: SelectionInfo | null }
   | { type: 'play-preset'; presetId: string } // emitted when a bound node is clicked in editor
