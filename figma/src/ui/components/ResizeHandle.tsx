@@ -19,7 +19,7 @@ function sizeFromEvent(e: React.PointerEvent<HTMLDivElement>) {
 }
 
 // Bottom-right corner grip. Figma plugin windows don't resize from their OS
-// edges — the only way to resize is an in-UI handle that calls
+// edges - the only way to resize is an in-UI handle that calls
 // figma.ui.resize() on the main thread.
 export default function ResizeHandle() {
   const dragging = useRef(false);

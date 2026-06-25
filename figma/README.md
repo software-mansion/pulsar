@@ -1,4 +1,4 @@
-# Pulsar Haptics — Figma plugin
+# Pulsar Haptics - Figma plugin
 
 Browse the Pulsar haptic preset catalogue, bind a preset to any Figma node, and
 hear it while editing or in the standalone live-preview app (see `preview/`).
@@ -8,14 +8,14 @@ Optionally pair a phone to feel real haptics on the device.
 
 - **206 presets** indexed from the Pulsar repo (151 user, 9 iOS, 47 Android system).
 - **Filter & search** by name, tag, category, platform.
-- **Full or compact layout** — toggle anywhere or in Settings.
+- **Full or compact layout** - toggle anywhere or in Settings.
 - **Detail view** with SVG pattern visualization, raw JSON, and copy-pastable Swift / Kotlin / React Native / Flutter snippets.
-- **Bind to selection** — preset metadata is stored as plugin data on the node, with a relaunch button.
-- **Edit-mode playback** — selecting a bound node renders the preset to a WebAudio buffer (port of the docs `audio-player.ts`).
-- **Live preview** — "Show in live preview" opens the current design in the standalone embed app (`preview/`), which plays bound haptics on tap. See [`preview/README.md`](preview/README.md).
-- **Phone pairing** — same `pulsar-server.swmansion.com` relay used by the docs site (QR + WebSocket, persistent token).
-- **Settings** — toggle edit-mode sound, set the live-preview app URL.
-- **Theme** — colors, radii, and the signature offset drop-shadow taken from the Pulsar docs CSS.
+- **Bind to selection** - preset metadata is stored as plugin data on the node, with a relaunch button.
+- **Edit-mode playback** - selecting a bound node renders the preset to a WebAudio buffer (port of the docs `audio-player.ts`).
+- **Live preview** - "Show in live preview" opens the current design in the standalone embed app (`preview/`), which plays bound haptics on tap. See [`preview/README.md`](preview/README.md).
+- **Phone pairing** - same `pulsar-server.swmansion.com` relay used by the docs site (QR + WebSocket, persistent token).
+- **Settings** - toggle edit-mode sound, set the live-preview app URL.
+- **Theme** - colors, radii, and the signature offset drop-shadow taken from the Pulsar docs CSS.
 
 ## Getting started
 
@@ -66,6 +66,6 @@ preview/                Standalone live-preview web app (Figma Embed API)
 
 ## Notes / limitations
 
-- Figma's plugin API has no direct "click in editor" hook — we proxy that with `selectionchange`.
+- Figma's plugin API has no direct "click in editor" hook - we proxy that with `selectionchange`.
 - The live-preview app uses the Figma Embed API (`client-id` + registered embed origin). See [`preview/README.md`](preview/README.md).
 - The pairing flow mirrors the docs site exactly. `manifest.json` whitelists the two hosts.

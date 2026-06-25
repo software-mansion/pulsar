@@ -1,96 +1,19 @@
-/* Live preview tab — primary CTA + secondary action row, the sync-status pill,
+/* Share tab - primary CTA + secondary action row, the sync-status pill,
    the share-link visibility toggle, and the QR display card. */
 
 /* Tab container + intro copy. */
 .preview-panel { padding: 16px; gap: 14px; }
 .preview-intro { margin: 4px 0 0; font-size: var(--fs-xs); line-height: 1.5; }
 
-/* Figma file-key input — the real file key the embed needs. */
-.preview-filekey { display: flex; flex-direction: column; gap: 6px; }
-.preview-filekey-label {
-  font-size: var(--fs-2xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-blue-60);
-}
-.preview-filekey-hint { margin: 0; font-size: var(--fs-2xs); line-height: 1.4; }
-
-button.preview-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
-  font-size: var(--fs-md);
-}
-.preview-secondary-row { gap: 8px; }
-button.preview-secondary {
+/* Two share actions on one row - equal width. */
+.preview-actions-row { gap: 8px; }
+button.preview-action {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 12px;
-}
-button.preview-tertiary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-}
-
-/* Sync status row — a coloured-dot pill on the left, "Sync now" on the right. */
-.preview-sync-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.preview-sync-pill {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--color-blue-10);
-  border: 1px solid var(--color-blue-20);
-  font-size: var(--fs-xs);
-  color: var(--color-primary);
-  min-width: 0;
-}
-.preview-sync-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.preview-sync-dot.pulse {
-  animation: preview-sync-pulse 1s ease-in-out infinite;
-}
-@keyframes preview-sync-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-button.preview-sync-now {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 7px;
-}
-button.preview-sync-now:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-/* Spin the refresh glyph while a sync is in flight, echoing the pill's pulse. */
-.preview-sync-spin {
-  animation: preview-sync-spin 0.9s linear infinite;
-}
-@keyframes preview-sync-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  padding: 9px 12px;
 }
 
 /* Share-link visibility (public/private) toggle. A bordered card matching the
@@ -116,7 +39,7 @@ button.preview-sync-now:disabled {
 .preview-visibility-title { font-weight: 600; font-size: var(--fs-sm); }
 .preview-visibility-text { margin: 2px 0 0; font-size: var(--fs-xs); line-height: 1.45; }
 
-/* QR display — mirrors the docs Connection.tsx widget.
+/* QR display - mirrors the docs Connection.tsx widget.
    Outer card: white, blue-50 border, signature offset shadow (docs .content).
    Inner box: blue-10 fill, centred prompt + QR, close (×) button in the
    top-right corner (docs .codebox + .iconButton). The QR itself is generated

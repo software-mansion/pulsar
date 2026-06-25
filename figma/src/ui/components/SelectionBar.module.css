@@ -1,4 +1,4 @@
-/* Selection bar — the sticky strip above the list showing the selected node and
+/* Selection bar - the sticky strip above the list showing the selected node and
    its bound preset. Both names are interactive: the component name reveals the
    node on the canvas, the preset name jumps to + plays it. They're styled as
    bordered chips so it's obvious they're clickable. */
@@ -36,7 +36,7 @@ button.sel-link {
 button.sel-link > img { flex-shrink: 0; display: block; }
 button.sel-link:hover { background: var(--color-blue-20); box-shadow: none; transform: none; }
 button.sel-link:active { box-shadow: none; transform: scale(0.97); }
-/* Preset chip — dashed border to read as "action" (plays on click). */
+/* Preset chip - dashed border to read as "action" (plays on click). */
 button.sel-link--preset { background: var(--surface); border-style: dashed; }
 button.sel-link--preset:hover { background: var(--color-blue-10); }
 .sel-arrow { color: var(--muted); flex-shrink: 0; }

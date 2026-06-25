@@ -26,7 +26,7 @@ export interface PreviewPayload {
 // A minimal delta over the parts of the payload that affect what the preview
 // renders: the haptic bindings, the tap→owner map, the per-element list, and
 // the per-frame highlight boxes. Top-level `nodeId`/`frame` are deliberately
-// excluded — the app's Figma iframe drives its own presented-node state, so a
+// excluded - the app's Figma iframe drives its own presented-node state, so a
 // diff must never move it. A `fileKey` change can't be expressed as a delta
 // (it's a different prototype) and forces a refetch instead (see emitUpdate).
 export interface HapticsDiff {

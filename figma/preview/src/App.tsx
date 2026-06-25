@@ -22,7 +22,7 @@ const TAP_DEBOUNCE_MS = 250;
 
 // True when the center point of `inner` lies within `outer`. Used as a fallback
 // "which frame does this element belong to?" test for payloads that don't carry
-// a per-element frameId — we treat the element as part of the currently shown
+// a per-element frameId - we treat the element as part of the currently shown
 // frame iff its center sits inside the frame's absolute canvas box.
 function boxCenterInside(inner: NodeBox, outer: NodeBox): boolean {
   const cx = inner.x + inner.w / 2;
@@ -40,7 +40,7 @@ export default function App() {
   // dedicated empty state distinct from "no design loaded".
   const [isPrivate, setIsPrivate] = useState(false);
   // The server revision our current `payload` reflects, and a mirror of the
-  // payload itself — both in refs so the (stable) host-update handlers below can
+  // payload itself - both in refs so the (stable) host-update handlers below can
   // read the latest values without re-binding the window message listener.
   const revisionRef = useRef(0);
   const payloadRef = useRef<PreviewPayload | null>(null);
@@ -92,7 +92,7 @@ export default function App() {
   }, []);
 
   // Apply a relayed delta in place when our revision is exactly the one the diff
-  // was computed against; otherwise we've missed an update (a gap) — refetch.
+  // was computed against; otherwise we've missed an update (a gap) - refetch.
   const onDiff = useCallback(
     (fromRevision: number, toRevision: number, diff: HapticsDiff) => {
       if (!payloadRef.current || revisionRef.current !== fromRevision) {
@@ -149,7 +149,7 @@ export default function App() {
     [payload]
   );
 
-  const [status, setStatus] = useState('Waiting for a design — open one from the Pulsar plugin.');
+  const [status, setStatus] = useState('Waiting for a design - open one from the Pulsar plugin.');
   // Once we know the payload state, refresh the status accordingly. Done in an
   // effect so the user briefly sees "loading" while the token fetch is in
   // flight rather than a flash of the empty state.
@@ -167,7 +167,7 @@ export default function App() {
     setStatus(
       payload?.fileKey
         ? 'Loading prototype…'
-        : 'Waiting for a design — open one from the Pulsar plugin.'
+        : 'Waiting for a design - open one from the Pulsar plugin.'
     );
   }, [payloadLoaded, payload, isPrivate]);
   const [currentNodeId, setCurrentNodeId] = useState(presentedId);
@@ -205,7 +205,7 @@ export default function App() {
   //
   // The bridge may live on `window` (preview served directly) or on
   // `window.parent` (the docs /figma-preview page embeds us in an <iframe
-  // srcdoc>); getHostBridge/detectAppHost resolve either — see lib/hostBridge.
+  // srcdoc>); getHostBridge/detectAppHost resolve either - see lib/hostBridge.
   const isAppHost = useMemo(() => detectAppHost(), []);
 
   // Deep link that opens this same preview in the Pulsar mobile app, carrying
@@ -230,7 +230,7 @@ export default function App() {
           JSON.stringify({ type: 'set-tab-bar-hidden', hidden: next })
         );
       } catch {
-        // No bridge — nothing to toggle.
+        // No bridge - nothing to toggle.
       }
       return next;
     });
@@ -249,7 +249,7 @@ export default function App() {
               type: 'play-preset',
               presetName: data.name,
               // PresetData's discrete/continuous shape is structurally identical
-              // to react-native-pulsar's Pattern type — see
+              // to react-native-pulsar's Pattern type - see
               // react-native/react-native-pulsar/src/types.ts.
               pattern: {
                 discretePattern: data.discretePattern,
@@ -306,7 +306,7 @@ export default function App() {
   // On mobile we always run fullscreen (content fills the screen, no chrome).
   const fullscreen = isFullscreen || isMobile;
 
-  // The owner revoked this share link. Don't leak that a design ever existed —
+  // The owner revoked this share link. Don't leak that a design ever existed -
   // just explain the link is private and how to regain access.
   if (isPrivate) {
     return (
@@ -358,7 +358,7 @@ export default function App() {
     (currentNodeId === presentedId ? payload.frame : null);
   // Filter elements to those that belong to the currently-presented frame.
   // Prefer the explicit `frameId` when present (new payloads); for older
-  // payloads — and for any element the plugin didn't tag — fall back to a
+  // payloads - and for any element the plugin didn't tag - fall back to a
   // canvas-coordinate containment check against the current frame's box. This
   // matters because the plugin collects bound nodes from the whole page, not
   // just the present frame, so without filtering we'd paint highlights for
@@ -369,7 +369,7 @@ export default function App() {
         return e.box ? boxCenterInside(e.box, currentFrame) : false;
       })
     : [];
-  // In fullscreen we show only the Figma content — no header, panel, highlights,
+  // In fullscreen we show only the Figma content - no header, panel, highlights,
   // or card chrome.
   const showHighlights =
     highlightsOn && !fullscreen && currentFrame !== null && visibleElements.length > 0;

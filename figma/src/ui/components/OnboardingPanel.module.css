@@ -1,4 +1,4 @@
-/* Onboarding / help tab. Placeholder layout for now — real step-by-step usage
+/* Onboarding / help tab. Placeholder layout for now - real step-by-step usage
    notes and explanations of the confusing parts will be filled in later. */
 .onboarding-panel { padding: 16px; gap: 14px; flex: 1; min-height: 0; }
 .onboarding-intro { margin: 4px 0 0; font-size: var(--fs-xs); line-height: 1.5; }

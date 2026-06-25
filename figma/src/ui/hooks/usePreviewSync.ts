@@ -21,22 +21,22 @@ import type { ToastOptions } from '../components/Toast';
 
 // Above this serialized size a binding-config diff is considered "complicated"
 // and we tell the preview to refetch the whole config from the server instead
-// of relaying the delta — keeps a single socket message well under any payload
+// of relaying the delta - keeps a single socket message well under any payload
 // limit on the relay.
 const PREVIEW_DIFF_MAX_BYTES = 24_000;
 
 // Live-preview sync state, surfaced as a pill in the Live preview tab.
-//   idle     — nothing shared for this file yet (no server row).
-//   syncing  — a push/fetch is in flight.
-//   synced   — local state matches what's on the server.
-//   unsynced — local edits not yet pushed (a debounced save is pending).
-//   error    — last sync attempt failed (will retry on the next change).
+//   idle     - nothing shared for this file yet (no server row).
+//   syncing  - a push/fetch is in flight.
+//   synced   - local state matches what's on the server.
+//   unsynced - local edits not yet pushed (a debounced save is pending).
+//   error    - last sync attempt failed (will retry on the next change).
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'unsynced' | 'error';
 
 type Notify = (message: string, opts?: ToastOptions) => void;
 
 interface Params {
-  // Latest settings — the publish handler reads the preview-URL override, so the
+  // Latest settings - the publish handler reads the preview-URL override, so the
   // effect rebinds when it changes.
   settings: Settings;
   // The real Figma file key (or share URL) for this document, supplied by the
@@ -66,14 +66,14 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
   // Current file's secret edit token (write access). Kept in a ref so the
   // (rebound) preview-data and doc-changed handlers always read the latest value.
   const tokenRef = useRef<string | null>(null);
-  // Current file's read-only share token — what goes into share links/QRs.
+  // Current file's read-only share token - what goes into share links/QRs.
   const publicTokenRef = useRef<string | null>(null);
   // Server revision our local state is based on (for conflict detection).
   const baseRevisionRef = useRef<number | null>(null);
-  // stableStringify of the payload we last successfully pushed — lets us skip a
+  // stableStringify of the payload we last successfully pushed - lets us skip a
   // network round-trip when nothing actually changed.
   const lastSyncedJsonRef = useRef<string | null>(null);
-  // The payload object behind lastSyncedJsonRef — the basis we diff the next
+  // The payload object behind lastSyncedJsonRef - the basis we diff the next
   // publish against when relaying a live update to the preview. Kept in lockstep
   // with lastSyncedJsonRef (set/cleared together).
   const lastSyncedPayloadRef = useRef<PreviewPayload | null>(null);
@@ -164,12 +164,12 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           // The link is revoked. Keep the token (the user can re-share to
           // re-open it) and reflect the private state in the toggle. We can't
           // read the server config while private, so leave lastSyncedJson empty
-          // — the next autosync will re-publish the live document's bindings.
+          // - the next autosync will re-publish the live document's bindings.
           setIsPublic(false);
           send({ type: 'persist-project-visibility', fileKey: m.fileKey, isPublic: false });
           setSyncStatus('synced');
         } else {
-          // Token no longer exists server-side — forget it; nothing is shared.
+          // Token no longer exists server-side - forget it; nothing is shared.
           tokenRef.current = null;
           rememberPublicToken(null);
           lastSyncedJsonRef.current = null;
@@ -245,7 +245,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
       const fileKey = m.fileKey ?? '';
       const embedFileKey = figmaFileKey ? extractFileKey(figmaFileKey) : '';
       if (!fileKey || !embedFileKey) {
-        // Pairing proceeds code-only when the file isn't preview-ready — resolve
+        // Pairing proceeds code-only when the file isn't preview-ready - resolve
         // null without nagging the user with a warning toast.
         if (isPair) {
           settlePair(null);
@@ -308,7 +308,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
         return;
       }
       const payload = {
-        // The preview embeds this as the Figma file key — must be the real key.
+        // The preview embeds this as the Figma file key - must be the real key.
         fileKey: embedFileKey,
         nodeId: m.presentNodeId,
         frame: m.presentNodeBox,
@@ -320,7 +320,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
 
       // Publish `payload` to the server, reconciling against its current state.
       // Returns the token (or null when nothing is shared yet and create isn't
-      // allowed — i.e. a background auto-sync of a never-shared file).
+      // allowed - i.e. a background auto-sync of a never-shared file).
       const ensurePublished = async (allowCreate: boolean): Promise<string | null> => {
         const json = stableStringify(payload);
         // Capture the basis to diff the live-preview update against before any
@@ -331,7 +331,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
 
         // Relay the just-persisted change to an open live preview. `forced` (we
         // resolved a conflict by re-publishing on the server's revision) always
-        // refetches — our local basis may not match what the preview last read.
+        // refetches - our local basis may not match what the preview last read.
         // Otherwise diff the render-relevant config and relay only the delta,
         // falling back to a full refetch when there's no basis, the file key
         // changed (a different prototype), or the diff is too large for one
@@ -409,7 +409,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           return created.token;
         }
         // Conflict: someone changed the row since our base. The server is the
-        // source of truth for the base revision, so adopt it — but the Figma
+        // source of truth for the base revision, so adopt it - but the Figma
         // document is the live design, so re-publish our payload on top
         // (last-writer-wins, now that we're rebased on the server's revision).
         const forced = await updateProject(token, payload, res.revision);
@@ -433,9 +433,9 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           adopt(created.token, created.publicToken, created.revision);
           return created.token;
         }
-        // Lost a second race — bail; the next change will retry from the new base.
+        // Lost a second race - bail; the next change will retry from the new base.
         baseRevisionRef.current = forced.revision;
-        throw new Error('Sync conflict — will retry on the next change.');
+        throw new Error('Sync conflict - will retry on the next change.');
       };
 
       void runExclusive(async () => {
@@ -455,7 +455,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           return;
         }
         if (!token) {
-          // Background auto-sync of a file that was never shared — nothing to do.
+          // Background auto-sync of a file that was never shared - nothing to do.
           if (isPair) settlePair(null);
           setSyncStatus('idle');
           return;
@@ -467,7 +467,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
 
         // Any explicit share re-opens the link to the public: if the user had
         // made it private, handing the link out again necessarily makes it
-        // viewable, so flip the toggle back on. Optimistic + best-effort — the
+        // viewable, so flip the toggle back on. Optimistic + best-effort - the
         // server is the source of truth, reconciled on the next cold start.
         setIsPublic(true);
         send({ type: 'persist-project-visibility', fileKey, isPublic: true });
@@ -495,7 +495,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
         }
 
         // Pairing only needs the public token (the visibility was just re-opened
-        // above) — hand it back and stop before building share URLs.
+        // above) - hand it back and stop before building share URLs.
         if (isPair) {
           settlePair(shareToken);
           return;
@@ -511,7 +511,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
             level: ok ? 'success' : 'error'
           });
         } else if (purpose === 'copy-token') {
-          // Just the raw read-only token — handy for pasting into other
+          // Just the raw read-only token - handy for pasting into other
           // figma-preview URLs (e.g. a local dev instance) or debugging.
           const ok = copyToClipboard(shareToken);
           notify(ok ? 'Share token copied to clipboard.' : 'Could not copy the share token.', {
@@ -570,7 +570,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
   const setVisibility = (next: boolean) => {
     const token = tokenRef.current;
     const fileKey = fileKeyRef.current;
-    if (!token) return; // nothing shared yet — nothing to make private/public
+    if (!token) return; // nothing shared yet - nothing to make private/public
     setIsPublic(next);
     send({ type: 'persist-project-visibility', fileKey, isPublic: next });
     void (async () => {
@@ -588,8 +588,8 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
       }
       notify(
         next
-          ? 'Preview link is public — anyone with the link can view it.'
-          : 'Preview link is now private — the link won’t work until you share again.',
+          ? 'Preview link is public - anyone with the link can view it.'
+          : 'Preview link is now private - the link won’t work until you share again.',
         { level: 'success' }
       );
     })();

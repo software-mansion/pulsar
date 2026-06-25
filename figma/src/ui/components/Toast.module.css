@@ -1,4 +1,4 @@
-/* In-plugin toasts — bottom-anchored stack of transient notifications. Replaces
+/* In-plugin toasts - bottom-anchored stack of transient notifications. Replaces
    figma.notify(), which renders outside the plugin window and is easy to miss.
    Each card slides in, auto-dismisses after a per-level timeout (paused while
    hovered), shows a draining progress bar, and can be closed early with its ×

@@ -10,7 +10,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 // file into docs/src/components/preview/embed.html and the Preview.astro
 // component renders it inside an <iframe srcdoc>.
 //
-// `npm run build` (the standalone deploy target) is untouched — it keeps using
+// `npm run build` (the standalone deploy target) is untouched - it keeps using
 // vite.config.ts to ship the regular multi-file build to
 // https://docs.swmansion.com/figma-preview/.
 export default defineConfig({
@@ -21,7 +21,7 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'es2020',
     cssCodeSplit: false,
-    // Generous limit so every asset gets inlined as a data URI — the docs
+    // Generous limit so every asset gets inlined as a data URI - the docs
     // embed depends on the bundle being a single file with no sidecars.
     assetsInlineLimit: 100_000_000
   }

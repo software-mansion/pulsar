@@ -1,8 +1,8 @@
-/* Preset card private layout — the expanded card's head row and the dense
+/* Preset card private layout - the expanded card's head row and the dense
    compact row. The shared .preset-card chrome (and its scroll-to flash) lives
    in common.css since it's reused by other surfaces. */
 
-/* Lighter favourite star — borderless glyph, navy when active. */
+/* Lighter favourite star - borderless glyph, navy when active. */
 button.fav-plain {
   flex-shrink: 0;
   padding: 2px;
@@ -16,7 +16,7 @@ button.fav-plain:active { box-shadow: none; transform: scale(0.9); }
 button.fav-plain[aria-pressed='true'] { color: var(--color-primary); }
 button.fav-plain :global(.star) { color: inherit; }
 
-/* Duration pill — clock glyph + value, white chip on the tinted card. */
+/* Duration pill - clock glyph + value, white chip on the tinted card. */
 .preset-dur {
   display: inline-flex;
   align-items: center;
@@ -32,7 +32,7 @@ button.fav-plain :global(.star) { color: inherit; }
 }
 .preset-dur img { display: block; width: 12px; height: 12px; }
 
-/* Expanded card — name + duration + star + actions share the top line; the
+/* Expanded card - name + duration + star + actions share the top line; the
    waveform sits below. */
 .preset-card-head { display: flex; align-items: center; gap: 8px; }
 /* Equal-height action buttons (Details · Play · Add) on the head row; widths
@@ -58,7 +58,7 @@ button.fav-plain :global(.star) { color: inherit; }
 .wv-panel { position: relative; margin-top: 10px; }
 button.wv-play { position: absolute; right: 8px; bottom: 8px; }
 
-/* Compact row — one dense bordered line; tags scroll horizontally so none are
+/* Compact row - one dense bordered line; tags scroll horizontally so none are
    hidden behind a "+N" collapse. */
 .preset-row-compact {
   display: flex;
@@ -89,7 +89,7 @@ button.wv-play { position: absolute; right: 8px; bottom: 8px; }
   scrollbar-width: none;
 }
 .preset-row-compact-tags::-webkit-scrollbar { display: none; }
-/* Compact rows pack tags tighter than the default pill — smaller text and
+/* Compact rows pack tags tighter than the default pill - smaller text and
    padding so they take less horizontal space in the dense layout. */
 .preset-row-compact-tags :global(.tag) {
   flex: 0 0 auto;

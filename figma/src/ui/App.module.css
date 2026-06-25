@@ -1,4 +1,4 @@
-/* App shell — root layout, top tab bar, and the modal backdrop/card chrome the
+/* App shell - root layout, top tab bar, and the modal backdrop/card chrome the
    preset detail renders into. Presets-tab styling lives in PresetsTab's module. */
 
 /* Root column that fills the plugin iframe. */
@@ -24,10 +24,12 @@
   padding-bottom: 8px;
 }
 
-/* Top navigation tabs — underline indicator on the active tab. */
+/* Top navigation tabs - underline indicator on the active tab. Tight left
+   margin keeps all five tabs on the brand row at the default 380px width. */
 .tab {
   padding: 4px 2px 8px;
-  margin-left: 14px;
+  margin-left: 10px;
+  white-space: nowrap;
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--muted);
@@ -42,10 +44,26 @@
   border-bottom-color: var(--color-blue-50);
 }
 
-/* Modal — covers the plugin iframe, with the dialog as a card.
+/* Phone-connection status dot on the "live preview" tab - visible from any tab.
+   green ok / amber problem / blue pairing. */
+.tab-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  margin-top: -3px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--muted);
+}
+.tab-dot.connected { background: var(--color-green-50); }
+.tab-dot.warn { background: #e8990c; }
+.tab-dot.pending { background: var(--color-blue-50); }
+
+/* Modal - covers the plugin iframe, with the dialog as a card.
    The plugin window is narrow (default 380 px) and user-resizable. The dialog
    should fill almost the whole iframe rather than getting capped at a fixed
-   max-width, so a 12 px backdrop inset is the only breathing room — the card
+   max-width, so a 12 px backdrop inset is the only breathing room - the card
    itself uses `width: 100%` with no cap. */
 .modal-backdrop {
   position: fixed;

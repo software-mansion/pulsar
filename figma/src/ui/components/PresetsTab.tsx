@@ -1,10 +1,11 @@
 import styles from './PresetsTab.module.css';
 import { useEffect, useRef, useState } from 'react';
-import type { CatalogEntry, SelectionInfo, Settings } from '../../shared/types';
+import type { BoundItem, CatalogEntry, SelectionInfo, Settings } from '../../shared/types';
 import Filters, { type FilterState } from './Filters';
 import PresetCard from './PresetCard';
 import AddCustomPreset from './AddCustomPreset';
-import PhonePanel from './PhonePanel';
+import BoundComponentsPanel from './BoundComponentsPanel';
+import LivePreviewReminder from './LivePreviewReminder';
 import iconLayoutFull from '../assets/icon-layout-full.svg';
 import iconLayoutCompact from '../assets/icon-layout-compact.svg';
 import iconArrowUp from '../assets/icon-arrow-up.svg';
@@ -18,11 +19,10 @@ export default function PresetsTab({
   onAddCustomPreset,
   onUpdateCustomPreset,
   onRemoveCustomPreset,
-  hapticsToken,
-  onHapticsTokenChange,
-  onPhoneConnectedChange,
-  ensureSharedPreview,
-  previewToken,
+  boundItems,
+  onSelectBound,
+  liveConfigComplete,
+  onConfigureLivePreview,
   settings,
   onSettingsChange,
   filtered,
@@ -45,15 +45,15 @@ export default function PresetsTab({
   onAddCustomPreset: (entry: CatalogEntry) => void;
   onUpdateCustomPreset: (id: string, entry: CatalogEntry) => void;
   onRemoveCustomPreset: (id: string) => void;
-  hapticsToken: string | null;
-  onHapticsTokenChange: (token: string | null) => void;
-  onPhoneConnectedChange: (connected: boolean) => void;
-  // Resolves (publishing if needed) this file's read-only preview token for the
-  // unified pairing QR, or null when the file isn't preview-ready.
-  ensureSharedPreview: () => Promise<string | null>;
-  // The current file's preview token, surfaced so an already-paired phone can be
-  // handed it once it becomes available.
-  previewToken: string | null;
+  // Components that currently have a haptic preset bound — shown in a collapsible
+  // "Bound components" accordion. Clicking a row reveals + plays it.
+  boundItems: BoundItem[];
+  onSelectBound: (item: BoundItem) => void;
+  // Whether the Live preview setup (file key + paired phone) is finished. While
+  // false, a reminder banner is shown at the top of the list.
+  liveConfigComplete: boolean;
+  // Jumps to the Live preview tab (where the setup configurator lives).
+  onConfigureLivePreview: () => void;
   settings: Settings;
   onSettingsChange: (settings: Settings) => void;
   filtered: CatalogEntry[];
@@ -98,6 +98,7 @@ export default function PresetsTab({
         ref={scrollRef}
         onScroll={(e) => setShowScrollTop(e.currentTarget.scrollTop > 300)}
       >
+        {!liveConfigComplete && <LivePreviewReminder onConfigure={onConfigureLivePreview} />}
         <div className={styles['controls-section']}>
           <div className={styles['controls-search']}>
             <input
@@ -129,13 +130,7 @@ export default function PresetsTab({
               onUpdate={onUpdateCustomPreset}
               onRemove={onRemoveCustomPreset}
             />
-            <PhonePanel
-              token={hapticsToken}
-              onTokenChange={onHapticsTokenChange}
-              onConnectedChange={onPhoneConnectedChange}
-              ensureSharedPreview={ensureSharedPreview}
-              previewToken={previewToken}
-            />
+            <BoundComponentsPanel items={boundItems} onSelect={onSelectBound} />
           </div>
         </div>
         <div className={`row ${styles['list-toolbar']}`}>

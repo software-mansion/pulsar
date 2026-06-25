@@ -1,4 +1,4 @@
-/* Haptic waveform preview — the SVG canvas chrome. The viewBox/height are set
+/* Haptic waveform preview - the SVG canvas chrome. The viewBox/height are set
    per-pattern on the element itself. */
 .visualization-svg {
   background: white;

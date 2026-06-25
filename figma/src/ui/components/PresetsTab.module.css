@@ -1,10 +1,10 @@
-/* Presets tab — the scrollable browse view: search + grouped controls card,
+/* Presets tab - the scrollable browse view: search + grouped controls card,
    the results toolbar (count / sound / layout), the preset list, and the
    floating scroll-to-top button. */
 
 .preset-scroll { flex: 1; }
 
-/* Grouped controls card — Filters / Custom presets / Phone share one bordered
+/* Grouped controls card - Filters / Custom presets / Phone share one bordered
    panel below the search box, replacing the old loose accordion rows. */
 .controls-section {
   padding: 8px;
@@ -24,7 +24,7 @@
 .controls-card > :global(.acc-row) { border-top: 1px solid var(--color-blue-10); padding-top: 0; }
 .controls-card > :global(.acc-row):first-child { border-top: none; }
 
-/* Results toolbar — count + sound toggle + layout switch. */
+/* Results toolbar - count + sound toggle + layout switch. */
 .list-toolbar { padding: 4px 8px; gap: 6px; margin-top: 8px; }
 .list-toolbar-meta { font-size: var(--fs-xs); }
 .list-toolbar-toggle {

@@ -7,7 +7,7 @@ const API_SERVER_URL = "https://pulsar-server.swmansion.com";
 // Read the `?token=` query param from the current URL, falling back to the
 // parent window's URL when we're embedded inside an <iframe srcdoc>. Srcdoc
 // iframes always read `location.search === ''` because their effective URL is
-// the synthetic `about:srcdoc`, so we have to climb up one level — this is
+// the synthetic `about:srcdoc`, so we have to climb up one level - this is
 // what the docs `/figma-preview` page (docs/src/components/preview/Preview.astro)
 // relies on to forward its own query string into the embed. Same-origin only;
 // any SecurityError on a cross-origin parent falls back to no token.
@@ -18,7 +18,7 @@ export function getTokenFromUrl(): string | null {
     try {
       return new URLSearchParams(window.parent.location.search).get('token');
     } catch {
-      // cross-origin parent — give up and behave like there's no token.
+      // cross-origin parent - give up and behave like there's no token.
     }
   }
   return null;

@@ -1,16 +1,24 @@
 import styles from './BoundComponentsPanel.module.css';
 import { useMemo } from 'react';
 import type { BoundItem } from '../../shared/types';
+import iconPlay from '../assets/icon-play.svg';
+import iconLink from '../assets/icon-link.svg';
+import iconChevron from '../assets/icon-chevron-down.svg';
 
 const UNASSIGNED = '__unassigned';
 
+// "Bound components" accordion — lives in the Presets tab's controls card. Lists
+// every component that has a haptic preset bound, grouped by top-level frame;
+// each row reads "component → preset". Clicking a row reveals the node on the
+// canvas and plays its preset. The summary counter shows how many components are
+// bound (mirrors the "Custom presets" accordion's counter). The list stays
+// fresh on its own: App re-requests it whenever the selection changes, and
+// binding/unbinding pushes a selection update.
 export default function BoundComponentsPanel({
   items,
-  onRefresh,
   onSelect
 }: {
   items: BoundItem[];
-  onRefresh: () => void;
   onSelect: (item: BoundItem) => void;
 }) {
   // Group bound items by their top-level frame, preserving the order each
@@ -38,50 +46,68 @@ export default function BoundComponentsPanel({
   }, [items]);
 
   return (
-    <div className={`col scroll ${styles['bound-panel']}`}>
-      <div className="row">
-        <div className="panel-title">Bound components</div>
-        <div className="spacer" />
-        <button className="ghost" onClick={onRefresh} title="Refresh list">
-          Refresh
-        </button>
-      </div>
-      <p className={`muted ${styles['bound-intro']}`}>
-        Components with a haptic preset bound. Click one to hear it and jump to it
-        in the canvas.
-      </p>
+    <details className="accordion acc-row">
+      <summary className="acc-head">
+        <span className="acc-icon">
+          <img src={iconLink} alt="" />
+        </span>
+        <span className="acc-title">Bound components</span>
+        {items.length > 0 && (
+          <span className="tag active tag-flush">{items.length}</span>
+        )}
+        <span className="acc-chevron" aria-hidden="true">
+          <img src={iconChevron} alt="" />
+        </span>
+      </summary>
 
-      {items.length === 0 ? (
-        <p className={`muted ${styles['bound-empty']}`}>
-          No components have haptics bound yet. Select a node and bind a preset.
-        </p>
-      ) : (
-        <div className={styles['bound-groups']}>
-          {groups.map((group) => (
-            <div key={group.id} className={styles['bound-group']}>
-              <div className={styles['bound-group-head']} title={group.name}>
-                <span className={styles['bound-group-name']}>{group.name}</span>
-                <span className={styles['bound-group-count']}>{group.items.length}</span>
-              </div>
-              {group.items.map((item) => (
-                <div
-                  key={item.nodeId}
-                  className={`preset-card ${styles['bound-item']}`}
-                  onClick={() => onSelect(item)}
-                  title="Play & reveal in canvas"
-                >
-                  <div className={`row ${styles['bound-item-row']}`}>
-                    <span className={styles['bound-item-name']}>{item.presetName}</span>
-                    <div className="spacer" />
-                    <span className="bound-badge">{item.nodeType}</span>
+      <div className="col acc-body">
+        {items.length === 0 ? (
+          <p className={`muted ${styles['bound-empty']}`}>
+            No components have haptics bound yet. Select a node and bind a preset.
+          </p>
+        ) : (
+          <>
+            <p className={`muted ${styles['bound-intro']}`}>
+              Click one to play it and reveal it on the canvas.
+            </p>
+            <div className={styles['bound-groups']}>
+              {groups.map((group) => (
+                <div key={group.id} className={styles['bound-group']}>
+                  <div className={styles['bound-group-head']} title={group.name}>
+                    <span className={styles['bound-group-name']}>{group.name}</span>
+                    <span className={styles['bound-group-count']}>{group.items.length}</span>
                   </div>
-                  <div className={`muted ${styles['bound-item-sub']}`}>{item.nodeName}</div>
+                  {group.items.map((item) => (
+                    <div
+                      key={item.nodeId}
+                      className={styles['bound-item']}
+                      onClick={() => onSelect(item)}
+                      title="Play & reveal in canvas"
+                    >
+                      {/* Reads like the sticky selection bar: this component →
+                          this preset. The whole row is the click target (reveal +
+                          play), so the chips are non-interactive. */}
+                      <span className={styles['bound-chip']} title={item.nodeName}>
+                        <span className={styles['bound-chip-label']}>{item.nodeName}</span>
+                      </span>
+                      <span className={styles['bound-arrow']} aria-hidden>
+                        →
+                      </span>
+                      <span
+                        className={`${styles['bound-chip']} ${styles['bound-chip--preset']}`}
+                        title={item.presetName}
+                      >
+                        <img src={iconPlay} alt="" width={9} height={9} />
+                        <span className={styles['bound-chip-label']}>{item.presetName}</span>
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+          </>
+        )}
+      </div>
+    </details>
   );
 }

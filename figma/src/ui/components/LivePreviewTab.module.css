@@ -1,0 +1,214 @@
+/* "Live preview" tab - a two-step configuration configurator (paste the file key,
+   then pair a phone). A progress bar + step counter sit on top; each step is a
+   numbered card that flips to a green "done" state when complete. The second
+   step stays greyed and non-interactive (locked) until the first is done, so
+   the path forward is visible but the order is enforced. */
+
+.live-panel { padding: 16px; gap: 14px; }
+.live-intro { margin: 4px 0 0; font-size: var(--fs-xs); line-height: 1.5; }
+
+/* --- Server-sync status footer (moved here from the Share tab) --- */
+.sync-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.sync-pill {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-20);
+  font-size: var(--fs-xs);
+  color: var(--color-primary);
+  min-width: 0;
+}
+.sync-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sync-dot.pulse { animation: sync-pulse 1s ease-in-out infinite; }
+@keyframes sync-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+button.sync-now {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+}
+button.sync-now:disabled { opacity: 0.5; cursor: default; }
+.sync-spin { animation: sync-spin 0.9s linear infinite; }
+@keyframes sync-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* --- Progress bar + step counter --- */
+.configurator-progress { display: flex; align-items: center; gap: 10px; }
+.configurator-progress-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-20);
+  overflow: hidden;
+}
+.configurator-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-green-50);
+  transition: width 260ms ease;
+}
+.configurator-progress-label {
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--color-blue-60);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.configurator-progress-label.complete { color: var(--color-green-50); }
+
+/* --- Step card --- */
+.configurator-step {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  background: var(--surface);
+  transition: opacity 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+.configurator-step.done {
+  border-color: var(--color-green-50);
+  box-shadow: -3px 3px 0 var(--color-green-50);
+}
+/* Warn = a live problem (e.g. the phone link dropped): amber border + fill so
+   the issue is impossible to miss. */
+.configurator-step.warn {
+  border-color: #e8990c;
+  box-shadow: -3px 3px 0 #e8990c;
+  background: #fff4d6;
+}
+.configurator-step.warn .configurator-step-num { background: #ffd98a; }
+/* Locked = previous step unfinished: dim it and block interaction so the order
+   is enforced, while still showing what's coming. */
+.configurator-step.locked {
+  opacity: 0.55;
+  filter: grayscale(0.35);
+}
+.configurator-step.locked .configurator-step-body { pointer-events: none; }
+
+/* The step header doubles as the collapse toggle (a <summary>). Strip the native
+   disclosure marker and make the whole row a pointer target. */
+.configurator-step-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  list-style: none;
+  cursor: pointer;
+}
+.configurator-step-head::-webkit-details-marker { display: none; }
+.configurator-step.locked .configurator-step-head { cursor: default; }
+
+.configurator-step-chevron { flex-shrink: 0; display: flex; align-self: center; }
+.configurator-step-chevron img { display: block; opacity: 0.5; transition: transform 160ms ease; }
+.configurator-step[open] .configurator-step-chevron img { transform: rotate(180deg); opacity: 0.85; }
+.configurator-step-num {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-blue-20);
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.configurator-step.done .configurator-step-num { background: var(--color-green-50); }
+/* Recolour the navy check glyph to white on the green disc. */
+.configurator-step.done .configurator-step-num img { display: block; filter: brightness(0) invert(1); }
+.configurator-step-heading { flex: 1; min-width: 0; }
+.configurator-step-title { font-weight: 700; font-size: var(--fs-md); }
+.configurator-step-blurb { margin: 2px 0 0; font-size: var(--fs-xs); line-height: 1.45; color: var(--muted); }
+
+/* Connection status dot beside the step title: green ok / amber problem /
+   blue pending. */
+.configurator-step-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 7px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--muted);
+}
+.configurator-step-dot.connected { background: var(--color-green-50); }
+.configurator-step-dot.warn { background: #e8990c; }
+.configurator-step-dot.pending { background: var(--color-blue-50); }
+.configurator-step-body { display: flex; flex-direction: column; gap: 10px; }
+
+/* --- Media slot (a short demo clip / annotated capture goes here) --- */
+.configurator-media {
+  margin: 0;
+  border: 1px dashed var(--color-blue-30);
+  border-radius: var(--radius);
+  background: var(--color-blue-10);
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.configurator-media-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.configurator-media-ph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  text-align: center;
+  color: var(--color-blue-60);
+}
+.configurator-media-ph img { opacity: 0.8; }
+.configurator-media-caption { font-size: var(--fs-2xs); font-weight: 600; }
+.configurator-media-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--color-blue-20);
+  color: var(--color-blue-60);
+}
+
+.configurator-text { margin: 0; font-size: var(--fs-xs); line-height: 1.5; }
+
+/* --- File-key input + inline validation feedback --- */
+.live-filekey { display: flex; flex-direction: column; gap: 6px; }
+.live-filekey-hint { margin: 0; font-size: var(--fs-2xs); line-height: 1.4; }
+.configurator-feedback {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.configurator-feedback.ok { color: var(--color-green-50); }
+.configurator-feedback.ok::before { content: '✓ '; }
+.configurator-feedback.warn { color: #b4690e; }
+.configurator-feedback.warn::before { content: '! '; }

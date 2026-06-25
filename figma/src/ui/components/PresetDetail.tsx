@@ -38,7 +38,7 @@ export default function PresetDetail({
     : builtInSnippet(lang, entry.data.name);
   const json = JSON.stringify(entry.data, null, 2);
 
-  // Esc closes — same affordance the preview's modal exposes.
+  // Esc closes - same affordance the preview's modal exposes.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -72,7 +72,7 @@ export default function PresetDetail({
       </header>
 
       <div className={styles['modal-body']}>
-        {/* Action row — Play / Phone / Bind. These are plugin-specific and
+        {/* Action row - Play / Phone / Bind. These are plugin-specific and
             have no counterpart in the preview's modal. Bind is the primary
             CTA (filled blue-20). */}
         <div className={`row ${styles['preset-actions']}`}>
@@ -96,7 +96,7 @@ export default function PresetDetail({
           </button>
         </div>
 
-        {/* Tags row — Custom pill comes first when applicable, then any other
+        {/* Tags row - Custom pill comes first when applicable, then any other
             tags as white pills, matching the preview's filter order. */}
         {(entry.data.tags.length > 0 || isCustom) && (
           <div className={styles['tags-row']}>
@@ -111,7 +111,7 @@ export default function PresetDetail({
           </div>
         )}
 
-        {/* Waveform — drawn by the existing Visualization component from the
+        {/* Waveform - drawn by the existing Visualization component from the
             preset's discrete + continuous arrays. Kept here because seeing the
             shape is part of the plugin's preset-browsing workflow (the preview
             tucks the visual into its prototype iframe instead). */}

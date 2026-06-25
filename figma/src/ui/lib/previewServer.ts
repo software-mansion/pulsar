@@ -12,7 +12,7 @@ export const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
 // Default live-preview app URL. Pinned at build time: localhost while
 // developing the plugin (vite dev → import.meta.env.DEV === true), production
 // host otherwise. The user can also override this per-install via
-// Settings → Live preview (Preview base URL override) — handy for pointing a
+// Settings → Live preview (Preview base URL override) - handy for pointing a
 // production-built plugin at a locally-hosted docs/preview instance.
 const DEFAULT_PREVIEW_BASE_URL = import.meta.env.DEV
   ? 'http://localhost:5173/'
@@ -54,7 +54,7 @@ export async function createProject(
 }
 
 // Result of a conditional update: applied (new revision), gone (404, caller
-// should recreate), or conflict (server moved on — carries the current
+// should recreate), or conflict (server moved on - carries the current
 // snapshot so the caller can reconcile).
 export type UpdateResult =
   | { kind: 'ok'; revision: number }

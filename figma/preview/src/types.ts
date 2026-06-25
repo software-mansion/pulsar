@@ -54,7 +54,7 @@ export interface PreviewPayload {
   bindings: Record<string, PresetData>; // node id (incl. descendants) -> preset
   // frame-like-node id → { human name, absolute canvas box } for every frame
   // that contains at least one bound element. Optional for backward
-  // compatibility — older payloads stored just NodeBox; the loader normalises
+  // compatibility - older payloads stored just NodeBox; the loader normalises
   // those to FrameInfo with a synthetic name.
   frames?: Record<string, FrameInfo | NodeBox>;
 }

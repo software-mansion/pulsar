@@ -1,13 +1,13 @@
 import styles from './OnboardingPanel.module.css';
 
-// Onboarding / help tab. Placeholder content for now — the real step-by-step
+// Onboarding / help tab. Placeholder content for now - the real step-by-step
 // instructions and explanations of the confusing parts of the plugin will be
 // written later.
 const SECTIONS = [
-  { title: 'Getting started', body: 'How to bind a haptic preset to a component — coming soon.' },
-  { title: 'Presets', body: 'Browsing, filtering and previewing haptic presets — coming soon.' },
-  { title: 'Components', body: 'Reviewing and managing your bound components — coming soon.' },
-  { title: 'Share', body: 'Sharing a live preview and pairing your phone — coming soon.' }
+  { title: 'Getting started', body: 'How to bind a haptic preset to a component - coming soon.' },
+  { title: 'Presets', body: 'Browsing, filtering and previewing haptic presets - coming soon.' },
+  { title: 'Components', body: 'Reviewing and managing your bound components - coming soon.' },
+  { title: 'Share', body: 'Sharing a live preview and pairing your phone - coming soon.' }
 ];
 
 export default function OnboardingPanel() {

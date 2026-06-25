@@ -83,7 +83,7 @@ export interface BoundItem {
   presetName: string;
   // Id + name of the top-level frame the bound node sits under. Used to
   // group entries by screen in the Bound panel. Both null when the node
-  // isn't nested inside a frame-like ancestor (rare — usually means the
+  // isn't nested inside a frame-like ancestor (rare - usually means the
   // user bound a top-level frame itself).
   frameId: string | null;
   frameName: string | null;
@@ -92,11 +92,11 @@ export interface BoundItem {
 // Why the UI asked the main thread to rebuild the preview payload. The main
 // thread echoes it back on the `preview-data` reply so the UI's single handler
 // knows whether to open a browser, copy a link/token, render a QR, or just run
-// a (silent) server sync — without a shared mutable ref that auto-sync and
+// a (silent) server sync - without a shared mutable ref that auto-sync and
 // user actions could race on.
 //   - 'open' / 'copy' / 'copy-token' / 'qr': explicit user share actions.
-//   - 'sync': manual "Sync now" — publishes (creating a token if needed).
-//   - 'autosync': debounced background save — only updates an *existing*
+//   - 'sync': manual "Sync now" - publishes (creating a token if needed).
+//   - 'autosync': debounced background save - only updates an *existing*
 //     project; never creates a token on its own (avoids spamming the backend
 //     for files the user never chose to share).
 // 'pair' resolves the file's share (public) token for the phone-pairing QR:
@@ -152,6 +152,9 @@ export type MainToUi =
       type: 'init';
       settings: Settings;
       hapticsToken: string | null;
+      // The Figma document name (`figma.root.name`), shown as the connection's
+      // label on the paired phone. Advertised on the pairing handshake.
+      documentName: string;
       // Stable per-document key minted by the main thread (root pluginData).
       fileKey: string | null;
       // The real Figma file key (or share URL) the user saved for this document,

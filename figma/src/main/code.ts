@@ -16,7 +16,7 @@ import type {
 
 const BINDING_KEY = 'pulsar:binding';
 // Per-instance opt-out marker. Setting BINDING_KEY to '' on a component
-// instance only removes the instance's own override — Figma then falls back
+// instance only removes the instance's own override - Figma then falls back
 // to the main component's plugin data, so the instance keeps appearing bound.
 // We need a way to say "this one instance is unbound" without touching the
 // master (which would unbind every sibling instance). Setting this key on
@@ -25,7 +25,7 @@ const BINDING_KEY = 'pulsar:binding';
 const BINDING_NEGATED_KEY = 'pulsar:binding-negated';
 const SETTINGS_KEY = 'pulsar:settings';
 const TOKEN_KEY = 'pulsar:hapticsToken';
-// Per-file share tokens: { [fileKey]: token }. Small and precious — this is the
+// Per-file share tokens: { [fileKey]: token }. Small and precious - this is the
 // only record tying a design file to its server-side preview row, so it is
 // NEVER evicted to reclaim quota. Replaces the old single global
 // `pulsar:previewToken`, which made every file reuse (and overwrite) one row.
@@ -48,7 +48,7 @@ const WINDOW_SIZE_KEY = 'pulsar:windowSize';
 const FILE_ID_KEY = 'pulsar:fileId';
 // The real Figma file key (or share URL) the user pasted for this document, used
 // to build the live-preview embed. We can't read it automatically without the
-// private API, so we remember it in root pluginData — per-file and synced to all
+// private API, so we remember it in root pluginData - per-file and synced to all
 // collaborators, so it only ever needs to be entered once per file.
 const FIGMA_FILE_KEY = 'pulsar:figmaFileKey';
 
@@ -185,7 +185,7 @@ async function getProjectCache(fileKey: string): Promise<ProjectCache | null> {
 
 // Drop the least-recently-written project cache (excluding `exceptKey`, the one
 // we're trying to write). Returns false when there is nothing left to evict.
-// Only ever touches PROJECT_CACHE_PREFIX keys — tokens, settings, favourites,
+// Only ever touches PROJECT_CACHE_PREFIX keys - tokens, settings, favourites,
 // custom presets and the haptics token are all off-limits.
 async function evictOldestProjectCache(exceptKey: string): Promise<boolean> {
   const keys = (await figma.clientStorage.keysAsync()).filter(
@@ -210,7 +210,7 @@ async function evictOldestProjectCache(exceptKey: string): Promise<boolean> {
 // Persist a file's cached config, evicting older project caches if we hit the
 // clientStorage quota. Best-effort: if even an empty store can't fit this one
 // entry, the rejection propagates to the caller (which treats the cache as
-// optional — the server copy is the source of truth).
+// optional - the server copy is the source of truth).
 async function setProjectCache(
   fileKey: string,
   config: unknown,
@@ -259,7 +259,7 @@ function readBinding(node: BaseNode): BindingMeta | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<BindingMeta>;
-    // Reject anything that's not a real binding — empty objects, half-written
+    // Reject anything that's not a real binding - empty objects, half-written
     // payloads, or data left behind by an older plugin version. Without this
     // the bound-list could show ghost entries with undefined preset names.
     if (!parsed || typeof parsed.presetId !== 'string' || parsed.presetId.length === 0) {
@@ -389,7 +389,7 @@ function nearestFrameLikeAncestor(node: BaseNode): SceneNode | null {
   return null;
 }
 
-// Walk all the way up and return the OUTERMOST frame-like ancestor — the one
+// Walk all the way up and return the OUTERMOST frame-like ancestor - the one
 // whose parent is the page (or a section). Figma's PRESENTED_NODE_CHANGED event
 // always reports the top-level prototype frame, so matching bound elements to
 // their owning frame by the outermost frame id keeps the preview's
@@ -420,7 +420,7 @@ function firstFrameLikeIn(node: SceneNode): SceneNode | null {
 }
 
 // The frame the preview should open on. Priority:
-//   1. Nearest frame-like ancestor of the current selection — so when there
+//   1. Nearest frame-like ancestor of the current selection - so when there
 //      are several frames in the file, the one the user is working in wins.
 //   2. First frame-like node on the page, descending into SECTIONs.
 // Figma's embed API only takes one node id, so we must pick one here; the
@@ -461,7 +461,7 @@ function bindToSelection(binding: BindingMeta) {
     return;
   }
   const node = sel[0];
-  // Drop any prior negation flag — without this, re-binding a previously
+  // Drop any prior negation flag - without this, re-binding a previously
   // opted-out instance silently does nothing because readBinding still
   // returns null.
   node.setPluginData(BINDING_NEGATED_KEY, '');
@@ -566,6 +566,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         type: 'init',
         settings,
         hapticsToken,
+        documentName: figma.root.name,
         fileKey: resolveFileKey(),
         figmaFileKey: getFigmaFileKey(),
         favourites,
@@ -673,7 +674,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'resize': {
       const { width, height } = clampSize(msg.width, msg.height);
       figma.ui.resize(width, height);
-      // Only persist on commit (pointer-up) — persisting on every drag frame
+      // Only persist on commit (pointer-up) - persisting on every drag frame
       // would flood clientStorage with dozens of writes per second.
       if (msg.commit) {
         await figma.clientStorage.setAsync(WINDOW_SIZE_KEY, { width, height });

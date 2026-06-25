@@ -5,7 +5,7 @@
 // an `<iframe srcdoc>` (see docs/src/components/preview/Preview.astro), so when
 // running there the bridge lives on `window.parent`, not `window`. A srcdoc
 // iframe inherits its parent's origin, so reaching up one level is same-origin
-// and allowed — this mirrors how `getTokenFromUrl` (lib/payload.ts) forwards
+// and allowed - this mirrors how `getTokenFromUrl` (lib/payload.ts) forwards
 // the parent's query string into the embed.
 
 interface ReactNativeWebView {
@@ -25,7 +25,7 @@ export function getHostBridge(): ReactNativeWebView | undefined {
       if (parentBridge) return parentBridge;
     }
   } catch {
-    // Cross-origin parent — no reachable bridge.
+    // Cross-origin parent - no reachable bridge.
   }
   return undefined;
 }

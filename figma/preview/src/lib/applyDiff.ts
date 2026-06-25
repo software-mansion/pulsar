@@ -1,7 +1,7 @@
 import type { ElementInfo, FrameInfo, NodeBox, PresetData, PreviewPayload } from '../types';
 
 // Delta over the render-relevant parts of a PreviewPayload. Mirrors the
-// plugin's figma/src/ui/lib/diffPayload.ts `HapticsDiff` — the two are
+// plugin's figma/src/ui/lib/diffPayload.ts `HapticsDiff` - the two are
 // hand-kept in sync (same convention as the rest of the preview/plugin type
 // mirror). `set` upserts entries; `del` lists removed keys/ids.
 export interface HapticsDiff {
@@ -23,7 +23,7 @@ function patchRecord<T>(
 }
 
 // Apply a diff to a payload immutably, returning a new payload. `fileKey`,
-// `nodeId`, and `frame` are preserved untouched — a diff never moves the
+// `nodeId`, and `frame` are preserved untouched - a diff never moves the
 // presented node (the app's Figma iframe owns that) or changes the prototype.
 export function applyDiff(payload: PreviewPayload, diff: HapticsDiff): PreviewPayload {
   const next: PreviewPayload = {
