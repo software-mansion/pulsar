@@ -42,6 +42,9 @@ const LEGACY_PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
 const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
+// Per-user flag: has the first-run onboarding tour been shown? Stored in
+// clientStorage (not per-file), so the tour auto-opens once per machine.
+const ONBOARDING_SEEN_KEY = 'pulsar:onboardingSeen';
 const WINDOW_SIZE_KEY = 'pulsar:windowSize';
 // Stable per-document id stored in root pluginData; replaces `figma.fileKey`,
 // which needs the private plugin API. Synced to all collaborators.
@@ -247,6 +250,10 @@ async function loadFavourites(): Promise<string[]> {
 async function loadCustomPresets(): Promise<CatalogEntry[]> {
   const raw = await figma.clientStorage.getAsync(CUSTOM_PRESETS_KEY);
   return Array.isArray(raw) ? (raw as CatalogEntry[]) : [];
+}
+
+async function loadOnboardingSeen(): Promise<boolean> {
+  return (await figma.clientStorage.getAsync(ONBOARDING_SEEN_KEY)) === true;
 }
 
 function readBinding(node: BaseNode): BindingMeta | null {
@@ -556,12 +563,14 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken, favourites, customPresets] = await Promise.all([
-        loadSettings(),
-        loadToken(),
-        loadFavourites(),
-        loadCustomPresets()
-      ]);
+      const [settings, hapticsToken, favourites, customPresets, onboardingSeen] =
+        await Promise.all([
+          loadSettings(),
+          loadToken(),
+          loadFavourites(),
+          loadCustomPresets(),
+          loadOnboardingSeen()
+        ]);
       postToUi({
         type: 'init',
         settings,
@@ -570,7 +579,8 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         fileKey: resolveFileKey(),
         figmaFileKey: getFigmaFileKey(),
         favourites,
-        customPresets
+        customPresets,
+        onboardingSeen
       });
       pushSelection();
       break;
@@ -642,6 +652,9 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'persist-custom-presets':
       await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
+      break;
+    case 'persist-onboarding-seen':
+      await figma.clientStorage.setAsync(ONBOARDING_SEEN_KEY, msg.seen);
       break;
     case 'persist-file-key':
       setFigmaFileKey(msg.figmaFileKey);

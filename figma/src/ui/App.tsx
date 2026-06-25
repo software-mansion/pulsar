@@ -10,6 +10,7 @@ import PresetsTab from './components/PresetsTab';
 import LivePreviewTab from './components/LivePreviewTab';
 import LivePreviewPanel from './components/LivePreviewPanel';
 import OnboardingPanel from './components/OnboardingPanel';
+import OnboardingOverlay from './components/OnboardingOverlay';
 import {
   usePhoneConnection,
   phoneStatusOf,
@@ -42,6 +43,9 @@ export default function App() {
 
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
   const [tab, setTab] = useState<Tab>('presets');
+  // First-run onboarding tour. Auto-opens once (gated on the persisted
+  // `onboardingSeen` flag from init); the Help tab can relaunch it any time.
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [tagsGuideOpen, setTagsGuideOpen] = useState(false);
   const [filter, setFilter] = useState<FilterState>(useFilterStateInit());
@@ -112,6 +116,9 @@ export default function App() {
         setCustomPresets(m.customPresets ?? []);
         setFigmaFileKey(m.figmaFileKey ?? '');
         setDocumentName(m.documentName ?? '');
+        // Auto-open the tour on first launch, then never again unless relaunched
+        // from the Help tab.
+        if (!m.onboardingSeen) setShowOnboarding(true);
         // Pull this file's persisted token + cached config, keyed by the stable
         // minted id (the server key). The real Figma file key for the embed is
         // remembered separately per-file (figmaFileKey, see usePreviewSync).
@@ -399,7 +406,20 @@ export default function App() {
         />
       )}
 
-      {tab === 'onboarding' && <OnboardingPanel />}
+      {tab === 'onboarding' && (
+        <OnboardingPanel onStartOnboarding={() => setShowOnboarding(true)} />
+      )}
+
+      {showOnboarding && (
+        <OnboardingOverlay
+          onClose={() => {
+            setShowOnboarding(false);
+            // Remember it was seen so it doesn't auto-open next launch. Harmless
+            // when relaunched from Help (the flag is already set).
+            send({ type: 'persist-onboarding-seen', seen: true });
+          }}
+        />
+      )}
 
       <ResizeHandle />
     </div>
