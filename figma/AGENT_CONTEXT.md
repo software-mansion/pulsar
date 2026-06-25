@@ -426,7 +426,7 @@ discrete + continuous arrays. It's not an icon - never replace it with an
 
 ---
 
-## Backend (docs/server)
+## Backend (pulsar-private/server)
 
 Express + PostgreSQL. Routes that matter here, split by which token they take:
 
