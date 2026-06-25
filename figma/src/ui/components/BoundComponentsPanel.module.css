@@ -1,4 +1,4 @@
-/* "Bound components" accordion body — intro copy, empty state, and the
+/* "Bound components" accordion body - intro copy, empty state, and the
    per-binding "component → preset" chip rows grouped by frame. */
 .bound-intro { margin: 0 0 8px; font-size: var(--fs-xs); }
 .bound-empty { margin: 0; padding: 4px 2px; }

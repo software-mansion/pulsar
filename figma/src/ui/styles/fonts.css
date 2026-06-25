@@ -3,17 +3,17 @@
    The plugin iframe can't reach Google Fonts: manifest.json restricts
    networkAccess to the Pulsar server, so a `<link>`/@import to
    fonts.googleapis.com is blocked by Figma's CSP and 'DM Sans' would silently
-   fall back to the system font — which is why the plugin used to render
+   fall back to the system font - which is why the plugin used to render
    differently from the docs.
 
    These are the same DM Sans *variable* woff2 subsets Google serves for the
    docs (weight 100..1000 with the `opsz` optical-sizing axis). The files are
    inlined as base64 data URIs at build time (viteSingleFile + a high
    assetsInlineLimit), so they need no network access at runtime. Only the
-   upright latin/latin-ext subsets are bundled — the plugin UI uses no italics.
+   upright latin/latin-ext subsets are bundled - the plugin UI uses no italics.
    Pair with `font-optical-sizing: auto` (see common.css) to match the docs.
 
-   DM Sans is licensed under the SIL Open Font License 1.1 — see fonts/OFL.txt,
+   DM Sans is licensed under the SIL Open Font License 1.1 - see fonts/OFL.txt,
    which is bundled alongside the woff2 files as the license requires. */
 
 /* latin */
