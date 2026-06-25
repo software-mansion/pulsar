@@ -11,7 +11,10 @@
    inlined as base64 data URIs at build time (viteSingleFile + a high
    assetsInlineLimit), so they need no network access at runtime. Only the
    upright latin/latin-ext subsets are bundled — the plugin UI uses no italics.
-   Pair with `font-optical-sizing: auto` (see common.css) to match the docs. */
+   Pair with `font-optical-sizing: auto` (see common.css) to match the docs.
+
+   DM Sans is licensed under the SIL Open Font License 1.1 — see fonts/OFL.txt,
+   which is bundled alongside the woff2 files as the license requires. */
 
 /* latin */
 @font-face {
