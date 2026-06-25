@@ -31,6 +31,8 @@ export type ConnectionStatus =
   | 'offline' // socket closed cleanly (e.g. backgrounded) — will reconnect
   | 'error'; // connection attempt failed
 
+export type ProducerType = 'figma' | 'browser';
+
 export interface Connection {
   // Stable local id for the row + persistence; survives socket churn and app
   // restarts (persisted alongside the token).
@@ -45,6 +47,18 @@ export interface Connection {
   // Figma preview share token relayed by the producer, if any — lets the row
   // offer "Open preview".
   previewToken?: string;
+  // What kind of producer paired with us, relayed at (re)establish. Absent on
+  // older producers — fall back to inferring from `previewToken` (see
+  // `connectionType`).
+  producerType?: ProducerType;
+  // Human-readable Figma file/project name (`figma.root.name`), relayed by the
+  // Figma plugin. Absent for browsers and older plugins.
+  figmaProjectName?: string;
+  // User-edited label. Takes precedence over the relayed name so a rename isn't
+  // overwritten by `connection_restored` on the next reconnect.
+  customName?: string;
+  // When this connection was first added (epoch ms). Shown in the edit modal.
+  createdAt: number;
 }
 
 interface PersistedConnection {
@@ -52,6 +66,22 @@ interface PersistedConnection {
   token: string;
   name: string;
   previewToken?: string;
+  producerType?: ProducerType;
+  figmaProjectName?: string;
+  customName?: string;
+  createdAt?: number;
+}
+
+// What kind of producer a connection is. Prefer the relayed `producerType`;
+// fall back to the presence of a preview token (only the Figma plugin sends one).
+export function connectionType(c: Connection): ProducerType {
+  return c.producerType ?? (c.previewToken ? 'figma' : 'browser');
+}
+
+// The label to show in the list: a user rename wins, then the Figma project
+// name, then the producer-advertised name.
+export function connectionDisplayName(c: Connection): string {
+  return c.customName?.trim() || c.figmaProjectName || c.name;
 }
 
 export interface ReceivedPattern {
@@ -75,12 +105,19 @@ export interface PreviewUpdate {
 
 interface ConnectionsContextValue {
   connections: Connection[];
-  // Pair a new producer from a 4-digit code (manual entry or a scanned QR).
-  addByCode: (code: string, opts?: { name?: string }) => void;
+  // Pair a new producer from a 4-digit code (manual entry or a scanned QR). A
+  // Figma QR also carries the preview token + type up front, so the row is
+  // tagged Figma and can reopen the preview without waiting on the server relay.
+  addByCode: (
+    code: string,
+    opts?: { name?: string; previewToken?: string; producerType?: ProducerType },
+  ) => void;
   // Drop a connection: close its socket and forget its token.
   remove: (id: string) => void;
   // Re-open a closed/errored connection from its stored token.
   reconnect: (id: string) => void;
+  // Set a user-chosen label for a connection (blank clears it).
+  rename: (id: string, name: string) => void;
   // Transient "preset received" banner, auto-cleared shortly after the last hit.
   lastReceived: ReceivedPattern | null;
   // Most recent live haptics-config update relayed by a producer, for an open
@@ -194,7 +231,15 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
 
       socket.onmessage = (event) => {
         const payload = typeof event.data === 'string' ? event.data : '';
-        let json: { type?: string; token?: string; message?: unknown; name?: string; previewToken?: string };
+        let json: {
+          type?: string;
+          token?: string;
+          message?: unknown;
+          name?: string;
+          previewToken?: string;
+          producerType?: ProducerType;
+          figmaProjectName?: string;
+        };
         try {
           json = JSON.parse(payload);
         } catch {
@@ -208,6 +253,8 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
                 status: 'connected',
                 ...(json.name ? { name: json.name } : {}),
                 ...(json.previewToken ? { previewToken: json.previewToken } : {}),
+                ...(json.producerType ? { producerType: json.producerType } : {}),
+                ...(json.figmaProjectName ? { figmaProjectName: json.figmaProjectName } : {}),
               });
               // A short buzz confirms the new pairing to the user.
               Presets.breakingWave();
@@ -220,6 +267,8 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
               status: 'connected',
               ...(json.name ? { name: json.name } : {}),
               ...(json.previewToken ? { previewToken: json.previewToken } : {}),
+              ...(json.producerType ? { producerType: json.producerType } : {}),
+              ...(json.figmaProjectName ? { figmaProjectName: json.figmaProjectName } : {}),
             });
             posthog?.capture('device_connected', { connection_type: 'restored' });
             break;
@@ -280,7 +329,7 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   );
 
   const addByCode = useCallback(
-    (code: string, opts?: { name?: string }) => {
+    (code: string, opts?: { name?: string; previewToken?: string; producerType?: ProducerType }) => {
       const trimmed = code.trim();
       if (!trimmed) return;
       const conn: Connection = {
@@ -288,6 +337,11 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
         token: null,
         name: opts?.name?.trim() || 'Unnamed connection',
         status: 'connecting',
+        createdAt: Date.now(),
+        // Seed Figma identity from the QR so the row is tagged + openable right
+        // away; the server relay confirms (and adds the project name) later.
+        ...(opts?.previewToken ? { previewToken: opts.previewToken } : {}),
+        ...(opts?.producerType ? { producerType: opts.producerType } : {}),
       };
       setConnections((prev) => [...prev, conn]);
       openSocket(conn, 'new', trimmed);
@@ -315,6 +369,18 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
     [teardownLive, posthog],
   );
 
+  // Set (or clear, when blank) a user-chosen label for a connection. Stored as
+  // `customName` so it survives reconnects without being clobbered by the
+  // producer-relayed name.
+  const rename = useCallback(
+    (id: string, name: string) => {
+      const trimmed = name.trim();
+      patchConnection(id, { customName: trimmed || undefined });
+      posthog?.capture('connection_renamed');
+    },
+    [patchConnection, posthog],
+  );
+
   // Initial load: restore the persisted list (or migrate the legacy single
   // token) and reconnect each established connection.
   useEffect(() => {
@@ -333,7 +399,7 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
         try {
           const legacy = await AsyncStorage.getItem(LEGACY_TOKEN_KEY);
           if (legacy && legacy.length > 0) {
-            persisted = [{ id: newId(), token: legacy, name: 'Saved device' }];
+            persisted = [{ id: newId(), token: legacy, name: 'Saved device', createdAt: Date.now() }];
           }
         } catch {
           // ignore — nothing to migrate
@@ -346,6 +412,10 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
           token: p.token,
           name: p.name,
           previewToken: p.previewToken,
+          producerType: p.producerType,
+          figmaProjectName: p.figmaProjectName,
+          customName: p.customName,
+          createdAt: p.createdAt ?? Date.now(),
           status: 'connecting',
         }));
         setConnections(restored);
@@ -370,7 +440,11 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
         id: c.id,
         token: c.token as string,
         name: c.name,
+        createdAt: c.createdAt,
         ...(c.previewToken ? { previewToken: c.previewToken } : {}),
+        ...(c.producerType ? { producerType: c.producerType } : {}),
+        ...(c.figmaProjectName ? { figmaProjectName: c.figmaProjectName } : {}),
+        ...(c.customName ? { customName: c.customName } : {}),
       }));
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toPersist)).catch(() => {});
   }, [connections, didLoad]);
@@ -405,7 +479,14 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
       const code = parsed.queryParams?.code;
       if (code) {
         const name = parsed.queryParams?.name;
-        addByCode(code.toString(), { name: name ? name.toString() : undefined });
+        // A `token` means this is the unified Figma link — capture it as the
+        // connection's preview token + Figma type so the row reopens the preview.
+        const token = parsed.queryParams?.token;
+        const previewToken = token ? token.toString() : undefined;
+        addByCode(code.toString(), {
+          name: name ? name.toString() : undefined,
+          ...(previewToken ? { previewToken, producerType: 'figma' as const } : {}),
+        });
         posthog?.capture('deep_link_connection_initiated', { has_code: true });
       }
     };
@@ -437,7 +518,7 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
 
   return (
     <ConnectionsContext.Provider
-      value={{ connections, addByCode, remove, reconnect, lastReceived, lastPreviewUpdate }}
+      value={{ connections, addByCode, remove, reconnect, rename, lastReceived, lastPreviewUpdate }}
     >
       {children}
     </ConnectionsContext.Provider>

@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, ActivityIndicator, ScrollView } from 'react-native';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { StyleSheet, View, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import type { Pattern } from 'react-native-pulsar';
 
 import { FIGMA_PREVIEW_URL } from '@/constants/Connection';
-import { useConnections } from '@/contexts/ConnectionsContext';
+import { connectionType, useConnections } from '@/contexts/ConnectionsContext';
 import { usePlayPatternFromHost } from '@/src/haptics/playPattern';
 import { ThemedText } from '@/components/themed-text';
+import { Icon } from '@/components/Icon';
 import BasicLayout from '@/components/BasicLayout';
 import Card from '@/components/Card';
 import Point from '@/components/Point';
-import Input from '@/components/Input';
-import Button from '@/components/Button';
 import SvgIcon from '@/components/SvgIcon';
+import ConnectionList from '@/components/home/ConnectionList';
 import { Margins } from '@/constants/theme';
 
 const defaultEdges = {
@@ -58,14 +58,12 @@ function buildPreviewInjection(envelope: unknown): string {
 //      describing what Figma Live Preview is and how to connect a design file.
 export default function FigmaScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
-  const paramToken = typeof params.token === 'string' ? params.token : '';
-  const [enteredToken, setEnteredToken] = useState('');
-  const token = paramToken || enteredToken;
+  const token = typeof params.token === 'string' ? params.token : '';
 
   if (token) {
     return <FigmaPreviewWebView token={token} />;
   }
-  return <FigmaExplainer onConnect={(t) => setEnteredToken(t.trim())} />;
+  return <FigmaExplainer />;
 }
 
 function FigmaPreviewWebView({ token }: { token: string }) {
@@ -79,7 +77,15 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   const webRef = useRef<WebView>(null);
   const playFromHost = usePlayPatternFromHost();
   const navigation = useNavigation();
+  const router = useRouter();
   const { lastPreviewUpdate } = useConnections();
+
+  // Leave the active preview and return to the Figma list/explainer by clearing
+  // the route's token (FigmaScreen renders the explainer when it's empty).
+  const closePreview = useCallback(() => {
+    setTabBarHidden(false);
+    router.setParams({ token: '' });
+  }, [router]);
 
   // Deliver live haptics-config updates relayed by the plugin into the preview.
   // Seed the handled nonce at mount so an update that arrived before this
@@ -133,6 +139,16 @@ function FigmaPreviewWebView({ token }: { token: string }) {
 
   return (
     <SafeAreaView edges={(tabBarHidden ? fullscreenEdges : defaultEdges) as any} style={styles.safeArea}>
+      {!tabBarHidden && (
+        <View style={styles.previewBar}>
+          <TouchableOpacity onPress={closePreview} style={styles.closeBtn} hitSlop={8}>
+            <Icon name="x" size={20} color="#001A72" />
+            <ThemedText type="defaultSemiBold" style={styles.closeLabel}>
+              Close preview
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
       <WebView
         ref={webRef}
         source={{ uri: previewUrl }}
@@ -152,9 +168,19 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   );
 }
 
-function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
-  const [manualToken, setManualToken] = useState('');
-  const canConnect = manualToken.trim().length > 0;
+function FigmaExplainer() {
+  const router = useRouter();
+  const { connections, remove, reconnect } = useConnections();
+
+  // Only Figma producers belong on this screen — browser connections stay on
+  // the home list. A preview can only be reopened once its token has arrived.
+  const figmaConnections = connections.filter((c) => connectionType(c) === 'figma');
+
+  // We're already on the Figma tab, so update the route param in place rather
+  // than pushing a new screen; FigmaScreen renders the WebView when it's set.
+  const openPreview = (token: string) => router.setParams({ token });
+  const editConnection = (connectionId: string) =>
+    router.push({ pathname: '/editConnectionModal', params: { connectionId } });
 
   return (
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
@@ -169,6 +195,19 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
             Connect a Figma design to your phone and feel haptics when
             you tap on a component in the prototype preview.
           </ThemedText>
+
+          {figmaConnections.length > 0 && (
+            <View style={Margins.marginTop4X}>
+              <ThemedText type="subtitle">Your Figma previews</ThemedText>
+              <ConnectionList
+                connections={figmaConnections}
+                onRemove={remove}
+                onReconnect={reconnect}
+                onOpenPreview={openPreview}
+                onEdit={editConnection}
+              />
+            </View>
+          )}
 
           <Card style={Margins.marginTop4X}>
             <ThemedText type="subtitle">How to connect Figma</ThemedText>
@@ -192,37 +231,10 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
             </Point>
             <Point index={4}>
               <ThemedText>
-                Scan the QR code (or paste the token above) - PulsarApp opens
-                straight on this screen with the preview loaded.
+                Scan the QR code - PulsarApp opens straight on this screen
+                with the preview loaded.
               </ThemedText>
             </Point>
-          </Card>
-
-          <Card style={Margins.marginTop4X}>
-            <ThemedText type="subtitle">Connect with a token</ThemedText>
-            <ThemedText style={Margins.marginTop2X}>
-              Already have a share token from the Figma plugin? Paste it here
-              to open the preview without scanning the QR code.
-            </ThemedText>
-            <Input
-              placeholder="Paste preview token"
-              style={Margins.marginTop3X}
-              value={manualToken}
-              onChangeText={setManualToken}
-              keyboardType="default"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <Button
-              label="Connect"
-              style={Margins.marginTop3X}
-              enabled={canConnect}
-              onClick={() => {
-                if (canConnect) onConnect(manualToken);
-              }}
-            />
           </Card>
 
         </BasicLayout>
@@ -237,6 +249,25 @@ const styles = StyleSheet.create({
   },
   webContainer: { flex: 1, backgroundColor: '#fff' },
   webview: { flex: 1 },
+  previewBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1F3FA',
+    backgroundColor: '#fff',
+  },
+  closeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+  },
+  closeLabel: {
+    color: '#001A72',
+  },
   loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 40 },
   titleContainer: {

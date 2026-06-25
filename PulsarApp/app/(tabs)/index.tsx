@@ -58,6 +58,9 @@ export default function HomeScreen() {
 
   const openPreview = (token: string) => router.push({ pathname: '/figma', params: { token } });
 
+  const editConnection = (connectionId: string) =>
+    router.push({ pathname: '/editConnectionModal', params: { connectionId } });
+
   // A scanned QR is a pairing deep link (pulsarapp:///?code=… or the unified
   // pulsarapp://figma?token=…&code=…). Parse it the same way the deep-link
   // handler does: add the connection from `code`, and open the preview from
@@ -79,7 +82,11 @@ export default function HomeScreen() {
     if (!code && !token && /^\d{3,}$/.test(data.trim())) {
       code = data.trim();
     }
-    if (code) addByCode(code, { name });
+    // A figma QR carries the preview token; seed it (and the Figma type) onto
+    // the connection so the row is tagged Figma and can reopen the preview.
+    if (code) {
+      addByCode(code, { name, ...(token ? { previewToken: token, producerType: 'figma' as const } : {}) });
+    }
     if (token) openPreview(token);
     if (!code && !token) {
       Alert.alert('Unrecognized QR code', 'That doesn’t look like a Pulsar pairing code.');
@@ -106,6 +113,7 @@ export default function HomeScreen() {
             onRemove={remove}
             onReconnect={reconnect}
             onOpenPreview={openPreview}
+            onEdit={editConnection}
           />
 
           <AddConnectionCard
