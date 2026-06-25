@@ -7,7 +7,7 @@ import iconChevron from '../assets/icon-chevron-down.svg';
 
 const UNASSIGNED = '__unassigned';
 
-// "Bound components" accordion — lives in the Presets tab's controls card. Lists
+// "Bound components" accordion - lives in the Presets tab's controls card. Lists
 // every component that has a haptic preset bound, grouped by top-level frame;
 // each row reads "component → preset". Clicking a row reveals the node on the
 // canvas and plays its preset. The summary counter shows how many components are

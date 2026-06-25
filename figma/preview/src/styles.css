@@ -319,7 +319,7 @@ body {
   border-top: 1px solid var(--border);
   background: var(--color-blue-10);
 }
-/* Header row — title on the left, hide (collapse) button on the right (its own
+/* Header row - title on the left, hide (collapse) button on the right (its own
    row, so it never overlaps the QR below). */
 .open-on-phone-head {
   display: flex;
@@ -345,7 +345,7 @@ body {
 .open-on-phone-hide:hover { opacity: 1; background: var(--color-blue-20); }
 .open-on-phone-hide img { display: block; }
 
-/* Collapsed state — a one-line reopener with a mini QR thumbnail. */
+/* Collapsed state - a one-line reopener with a mini QR thumbnail. */
 .open-on-phone-reopen {
   flex-shrink: 0;
   display: flex;
@@ -458,7 +458,7 @@ body {
 }
 .open-on-phone-qr-toggle:hover { color: var(--color-primary); text-decoration: underline; }
 
-/* Scannable download QRs — one per store, so any phone can install the app. */
+/* Scannable download QRs - one per store, so any phone can install the app. */
 .open-on-phone-download-qrs {
   display: flex;
   flex-wrap: wrap;

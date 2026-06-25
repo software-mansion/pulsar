@@ -45,7 +45,7 @@ export default function PresetsTab({
   onAddCustomPreset: (entry: CatalogEntry) => void;
   onUpdateCustomPreset: (id: string, entry: CatalogEntry) => void;
   onRemoveCustomPreset: (id: string) => void;
-  // Components that currently have a haptic preset bound — shown in a collapsible
+  // Components that currently have a haptic preset bound - shown in a collapsible
   // "Bound components" accordion. Clicking a row reveals + plays it.
   boundItems: BoundItem[];
   onSelectBound: (item: BoundItem) => void;

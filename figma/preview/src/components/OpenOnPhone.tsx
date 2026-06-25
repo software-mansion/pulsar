@@ -5,7 +5,7 @@ import storeGoogle from '../assets/store-google.png';
 import closeIcon from '../assets/icon-close.svg';
 
 // Public store listings for the Pulsar mobile app (same links the plugin + docs
-// use). Shown for visitors who don't have the app installed yet — as tappable
+// use). Shown for visitors who don't have the app installed yet - as tappable
 // badges and as scannable download QRs.
 const APPLE_STORE_URL = 'https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104';
 const GOOGLE_STORE_URL = 'https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app';
@@ -31,12 +31,12 @@ const QR_OPTS = {
 
 // Sidebar footer that lets the user open this exact preview in the Pulsar mobile
 // app (a QR encoding the deep link with this page's share token), plus a "get
-// the app" section for visitors who don't have it yet. Collapsible — once the
+// the app" section for visitors who don't have it yet. Collapsible - once the
 // user hides it, it shrinks to a one-line reopener so it doesn't eat sidebar
 // space, and the choice persists across reloads.
 export function OpenOnPhone({ deepLink }: { deepLink: string }) {
   const [qr, setQr] = useState<string | null>(null);
-  // Download-app QRs (one per store) — optional, revealed by a toggle and
+  // Download-app QRs (one per store) - optional, revealed by a toggle and
   // generated lazily the first time they're shown.
   const [downloadQr, setDownloadQr] = useState<{ apple: string; google: string } | null>(null);
   const [showDownloadQr, setShowDownloadQr] = useState(false);
@@ -48,7 +48,7 @@ export function OpenOnPhone({ deepLink }: { deepLink: string }) {
     try {
       localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0');
     } catch {
-      // Storage unavailable (private mode / embedded) — collapse still works
+      // Storage unavailable (private mode / embedded) - collapse still works
       // for this session.
     }
   };
@@ -69,7 +69,7 @@ export function OpenOnPhone({ deepLink }: { deepLink: string }) {
     };
   }, [deepLink]);
 
-  // Store-download QRs — static, generated lazily the first time the user
+  // Store-download QRs - static, generated lazily the first time the user
   // reveals them.
   useEffect(() => {
     if (collapsed || !showDownloadQr || downloadQr) return;
@@ -140,7 +140,7 @@ export function OpenOnPhone({ deepLink }: { deepLink: string }) {
         </button>
       </div>
 
-      {/* For visitors without the app yet — store badges plus optional scannable
+      {/* For visitors without the app yet - store badges plus optional scannable
           download QRs (one per platform, since a single QR can't target both
           stores), revealed by a toggle to keep the panel compact. */}
       <div className="open-on-phone-getapp">
