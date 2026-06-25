@@ -46,10 +46,12 @@ body,
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
+  font-optical-sizing: auto;
   font-size: var(--fs-sm);
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ---- Buttons ---- */
