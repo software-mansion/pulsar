@@ -7,22 +7,30 @@ import { applyFilter, filterRevealing, useFilterStateInit, type FilterState } fr
 import PresetDetail from './components/PresetDetail';
 import TagsGuide from './components/TagsGuide';
 import PresetsTab from './components/PresetsTab';
+import LivePreviewTab from './components/LivePreviewTab';
 import LivePreviewPanel from './components/LivePreviewPanel';
-import BoundComponentsPanel from './components/BoundComponentsPanel';
 import OnboardingPanel from './components/OnboardingPanel';
-import { broadcastToPhone, broadcastPreviewUpdate } from './components/PhonePanel';
+import {
+  usePhoneConnection,
+  phoneStatusOf,
+  broadcastToPhone,
+  broadcastPreviewUpdate
+} from './hooks/usePhoneConnection';
 import SelectionBar from './components/SelectionBar';
 import PulsarLogo from './components/PulsarLogo';
 import ResizeHandle from './components/ResizeHandle';
 import { useToast } from './components/Toast';
 import { usePreviewSync } from './hooks/usePreviewSync';
 import { DEFAULT_SETTINGS } from './lib/settings';
+import { isFileKeyValid } from './lib/fileKey';
 import { playPreset, stopAll } from './audio/player';
 
 // Re-exported for LivePreviewPanel (and anything else that imports it from here).
 export type { SyncStatus } from './hooks/usePreviewSync';
 
-type Tab = 'presets' | 'bound' | 'preview' | 'onboarding';
+// 'live' = the "Live preview" tab (file key + phone pairing); 'preview' = the
+// "Share" tab (share link / sync). The internal names predate the split.
+type Tab = 'presets' | 'live' | 'preview' | 'onboarding';
 
 export default function App() {
   const { notify } = useToast();
@@ -41,9 +49,11 @@ export default function App() {
   const [favouritesOnly, setFavouritesOnly] = useState(false);
   const [boundItems, setBoundItems] = useState<BoundItem[]>([]);
   const [customPresets, setCustomPresets] = useState<CatalogEntry[]>([]);
-  // The real Figma file key (or share URL) for this document — needed for the
+  // The real Figma file key (or share URL) for this document - needed for the
   // live-preview embed. Seeded from root pluginData on init, remembered per-file.
   const [figmaFileKey, setFigmaFileKey] = useState('');
+  // The Figma document name, advertised to the phone as the connection label.
+  const [documentName, setDocumentName] = useState('');
   // Set when jumping to a preset from the selection bar; PresetsTab scrolls to it.
   const [scrollToId, setScrollToId] = useState<string | null>(null);
 
@@ -56,7 +66,7 @@ export default function App() {
     return m;
   }, [allPresets]);
 
-  // Live-preview / sharing sync — owns the server token bookkeeping and the
+  // Live-preview / sharing sync - owns the server token bookkeeping and the
   // share affordances; listens for project / doc-changed / preview-data itself.
   // On every persisted publish it hands us a diff/refetch message to relay to an
   // open live preview; we only broadcast it when a phone is actually connected
@@ -71,6 +81,26 @@ export default function App() {
     }
   });
 
+  // The live link to the phone - owned here (not in the Live preview tab) so it
+  // survives leaving the tab. It only dies on an explicit Disconnect or when the
+  // plugin window closes. Auto-starts pairing while the user is on the Live
+  // preview tab with the file key set (the pairing step).
+  const phoneConnection = usePhoneConnection({
+    token: hapticsToken,
+    onTokenChange: setHapticsToken,
+    onConnectedChange: setPhoneConnected,
+    ensureSharedPreview: previewSync.ensureShared,
+    previewToken: previewSync.publicToken,
+    documentName,
+    autoStart: tab === 'live' && isFileKeyValid(figmaFileKey)
+  });
+
+  // Surface the phone-link status as a dot on the "live preview" tab so it's
+  // visible from any tab. Hidden while fully idle (not paired, nothing pairing)
+  // - only meaningful state earns a dot.
+  const phoneStatus = phoneStatusOf(phoneConnection);
+  const showPhoneDot = phoneConnection.paired || phoneConnection.phase !== 'idle';
+
   // Wire up the bridge once for the messages App owns (init, selection, bound
   // list, toasts). Sync-related messages are handled inside usePreviewSync.
   useEffect(() => {
@@ -81,6 +111,7 @@ export default function App() {
         setFavourites(new Set(m.favourites));
         setCustomPresets(m.customPresets ?? []);
         setFigmaFileKey(m.figmaFileKey ?? '');
+        setDocumentName(m.documentName ?? '');
         // Pull this file's persisted token + cached config, keyed by the stable
         // minted id (the server key). The real Figma file key for the embed is
         // remembered separately per-file (figmaFileKey, see usePreviewSync).
@@ -94,7 +125,7 @@ export default function App() {
     });
     send({ type: 'ui-ready' });
     return off;
-    // We intentionally don't depend on settings/hapticsToken — see the play handler effect.
+    // We intentionally don't depend on settings/hapticsToken - see the play handler effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -178,6 +209,10 @@ export default function App() {
   }, [allPresets, filter, favouritesOnly, favourites]);
   const openEntry = openId ? presetById.get(openId) ?? null : null;
 
+  // Live preview is "configured" once the file key is set and a phone is paired
+  // - the two steps of the Live preview configurator. Gates the Presets-tab reminder.
+  const liveConfigComplete = isFileKeyValid(figmaFileKey) && hapticsToken != null;
+
   const playEntry = (e: CatalogEntry) => {
     stopAll();
     if (hapticsToken && phoneConnected) broadcastToPhone(hapticsToken, e.data.name);
@@ -222,10 +257,10 @@ export default function App() {
 
   const refreshBoundList = () => send({ type: 'request-bound-list' });
 
-  // Refresh the bound list when opening the tab, and whenever the selection (and
-  // thus a possible bind/unbind) changes while it's open.
+  // Keep the Presets-tab "Bound components" accordion fresh: refresh on entering
+  // the tab and whenever the selection (and thus a possible bind/unbind) changes.
   useEffect(() => {
-    if (tab === 'bound') refreshBoundList();
+    if (tab === 'presets') refreshBoundList();
   }, [tab, selection]);
 
   // Click a bound component: hear its preset (always, since it's an explicit
@@ -248,7 +283,7 @@ export default function App() {
           <span>Pulsar</span>
         </div>
         <div className="spacer" />
-        {(['presets', 'bound', 'preview', 'onboarding'] as const).map((t) => (
+        {(['presets', 'live', 'preview', 'onboarding'] as const).map((t) => (
           <span
             key={t}
             className={`${styles['tab']} ${tab === t ? styles['active'] : ''}`}
@@ -257,12 +292,21 @@ export default function App() {
               setOpenId(null);
             }}
           >
-            {t === 'bound' ? 'components' : t === 'preview' ? 'share' : t}
+            {t === 'live' && showPhoneDot && (
+              <span className={`${styles['tab-dot']} ${styles[phoneStatus]}`} aria-hidden="true" />
+            )}
+            {t === 'live'
+              ? 'live preview'
+              : t === 'preview'
+                ? 'share'
+                : t === 'onboarding'
+                  ? 'help'
+                  : t}
           </span>
         ))}
       </div>
 
-      {/* Sticky selection section — sits above the scrollable list, showing the
+      {/* Sticky selection section - sits above the scrollable list, showing the
           selected node + its bound preset. Only relevant on the Presets tab. */}
       {tab === 'presets' && (
         <SelectionBar
@@ -283,11 +327,13 @@ export default function App() {
           onAddCustomPreset={addCustomPreset}
           onUpdateCustomPreset={updateCustomPreset}
           onRemoveCustomPreset={removeCustomPreset}
-          hapticsToken={hapticsToken}
-          onHapticsTokenChange={setHapticsToken}
-          onPhoneConnectedChange={setPhoneConnected}
-          ensureSharedPreview={previewSync.ensureShared}
-          previewToken={previewSync.publicToken}
+          boundItems={boundItems}
+          onSelectBound={selectBoundItem}
+          liveConfigComplete={liveConfigComplete}
+          onConfigureLivePreview={() => {
+            setTab('live');
+            setOpenId(null);
+          }}
           settings={settings}
           onSettingsChange={setSettings}
           filtered={filtered}
@@ -331,11 +377,13 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'bound' && (
-        <BoundComponentsPanel
-          items={boundItems}
-          onRefresh={refreshBoundList}
-          onSelect={selectBoundItem}
+      {tab === 'live' && (
+        <LivePreviewTab
+          figmaFileKey={figmaFileKey}
+          onFigmaFileKeyChange={setFigmaFileKey}
+          phone={phoneConnection}
+          syncStatus={previewSync.syncStatus}
+          onSyncNow={previewSync.syncNow}
         />
       )}
 
@@ -343,16 +391,11 @@ export default function App() {
         <LivePreviewPanel
           settings={settings}
           onChange={setSettings}
-          figmaFileKey={figmaFileKey}
-          onFigmaFileKeyChange={setFigmaFileKey}
-          syncStatus={previewSync.syncStatus}
-          onSyncNow={previewSync.syncNow}
           isPublic={previewSync.isPublic}
           isShared={previewSync.syncStatus !== 'idle'}
           onToggleVisibility={previewSync.setVisibility}
           onShowLivePreview={previewSync.showInLivePreview}
           onCopyShareLink={previewSync.copyShareLink}
-          onCopyShareToken={previewSync.copyShareToken}
         />
       )}
 

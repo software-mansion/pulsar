@@ -3,7 +3,7 @@ import type { ElementInfo, NodeBox } from '../types';
 
 // The iframe fills the whole stage (100%×100%); Figma renders the frame with
 // scaling=contain, which fits the frame INSIDE the iframe and centers it, but
-// reserves a small fixed inset (measured empirically against the live embed —
+// reserves a small fixed inset (measured empirically against the live embed -
 // see fitFrame). We reproduce that exact fit+center transform so the overlay
 // boxes land on the rendered components.
 //

@@ -214,7 +214,7 @@ await composer.playPattern(pattern);`;
 
 function customWeb(data: PresetData): string {
   // The web SDK uses a segment-based HapticPattern, not the iOS-style
-  // discrete/continuous shape — see web/Pulsar/src/types.ts. We render the
+  // discrete/continuous shape - see web/Pulsar/src/types.ts. We render the
   // most-fidelity-preserving translation:
   //   - each discretePattern point → a short "continuous" segment (30 ms)
   //   - the continuousPattern envelope → one "line" segment spanning the

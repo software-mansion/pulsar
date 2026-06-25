@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { TagsInfo } from './tagsInfo';
 import iconClose from '../assets/icon-close.svg';
 
-// "Tags guide" modal — the plugin counterpart to the docs TagsModal
+// "Tags guide" modal - the plugin counterpart to the docs TagsModal
 // (docs/.../components/TagsModal). Explains every haptic tag grouped by
 // dimension (Intensity / Sharpness / Shape / Duration) behind underlined
 // tabs, with one blue-10 card per tag describing it and listing typical
@@ -13,7 +13,7 @@ export default function TagsGuide({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = useState(0);
   const group = TagsInfo[activeTab];
 
-  // Esc closes — matches PresetDetail's affordance.
+  // Esc closes - matches PresetDetail's affordance.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();

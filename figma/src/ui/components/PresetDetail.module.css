@@ -1,4 +1,4 @@
-/* Preset detail modal — the docs-styled dialog rendered inside App's
+/* Preset detail modal - the docs-styled dialog rendered inside App's
    .modal-card chrome: header bar, scrollable body, action row, SDK snippet
    tabs and code blocks. */
 
@@ -52,7 +52,7 @@
   min-height: 0;
 }
 /* Stop flex from squashing children whose natural height is taller than the
-   visible body — we already overflow-y:auto, so vertical scroll handles the
+   visible body - we already overflow-y:auto, so vertical scroll handles the
    excess. Without this the Visualization SVG (and any other intrinsically
    sized child) gets shrunk by the column flex algorithm before scrolling
    kicks in, which is what made the haptic waveform render as a 10-px sliver. */
@@ -64,14 +64,14 @@
   color: var(--color-primary);
 }
 
-/* Plugin-only action row above the tags — Play / Phone / Bind. */
+/* Plugin-only action row above the tags - Play / Phone / Bind. */
 .preset-actions {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-/* Section block — Usage / Raw pattern data. */
+/* Section block - Usage / Raw pattern data. */
 .modal-section {
   display: flex;
   flex-direction: column;
@@ -91,7 +91,7 @@
   color: var(--color-primary);
 }
 
-/* SDK tab strip — Pulsar-style underline tabs, distinct from the plugin's
+/* SDK tab strip - Pulsar-style underline tabs, distinct from the plugin's
    top-level .tab so theming the modal doesn't leak. */
 .docs-tabs {
   display: flex;
@@ -123,7 +123,7 @@
 }
 .docs-tab:active { transform: none; box-shadow: none; }
 
-/* Code block — wraps long lines (no horizontal scroll) and uses the docs
+/* Code block - wraps long lines (no horizontal scroll) and uses the docs
    CodeTabs.contentArea recipe (blue-10 fill, DM Mono). */
 .code-block {
   background: var(--color-blue-10);
@@ -143,7 +143,7 @@
 }
 
 /* Copy-to-clipboard affordance docked in the top-right corner of a code
-   block — mirrors the docs preset modal (.copyButton over .jsonContainer).
+   block - mirrors the docs preset modal (.copyButton over .jsonContainer).
    Resets the signature button chrome down to a flat icon chip that blends into
    the blue-10 code surface and masks the text scrolling beneath it. */
 .code-block-wrap {
@@ -178,7 +178,7 @@
   transform: scale(0.9);
 }
 
-/* Tags row inside the modal — same recipe as preview's. */
+/* Tags row inside the modal - same recipe as preview's. */
 .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
 /* White-faced variant (used for ordinary tags inside the modal). */
 :global(.tag).tag-white {
@@ -186,7 +186,7 @@
   margin: 0;
   cursor: default;
 }
-/* Custom-preset accent — blue-20 fill, no border, signals user-defined. */
+/* Custom-preset accent - blue-20 fill, no border, signals user-defined. */
 :global(.tag).tag-custom {
   margin: 0;
   padding: 4px 10px;

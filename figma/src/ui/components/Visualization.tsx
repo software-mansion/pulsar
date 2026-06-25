@@ -20,7 +20,7 @@ export default function Visualization({
 }) {
   const W = 320;
   const H = height;
-  // Unique gradient id per instance — the plugin renders many of these SVGs in
+  // Unique gradient id per instance - the plugin renders many of these SVGs in
   // one document, so a shared id would make every envelope reuse the first
   // gradient. Strip the colons useId() emits since they break funciri refs.
   const gradId = `freq-${useId().replace(/:/g, '')}`;

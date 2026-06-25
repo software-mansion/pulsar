@@ -1,4 +1,4 @@
-/* Custom presets accordion body — JSON editor, error line, and saved-preset
+/* Custom presets accordion body - JSON editor, error line, and saved-preset
    rows with edit/delete icon buttons. */
 textarea.preset-editor {
   background: var(--color-blue-10);

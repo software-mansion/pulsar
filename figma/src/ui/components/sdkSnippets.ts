@@ -1,7 +1,7 @@
 import type { PresetData } from '../../shared/types';
 
 // Order chosen to match the docs SDK overview page. Kept in sync with the
-// preview's PresetDetailsModal — if you fix a snippet here, fix it there too
+// preview's PresetDetailsModal - if you fix a snippet here, fix it there too
 // (or vice versa). The two apps have to be self-contained because they live
 // in separate Vite projects, but the source of truth for the snippet content
 // is the docs/src/content/docs/sdk/*.mdx pages.
@@ -31,7 +31,7 @@ const camel = (s: string): string => {
     .join('');
 };
 
-// Built-in preset call site for each SDK — quoted from
+// Built-in preset call site for each SDK - quoted from
 // docs/src/content/docs/sdk/{ios,android,kmp,react-native,flutter}.mdx.
 export function builtInSnippet(lang: Lang, name: string): string {
   const id = camel(name);

@@ -74,9 +74,9 @@ button:active {
   transform: translate(-1px, 1px);
   box-shadow: -1px 1px 0 var(--color-blue-50);
 }
-/* Unfilled docs variant — same border + offset shadow, lighter label. */
+/* Unfilled docs variant - same border + offset shadow, lighter label. */
 button.ghost { font-weight: 500; }
-/* Filled docs variant — blue-20 face. */
+/* Filled docs variant - blue-20 face. */
 button.primary { background: var(--color-blue-20); }
 button.icon { padding: 4px 8px; }
 button.icon svg { display: block; }
@@ -100,7 +100,7 @@ input[type='text'], input[type='url'], textarea {
 }
 input:focus, textarea:focus { outline: none; border-color: var(--color-blue-50); }
 
-/* Toggle switch — a checkbox restyled as an iOS-style switch. */
+/* Toggle switch - a checkbox restyled as an iOS-style switch. */
 input.switch {
   appearance: none;
   -webkit-appearance: none;
@@ -158,7 +158,7 @@ input.switch:checked::after { transform: translateX(14px); }
 /* Panel header title shared by the Bound + Live preview tabs. */
 .panel-title { font-weight: 700; font-size: var(--fs-lg); }
 
-/* Bound indicator — deliberately distinct from tag pills: solid navy chip.
+/* Bound indicator - deliberately distinct from tag pills: solid navy chip.
    Shared by the preset cards and the Bound-components panel. */
 .bound-badge {
   display: inline-flex;
@@ -178,10 +178,10 @@ input.switch:checked::after { transform: translateX(14px); }
 
 .star { display: block; font-size: var(--fs-lg); line-height: 1; }
 
-/* ---- Accordions — shared building blocks for Filters / Custom presets / Phone.
+/* ---- Accordions - shared building blocks for Filters / Custom presets / Phone.
    The grouped-card chrome that wraps them lives in App.css. ---- */
 details.accordion { border-top: 1px solid var(--border); padding-top: 8px; }
-/* Accordion disclosure caret — hide the native marker. */
+/* Accordion disclosure caret - hide the native marker. */
 details.accordion > summary { list-style: none; cursor: pointer; user-select: none; }
 details.accordion > summary::-webkit-details-marker { display: none; }
 
@@ -224,7 +224,7 @@ details.accordion > summary::-webkit-details-marker { display: none; }
 .acc-row[open] > summary.acc-head .acc-chevron img { transform: rotate(180deg); opacity: 0.85; }
 .acc-body { padding: 10px }
 
-/* Accordion body internals — shared sub-blocks. */
+/* Accordion body internals - shared sub-blocks. */
 .acc-label {
   font-size: var(--fs-2xs);
   font-weight: 700;
@@ -248,7 +248,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 /* Brand mark (shared by the header and any future placements). */
 .pulsar-logo { display: block; }
 
-/* Shared preset-card chrome — the signature blue-10 fill / blue-50 border +
+/* Shared preset-card chrome - the signature blue-10 fill / blue-50 border +
    offset shadow. Lives in the global layer because it's reused by the
    Bound-components panel and gets a flash highlight applied imperatively from
    App when a preset is scrolled to. Card-private layout is in PresetCard's
@@ -265,7 +265,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 /* Flatten the offset shadow on buttons inside a card for a subtler look. */
 .preset-card button { box-shadow: none; border-width: 1px; }
 .preset-card button:active { box-shadow: none; border-width: 1px; }
-/* Scroll-to flash — pulses the border + shadow green and the bg white, then
+/* Scroll-to flash - pulses the border + shadow green and the bg white, then
    eases back to the card's natural styling. */
 .preset-card.preset-flash { animation: preset-flash-card 1.2s ease-out; }
 @keyframes preset-flash-card {

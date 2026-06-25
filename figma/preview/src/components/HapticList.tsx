@@ -60,7 +60,7 @@ export function HapticList({
       out.push({ id, name: info.name, items });
       byFrame.delete(id);
     }
-    // Anything left has no matching frame metadata — surface it under a
+    // Anything left has no matching frame metadata - surface it under a
     // generic header so the user can still see and play it.
     for (const [id, items] of byFrame) {
       out.push({ id, name: id === UNASSIGNED ? 'Unassigned' : 'Screen', items });

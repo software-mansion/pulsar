@@ -68,7 +68,7 @@ export default function Filters({
         <span className="acc-icon">
           <img src={iconSliders} alt="" />
         </span>
-        <span className="acc-title">
+        <span className={`acc-title ${styles['filters-title']}`}>
           Filters
           {/* Opens the tags guide. Lives inside <summary>, so swallow the click
               to stop it toggling the accordion. */}
@@ -106,7 +106,7 @@ export default function Filters({
       </summary>
 
       <div className="acc-body">
-        {/* Favourites — styled toggle-switch row. */}
+        {/* Favourites - styled toggle-switch row. */}
         <label className={styles['filter-toggle']}>
           <span className="star">★</span>
           <span className={styles['filter-toggle-label']}>Favourites only</span>
@@ -119,6 +119,13 @@ export default function Filters({
         </label>
 
         <div className="acc-sep" />
+
+        {/* Same destination as the info icon by the title - a more discoverable
+            text affordance right above the tag groups. */}
+        <button type="button" className={styles['tags-learn']} onClick={onShowTagsGuide}>
+          <img src={iconInfo} alt="" width={13} height={13} />
+          <span>Learn more about tags</span>
+        </button>
 
         {TAG_GROUPS.map((g) => (
           <div key={g.groupName} className={styles['filter-group']}>

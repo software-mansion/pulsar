@@ -29,7 +29,7 @@ export default function PresetCard({
 }) {
   const { data } = entry;
 
-  // Lighter, borderless favourite star — shared by both layouts.
+  // Lighter, borderless favourite star - shared by both layouts.
   const favButton = (
     <button
       className={styles['fav-plain']}
@@ -72,7 +72,7 @@ export default function PresetCard({
     );
   }
 
-  // Expanded card — name, duration pill, star and the Details/Bind actions all
+  // Expanded card - name, duration pill, star and the Details/Bind actions all
   // sit on the top line; the waveform is the hero below with the play button
   // docked in its bottom-right corner.
   return (

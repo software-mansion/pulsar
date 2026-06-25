@@ -2,7 +2,7 @@
 // Renders a Pulsar haptic preset to a WebAudio buffer using OfflineAudioContext,
 // then plays it back.
 //
-// DUPLICATED VERBATIM — this exact file lives in two places and must be kept
+// DUPLICATED VERBATIM - this exact file lives in two places and must be kept
 // byte-identical:
 //   - figma/src/ui/audio/AudioPatternUtility.ts        (plugin)
 //   - figma/preview/src/audio/AudioPatternUtility.ts   (standalone preview)
