@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { createApp } from '../src/app';
 import { useInMemoryFigmaDb, closeInMemoryFigmaDb, InMemoryFigmaDb } from './helpers/figmaDb';
@@ -299,6 +299,18 @@ describe('HTTP routes', () => {
   });
 
   describe('server errors', () => {
+    // These tests intentionally make DB queries throw, so the handlers' catch
+    // paths log to console.error. Silence that expected noise (it otherwise
+    // looks like a real failure in the suite output) while asserting the error
+    // IS logged — the 500 path must not fail silently.
+    let errSpy: ReturnType<typeof jest.spyOn>;
+    beforeEach(() => {
+      errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+    afterEach(() => {
+      errSpy.mockRestore();
+    });
+
     // Drop the table so the next query throws, exercising the 500 catch paths.
     async function breakSchema() {
       await mem.query('DROP TABLE figma_projects');
@@ -310,6 +322,7 @@ describe('HTTP routes', () => {
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ success: false, error: 'Failed to create figma project' });
       expect(res.body).not.toHaveProperty('detail');
+      expect(errSpy).toHaveBeenCalled();
     });
 
     it('GET returns a generic 500 (no error detail leaked) when the query fails', async () => {
@@ -318,6 +331,7 @@ describe('HTTP routes', () => {
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ success: false, error: 'Failed to fetch figma project' });
       expect(res.body).not.toHaveProperty('detail');
+      expect(errSpy).toHaveBeenCalled();
     });
 
     it('PUT returns a generic 500 (no error detail leaked) when the query fails', async () => {
@@ -326,6 +340,7 @@ describe('HTTP routes', () => {
       expect(res.status).toBe(500);
       expect(res.body).toEqual({ success: false, error: 'Failed to update figma project' });
       expect(res.body).not.toHaveProperty('detail');
+      expect(errSpy).toHaveBeenCalled();
     });
 
     it('PATCH visibility returns a generic 500 when the query fails', async () => {
@@ -339,6 +354,7 @@ describe('HTTP routes', () => {
         error: 'Failed to update figma project visibility',
       });
       expect(res.body).not.toHaveProperty('detail');
+      expect(errSpy).toHaveBeenCalled();
     });
   });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from '@jest/globals';
+import { describe, it, expect, afterEach, jest } from '@jest/globals';
 import WebSocket from 'ws';
 import request from 'supertest';
 import type { Server } from 'http';
@@ -71,27 +71,46 @@ const awaitClose = (ws: WebSocket) =>
   );
 
 describe('WebSocket pairing protocol', () => {
+  // These are real end-to-end socket tests: a genuine TCP+WS handshake between
+  // live client sockets and a listening server. The happy path completes in
+  // ~10ms, so the only thing the default 10s ceiling catches is event-loop
+  // starvation when several suites run in parallel under load — which produced
+  // a false 10009ms "failure", not a real hang. Give the handshake headroom so
+  // CPU contention can't trip it; a true hang still fails, just later.
+  jest.setTimeout(30000);
+
   let running: Running;
   const sockets: WebSocket[] = [];
 
   function connect(query: string): WebSocket {
     const ws = new WebSocket(`${running.wsUrl}/?${query}`);
-    // Fire-and-forget sender sockets are never awaited. Closing one in afterEach
-    // while its handshake is still in flight makes ws emit an 'error'
-    // ("WebSocket was closed before the connection was established"); with no
-    // listener Node rethrows it as an unhandled error and fails whichever test
-    // just ran (nondeterministically, by handshake timing). A no-op handler
-    // keeps these expected teardown aborts benign. Tests that need to observe
-    // connection errors attach their own 'error' listener on top of this.
+    // Always attach a benign 'error' listener. A ws 'error' with no listener is
+    // rethrown by Node as an unhandled error that crashes whichever test is
+    // running — mis-attributed and nondeterministic (e.g. teardown aborting a
+    // still-CONNECTING fire-and-forget sender emits "WebSocket was closed before
+    // the connection was established", and transient transport errors can fire
+    // under load). For these integration tests the socket 'error' event is not a
+    // meaningful signal: a genuinely broken pairing surfaces as a frame-await
+    // timeout instead. Tests that want fast-fail on a connection error attach
+    // their own 'error' listener on top of this one.
     ws.on('error', () => {});
     sockets.push(ws);
     return ws;
   }
 
+  // Deterministic teardown: close every socket and await its 'close' so a
+  // closing socket's events can't leak into and destabilise the next test.
   afterEach(async () => {
-    sockets.splice(0).forEach((ws) => {
-      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) ws.close();
-    });
+    await Promise.all(
+      sockets.splice(0).map(
+        (ws) =>
+          new Promise<void>((resolve) => {
+            if (ws.readyState === WebSocket.CLOSED) return resolve();
+            ws.on('close', () => resolve());
+            ws.close();
+          }),
+      ),
+    );
     if (running) await running.close();
   });
 
