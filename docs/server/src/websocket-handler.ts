@@ -104,16 +104,21 @@ export class WebSocketHandler {
     ws.id = `${++this.nextId}`;
     ws.type = type as 'sender' | 'receiver';
     // Optional, additive producer identity. A producer may advertise a human
-    // name (e.g. "Figma Plugin macOS") and a Figma preview token to hand to the
-    // phone; the server relays these to the receiver on (re)establish. Older
-    // producers omit them and older receivers ignore them — kept off the socket
-    // entirely when absent so the relayed messages stay byte-for-byte unchanged.
+    // name (e.g. "Figma Plugin macOS"), its type ('figma' | 'browser'), the
+    // Figma project name, and a Figma preview token to hand to the phone; the
+    // server relays these to the receiver on (re)establish. Older producers omit
+    // them and older receivers ignore them — kept off the socket entirely when
+    // absent so the relayed messages stay byte-for-byte unchanged.
     const name = url.searchParams.get('name');
     const previewToken = url.searchParams.get('previewToken');
-    if (name || previewToken) {
+    const producerType = url.searchParams.get('producerType');
+    const figmaProjectName = url.searchParams.get('figmaProjectName');
+    if (name || previewToken || producerType || figmaProjectName) {
       ws.metadata = {
         ...(name ? { name } : {}),
         ...(previewToken ? { previewToken } : {}),
+        ...(producerType ? { producerType } : {}),
+        ...(figmaProjectName ? { figmaProjectName } : {}),
       };
     }
     const ip = getClientIp(req);

@@ -231,6 +231,21 @@ describe('WebSocket pairing protocol', () => {
       expect(est.previewToken).toBe('pub-xyz');
     });
 
+    it('relays producerType + figmaProjectName from the handshake query to the receiver', async () => {
+      running = await startServer();
+      const code = (await request(running.app).get('/create-channel')).body.code as string;
+      connect(
+        `type=sender&action=new_connection&code=${code}` +
+          `&name=${encodeURIComponent('Figma Plugin macOS')}&previewToken=pub-xyz` +
+          `&producerType=figma&figmaProjectName=${encodeURIComponent('Checkout Redesign')}`,
+      );
+      const receiver = connect(`type=receiver&action=new_connection&code=${code}`);
+      const rf = new Frames(receiver);
+      const est = await rf.await(type('connection_established'));
+      expect(est.producerType).toBe('figma');
+      expect(est.figmaProjectName).toBe('Checkout Redesign');
+    });
+
     it('omits identity fields when the producer advertises none (old client)', async () => {
       running = await startServer();
       const code = (await request(running.app).get('/create-channel')).body.code as string;

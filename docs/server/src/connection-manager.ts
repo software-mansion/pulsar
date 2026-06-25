@@ -253,9 +253,19 @@ export class ConnectionManager {
   // Additive producer identity relayed to the receiver (and harmlessly to the
   // sender) on (re)establish. `undefined` fields are dropped by JSON.stringify,
   // so a producer that advertised nothing yields the exact legacy payload.
-  private senderIdentity(connection: Connection): { name?: string; previewToken?: string } {
+  private senderIdentity(connection: Connection): {
+    name?: string;
+    previewToken?: string;
+    producerType?: string;
+    figmaProjectName?: string;
+  } {
     const meta = connection.sender?.metadata;
-    return { name: meta?.name, previewToken: meta?.previewToken };
+    return {
+      name: meta?.name,
+      previewToken: meta?.previewToken,
+      producerType: meta?.producerType,
+      figmaProjectName: meta?.figmaProjectName,
+    };
   }
 
   private sendTokenNotification(token: string, connection: Connection): void {

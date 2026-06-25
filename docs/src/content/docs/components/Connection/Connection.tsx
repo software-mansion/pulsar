@@ -84,9 +84,10 @@ export default function Connection() {
     if (localStorage.getItem('hapticsToken')) {
       token = localStorage.getItem('hapticsToken');
     }
-    // Advertise the producer name on the handshake; the server relays it to the
-    // phone on (re)establish. Additive — older servers ignore it.
-    const nameParam = `&name=${encodeURIComponent(getConnectionName())}`;
+    // Advertise the producer name + type on the handshake; the server relays
+    // them to the phone on (re)establish. Additive — older servers ignore them.
+    const nameParam =
+      `&name=${encodeURIComponent(getConnectionName())}` + `&producerType=browser`;
     let params = '';
     if (token) {
       params = `&action=reuse_connection&token=${token}${nameParam}`;

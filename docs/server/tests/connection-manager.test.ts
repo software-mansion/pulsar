@@ -163,8 +163,9 @@ describe('ConnectionManager', () => {
     });
   });
 
-  // Additive producer identity: a sender may advertise a `name` and a Figma
-  // `previewToken`; the server relays them to the receiver on (re)establish.
+  // Additive producer identity: a sender may advertise a `name`, its
+  // `producerType` ('figma' | 'browser'), a Figma `previewToken`, and the Figma
+  // `figmaProjectName`; the server relays them to the receiver on (re)establish.
   describe('producer identity relay', () => {
     it('relays the sender name + previewToken to the receiver on establish', () => {
       const code = cm.getParingCode();
@@ -180,17 +181,38 @@ describe('ConnectionManager', () => {
       expect(typeof est.token).toBe('string');
     });
 
+    it('relays the Figma producerType + figmaProjectName to the receiver on establish', () => {
+      const code = cm.getParingCode();
+      const sender = new FakeWs('s');
+      sender.metadata = {
+        name: 'Figma Plugin macOS',
+        previewToken: 'pub-123',
+        producerType: 'figma',
+        figmaProjectName: 'Checkout Redesign',
+      };
+      const receiver = new FakeWs('r');
+      cm.createNewSenderConnection(asWs(sender), code);
+      cm.createNewReceiverConnection(asWs(receiver), code);
+
+      const est = firstOfType(receiver, 'connection_established');
+      expect(est.producerType).toBe('figma');
+      expect(est.figmaProjectName).toBe('Checkout Redesign');
+    });
+
     it('relays the sender identity again on connection_restored', () => {
       const { token } = pair();
       const newSender = new FakeWs('s2');
-      newSender.metadata = { name: 'Google Chrome Windows' };
+      newSender.metadata = { name: 'Google Chrome Windows', producerType: 'browser' };
       const newReceiver = new FakeWs('r2');
       cm.reuseSenderConnection(asWs(newSender), token);
       cm.reuseReceiverConnection(asWs(newReceiver), token);
 
       const restored = firstOfType(newReceiver, 'connection_restored');
       expect(restored.name).toBe('Google Chrome Windows');
+      expect(restored.producerType).toBe('browser');
+      // A browser advertises neither a preview token nor a Figma project name.
       expect(restored).not.toHaveProperty('previewToken');
+      expect(restored).not.toHaveProperty('figmaProjectName');
     });
 
     it('omits identity fields entirely for a producer that advertised none (old client)', () => {
