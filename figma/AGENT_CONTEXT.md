@@ -182,6 +182,52 @@ When `isAppHost` is true, taps post:
 .play()` for custom (user-defined) presets whose names don't match anything
 in `Presets`.
 
+### Live-preview relay → paired phone (per-frame sync)
+
+The plugin pushes three kinds of update to a paired phone over the same
+`/broadcast` relay (`broadcastChannel` is a transparent JSON relay — **no server
+change** is needed to add a kind). They flow plugin → `/broadcast` →
+phone socket (`ConnectionsContext` → `lastPreviewUpdate`) → WebView injection
+(`figma.tsx` → `buildPreviewInjection`) → preview (`useHostUpdates`):
+
+- `preview-haptics-diff` / `preview-haptics-refetch` — config changes (binding
+  edits). Applied in place, no iframe reload.
+- `preview-frame-focus` — the designer focused a different top-level frame
+  (selection, or an edit to a node inside another frame). Carries `nodeId` (the
+  top-level frame). The preview presents that frame (`currentNodeId` →
+  `PrototypeView`). Emitted by `pushFrameFocus()` in `code.ts` (deduped to actual
+  frame changes), broadcast from `App.tsx` only when a phone is connected.
+
+  Frame switching can't use the Embed API's inbound `NAVIGATE_TO_FRAME` message —
+  it's *documented* but a **no-op in practice** for these prototype embeds
+  (verified against a live embed; even Figma's own example forward button doesn't
+  move via postMessage). So each frame is its own iframe, selected by `node-id`.
+  To avoid a reload on every switch, `PrototypeView` keeps a small **keep-alive
+  cache** (LRU, `MAX_LIVE_FRAMES`): visited frames stay mounted but hidden
+  (`display:none`, which preserves the browsing context in Chromium/WebKit — the
+  app WebView + Chrome; Firefox is the lone exception), so the first visit to a
+  frame loads and revisits are instant. Two invariants the cache must keep (see
+  the comments there): never reorder a mounted iframe (DOM reparent = reload), and
+  re-label a slot when the embed navigates internally (a hotspot tap) so the cache
+  stays accurate — which is why `PRESENTED_NODE_CHANGED` is handled inside
+  `PrototypeView` (attributed to the active iframe by `event.source`), not in
+  App's global figma-message listener.
+
+This is a **phone-only** channel: only PulsarApp's WebView is a socket receiver,
+so the standalone web preview never sees focus changes. The web preview instead
+navigates on an **explicit preset tap** in the "Haptic elements" list
+(`HapticList` → `onOpenFrame` → `navigateToFrame`), which drives the same
+`navNodeId` → iframe `node-id` path. `navNodeId` is distinct from
+`currentNodeId`: in-prototype taps move `currentNodeId` (overlay) without
+reloading; a deliberate jump sets both and reloads the embed.
+
+When extending the relay vocabulary, the kind string must start with `preview-`
+(the phone's broadcast guard in `ConnectionsContext` matches that prefix) and be
+added to: `figma/src/ui/lib/diffPayload.ts` (`PreviewUpdateMessage`),
+`PulsarApp/contexts/ConnectionsContext.tsx` (`PreviewUpdate`),
+`PulsarApp/app/(tabs)/figma.tsx` (injection), and
+`figma/preview/src/lib/useHostUpdates.ts` (consumer).
+
 ### Preview ↔ docs `/figma-preview` page (srcdoc iframe)
 
 Docs at `docs/src/components/preview/Preview.astro` embeds the

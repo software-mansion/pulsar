@@ -52,6 +52,18 @@ export type PreviewUpdateMessage =
       kind: 'preview-haptics-refetch';
       previewToken?: string;
       toRevision: number;
+    }
+  // The designer focused a different top-level frame; the paired phone's live
+  // preview should present `nodeId`. Carries no revision - it doesn't change the
+  // haptics config, only which frame the embed shows.
+  | {
+      kind: 'preview-frame-focus';
+      previewToken?: string;
+      nodeId: string;
+      // Human-readable name of the focused frame, shown as the app's "current
+      // screen" indicator. Carried here so binding-less frames (absent from the
+      // payload's `frames` map) still get a label.
+      frameName?: string;
     };
 
 // Diff two record maps by stable value-equality. Returns `{ set, del }` or

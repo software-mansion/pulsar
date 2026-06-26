@@ -180,6 +180,10 @@ export type MainToUi =
       onboardingSeen: boolean;
     }
   | { type: 'selection'; node: SelectionInfo | null }
+  // The designer focused (selected or edited a node inside) a top-level frame.
+  // The UI relays this to a paired phone so its live preview follows along and
+  // presents that frame. Only emitted when the focused frame actually changes.
+  | { type: 'frame-focus'; nodeId: string; frameName: string }
   | { type: 'play-preset'; presetId: string } // emitted when a bound node is clicked in editor
   | { type: 'bound-list'; items: BoundItem[] }
   // Reply to `get-project`: this file's persisted token + last cached config

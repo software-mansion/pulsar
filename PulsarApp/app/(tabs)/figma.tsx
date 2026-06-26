@@ -104,6 +104,10 @@ function FigmaPreviewWebView({ token }: { token: string }) {
         fromRevision: update.fromRevision,
         toRevision: update.toRevision,
         diff: update.diff,
+        // Set only for 'preview-frame-focus'; undefined keys are dropped by
+        // JSON.stringify so the haptics diff/refetch envelopes are unchanged.
+        nodeId: update.nodeId,
+        frameName: update.frameName,
       })
     );
   }, [lastPreviewUpdate, token]);

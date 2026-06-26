@@ -210,6 +210,26 @@ export default function App() {
     return off;
   }, [settings.soundInEdit, hapticsToken, phoneConnected, presetById]);
 
+  // Relay the designer's focused frame to the paired phone so its live preview
+  // presents the same screen. Same gating as "play on phone" - only broadcast
+  // into a live channel. Rebinds so it reads the fresh token + connection state.
+  // The web preview deliberately doesn't get this (it's a phone-only channel);
+  // it navigates on explicit preset taps instead.
+  useEffect(() => {
+    const off = onMessage((m) => {
+      if (m.type !== 'frame-focus') return;
+      if (hapticsToken && phoneConnected) {
+        broadcastPreviewUpdate(hapticsToken, {
+          kind: 'preview-frame-focus',
+          previewToken: previewSync.previewToken ?? undefined,
+          nodeId: m.nodeId,
+          frameName: m.frameName
+        });
+      }
+    });
+    return off;
+  }, [hapticsToken, phoneConnected, previewSync.previewToken]);
+
   const filtered = useMemo(() => {
     const base = applyFilter(allPresets, filter);
     return favouritesOnly ? base.filter((e) => favourites.has(e.id)) : base;

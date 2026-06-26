@@ -107,8 +107,6 @@ export default function App() {
     [refetch]
   );
   const onRefetch = useCallback((toRevision: number) => void refetch(toRevision), [refetch]);
-  const hostHandlers = useMemo(() => ({ onDiff, onRefetch }), [onDiff, onRefetch]);
-  useHostUpdates(hostHandlers);
 
   // Derived lookup maps (stable across renders).
   const { bindings, ownerMap, presentedId, frames } = useMemo(() => {
@@ -170,13 +168,47 @@ export default function App() {
         : 'Waiting for a design - open one from the Pulsar plugin.'
     );
   }, [payloadLoaded, payload, isPrivate]);
+  // The frame currently presented. Drives both which embed iframe is shown
+  // (PrototypeView keeps a keep-alive cache keyed off this) and the overlay
+  // grouping. Moved by a deliberate jump - the designer focusing a frame
+  // (relayed from the app) or a preset tap in the list - and by in-prototype
+  // navigation (a hotspot tap), which PrototypeView reports via
+  // onPresentedNodeChange. Switching frames doesn't reload an already-visited
+  // one; the Embed API's inbound NAVIGATE_TO_FRAME message is a no-op in
+  // practice (verified against a live embed), so each frame is its own iframe
+  // and revisits just un-hide the cached one.
   const [currentNodeId, setCurrentNodeId] = useState(presentedId);
-  // Sync currentNodeId when the payload arrives later (async token fetch). The
-  // useState initializer above only runs once with whatever presentedId was on
-  // first render, which is the empty string before the fetch resolves.
+  // Sync when the payload arrives later (async token fetch). The useState
+  // initializer above only runs once with whatever presentedId was on first
+  // render, which is the empty string before the fetch resolves.
   useEffect(() => {
     setCurrentNodeId(presentedId);
   }, [presentedId]);
+
+  // Names for frames the app relayed a focus to. The payload's `frames` map only
+  // covers frames that have bindings, so a designer focusing a binding-less frame
+  // arrives with no name there - we keep the relayed name to label the indicator.
+  const [relayedFrameNames, setRelayedFrameNames] = useState<Record<string, string>>({});
+
+  // Jump to a specific top-level frame (designer focus relay / preset tap).
+  // Idempotent - re-selecting the current frame is a no-op. `frameName` is only
+  // passed by the focus relay; preset taps resolve the name from the frames map.
+  const navigateToFrame = useCallback((frameId: string, frameName?: string) => {
+    const norm = normalizeId(frameId);
+    if (!norm) return;
+    setCurrentNodeId(norm);
+    if (frameName) {
+      setRelayedFrameNames((prev) => (prev[norm] === frameName ? prev : { ...prev, [norm]: frameName }));
+    }
+  }, []);
+
+  // Host-relayed updates, only injected when running inside PulsarApp's WebView:
+  // incremental config diffs, full refetches, and designer-focus frame jumps.
+  const hostHandlers = useMemo(
+    () => ({ onDiff, onRefetch, onFocusFrame: navigateToFrame }),
+    [onDiff, onRefetch, navigateToFrame]
+  );
+  useHostUpdates(hostHandlers);
   const [highlightsOn, setHighlightsOn] = useState(true);
   const [activeId, setActiveId] = useState('');
   const [detailsId, setDetailsId] = useState<string>('');
@@ -222,6 +254,9 @@ export default function App() {
   // covers the lower strip. This toggle asks the native host to hide/show that
   // tab bar so the prototype can run edge-to-edge. No-op outside the app host.
   const [navBarHidden, setNavBarHidden] = useState(false);
+  // Whether the in-app "current screen" indicator is collapsed to an icon-only
+  // dot. The viewer can tuck it away when they don't need the screen name.
+  const [indicatorCollapsed, setIndicatorCollapsed] = useState(false);
   const toggleNavBar = useCallback(() => {
     setNavBarHidden((prev) => {
       const next = !prev;
@@ -284,7 +319,9 @@ export default function App() {
         setStatus('Tap a highlighted element to feel its haptic.');
         setLoaded(true);
       },
-      onPresentedNodeChanged: (id: string) => setCurrentNodeId(normalizeId(id)),
+      // PRESENTED_NODE_CHANGED is handled inside PrototypeView instead, where it
+      // can be attributed to the active iframe (the keep-alive cache mounts
+      // several) and re-label its cache slot.
       onLoginScreen: () => setStatus('This file requires Figma login to embed.'),
       onMousePressOrRelease: (targetNodeId: string) => {
         const norm = normalizeId(targetNodeId);
@@ -374,6 +411,11 @@ export default function App() {
   const showHighlights =
     highlightsOn && !fullscreen && currentFrame !== null && visibleElements.length > 0;
 
+  // Name of the frame on screen, for the in-app "current screen" indicator.
+  // Prefer the payload's frames map (frames with bindings); fall back to the name
+  // the app relayed with a focus (covers binding-less frames the designer focused).
+  const currentFrameName = frames.get(currentNodeId)?.name ?? relayedFrameNames[currentNodeId] ?? '';
+
   return (
     <>
       {!fullscreen && (
@@ -382,7 +424,7 @@ export default function App() {
       <main className={`main${fullscreen ? ' fullscreen' : ''}`}>
         <PrototypeView
           fileKey={payload.fileKey}
-          nodeId={payload.nodeId}
+          nodeId={currentNodeId}
           frame={currentFrame}
           elements={visibleElements}
           showHighlights={showHighlights}
@@ -390,6 +432,7 @@ export default function App() {
           fullscreen={fullscreen}
           deviceFrame={!isMobile}
           loaded={loaded}
+          onPresentedNodeChange={(id) => setCurrentNodeId(normalizeId(id))}
         />
         {!fullscreen && (
           <HapticList
@@ -401,11 +444,46 @@ export default function App() {
             activeId={activeId}
             onActivate={setActiveId}
             onPlay={playFromList}
+            onOpenFrame={navigateToFrame}
             onShowDetails={setDetailsId}
             footer={openOnPhoneLink ? <OpenOnPhone deepLink={openOnPhoneLink} /> : undefined}
           />
         )}
       </main>
+
+      {/* In-app only: a small badge naming the screen on view. The app
+          auto-switches frames as the designer focuses them, so without this the
+          viewer can lose track of which screen they're feeling. Tap to collapse
+          it to an icon-only dot. Hidden in true-fullscreen (nav bar toggled off)
+          to keep that view uncluttered. */}
+      {isAppHost && currentFrameName && !navBarHidden && (
+        <button
+          type="button"
+          className={`frame-indicator${indicatorCollapsed ? ' collapsed' : ''}`}
+          onClick={() => setIndicatorCollapsed((c) => !c)}
+          aria-expanded={!indicatorCollapsed}
+          aria-label={indicatorCollapsed ? `Current screen: ${currentFrameName}` : 'Hide screen name'}
+          title={indicatorCollapsed ? currentFrameName : 'Hide screen name'}
+        >
+          {/* Screen/frame glyph - the persistent affordance when collapsed. */}
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M3 9h18" />
+          </svg>
+          {!indicatorCollapsed && <span className="frame-indicator-name">{currentFrameName}</span>}
+        </button>
+      )}
+
       {detailsId && bindings.get(detailsId) && (
         <PresetDetailsModal
           data={bindings.get(detailsId)!}
