@@ -66,8 +66,14 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
   // Current file's secret edit token (write access). Kept in a ref so the
   // (rebound) preview-data and doc-changed handlers always read the latest value.
   const tokenRef = useRef<string | null>(null);
-  // Current file's read-only share token - what goes into share links/QRs.
+  // Current file's read-only share token - what goes into share links. Rotated
+  // server-side whenever a revoked link is re-published.
   const publicTokenRef = useRef<string | null>(null);
+  // Current file's read-only private preview token - what goes into the pairing
+  // QR + the live-update relay. Unlike the share token it always resolves
+  // (ignores the public/private toggle) and is never rotated, so a paired
+  // phone's live preview survives the share link being made private.
+  const previewTokenRef = useRef<string | null>(null);
   // Server revision our local state is based on (for conflict detection).
   const baseRevisionRef = useRef<number | null>(null);
   // stableStringify of the payload we last successfully pushed - lets us skip a
@@ -101,6 +107,13 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
     publicTokenRef.current = t;
     setPublicToken(t);
   }, []);
+  // Mirror of previewTokenRef as state so the phone-pairing panel can fold the
+  // private preview token into the unified QR / relay it to a paired phone.
+  const [previewToken, setPreviewToken] = useState<string | null>(null);
+  const rememberPreviewToken = useCallback((t: string | null) => {
+    previewTokenRef.current = t;
+    setPreviewToken(t);
+  }, []);
   // Resolver for an in-flight ensureShared() request (the 'pair' purpose), so
   // the async preview-data round-trip can hand its result back to the caller.
   const pairResolveRef = useRef<((t: string | null) => void) | null>(null);
@@ -118,6 +131,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
     fileKey: string;
     token: string | null;
     publicToken: string | null;
+    previewToken: string | null;
     config: unknown | null;
     baseRevision: number | null;
     isPublic: boolean;
@@ -125,6 +139,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
     fileKeyRef.current = m.fileKey;
     tokenRef.current = m.token;
     rememberPublicToken(m.publicToken);
+    rememberPreviewToken(m.previewToken);
     baseRevisionRef.current = m.baseRevision;
     // Seed the toggle from the cached value; the server-fetch branch below
     // reconciles it with the source of truth when there's a token to check.
@@ -142,14 +157,21 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           lastSyncedJsonRef.current = stableStringify(got.config);
           lastSyncedPayloadRef.current = got.config as PreviewPayload;
           setIsPublic(got.isPublic);
-          // Recover/refresh the read-only share token from the server.
-          if (got.publicToken && got.publicToken !== publicTokenRef.current) {
-            rememberPublicToken(got.publicToken);
+          // Recover/refresh the read-only share + preview tokens from the server.
+          const recoveredPublic = got.publicToken ?? publicTokenRef.current;
+          const recoveredPreview = got.previewToken ?? previewTokenRef.current;
+          if (
+            (got.publicToken && got.publicToken !== publicTokenRef.current) ||
+            (got.previewToken && got.previewToken !== previewTokenRef.current)
+          ) {
+            if (got.publicToken) rememberPublicToken(got.publicToken);
+            if (got.previewToken) rememberPreviewToken(got.previewToken);
             send({
               type: 'persist-project-token',
               fileKey: m.fileKey,
               token: m.token,
-              publicToken: got.publicToken
+              publicToken: recoveredPublic ?? '',
+              previewToken: recoveredPreview
             });
           }
           send({ type: 'persist-project-visibility', fileKey: m.fileKey, isPublic: got.isPublic });
@@ -172,6 +194,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           // Token no longer exists server-side - forget it; nothing is shared.
           tokenRef.current = null;
           rememberPublicToken(null);
+          rememberPreviewToken(null);
           lastSyncedJsonRef.current = null;
           lastSyncedPayloadRef.current = null;
           baseRevisionRef.current = null;
@@ -340,7 +363,9 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
         const emitUpdate = (toRevision: number, forced: boolean) => {
           const cb = onPublishedRef.current;
           if (!cb) return;
-          const previewToken = publicTokenRef.current ?? undefined;
+          // Relay against the private preview token so a paired phone refetches
+          // through the always-on read path, even if the share link is private.
+          const previewToken = previewTokenRef.current ?? undefined;
           if (
             !forced &&
             prevPayload != null &&
@@ -363,13 +388,19 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           cb({ kind: 'preview-haptics-refetch', previewToken, toRevision });
         };
 
-        const adopt = (t: string, publicToken: string, revision: number) => {
+        const adopt = (
+          t: string,
+          publicToken: string,
+          previewToken: string,
+          revision: number
+        ) => {
           tokenRef.current = t;
           rememberPublicToken(publicToken);
+          rememberPreviewToken(previewToken);
           baseRevisionRef.current = revision;
           lastSyncedJsonRef.current = json;
           lastSyncedPayloadRef.current = nextPayload;
-          send({ type: 'persist-project-token', fileKey, token: t, publicToken });
+          send({ type: 'persist-project-token', fileKey, token: t, publicToken, previewToken });
           send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
         };
 
@@ -382,7 +413,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           // didn't exist yet, so there's nothing to relay.
           if (!allowCreate) return null;
           const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.revision);
+          adopt(created.token, created.publicToken, created.previewToken, created.revision);
           return created.token;
         }
 
@@ -405,7 +436,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
             return null;
           }
           const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.revision);
+          adopt(created.token, created.publicToken, created.previewToken, created.revision);
           return created.token;
         }
         // Conflict: someone changed the row since our base. The server is the
@@ -430,7 +461,7 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
             return null;
           }
           const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.revision);
+          adopt(created.token, created.publicToken, created.previewToken, created.revision);
           return created.token;
         }
         // Lost a second race - bail; the next change will retry from the new base.
@@ -462,16 +493,53 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
         }
         setSyncStatus('synced');
 
+        // Pairing a phone hands the designer their PRIVATE preview token, which
+        // the QR encodes and the phone reads through the always-on path. It must
+        // NOT touch the share link's visibility (pairing a phone is unrelated to
+        // who can open a shared link). Recover the token from the server if it
+        // isn't cached (e.g. a legacy share or a phone re-paired after restart).
+        if (isPair) {
+          let pairToken = previewTokenRef.current;
+          if (!pairToken) {
+            const got = await fetchProject(token);
+            if (got.kind === 'ok' && got.previewToken) {
+              pairToken = got.previewToken;
+              rememberPreviewToken(pairToken);
+              if (got.publicToken) rememberPublicToken(got.publicToken);
+              send({
+                type: 'persist-project-token',
+                fileKey,
+                token,
+                publicToken: got.publicToken ?? publicTokenRef.current ?? '',
+                previewToken: pairToken
+              });
+            }
+          }
+          settlePair(pairToken ?? null);
+          return;
+        }
+
         // Beyond the sync itself, share actions also need a URL / QR / clipboard.
         if (purpose === 'autosync' || purpose === 'sync') return;
 
         // Any explicit share re-opens the link to the public: if the user had
         // made it private, handing the link out again necessarily makes it
-        // viewable, so flip the toggle back on. Optimistic + best-effort - the
-        // server is the source of truth, reconciled on the next cold start.
+        // viewable, so flip the toggle back on. Re-publishing a previously-private
+        // link rotates the share token server-side (the old link stays dead), so
+        // adopt whatever token the PATCH returns before building the URL.
         setIsPublic(true);
         send({ type: 'persist-project-visibility', fileKey, isPublic: true });
-        void setProjectVisibility(token, true).catch(() => {});
+        const vis = await setProjectVisibility(token, true).catch(() => null);
+        if (vis?.ok && vis.publicToken && vis.publicToken !== publicTokenRef.current) {
+          rememberPublicToken(vis.publicToken);
+          send({
+            type: 'persist-project-token',
+            fileKey,
+            token,
+            publicToken: vis.publicToken,
+            previewToken: previewTokenRef.current
+          });
+        }
 
         // Everything we hand out carries the read-only public token, never the
         // edit token. Recover it from the server if not cached (e.g. legacy share).
@@ -482,22 +550,17 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           if (got.kind === 'ok' && got.publicToken) {
             shareToken = got.publicToken;
             rememberPublicToken(shareToken);
-            send({ type: 'persist-project-token', fileKey, token, publicToken: shareToken });
+            send({
+              type: 'persist-project-token',
+              fileKey,
+              token,
+              publicToken: shareToken,
+              previewToken: got.previewToken ?? previewTokenRef.current
+            });
           }
         }
         if (!shareToken) {
-          if (isPair) {
-            settlePair(null);
-            return;
-          }
           notify('Could not resolve the share link. Try “Sync now” and retry.', { level: 'error' });
-          return;
-        }
-
-        // Pairing only needs the public token (the visibility was just re-opened
-        // above) - hand it back and stop before building share URLs.
-        if (isPair) {
-          settlePair(shareToken);
           return;
         }
 
@@ -536,10 +599,12 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
   const showInLivePreview = () => send({ type: 'request-preview-data', purpose: 'open' });
   const copyShareLink = () => send({ type: 'request-preview-data', purpose: 'copy' });
   const copyShareToken = () => send({ type: 'request-preview-data', purpose: 'copy-token' });
-  // Resolve the file's read-only share token for the unified phone-pairing QR,
-  // publishing the project first if needed. Resolves null when the file isn't
-  // preview-ready (no Figma file key / no bindings) so the caller pairs the
-  // phone with the code alone.
+  // Resolve the file's private preview token for the unified phone-pairing QR,
+  // publishing the project first if needed. This is the always-on token (never
+  // revoked or rotated by the share-link toggle), so a paired phone keeps its
+  // live preview regardless of the link's visibility. Resolves null when the
+  // file isn't preview-ready (no Figma file key / no bindings) so the caller
+  // pairs the phone with the code alone.
   const ensureShared = useCallback((): Promise<string | null> => {
     // Supersede any in-flight pairing request.
     settlePair(null);
@@ -574,17 +639,30 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
     setIsPublic(next);
     send({ type: 'persist-project-visibility', fileKey, isPublic: next });
     void (async () => {
-      let ok = false;
+      let res: Awaited<ReturnType<typeof setProjectVisibility>> | null = null;
       try {
-        ok = await setProjectVisibility(token, next);
+        res = await setProjectVisibility(token, next);
       } catch {
-        ok = false;
+        res = null;
       }
-      if (!ok) {
+      if (!res?.ok) {
         setIsPublic(!next);
         send({ type: 'persist-project-visibility', fileKey, isPublic: !next });
         notify('Could not update the preview’s visibility. Please try again.', { level: 'error' });
         return;
+      }
+      // Re-publishing (private → public) rotates the share token: adopt the fresh
+      // one so the next "copy link" hands out a working URL. (The private preview
+      // token the paired phone uses is untouched, so its live preview survives.)
+      if (next && res.publicToken && res.publicToken !== publicTokenRef.current) {
+        rememberPublicToken(res.publicToken);
+        send({
+          type: 'persist-project-token',
+          fileKey,
+          token,
+          publicToken: res.publicToken,
+          previewToken: previewTokenRef.current
+        });
       }
       notify(
         next
@@ -598,9 +676,13 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
   return {
     syncStatus,
     isPublic,
-    // The current file's read-only share token (null until shared), surfaced so
-    // the phone-pairing panel can fold it into the unified QR / relay it.
+    // The current file's read-only share token (null until shared), surfaced for
+    // the share-link UI (copy link / copy token).
     publicToken,
+    // The current file's private preview token (null until shared), surfaced so
+    // the phone-pairing panel can fold it into the unified QR / relay it. Unlike
+    // publicToken it's never revoked or rotated by the visibility toggle.
+    previewToken,
     ensureShared,
     initProject,
     showInLivePreview,

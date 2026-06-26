@@ -24,10 +24,11 @@ export function resolvePreviewBaseUrl(override: string): string {
 }
 
 // POST the preview payload. Returns the secret edit token, a read-only
-// publicToken for share links, and the revision.
+// publicToken for share links, a read-only previewToken for the pairing QR
+// (always serves, independent of share-link visibility), and the revision.
 export async function createProject(
   payload: unknown
-): Promise<{ token: string; publicToken: string; revision: number }> {
+): Promise<{ token: string; publicToken: string; previewToken: string; revision: number }> {
   const res = await fetch(`${API_SERVER_URL}/figma-project`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -38,6 +39,7 @@ export async function createProject(
         success: boolean;
         token?: string;
         publicToken?: string;
+        previewToken?: string;
         revision?: number;
         error?: string;
         detail?: string;
@@ -50,7 +52,14 @@ export async function createProject(
   if (!data?.success || !data.token || !data.publicToken) {
     throw new Error(data?.error || 'No token returned');
   }
-  return { token: data.token, publicToken: data.publicToken, revision: data.revision ?? 0 };
+  return {
+    token: data.token,
+    publicToken: data.publicToken,
+    // Fall back to the share token against an older server that predates the
+    // split (mirrors the server's preview_token = public_token backfill).
+    previewToken: data.previewToken ?? data.publicToken,
+    revision: data.revision ?? 0
+  };
 }
 
 // Result of a conditional update: applied (new revision), gone (404, caller
@@ -92,12 +101,21 @@ export async function updateProject(
 // missing row. Only 'missing' means forget the token. ('private' is only
 // reachable against an older server that still 403s the owner read.)
 export type FetchResult =
-  | { kind: 'ok'; config: unknown; revision: number; isPublic: boolean; publicToken: string | null }
+  | {
+      kind: 'ok';
+      config: unknown;
+      revision: number;
+      isPublic: boolean;
+      publicToken: string | null;
+      // Read-only private preview token (the pairing QR). Null against an older
+      // server that predates the split.
+      previewToken: string | null;
+    }
   | { kind: 'private' }
   | { kind: 'missing' };
 
 // GET the owner's project by its secret edit token. Also returns the read-only
-// publicToken so the plugin can (re)learn the share token for a legacy share.
+// share + preview tokens so the plugin can (re)learn them for a legacy share.
 export async function fetchProject(token: string): Promise<FetchResult> {
   const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}`);
   if (res.status === 404) return { kind: 'missing' };
@@ -110,6 +128,7 @@ export async function fetchProject(token: string): Promise<FetchResult> {
         revision?: number;
         isPublic?: boolean;
         publicToken?: string;
+        previewToken?: string;
         error?: string;
         detail?: string;
       }
@@ -124,20 +143,34 @@ export async function fetchProject(token: string): Promise<FetchResult> {
     config: data.config ?? null,
     revision: data.revision ?? 0,
     isPublic: data.isPublic ?? true,
-    publicToken: data.publicToken ?? null
+    publicToken: data.publicToken ?? null,
+    // Fall back to the share token against an older (pre-split) server.
+    previewToken: data.previewToken ?? data.publicToken ?? null
   };
 }
 
-// PATCH a token's share-link visibility (public ⇄ private). Returns whether the
-// server accepted the change. Separate from updateProject so a config sync and
-// a visibility toggle never get conflated.
-export async function setProjectVisibility(token: string, isPublic: boolean): Promise<boolean> {
+// Outcome of a visibility PATCH: whether the server accepted it, plus the
+// current share token after the change. Re-publishing (private → public)
+// rotates publicToken server-side, so the caller must adopt the returned value.
+export interface VisibilityResult {
+  ok: boolean;
+  publicToken: string | null;
+}
+
+// PATCH a token's share-link visibility (public ⇄ private). Separate from
+// updateProject so a config sync and a visibility toggle never get conflated.
+export async function setProjectVisibility(
+  token: string,
+  isPublic: boolean
+): Promise<VisibilityResult> {
   const res = await fetch(`${API_SERVER_URL}/figma-project/${encodeURIComponent(token)}/visibility`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isPublic })
   });
-  if (!res.ok) return false;
-  const data = (await res.json().catch(() => null)) as { success?: boolean } | null;
-  return !!data?.success;
+  if (!res.ok) return { ok: false, publicToken: null };
+  const data = (await res.json().catch(() => null)) as
+    | { success?: boolean; publicToken?: string }
+    | null;
+  return { ok: !!data?.success, publicToken: data?.publicToken ?? null };
 }
