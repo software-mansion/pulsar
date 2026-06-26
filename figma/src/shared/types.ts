@@ -133,8 +133,17 @@ export type UiToMain =
   // fileKey so opening the plugin in another design file gets its own token
   // instead of clobbering the first file's shared preview.
   | { type: 'get-project'; fileKey: string }
-  // Persist this file's tokens: secret edit `token` + read-only `publicToken`.
-  | { type: 'persist-project-token'; fileKey: string; token: string; publicToken: string }
+  // Persist this file's tokens: secret edit `token`, read-only share
+  // `publicToken`, and the read-only private `previewToken` (the pairing QR).
+  // previewToken is optional/nullable so a partial recovery (e.g. only the share
+  // token changed) doesn't clobber a known preview token with an empty value.
+  | {
+      type: 'persist-project-token';
+      fileKey: string;
+      token: string;
+      publicToken: string;
+      previewToken?: string | null;
+    }
   | { type: 'persist-project-cache'; fileKey: string; config: unknown; baseRevision: number | null }
   // Persist just the share-link visibility for a file (the public/private
   // toggle), without rewriting the cached config. Keyed by fileKey like the
@@ -183,6 +192,9 @@ export type MainToUi =
       // Read-only share token, or null when unknown (never shared, or a legacy
       // share the cold-start reconcile hasn't recovered yet).
       publicToken: string | null;
+      // Read-only private preview token (the pairing QR), or null when unknown.
+      // Recovered from the server on cold start for legacy/pre-split shares.
+      previewToken: string | null;
       config: unknown | null;
       baseRevision: number | null;
       // Last-known share-link visibility for this file. Defaults to true (public)

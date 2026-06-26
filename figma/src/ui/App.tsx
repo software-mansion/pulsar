@@ -94,7 +94,7 @@ export default function App() {
     onTokenChange: setHapticsToken,
     onConnectedChange: setPhoneConnected,
     ensureSharedPreview: previewSync.ensureShared,
-    previewToken: previewSync.publicToken,
+    previewToken: previewSync.previewToken,
     documentName,
     autoStart: tab === 'live' && isFileKeyValid(figmaFileKey)
   });
