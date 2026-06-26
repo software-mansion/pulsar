@@ -364,12 +364,6 @@ export default function App() {
               entry={openEntry}
               onClose={() => setOpenId(null)}
               onPlay={() => playEntry(openEntry)}
-              onPlayOnPhone={() =>
-                hapticsToken &&
-                phoneConnected &&
-                broadcastToPhone(hapticsToken, openEntry.data.name)
-              }
-              canPlayOnPhone={!!hapticsToken && phoneConnected}
               onBind={() => bindEntry(openEntry)}
             />
           </div>

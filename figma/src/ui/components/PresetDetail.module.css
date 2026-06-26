@@ -82,7 +82,8 @@
   align-items: baseline;
   gap: 10px;
 }
-.modal-section-head h3 {
+.modal-section-head h3,
+.collapsible-head h3 {
   margin: 0;
   font-size: var(--fs-xs);
   font-weight: 700;
@@ -90,6 +91,41 @@
   text-transform: uppercase;
   color: var(--color-primary);
 }
+
+/* Collapsible section - separated from the section above by a top border so it
+   reads as a distinct, foldable block rather than blending into the page. */
+.collapsible-section {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-blue-10);
+}
+/* Collapsible section header - full-width clickable bar that toggles the
+   section body, with a chevron that rotates to point up when open. A subtle
+   fill + hover make it legible as an interactive control. Resets the signature
+   button chrome down to a flat row. */
+.collapsible-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-blue-10);
+  box-shadow: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease;
+}
+.collapsible-head:hover { background: var(--color-blue-20); transform: none; box-shadow: none; }
+.collapsible-head:active { transform: none; box-shadow: none; }
+.collapsible-chevron {
+  flex: none;
+  opacity: 0.7;
+  transition: transform 120ms ease;
+}
+.collapsible-chevron.open { transform: rotate(180deg); }
 
 /* SDK tab strip - Pulsar-style underline tabs, distinct from the plugin's
    top-level .tab so theming the modal doesn't leak. */

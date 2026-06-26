@@ -42,7 +42,7 @@ export default function PresetCard({
   );
 
   const boundBadge = isBound ? (
-    <span className="bound-badge">● bound</span>
+    <span className="bound-badge">● selected</span>
   ) : null;
 
   if (compact) {
