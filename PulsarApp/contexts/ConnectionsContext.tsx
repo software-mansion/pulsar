@@ -95,11 +95,16 @@ export interface ReceivedPattern {
 // open preview) here. `nonce` is monotonic so an identical repeat still
 // re-triggers the consumer effect.
 export interface PreviewUpdate {
-  kind: 'preview-haptics-diff' | 'preview-haptics-refetch';
+  kind: 'preview-haptics-diff' | 'preview-haptics-refetch' | 'preview-frame-focus';
   previewToken?: string;
   fromRevision?: number;
   toRevision?: number;
   diff?: unknown;
+  // Set only on 'preview-frame-focus': the top-level frame the designer focused,
+  // which the open live preview should present, plus its human-readable name for
+  // the preview's "current screen" indicator.
+  nodeId?: string;
+  frameName?: string;
   nonce: number;
 }
 
@@ -289,7 +294,9 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
               msg &&
               typeof msg === 'object' &&
               typeof (msg as { kind?: unknown }).kind === 'string' &&
-              (msg as { kind: string }).kind.startsWith('preview-haptics-')
+              // Covers both the haptics-config relay (diff/refetch) and the
+              // designer-focus frame jump (preview-frame-focus).
+              (msg as { kind: string }).kind.startsWith('preview-')
             ) {
               // Forwarded verbatim to the open live preview (figma.tsx). Match on
               // the producer-supplied previewToken, falling back to the one this

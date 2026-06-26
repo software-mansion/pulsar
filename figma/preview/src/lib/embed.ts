@@ -27,6 +27,13 @@ export function buildEmbedSrc(
   return `https://embed.figma.com/proto/${fileKey}/preview?${params.toString()}`;
 }
 
+// NOTE: The Figma Embed API documents inbound control messages
+// (NAVIGATE_TO_FRAME_AND_CLOSE_OVERLAYS, NAVIGATE_FORWARD, …) posted to the
+// iframe's contentWindow. We tried these to switch frames without reloading, but
+// they're a no-op in practice for these embeds - even Figma's own example's
+// forward button doesn't move the prototype via postMessage. So a frame change
+// goes through the iframe's node-id (a reload) instead; see PrototypeView.
+
 // Events the embedded prototype posts to the parent window.
 export interface FigmaEmbedEvent {
   type:

@@ -219,6 +219,52 @@ body {
 }
 .nav-toggle:active { box-shadow: none; transform: translate(-3px, 3px); }
 
+/* In-app "current screen" indicator: a small centred pill naming the frame on
+   view. Sits below the notch. Tappable to collapse to an icon-only dot so it can
+   be tucked away when the viewer doesn't need it. */
+.frame-indicator {
+  position: fixed;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: 70vw;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 26, 114, 0.82); /* --color-primary, translucent */
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 26, 114, 0.25);
+  -webkit-tap-highlight-color: transparent;
+  transition: padding 120ms ease, transform 120ms ease;
+}
+.frame-indicator:active {
+  transform: translateX(-50%) scale(0.94);
+}
+/* Collapsed: icon-only circle. */
+.frame-indicator.collapsed {
+  gap: 0;
+  padding: 6px;
+}
+.frame-indicator svg {
+  display: block;
+  flex: 0 0 auto;
+}
+.frame-indicator-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* On-canvas highlight overlay --------------------------------------------- */
 .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 .hl {

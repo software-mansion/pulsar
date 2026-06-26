@@ -10,6 +10,7 @@ export function HapticList({
   activeId,
   onActivate,
   onPlay,
+  onOpenFrame,
   onShowDetails,
   footer
 }: {
@@ -21,6 +22,9 @@ export function HapticList({
   activeId: string;
   onActivate: (id: string) => void;
   onPlay: (id: string) => void;
+  // Open the frame this element lives in (the preview jumps to that screen).
+  // Optional so the list can render without navigation wired up.
+  onOpenFrame?: (frameId: string) => void;
   onShowDetails: (id: string) => void;
   // Optional pinned content below the scrollable list (e.g. the open-on-phone QR).
   footer?: ReactNode;
@@ -100,7 +104,12 @@ export function HapticList({
                   className={`el-row${activeId === el.id ? ' active' : ''}`}
                   onMouseEnter={() => onActivate(el.id)}
                   onMouseLeave={() => onActivate('')}
-                  onClick={() => onPlay(el.id)}
+                  onClick={() => {
+                    // Tapping a preset opens the screen it belongs to, then
+                    // plays its haptic so the developer can feel it in context.
+                    if (el.frameId) onOpenFrame?.(el.frameId);
+                    onPlay(el.id);
+                  }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>

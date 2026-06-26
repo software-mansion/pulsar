@@ -484,6 +484,27 @@ function pushSelection() {
   postToUi({ type: 'selection', node: describeSelection() });
 }
 
+// The top-level frame the live preview should currently present. Tracked so we
+// only relay a focus change to the paired phone when it actually moves to a new
+// frame - selection and edits are both chatty, but the frame rarely changes.
+let lastFocusFrameId: string | null = null;
+
+// Resolve and relay the frame the designer is working in, so a paired phone's
+// live preview can follow along. Priority: the current selection's top-level
+// frame, then an optional hint node (e.g. the node a documentchange touched, for
+// edits that don't move the selection). No-op when neither yields a frame or
+// when the frame hasn't changed since the last relay. Only the phone reacts to
+// this (the web preview is driven by explicit preset taps instead).
+function pushFrameFocus(hint?: BaseNode | null) {
+  let frame: SceneNode | null = null;
+  const sel = figma.currentPage.selection[0];
+  if (sel) frame = topLevelFrameAncestor(sel);
+  if (!frame && hint && !hint.removed) frame = topLevelFrameAncestor(hint);
+  if (!frame || frame.id === lastFocusFrameId) return;
+  lastFocusFrameId = frame.id;
+  postToUi({ type: 'frame-focus', nodeId: frame.id, frameName: frame.name });
+}
+
 function bindToSelection(binding: BindingMeta) {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) {
@@ -554,7 +575,17 @@ function unbindSelection() {
 // before actually pushing. Covers binding/unbinding (setPluginData fires here)
 // as well as moves/resizes that shift bound-node boxes.
 let docChangedPending = false;
-function onDocumentChange() {
+function onDocumentChange(event: DocumentChangeEvent) {
+  // Follow an edit into a new frame even when the selection doesn't move (e.g.
+  // a binding set programmatically). Read the first changed, still-present node
+  // as a hint; pushFrameFocus prefers the live selection and dedupes by frame.
+  for (const change of event.documentChanges) {
+    const node = 'node' in change ? (change.node as BaseNode | undefined) : undefined;
+    if (node && !node.removed) {
+      pushFrameFocus(node);
+      break;
+    }
+  }
   if (docChangedPending) return;
   docChangedPending = true;
   setTimeout(() => {
@@ -572,6 +603,9 @@ figma
 
 figma.on('selectionchange', () => {
   pushSelection();
+  // Relay the focused frame so a paired phone's live preview follows the
+  // designer's current screen (deduped to actual frame changes inside).
+  pushFrameFocus();
 
   // Edit-mode "click to play": when the user single-clicks a bound node, we forward
   // a play event to the UI which plays via WebAudio. (No native click event in
