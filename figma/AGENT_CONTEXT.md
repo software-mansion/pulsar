@@ -262,13 +262,20 @@ a sub-frame.
 
 ## Per-file tokens & live-preview sync
 
-Each design file has **two** tokens, not global. **Edit token** = the owner's
+Each design file has **three** tokens, not global. **Edit token** = the owner's
 secret; grants write access (PUT config, PATCH visibility) and the owner read.
-Kept only in the plugin, **never** put in a URL. **Public token** = read-only;
-the only thing handed out in share links / QR / deep links. The preview & app
-read through `GET /figma-project/public/:publicToken`, which can view but never
-modify. This is what stops a shared link from letting a viewer edit/delete the
-project. Storage in `clientStorage` (all main-thread, in `src/main/code.ts`):
+Kept only in the plugin, **never** put in a URL. **Public token** = read-only
+share token; handed out in **share links** (copy link / copy token / open).
+Honours the public/private toggle and is **rotated** server-side on every
+private → public re-publish, so a revoked link stays dead. **Preview token** =
+read-only private token; the only thing in the **pairing QR / deep link** the
+designer scans to mirror on their phone. Always-on (ignores the toggle) and
+never rotated, so a paired phone's live preview survives the share link going
+private or being re-shared. Both read tokens go through
+`GET /figma-project/public/:readToken` (view-only, never modify) - the server
+resolves either and applies the right visibility rule. This split is the fix for
+"making the share link private kills the designer's own paired preview." Storage
+in `clientStorage` (all main-thread, in `src/main/code.ts`):
 
 - `pulsar:previewTokens` → `{ [fileKey]: editToken }`. Small and **never
   evicted** - losing it orphans a server row. Replaces the old single
@@ -278,6 +285,10 @@ project. Storage in `clientStorage` (all main-thread, in `src/main/code.ts`):
   share token, paired by `fileKey`. Also never evicted. Recovered from the
   server (the owner GET returns it) if missing - e.g. a reinstall, or a legacy
   share created before the split.
+- `pulsar:previewPrivateTokens` → `{ [fileKey]: previewToken }`. The read-only
+  private preview token (pairing QR), paired by `fileKey`. Never evicted.
+  Recovered from the server (owner GET returns it) if missing; falls back to the
+  share token against a pre-split server.
 - `pulsar:project:<fileKey>` → `{ config, baseRevision, lastAccess }`. The
   cached payload + the server revision it synced at. These are the **only**
   thing evicted (oldest `lastAccess` first) when `clientStorage` hits its quota

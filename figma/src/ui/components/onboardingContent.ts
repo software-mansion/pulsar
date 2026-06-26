@@ -36,7 +36,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: 'bind-preset',
     title: 'Connect a preset to a component',
-    body: 'Open the Presets tab, pick a haptic, then select a layer or component on the canvas and hit Bind. Pulsar attaches the preset to that node so it fires whenever the component is tapped in a preview.',
+    body: 'Open the Presets tab, pick a haptic, then select a layer or component on the canvas and click Add. Pulsar attaches the preset to that node so it fires whenever the component is tapped in a preview.',
     gifPlaceholder: 'Binding a preset to a component'
   },
   {

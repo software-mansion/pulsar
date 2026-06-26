@@ -33,6 +33,11 @@ const PROJECT_TOKENS_KEY = 'pulsar:previewTokens';
 // Per-file read-only share tokens: { [fileKey]: publicToken }. Kept separate
 // from the edit tokens so the share URL never carries the secret. Never evicted.
 const PROJECT_PUBLIC_TOKENS_KEY = 'pulsar:previewPublicTokens';
+// Per-file read-only private preview tokens: { [fileKey]: previewToken }. This
+// is the always-on token the pairing QR encodes; it is never revoked or rotated
+// by the share-link visibility toggle, so a paired phone keeps its live preview.
+// Kept separate from the share tokens (which rotate). Never evicted.
+const PROJECT_PREVIEW_TOKENS_KEY = 'pulsar:previewPrivateTokens';
 // Legacy single global preview token (pre per-file). Migrated lazily into the
 // per-file map for the first file that asks, then deleted.
 const LEGACY_PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
@@ -179,6 +184,24 @@ async function setProjectPublicToken(fileKey: string, publicToken: string): Prom
   const tokens = await loadProjectPublicTokens();
   tokens[fileKey] = publicToken;
   await figma.clientStorage.setAsync(PROJECT_PUBLIC_TOKENS_KEY, tokens);
+}
+
+async function loadProjectPreviewTokens(): Promise<Record<string, string>> {
+  const raw = await figma.clientStorage.getAsync(PROJECT_PREVIEW_TOKENS_KEY);
+  return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
+}
+
+// Resolve the private preview token for a file. Null for legacy shares (pre
+// preview-token); the plugin recovers it from the server on the next reconcile.
+async function getProjectPreviewToken(fileKey: string): Promise<string | null> {
+  const tokens = await loadProjectPreviewTokens();
+  return tokens[fileKey] ?? null;
+}
+
+async function setProjectPreviewToken(fileKey: string, previewToken: string): Promise<void> {
+  const tokens = await loadProjectPreviewTokens();
+  tokens[fileKey] = previewToken;
+  await figma.clientStorage.setAsync(PROJECT_PREVIEW_TOKENS_KEY, tokens);
 }
 
 async function getProjectCache(fileKey: string): Promise<ProjectCache | null> {
@@ -474,7 +497,7 @@ function bindToSelection(binding: BindingMeta) {
   node.setPluginData(BINDING_NEGATED_KEY, '');
   node.setPluginData(BINDING_KEY, JSON.stringify(binding));
   node.setRelaunchData({ play: `Pulsar: ${binding.presetName}` });
-  notifyUi(`Bound "${binding.presetName}" to ${node.name}`, 'success');
+  notifyUi(`Preset "${binding.presetName}" connected to ${node.name}`, 'success');
   pushSelection();
 }
 
@@ -521,7 +544,7 @@ function unbindSelection() {
     node.setPluginData(BINDING_KEY, '');
     node.setRelaunchData({});
   }
-  notifyUi('Preset unbound.', 'success');
+  notifyUi('Preset removed from component.', 'success');
   pushSelection();
 }
 
@@ -586,9 +609,10 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     }
     case 'get-project': {
-      const [token, publicToken, cache] = await Promise.all([
+      const [token, publicToken, previewToken, cache] = await Promise.all([
         getProjectToken(msg.fileKey),
         getProjectPublicToken(msg.fileKey),
+        getProjectPreviewToken(msg.fileKey),
         getProjectCache(msg.fileKey)
       ]);
       postToUi({
@@ -596,6 +620,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         fileKey: msg.fileKey,
         token,
         publicToken,
+        previewToken,
         config: cache ? cache.config : null,
         baseRevision: cache ? cache.baseRevision : null,
         // Default to public for legacy caches with no stored visibility.
@@ -606,7 +631,10 @@ figma.ui.onmessage = async (msg: UiToMain) => {
     case 'persist-project-token':
       await Promise.all([
         setProjectToken(msg.fileKey, msg.token),
-        setProjectPublicToken(msg.fileKey, msg.publicToken)
+        // Skip empty values so a partial update (only one token known) never
+        // clobbers a good token with a blank.
+        ...(msg.publicToken ? [setProjectPublicToken(msg.fileKey, msg.publicToken)] : []),
+        ...(msg.previewToken ? [setProjectPreviewToken(msg.fileKey, msg.previewToken)] : [])
       ]);
       break;
     case 'persist-project-cache':

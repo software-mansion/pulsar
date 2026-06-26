@@ -22,12 +22,15 @@ export default function SelectionBar({
         <span className={styles['sel-info']}>
           <button
             className={styles['sel-link']}
-            title="Reveal on canvas"
+            title="Reveal component on canvas"
             onClick={onFocusComponent}
           >
             {selection.name}
           </button>
-          <span className="muted">({selection.type.toLowerCase()}) · no preset bound</span>
+          <span className={styles['sel-arrow']} aria-hidden>
+            →
+          </span>
+          <span className={styles['sel-placeholder']}>Select preset for component</span>
         </span>
       )}
       {selection?.binding && (

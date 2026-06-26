@@ -51,7 +51,7 @@ export default function BoundComponentsPanel({
         <span className="acc-icon">
           <img src={iconLink} alt="" />
         </span>
-        <span className="acc-title">Bound components</span>
+        <span className="acc-title">Selected presets</span>
         {items.length > 0 && (
           <span className="tag active tag-flush">{items.length}</span>
         )}

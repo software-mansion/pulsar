@@ -5,7 +5,7 @@ import { CUSTOM_TAG } from '../../shared/types';
 import Visualization from './Visualization';
 import iconClose from '../assets/icon-close.svg';
 import iconPlay from '../assets/icon-play.svg';
-import iconSmartphone from '../assets/icon-smartphone.svg';
+import iconChevronDown from '../assets/icon-chevron-down.svg';
 import iconCopy from '../assets/icon-copy.svg';
 import iconCheck from '../assets/icon-check.svg';
 import { builtInSnippet, customSnippet, LANGS, type Lang } from './sdkSnippets';
@@ -20,15 +20,11 @@ export default function PresetDetail({
   entry,
   onClose,
   onPlay,
-  onPlayOnPhone,
-  canPlayOnPhone,
   onBind
 }: {
   entry: CatalogEntry;
   onClose: () => void;
   onPlay: () => void;
-  onPlayOnPhone: () => void;
-  canPlayOnPhone: boolean;
   onBind: () => void;
 }) {
   const isCustom = Array.isArray(entry.data.tags) && entry.data.tags.includes(CUSTOM_TAG);
@@ -50,6 +46,9 @@ export default function PresetDetail({
   // Brief "Copied" confirmation that swaps the copy glyph for a check ~1.2s,
   // ported from the preview modal so the affordance feels identical.
   const [copiedKey, setCopiedKey] = useState<'snippet' | 'json' | null>(null);
+  // Raw pattern data starts collapsed - it's reference detail, not the first
+  // thing most users want when opening a preset.
+  const [rawOpen, setRawOpen] = useState(false);
   const copy = (text: string, key: 'snippet' | 'json') => {
     navigator.clipboard?.writeText(text).then(
       () => {
@@ -72,27 +71,18 @@ export default function PresetDetail({
       </header>
 
       <div className={styles['modal-body']}>
-        {/* Action row - Play / Phone / Bind. These are plugin-specific and
-            have no counterpart in the preview's modal. Bind is the primary
-            CTA (filled blue-20). */}
+        {/* Action row - Play / Add. These are plugin-specific and have no
+            counterpart in the preview's modal. Play plays sound locally and
+            haptics on the paired phone; Add is the primary CTA (filled
+            blue-20) that binds the preset to the selected node. */}
         <div className={`row ${styles['preset-actions']}`}>
-          <button className="ghost preset-action-btn" onClick={onPlay} title="Play this preset locally">
+          <button className="ghost preset-action-btn" onClick={onPlay} title="Play this preset">
             <img src={iconPlay} alt="" width={14} height={14} />
             <span>Play</span>
           </button>
-          {canPlayOnPhone && (
-            <button
-              className="ghost preset-action-btn"
-              onClick={onPlayOnPhone}
-              title="Play on the paired phone"
-            >
-              <img src={iconSmartphone} alt="" width={14} height={14} />
-              <span>Phone</span>
-            </button>
-          )}
           <div className="spacer" />
-          <button className="primary" onClick={onBind} title="Bind this preset to the selected node">
-            Bind
+          <button className="primary" onClick={onBind} title="Add this preset to the selected node">
+            Add
           </button>
         </div>
 
@@ -155,26 +145,40 @@ export default function PresetDetail({
           </div>
         </section>
 
-        <section className={styles['modal-section']}>
-          <div className={styles['modal-section-head']}>
+        <section className={`${styles['modal-section']} ${styles['collapsible-section']}`}>
+          <button
+            type="button"
+            className={styles['collapsible-head']}
+            onClick={() => setRawOpen((v) => !v)}
+            aria-expanded={rawOpen}
+          >
             <h3>Raw pattern data</h3>
-          </div>
-          <div className={styles['code-block-wrap']}>
-            <pre className={styles['code-block']}>{json}</pre>
-            <button
-              className={styles['code-copy-btn']}
-              onClick={() => copy(json, 'json')}
-              title="Copy"
-              aria-label={copiedKey === 'json' ? 'Copied' : 'Copy'}
-            >
-              <img
-                src={copiedKey === 'json' ? iconCheck : iconCopy}
-                alt=""
-                width={16}
-                height={16}
-              />
-            </button>
-          </div>
+            <img
+              src={iconChevronDown}
+              alt=""
+              width={14}
+              height={14}
+              className={`${styles['collapsible-chevron']}${rawOpen ? ` ${styles['open']}` : ''}`}
+            />
+          </button>
+          {rawOpen && (
+            <div className={styles['code-block-wrap']}>
+              <pre className={styles['code-block']}>{json}</pre>
+              <button
+                className={styles['code-copy-btn']}
+                onClick={() => copy(json, 'json')}
+                title="Copy"
+                aria-label={copiedKey === 'json' ? 'Copied' : 'Copy'}
+              >
+                <img
+                  src={copiedKey === 'json' ? iconCheck : iconCopy}
+                  alt=""
+                  width={16}
+                  height={16}
+                />
+              </button>
+            </div>
+          )}
         </section>
       </div>
     </>

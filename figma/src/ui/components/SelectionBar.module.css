@@ -6,6 +6,11 @@
   padding: 6px 10px;
   background: var(--color-blue-10);
   border-bottom: 1px solid var(--border);
+  /* Soft drop shadow on the bottom edge lifts the bar off the list below,
+     giving it a subtle raised, 3D feel. */
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.12);
+  position: relative;
+  z-index: 1;
   font-size: var(--fs-xs);
 }
 .sel-info {
@@ -40,6 +45,23 @@ button.sel-link:active { box-shadow: none; transform: scale(0.97); }
 button.sel-link--preset { background: var(--surface); border-style: dashed; }
 button.sel-link--preset:hover { background: var(--color-blue-10); }
 .sel-arrow { color: var(--muted); flex-shrink: 0; }
+/* Empty preset slot - dashed chip mirroring the preset chip's shape so the
+   "component → preset" relation is visible even before a preset is bound. Muted
+   and non-interactive since there's nothing to act on yet. */
+.sel-placeholder {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /* The Remove button drops the signature offset shadow to sit flat in the bar. */
 button.sel-remove { box-shadow: none; }
 button.sel-remove:active { box-shadow: none; }

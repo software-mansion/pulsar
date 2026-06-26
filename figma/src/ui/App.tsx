@@ -94,7 +94,7 @@ export default function App() {
     onTokenChange: setHapticsToken,
     onConnectedChange: setPhoneConnected,
     ensureSharedPreview: previewSync.ensureShared,
-    previewToken: previewSync.publicToken,
+    previewToken: previewSync.previewToken,
     documentName,
     autoStart: tab === 'live' && isFileKeyValid(figmaFileKey)
   });
@@ -364,12 +364,6 @@ export default function App() {
               entry={openEntry}
               onClose={() => setOpenId(null)}
               onPlay={() => playEntry(openEntry)}
-              onPlayOnPhone={() =>
-                hapticsToken &&
-                phoneConnected &&
-                broadcastToPhone(hapticsToken, openEntry.data.name)
-              }
-              canPlayOnPhone={!!hapticsToken && phoneConnected}
               onBind={() => bindEntry(openEntry)}
             />
           </div>
