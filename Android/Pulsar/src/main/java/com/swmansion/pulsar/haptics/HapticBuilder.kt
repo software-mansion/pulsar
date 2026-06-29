@@ -22,6 +22,10 @@ class HapticBuilder(private val engine: HapticEngineWrapper) {
     if (impulseCompositionEnabled && ImpulseCompositionHapticBuilder.isImpulsesOnly(preset)) {
       val effect = impulseCompositionBuilder.createCompositionEffect(preset, engine)
       if (effect != null) return effect
+      // Primitives unavailable (API < 30 or unsupported actuator): render the impulses as a crisp
+      // waveform instead of letting them collapse into the sub-perceptible continuous fallback.
+      val waveformEffect = impulseCompositionBuilder.createWaveformEffect(preset, engine)
+      if (waveformEffect != null) return waveformEffect
     }
     val controlPoints = convertToControlPoints(preset)
     return vibrationEffectsGenerator.convertToVibrationEffect(controlPoints)
