@@ -16,6 +16,7 @@ import Card from '@/components/Card';
 import Point from '@/components/Point';
 import SvgIcon from '@/components/SvgIcon';
 import ConnectionList from '@/components/home/ConnectionList';
+import NowPlayingToast from '@/components/NowPlayingToast';
 import { Margins } from '@/constants/theme';
 
 const defaultEdges = {
@@ -60,10 +61,15 @@ export default function FigmaScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
   const token = typeof params.token === 'string' ? params.token : '';
 
-  if (token) {
-    return <FigmaPreviewWebView token={token} />;
-  }
-  return <FigmaExplainer />;
+  // The "preset received" banner overlays both modes (live preview + explainer),
+  // so a preset played from the plugin is visible while the user sits on the
+  // Figma screen too - not only on the home tab.
+  return (
+    <View style={styles.screen}>
+      {token ? <FigmaPreviewWebView token={token} /> : <FigmaExplainer />}
+      <NowPlayingToast />
+    </View>
+  );
 }
 
 function FigmaPreviewWebView({ token }: { token: string }) {
@@ -79,6 +85,15 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   const navigation = useNavigation();
   const router = useRouter();
   const { lastPreviewUpdate } = useConnections();
+
+  // Manage the loading overlay ourselves instead of the WebView's built-in
+  // startInLoadingState. That built-in overlay only clears on the *initial*
+  // load, so when the preview fails and the WebView instead lands on Figma's
+  // login page, the spinner stayed up and swallowed taps on the login button.
+  // Here we drop it as soon as any content finishes loading (onLoadEnd fires on
+  // success and failure), and the overlay is pointerEvents="none" so it can
+  // never trap a tap even if it lingers.
+  const [loading, setLoading] = useState(true);
 
   // Leave the active preview and return to the Figma list/explainer by clearing
   // the route's token (FigmaScreen renders the explainer when it's empty).
@@ -153,21 +168,23 @@ function FigmaPreviewWebView({ token }: { token: string }) {
           </TouchableOpacity>
         </View>
       )}
-      <WebView
-        ref={webRef}
-        source={{ uri: previewUrl }}
-        originWhitelist={['*']}
-        javaScriptEnabled
-        domStorageEnabled
-        onMessage={onMessage}
-        startInLoadingState
-        renderLoading={() => (
-          <View style={styles.loader}>
+      <View style={styles.webContainer}>
+        <WebView
+          ref={webRef}
+          source={{ uri: previewUrl }}
+          originWhitelist={['*']}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={onMessage}
+          onLoadEnd={() => setLoading(false)}
+          style={styles.webview}
+        />
+        {loading && (
+          <View style={styles.loader} pointerEvents="none">
             <ActivityIndicator />
           </View>
         )}
-        style={styles.webview}
-      />
+      </View>
     </SafeAreaView>
   );
 }
@@ -248,6 +265,9 @@ function FigmaExplainer() {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   safeArea: {
     flex: 1,
   },
@@ -272,7 +292,16 @@ const styles = StyleSheet.create({
   closeLabel: {
     color: '#001A72',
   },
-  loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
   scrollContent: { paddingBottom: 40 },
   titleContainer: {
     flexDirection: 'row',

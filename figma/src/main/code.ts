@@ -24,6 +24,10 @@ const BINDING_KEY = 'pulsar:binding';
 // inheritance never overrides it.
 const BINDING_NEGATED_KEY = 'pulsar:binding-negated';
 const SETTINGS_KEY = 'pulsar:settings';
+// Phone-pairing token. Namespaced per-file (see fileScopedKey) so a phone paired
+// on one design file doesn't show up as an offline/"paired" phantom in every
+// other file the user opens. Per-user (clientStorage), so collaborators pair
+// their own phones.
 const TOKEN_KEY = 'pulsar:hapticsToken';
 // Per-file share tokens: { [fileKey]: token }. Small and precious - this is the
 // only record tying a design file to its server-side preview row, so it is
@@ -47,8 +51,9 @@ const LEGACY_PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
 const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
 const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
-// Per-user flag: has the first-run onboarding tour been shown? Stored in
-// clientStorage (not per-file), so the tour auto-opens once per machine.
+// Flag: has the first-run onboarding tour been shown? Namespaced per-file (see
+// fileScopedKey) and per-user (clientStorage), so the tour auto-opens once for
+// each new project instead of only once per machine.
 const ONBOARDING_SEEN_KEY = 'pulsar:onboardingSeen';
 const WINDOW_SIZE_KEY = 'pulsar:windowSize';
 // Stable per-document id stored in root pluginData; replaces `figma.fileKey`,
@@ -112,6 +117,13 @@ function resolveFileKey(): string {
   return id;
 }
 
+// Namespace a clientStorage key to the current file so per-user state that must
+// NOT leak between design files (the phone pairing, the onboarding-seen flag)
+// starts fresh in a new project instead of inheriting the last file's value.
+function fileScopedKey(base: string): string {
+  return `${base}:${resolveFileKey()}`;
+}
+
 // The user-supplied real Figma file key (or share URL) for this document, stored
 // in root pluginData so it's remembered per-file and shared with collaborators.
 function getFigmaFileKey(): string {
@@ -127,7 +139,7 @@ async function loadSettings(): Promise<Settings> {
 }
 
 async function loadToken(): Promise<string | null> {
-  return (await figma.clientStorage.getAsync(TOKEN_KEY)) ?? null;
+  return (await figma.clientStorage.getAsync(fileScopedKey(TOKEN_KEY))) ?? null;
 }
 
 type ProjectCache = {
@@ -276,7 +288,7 @@ async function loadCustomPresets(): Promise<CatalogEntry[]> {
 }
 
 async function loadOnboardingSeen(): Promise<boolean> {
-  return (await figma.clientStorage.getAsync(ONBOARDING_SEEN_KEY)) === true;
+  return (await figma.clientStorage.getAsync(fileScopedKey(ONBOARDING_SEEN_KEY))) === true;
 }
 
 function readBinding(node: BaseNode): BindingMeta | null {
@@ -707,7 +719,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       await figma.clientStorage.setAsync(SETTINGS_KEY, msg.settings);
       break;
     case 'persist-haptics-token':
-      await figma.clientStorage.setAsync(TOKEN_KEY, msg.token);
+      await figma.clientStorage.setAsync(fileScopedKey(TOKEN_KEY), msg.token);
       break;
     case 'persist-favourites':
       await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);
@@ -716,7 +728,7 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
       break;
     case 'persist-onboarding-seen':
-      await figma.clientStorage.setAsync(ONBOARDING_SEEN_KEY, msg.seen);
+      await figma.clientStorage.setAsync(fileScopedKey(ONBOARDING_SEEN_KEY), msg.seen);
       break;
     case 'persist-file-key':
       setFigmaFileKey(msg.figmaFileKey);

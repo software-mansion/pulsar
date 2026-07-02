@@ -99,6 +99,11 @@ export interface BoundItem {
 //   - 'autosync': debounced background save - only updates an *existing*
 //     project; never creates a token on its own (avoids spamming the backend
 //     for files the user never chose to share).
+//   - 'bootstrap': fired once on first open to eagerly provision the backend
+//     project (mint the token / share + preview tokens) if this file has none
+//     yet - so the share link and pairing QR exist from the start. Proceeds
+//     even before the real Figma file key is set, and never overwrites an
+//     existing project.
 // 'pair' resolves the file's share (public) token for the phone-pairing QR:
 //   publishes if needed (so the unified QR can carry the preview token), then
 //   hands the public token back to the caller via ensureShared(). Like 'qr'/'copy'
@@ -110,6 +115,7 @@ export type PreviewPurpose =
   | 'qr'
   | 'sync'
   | 'autosync'
+  | 'bootstrap'
   | 'pair';
 
 // Severity of an in-plugin toast. Drives its accent colour, icon, and default

@@ -1,10 +1,12 @@
 import styles from './OnboardingOverlay.module.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ONBOARDING_STEPS, WELCOME, OUTRO, type OnboardingStep } from './onboardingContent';
 import PulsarLogo from './PulsarLogo';
 import iconClose from '../assets/icon-close.svg';
 import iconChevron from '../assets/icon-chevron-down.svg';
 import iconPlay from '../assets/icon-play.svg';
+import iconExternalLink from '../assets/icon-external-link.svg';
+import { send } from '../figmaBridge';
 
 // The tour leads with a welcome screen (brand mark + greeting), runs the feature
 // steps, and ends on a send-off. The welcome / finish screens share a brand
@@ -19,6 +21,59 @@ const SCREENS: Screen[] = [
   ...ONBOARDING_STEPS.map((s) => ({ kind: 'feature' as const, ...s })),
   { kind: 'finish' }
 ];
+
+// One step's demo clip within the persistent media stack. Every step's clip is
+// mounted for the tour's lifetime so it buffers exactly once (no re-load each
+// time you page to it); only the `active` one is shown and playing. Shows a
+// spinner + caption until it can play, and a labelled placeholder if it has no
+// clip / fails to load.
+function StackVideo({ video, caption, active }: { video?: string; caption: string; active: boolean }) {
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(video ? 'loading' : 'error');
+  const ref = useRef<HTMLVideoElement>(null);
+  // Only the active clip plays; the rest stay paused but buffered so switching to
+  // them is instant. (Explicit play/pause instead of the autoPlay attribute so a
+  // clip that becomes active after it loaded still starts.)
+  useEffect(() => {
+    const v = ref.current;
+    if (!v || status !== 'ready') return;
+    if (active) v.play().catch(() => {});
+    else v.pause();
+  }, [active, status]);
+  const showVideo = !!video && status !== 'error';
+  return (
+    <div className={`${styles['stack-item']}${active ? ` ${styles['active']}` : ''}`} aria-hidden={!active}>
+      {showVideo ? (
+        <>
+          <video
+            ref={ref}
+            className={styles['stack-video']}
+            src={video}
+            aria-label={caption}
+            preload="auto"
+            controls={active}
+            loop
+            muted
+            playsInline
+            onCanPlay={() => setStatus('ready')}
+            onError={() => setStatus('error')}
+          />
+          {status === 'loading' && (
+            <div className={styles['stack-loading']}>
+              <span className={styles['stack-spinner']} aria-hidden="true" />
+              <span>{caption}</span>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className={styles['stack-placeholder']} aria-hidden="true">
+          <img src={iconPlay} alt="" width={20} height={20} />
+          <span>{caption}</span>
+          <span className={styles['gif-tag']}>GIF coming soon</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // First-run onboarding tour. A full-window overlay that walks through the three
 // core flows (bind a preset → live preview → share) one screen at a time. It is
@@ -85,8 +140,40 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
           </button>
         </header>
 
+        {/* Persistent media stack: kept OUTSIDE the keyed screen below so the
+            video elements survive navigation - each clip buffers once and is
+            instant on later steps. Collapsed on welcome / finish (no clip). */}
+        <div
+          className={`${styles['media-col']}${
+            screen.kind === 'feature' ? '' : ` ${styles['media-hidden']}`
+          }`}
+        >
+          <div className={styles['media-stack']}>
+            {ONBOARDING_STEPS.map((step) => (
+              <StackVideo
+                key={step.id}
+                video={step.video}
+                caption={step.gifPlaceholder}
+                active={screen.kind === 'feature' && screen.id === step.id}
+              />
+            ))}
+          </div>
+          {screen.kind === 'feature' && screen.video && (
+            <button
+              type="button"
+              className={styles['media-link']}
+              onClick={() => send({ type: 'open-external', url: screen.video! })}
+              title="Open this video full size in your browser"
+            >
+              <img src={iconExternalLink} alt="" width={11} height={11} />
+              Open full size video
+            </button>
+          )}
+        </div>
+
         {/* Keyed on `index` so the wrapper remounts each navigation, replaying
-            the slide-in keyframe from the side matching the paging direction. */}
+            the slide-in keyframe from the side matching the paging direction.
+            Holds only the copy now (the media stack above is persistent). */}
         <div
           key={index}
           className={`${styles['screen']} ${dir >= 0 ? styles['slide-next'] : styles['slide-prev']}`}
@@ -102,24 +189,10 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
               </p>
             </div>
           ) : (
-            <>
-              <div className={styles['media']}>
-                {screen.gif ? (
-                  <img className={styles['gif']} src={screen.gif} alt={screen.gifPlaceholder} />
-                ) : (
-                  <div className={styles['gif-placeholder']} aria-hidden="true">
-                    <img src={iconPlay} alt="" width={20} height={20} />
-                    <span>{screen.gifPlaceholder}</span>
-                    <span className={styles['gif-tag']}>GIF coming soon</span>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles['body']}>
-                <h2 className={styles['title']}>{screen.title}</h2>
-                <p className={styles['text']}>{screen.body}</p>
-              </div>
-            </>
+            <div className={styles['body']}>
+              <h2 className={styles['title']}>{screen.title}</h2>
+              <p className={styles['text']}>{screen.body}</p>
+            </div>
           )}
         </div>
 

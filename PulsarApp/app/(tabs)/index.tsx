@@ -13,13 +13,13 @@ import QRScanner from '@/components/QRScanner';
 import AddConnectionCard from '@/components/home/AddConnectionCard';
 import ConnectionList from '@/components/home/ConnectionList';
 import HapticsSupportBanner from '@/components/home/HapticsSupportBanner';
-import PatternIsPlaying from '@/components/home/PatternIsPlaying';
+import NowPlayingToast from '@/components/NowPlayingToast';
 import { useConnections } from '@/contexts/ConnectionsContext';
 
 const logo = require('@/assets/images/logo.png');
 
 export default function HomeScreen() {
-  const { connections, addByCode, remove, reconnect, lastReceived } = useConnections();
+  const { connections, addByCode, remove, reconnect } = useConnections();
   const router = useRouter();
 
   const [connectingCode, setConnectingCode] = useState('');
@@ -131,11 +131,7 @@ export default function HomeScreen() {
 
       {/* Floating "preset received" banner — pinned above the tab bar so it's
           always visible regardless of how many connections fill the list. */}
-      {lastReceived && (
-        <View style={styles.toast} pointerEvents="none">
-          <PatternIsPlaying found={lastReceived.found} name={lastReceived.name} />
-        </View>
-      )}
+      <NowPlayingToast />
 
       <QRScanner visible={scannerOpen} onClose={() => setScannerOpen(false)} onScan={handleScan} />
     </SafeAreaView>
@@ -150,12 +146,6 @@ const styles = StyleSheet.create({
     // Small breathing room only — the tab bar is the bottom boundary, not an
     // extra safe-area inset (the SafeAreaView omits the bottom edge above).
     paddingBottom: 12,
-  },
-  toast: {
-    position: 'absolute',
-    left: 15,
-    right: 15,
-    bottom: 20,
   },
   titleContainer: {
     flexDirection: 'row',
