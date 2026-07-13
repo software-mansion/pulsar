@@ -1,6 +1,7 @@
 import styles from './Filters.module.css';
 import { useMemo } from 'react';
 import type { CatalogEntry } from '../../shared/types';
+import { toggleInSet } from '../lib/collections';
 import iconSliders from '../assets/icon-sliders-horizontal.svg';
 import iconChevron from '../assets/icon-chevron-down.svg';
 import iconInfo from '../assets/icon-info.svg';
@@ -48,17 +49,9 @@ export default function Filters({
 }) {
   const update = (patch: Partial<FilterState>) => setState({ ...state, ...patch });
 
-  const toggleTag = (tag: string) => {
-    const next = new Set(state.tags);
-    next.has(tag) ? next.delete(tag) : next.add(tag);
-    update({ tags: next });
-  };
-
-  const toggleSystem = (preset: string) => {
-    const next = new Set(state.systemPresets);
-    next.has(preset) ? next.delete(preset) : next.add(preset);
-    update({ systemPresets: next });
-  };
+  const toggleTag = (tag: string) => update({ tags: toggleInSet(state.tags, tag) });
+  const toggleSystem = (preset: string) =>
+    update({ systemPresets: toggleInSet(state.systemPresets, preset) });
 
   const activeCount = state.tags.size + state.systemPresets.size;
 

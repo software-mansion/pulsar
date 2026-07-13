@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { send } from '../figmaBridge';
 import type { PhonePhase } from '../hooks/usePhoneConnection';
+import { QR_COLORS } from '../lib/qr';
 import iconSmartphone from '../assets/icon-smartphone.svg';
 import iconRefresh from '../assets/icon-refresh.svg';
 import storeApple from '../assets/store-apple.svg';
@@ -47,7 +48,7 @@ export default function PhonePanel({
   useEffect(() => {
     if (!showStoreQr || storeQr) return;
     let cancelled = false;
-    const opts = { margin: 1, color: { dark: '#001a72', light: '#e1f3fa' }, width: 200 };
+    const opts = { margin: 1, color: QR_COLORS, width: 200 };
     Promise.all([
       QRCode.toDataURL(APPLE_STORE_URL, opts),
       QRCode.toDataURL(GOOGLE_STORE_URL, opts)

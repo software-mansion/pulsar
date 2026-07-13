@@ -5,9 +5,12 @@
 // project; the client remembers the revision it last synced (its "base") so it
 // can detect when the row changed underneath it and reconcile.
 
-// Pulsar backend that stores the preview payload by token. Kept in sync with
-// PhonePanel.API_SERVER_URL.
+// Pulsar backend that stores the preview payload by token. The single source of
+// truth for the server host - other modules (usePhoneConnection, PhonePanel)
+// import these rather than re-declaring them.
 export const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
+// The same server over WebSocket, for the pairing/relay sockets.
+export const SOCKET_SERVER_URL = 'wss://pulsar-server.swmansion.com';
 
 // Default live-preview app URL. Pinned at build time: localhost while
 // developing the plugin (vite dev → import.meta.env.DEV === true), production

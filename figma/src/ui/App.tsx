@@ -23,6 +23,8 @@ import PulsarLogo from './components/PulsarLogo';
 import ResizeHandle from './components/ResizeHandle';
 import { useToast } from './components/Toast';
 import { usePreviewSync } from './hooks/usePreviewSync';
+import { usePersistOnChange } from './hooks/usePersistOnChange';
+import { toggleInSet } from './lib/collections';
 import { DEFAULT_SETTINGS, DEV_MODE } from './lib/settings';
 import { isFileKeyValid } from './lib/fileKey';
 import { playPreset, stopAll } from './audio/player';
@@ -138,53 +140,18 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist settings whenever they change (skip the very first render to avoid
-  // overwriting what the main thread loaded).
-  const [didInit, setDidInit] = useState(false);
-  useEffect(() => {
-    if (!didInit) {
-      setDidInit(true);
-      return;
-    }
-    send({ type: 'persist-settings', settings });
-  }, [settings]);
+  // Persist each piece of loaded state back to the main thread when it changes,
+  // skipping the first render so a freshly-loaded value isn't written straight
+  // back (which would clobber it before `init` restores it). The haptics token is
+  // the exception - it persists on mount too (see below).
+  usePersistOnChange(settings, () => send({ type: 'persist-settings', settings }));
+  usePersistOnChange(figmaFileKey, () => send({ type: 'persist-file-key', figmaFileKey }));
+  usePersistOnChange(favourites, () => send({ type: 'persist-favourites', favourites: [...favourites] }));
+  usePersistOnChange(customPresets, () => send({ type: 'persist-custom-presets', presets: customPresets }));
 
   useEffect(() => {
     send({ type: 'persist-haptics-token', token: hapticsToken });
   }, [hapticsToken]);
-
-  // Persist the per-file Figma file key on change, skipping the first render so
-  // we don't clobber the stored value before `init` arrives.
-  const [didInitFileKey, setDidInitFileKey] = useState(false);
-  useEffect(() => {
-    if (!didInitFileKey) {
-      setDidInitFileKey(true);
-      return;
-    }
-    send({ type: 'persist-file-key', figmaFileKey });
-  }, [figmaFileKey]);
-
-  // Persist favourites on change, skipping the first render so we don't clobber
-  // the stored set before `init` arrives from the main thread.
-  const [didInitFav, setDidInitFav] = useState(false);
-  useEffect(() => {
-    if (!didInitFav) {
-      setDidInitFav(true);
-      return;
-    }
-    send({ type: 'persist-favourites', favourites: [...favourites] });
-  }, [favourites]);
-
-  // Persist custom presets on change, skipping the first render so we don't
-  // clobber what `init` loaded.
-  const [didInitCustom, setDidInitCustom] = useState(false);
-  useEffect(() => {
-    if (!didInitCustom) {
-      setDidInitCustom(true);
-      return;
-    }
-    send({ type: 'persist-custom-presets', presets: customPresets });
-  }, [customPresets]);
 
   const addCustomPreset = (entry: CatalogEntry) => setCustomPresets((prev) => [entry, ...prev]);
   const updateCustomPreset = (id: string, entry: CatalogEntry) =>
@@ -192,13 +159,7 @@ export default function App() {
   const removeCustomPreset = (id: string) =>
     setCustomPresets((prev) => prev.filter((e) => e.id !== id));
 
-  const toggleFavourite = (id: string) => {
-    setFavourites((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  const toggleFavourite = (id: string) => setFavourites((prev) => toggleInSet(prev, id));
 
   // The play-preset handler captured stale settings/token on mount. Rebind it on changes.
   useEffect(() => {

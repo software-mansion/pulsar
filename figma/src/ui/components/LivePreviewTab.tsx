@@ -22,6 +22,12 @@ const SYNC_META: Record<SyncStatus, { label: string; dot: string; pulse?: boolea
   error: { label: 'Sync failed - will retry', dot: '#d2392b' }
 };
 
+// Staged step-1 → step-2 hand-off timings, in ms from the moment step 1 is
+// completed: pulse step 1, then collapse it, then fade step 2 in, then open it.
+const HANDOFF_COLLAPSE_MS = 750;
+const HANDOFF_UNLOCK_MS = 1050;
+const HANDOFF_OPEN_MS = 1400;
+
 // The "live preview" tab - a two-step setup configurator. Step 1 captures the real
 // Figma file key (the embed needs it); step 2 pairs a phone so bound haptics
 // play on the device. Step 2 stays locked until step 1 is valid. Deliberately
@@ -238,14 +244,14 @@ export default function LivePreviewTab({
     setHoldStep2Dim(true);
     setExpandedStep(1); // hold step 1 open while it pulses green
     const timers = [
-      setTimeout(() => setExpandedStep(0), 750), // collapse step 1
-      setTimeout(() => setHoldStep2Dim(false), 1050), // fade step 2 in (after collapse)
+      setTimeout(() => setExpandedStep(0), HANDOFF_COLLAPSE_MS), // collapse step 1
+      setTimeout(() => setHoldStep2Dim(false), HANDOFF_UNLOCK_MS), // fade step 2 in
       setTimeout(() => {
         // open the now-revealed step 2
         setCelebrateStep1(false);
         advancingRef.current = false;
         setExpandedStep(2);
-      }, 1400)
+      }, HANDOFF_OPEN_MS)
     ];
     return () => {
       timers.forEach(clearTimeout);

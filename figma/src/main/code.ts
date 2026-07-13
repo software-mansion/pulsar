@@ -153,16 +153,36 @@ type ProjectCache = {
   lastAccess: number;
 };
 
-async function loadProjectTokens(): Promise<Record<string, string>> {
-  const raw = await figma.clientStorage.getAsync(PROJECT_TOKENS_KEY);
-  return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
+// A per-file string map stored under one clientStorage key ({ [fileKey]: value }).
+// Backs the three project-token maps (share / public / preview), which differ
+// only in their storage key.
+function makeTokenStore(storageKey: string) {
+  const load = async (): Promise<Record<string, string>> => {
+    const raw = await figma.clientStorage.getAsync(storageKey);
+    return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
+  };
+  return {
+    load,
+    async get(fileKey: string): Promise<string | null> {
+      return (await load())[fileKey] ?? null;
+    },
+    async set(fileKey: string, value: string): Promise<void> {
+      const map = await load();
+      map[fileKey] = value;
+      await figma.clientStorage.setAsync(storageKey, map);
+    }
+  };
 }
 
-// Resolve the share token for a file, migrating the legacy global token into
-// the per-file map the first time a file asks (so existing shares survive the
-// upgrade instead of orphaning a server row).
+const shareTokens = makeTokenStore(PROJECT_TOKENS_KEY);
+const publicTokens = makeTokenStore(PROJECT_PUBLIC_TOKENS_KEY);
+const previewTokens = makeTokenStore(PROJECT_PREVIEW_TOKENS_KEY);
+
+// Resolve the secret edit token for a file, migrating the legacy global token
+// into the per-file map the first time a file asks (so existing shares survive
+// the upgrade instead of orphaning a server row).
 async function getProjectToken(fileKey: string): Promise<string | null> {
-  const tokens = await loadProjectTokens();
+  const tokens = await shareTokens.load();
   if (tokens[fileKey]) return tokens[fileKey];
   const legacy = await figma.clientStorage.getAsync(LEGACY_PREVIEW_TOKEN_KEY);
   if (typeof legacy === 'string' && legacy.length > 0) {
@@ -173,48 +193,13 @@ async function getProjectToken(fileKey: string): Promise<string | null> {
   }
   return null;
 }
-
-async function setProjectToken(fileKey: string, token: string): Promise<void> {
-  const tokens = await loadProjectTokens();
-  tokens[fileKey] = token;
-  await figma.clientStorage.setAsync(PROJECT_TOKENS_KEY, tokens);
-}
-
-async function loadProjectPublicTokens(): Promise<Record<string, string>> {
-  const raw = await figma.clientStorage.getAsync(PROJECT_PUBLIC_TOKENS_KEY);
-  return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
-}
-
-// Resolve the read-only share token for a file. Null for legacy shares (pre
-// public-token); the plugin recovers it from the server on the next reconcile.
-async function getProjectPublicToken(fileKey: string): Promise<string | null> {
-  const tokens = await loadProjectPublicTokens();
-  return tokens[fileKey] ?? null;
-}
-
-async function setProjectPublicToken(fileKey: string, publicToken: string): Promise<void> {
-  const tokens = await loadProjectPublicTokens();
-  tokens[fileKey] = publicToken;
-  await figma.clientStorage.setAsync(PROJECT_PUBLIC_TOKENS_KEY, tokens);
-}
-
-async function loadProjectPreviewTokens(): Promise<Record<string, string>> {
-  const raw = await figma.clientStorage.getAsync(PROJECT_PREVIEW_TOKENS_KEY);
-  return raw && typeof raw === 'object' ? (raw as Record<string, string>) : {};
-}
-
-// Resolve the private preview token for a file. Null for legacy shares (pre
-// preview-token); the plugin recovers it from the server on the next reconcile.
-async function getProjectPreviewToken(fileKey: string): Promise<string | null> {
-  const tokens = await loadProjectPreviewTokens();
-  return tokens[fileKey] ?? null;
-}
-
-async function setProjectPreviewToken(fileKey: string, previewToken: string): Promise<void> {
-  const tokens = await loadProjectPreviewTokens();
-  tokens[fileKey] = previewToken;
-  await figma.clientStorage.setAsync(PROJECT_PREVIEW_TOKENS_KEY, tokens);
-}
+const setProjectToken = shareTokens.set;
+// Read-only share + preview tokens. Null for legacy shares (pre-split); the
+// plugin recovers them from the server on the next reconcile.
+const getProjectPublicToken = publicTokens.get;
+const setProjectPublicToken = publicTokens.set;
+const getProjectPreviewToken = previewTokens.get;
+const setProjectPreviewToken = previewTokens.set;
 
 async function getProjectCache(fileKey: string): Promise<ProjectCache | null> {
   const raw = await figma.clientStorage.getAsync(PROJECT_CACHE_PREFIX + fileKey);
@@ -323,25 +308,32 @@ function boxOf(node: BaseNode): NodeBox | null {
 // Also returns a `frames` map (frameId → absolute box) covering every distinct
 // frame-like ancestor of those bound nodes, so the preview can reposition its
 // highlight overlay after Figma navigates between frames.
+// Iterate every node on the current page carrying a haptic binding, with its
+// decoded binding and its top-level prototype frame. Matches by the specific
+// BINDING_KEY, not just "has any plugin data": when a binding is cleared (unbind)
+// Figma drops the node from this result immediately, so an unbound node can't
+// leak in even if some other transient state lingers.
+async function forEachBoundNode(
+  cb: (node: SceneNode, binding: BindingMeta, frame: SceneNode | null) => void
+): Promise<void> {
+  await figma.currentPage.loadAsync();
+  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
+  for (const node of nodes) {
+    const binding = readBinding(node);
+    if (!binding) continue;
+    cb(node, binding, topLevelFrameAncestor(node));
+  }
+}
+
 async function collectPreviewBindings(): Promise<{
   bindings: PreviewBinding[];
   frames: Record<string, FrameInfo>;
 }> {
-  await figma.currentPage.loadAsync();
-  // Match by the specific binding key, not just "has any plugin data". When
-  // BINDING_KEY is cleared (unbind), Figma drops the node from this result
-  // immediately, so an unbound node can't leak into the bound list even if
-  // some other transient state lingers.
-  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
   const out: PreviewBinding[] = [];
   const frames: Record<string, FrameInfo> = {};
-  for (const node of nodes) {
-    const binding = readBinding(node);
-    if (!binding) continue;
+  await forEachBoundNode((node, binding, frame) => {
     const descendantIds =
       'findAll' in node ? (node as ChildrenMixin & BaseNode).findAll(() => true).map((d) => d.id) : [];
-    const frame = topLevelFrameAncestor(node);
-    const frameId = frame ? frame.id : null;
     if (frame && !(frame.id in frames)) {
       const box = boxOf(frame);
       if (box) frames[frame.id] = { name: frame.name, box };
@@ -353,10 +345,10 @@ async function collectPreviewBindings(): Promise<{
       presetName: binding.presetName,
       customPattern: binding.customPattern,
       box: boxOf(node),
-      frameId,
+      frameId: frame ? frame.id : null,
       descendantIds
     });
-  }
+  });
   return { bindings: out, frames };
 }
 
@@ -364,17 +356,8 @@ async function collectPreviewBindings(): Promise<{
 // Each item carries its top-level frame id + name so the UI can group entries
 // by screen, mirroring the preview's "Haptic elements" sidebar.
 async function collectBoundItems(): Promise<BoundItem[]> {
-  await figma.currentPage.loadAsync();
-  // Match by the specific binding key, not just "has any plugin data". When
-  // BINDING_KEY is cleared (unbind), Figma drops the node from this result
-  // immediately, so an unbound node can't leak into the bound list even if
-  // some other transient state lingers.
-  const nodes = figma.currentPage.findAllWithCriteria({ pluginData: { keys: [BINDING_KEY] } });
   const out: BoundItem[] = [];
-  for (const node of nodes) {
-    const binding = readBinding(node);
-    if (!binding) continue;
-    const frame = topLevelFrameAncestor(node);
+  await forEachBoundNode((node, binding, frame) => {
     out.push({
       nodeId: node.id,
       nodeName: node.name,
@@ -384,7 +367,7 @@ async function collectBoundItems(): Promise<BoundItem[]> {
       frameId: frame ? frame.id : null,
       frameName: frame ? frame.name : null
     });
-  }
+  });
   return out;
 }
 

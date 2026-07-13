@@ -429,66 +429,51 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
         };
 
-        let token = tokenRef.current;
+        const token = tokenRef.current;
+
+        // Create a fresh server row and adopt its tokens/revision. (No preview
+        // can be open against a token that didn't exist yet, so nothing to relay.)
+        const createAndAdopt = async (): Promise<string> => {
+          const created = await createProject(payload);
+          adopt(created.token, created.publicToken, created.previewToken, created.revision);
+          return created.token;
+        };
+        // The server row is gone and we can't/shouldn't recreate it now - drop
+        // the local token + revision snapshot so the next change starts clean.
+        const forgetToken = (): null => {
+          tokenRef.current = null;
+          baseRevisionRef.current = null;
+          lastSyncedJsonRef.current = null;
+          lastSyncedPayloadRef.current = null;
+          return null;
+        };
+        // Record a confirmed update: adopt the new revision, refresh the cache,
+        // and relay the change to any open preview.
+        const commitUpdate = (revision: number, forced: boolean): string => {
+          baseRevisionRef.current = revision;
+          lastSyncedJsonRef.current = json;
+          lastSyncedPayloadRef.current = nextPayload;
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
+          emitUpdate(revision, forced);
+          return token as string;
+        };
+
         // Skip the round-trip when nothing actually changed since last sync.
         if (token && json === lastSyncedJsonRef.current) return token;
-
-        if (!token) {
-          // Creating the project: no preview can be open against a token that
-          // didn't exist yet, so there's nothing to relay.
-          if (!allowCreate) return null;
-          const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.previewToken, created.revision);
-          return created.token;
-        }
+        if (!token) return allowCreate ? createAndAdopt() : null;
 
         const res = await updateProject(token, payload, baseRevisionRef.current);
-        if (res.kind === 'ok') {
-          baseRevisionRef.current = res.revision;
-          lastSyncedJsonRef.current = json;
-          lastSyncedPayloadRef.current = nextPayload;
-          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: res.revision });
-          emitUpdate(res.revision, false);
-          return token;
-        }
-        if (res.kind === 'gone') {
-          // Token vanished server-side. Recreate when allowed, else forget it.
-          if (!allowCreate) {
-            tokenRef.current = null;
-            baseRevisionRef.current = null;
-            lastSyncedJsonRef.current = null;
-            lastSyncedPayloadRef.current = null;
-            return null;
-          }
-          const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.previewToken, created.revision);
-          return created.token;
-        }
-        // Conflict: someone changed the row since our base. The server is the
-        // source of truth for the base revision, so adopt it - but the Figma
-        // document is the live design, so re-publish our payload on top
-        // (last-writer-wins, now that we're rebased on the server's revision).
+        if (res.kind === 'ok') return commitUpdate(res.revision, false);
+        // Token vanished server-side: recreate when allowed, else forget it.
+        if (res.kind === 'gone') return allowCreate ? createAndAdopt() : forgetToken();
+
+        // Conflict: someone changed the row since our base. Adopt the server's
+        // revision (it's the source of truth for the base) but re-publish our
+        // payload on top - the Figma document is the live design (last-writer-wins).
         const forced = await updateProject(token, payload, res.revision);
-        if (forced.kind === 'ok') {
-          baseRevisionRef.current = forced.revision;
-          lastSyncedJsonRef.current = json;
-          lastSyncedPayloadRef.current = nextPayload;
-          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: forced.revision });
-          emitUpdate(forced.revision, true);
-          return token;
-        }
-        if (forced.kind === 'gone') {
-          if (!allowCreate) {
-            tokenRef.current = null;
-            baseRevisionRef.current = null;
-            lastSyncedJsonRef.current = null;
-            lastSyncedPayloadRef.current = null;
-            return null;
-          }
-          const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.previewToken, created.revision);
-          return created.token;
-        }
+        if (forced.kind === 'ok') return commitUpdate(forced.revision, true);
+        if (forced.kind === 'gone') return allowCreate ? createAndAdopt() : forgetToken();
+
         // Lost a second race - bail; the next change will retry from the new base.
         baseRevisionRef.current = forced.revision;
         throw new Error('Sync conflict - will retry on the next change.');
