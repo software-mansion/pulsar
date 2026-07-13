@@ -1,6 +1,6 @@
 import styles from './PresetsTab.module.css';
 import { useEffect, useRef, useState } from 'react';
-import type { BoundItem, CatalogEntry, SelectionInfo, Settings } from '../../shared/types';
+import type { BoundItem, CatalogEntry, Settings } from '../../shared/types';
 import Filters, { type FilterState } from './Filters';
 import PresetCard from './PresetCard';
 import AddCustomPreset from './AddCustomPreset';
@@ -26,8 +26,6 @@ export default function PresetsTab({
   settings,
   onSettingsChange,
   filtered,
-  favourites,
-  selection,
   onToggleFavourite,
   onPlay,
   onBind,
@@ -57,8 +55,6 @@ export default function PresetsTab({
   settings: Settings;
   onSettingsChange: (settings: Settings) => void;
   filtered: CatalogEntry[];
-  favourites: Set<string>;
-  selection: SelectionInfo | null;
   onToggleFavourite: (id: string) => void;
   onPlay: (entry: CatalogEntry) => void;
   onBind: (entry: CatalogEntry) => void;
@@ -172,12 +168,10 @@ export default function PresetsTab({
               key={e.id}
               entry={e}
               compact={settings.compactLayout}
-              isBound={selection?.binding?.presetId === e.id}
-              isFavourite={favourites.has(e.id)}
-              onToggleFavourite={() => onToggleFavourite(e.id)}
-              onPlay={() => onPlay(e)}
-              onBind={() => onBind(e)}
-              onOpen={() => onOpen(e.id)}
+              onToggleFavourite={onToggleFavourite}
+              onPlay={onPlay}
+              onBind={onBind}
+              onOpen={onOpen}
             />
           ))}
           {filtered.length === 0 && (

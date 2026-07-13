@@ -1,6 +1,8 @@
+import { memo } from 'react';
 import styles from './PresetCard.module.css';
 import type { CatalogEntry } from '../../shared/types';
 import Visualization from './Visualization';
+import { usePresetsUiStore } from '../store';
 import iconPlay from '../assets/icon-play.svg';
 import iconClock from '../assets/icon-clock.svg';
 import iconInfo from '../assets/icon-info.svg';
@@ -8,11 +10,13 @@ import iconInfo from '../assets/icon-info.svg';
 const formatDuration = (ms: number) =>
   ms >= 1000 ? `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)} s` : `${Math.round(ms)} ms`;
 
-export default function PresetCard({
+// Memoized + subscribes to just "am I favourited / bound?" from the store, so a
+// favourite toggle or a selection change re-renders only the affected card(s),
+// not the whole 151-card grid. The callbacks take the entry/id (not a per-card
+// closure) so the parent can pass stable references that don't break memo.
+const PresetCard = memo(function PresetCard({
   entry,
   compact,
-  isBound,
-  isFavourite,
   onToggleFavourite,
   onPlay,
   onBind,
@@ -20,13 +24,13 @@ export default function PresetCard({
 }: {
   entry: CatalogEntry;
   compact: boolean;
-  isBound: boolean;
-  isFavourite: boolean;
-  onToggleFavourite: () => void;
-  onPlay: () => void;
-  onBind: () => void;
-  onOpen: () => void;
+  onToggleFavourite: (id: string) => void;
+  onPlay: (entry: CatalogEntry) => void;
+  onBind: (entry: CatalogEntry) => void;
+  onOpen: (id: string) => void;
 }) {
+  const isFavourite = usePresetsUiStore((s) => s.favourites.has(entry.id));
+  const isBound = usePresetsUiStore((s) => s.selection?.binding?.presetId === entry.id);
   const { data } = entry;
 
   // Lighter, borderless favourite star - shared by both layouts.
@@ -35,7 +39,7 @@ export default function PresetCard({
       className={styles['fav-plain']}
       title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
       aria-pressed={isFavourite}
-      onClick={onToggleFavourite}
+      onClick={() => onToggleFavourite(entry.id)}
     >
       <span className="star">{isFavourite ? '★' : '☆'}</span>
     </button>
@@ -49,10 +53,10 @@ export default function PresetCard({
     // One dense bordered line: play · name · scrolling tags · duration · fav · bind.
     return (
       <div className={styles['preset-row-compact']} data-preset-id={entry.id}>
-        <button className="ghost icon" onClick={onPlay} title="Play">
+        <button className="ghost icon" onClick={() => onPlay(entry)} title="Play">
           <img src={iconPlay} alt="" width={14} height={14} />
         </button>
-        <span className={styles['preset-row-compact-name']} onClick={onOpen} title={data.name}>
+        <span className={styles['preset-row-compact-name']} onClick={() => onOpen(entry.id)} title={data.name}>
           {data.name}
         </span>
         {boundBadge}
@@ -65,7 +69,7 @@ export default function PresetCard({
           {formatDuration(data.duration)}
         </span>
         {favButton}
-        <button className="primary" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+        <button className="primary" onClick={() => onBind(entry)} title="Bind to selection" aria-label="Bind to selection">
           Add
         </button>
       </div>
@@ -85,13 +89,13 @@ export default function PresetCard({
           {formatDuration(data.duration)}
         </span>
         {favButton}
-        <button className="ghost icon" onClick={onOpen} title="Details" aria-label="Open details">
+        <button className="ghost icon" onClick={() => onOpen(entry.id)} title="Details" aria-label="Open details">
           <img src={iconInfo} alt="" width={14} height={14} />
         </button>
-        <button className="ghost icon" onClick={onPlay} title="Play" aria-label="Play">
+        <button className="ghost icon" onClick={() => onPlay(entry)} title="Play" aria-label="Play">
           <img src={iconPlay} alt="" width={14} height={14} />
         </button>
-        <button className="primary" onClick={onBind} title="Bind to selection" aria-label="Bind to selection">
+        <button className="primary" onClick={() => onBind(entry)} title="Bind to selection" aria-label="Bind to selection">
           Add
         </button>
       </div>
@@ -107,4 +111,6 @@ export default function PresetCard({
       </div>
     </div>
   );
-}
+});
+
+export default PresetCard;
