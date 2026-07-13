@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CUSTOM_TAG, type CatalogEntry, type Settings } from '../../shared/types';
 import { onMessage, send } from '../figmaBridge';
 import { copyToClipboard } from '../lib/clipboard';
-import { extractFileKey } from '../lib/fileKey';
+import { extractFileKey, isFileKeyValid } from '../lib/fileKey';
 import { stableStringify } from '../lib/stableStringify';
 import {
   diffPayloads,
@@ -26,7 +26,8 @@ import type { ToastOptions } from '../components/Toast';
 const PREVIEW_DIFF_MAX_BYTES = 24_000;
 
 // Live-preview sync state, surfaced as a pill in the Live preview tab.
-//   idle     - nothing shared for this file yet (no server row).
+//   idle     - no server row yet (transient before first-open provisioning
+//              completes, or if that provisioning couldn't run/failed).
 //   syncing  - a push/fetch is in flight.
 //   synced   - local state matches what's on the server.
 //   unsynced - local edits not yet pushed (a debounced save is pending).
@@ -93,6 +94,11 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
   const syncLockRef = useRef<Promise<void>>(Promise.resolve());
   // Debounce timer for background auto-save.
   const autosyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Flips true once this file's persisted project state has loaded (handleProject
+  // ran, or there was no server id to load). Gates the "configuring the live
+  // preview auto-starts sync" trigger so a user-typed file key can't create a
+  // second server row before the stored token has been read back in.
+  const projectReadyRef = useRef(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   // Share-link visibility for the current file. true = anyone with the link can
   // view; false = the link is revoked server-side until the user shares again.
@@ -208,7 +214,16 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
       lastSyncedPayloadRef.current = null;
       setSyncStatus('idle');
     }
-    send({ type: 'request-preview-data', purpose: 'autosync' });
+    // The persisted token (if any) is now loaded, so it's safe to let a
+    // subsequent file-key configuration auto-create/sync without racing this.
+    projectReadyRef.current = true;
+    // No server row for this file yet → eagerly provision one now (first open),
+    // so the token / share link / pairing QR exist from the start. Otherwise
+    // just push any local drift since the last snapshot.
+    send({
+      type: 'request-preview-data',
+      purpose: tokenRef.current ? 'autosync' : 'bootstrap'
+    });
   };
 
   // A local edit happened. Mark the file dirty (only meaningful once it has a
@@ -257,6 +272,10 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
       // ensureShared() request: resolve the file's public token (or null when
       // the file isn't preview-ready) and pair code-only without UI nagging.
       const isPair = purpose === 'pair';
+      // First-open provisioning: create the backend row if this file has none
+      // yet, before the file is even configured, and without any share/URL
+      // side-effects or error toasts.
+      const isBootstrap = purpose === 'bootstrap';
 
       // Two distinct keys:
       //  - `fileKey`: the plugin's stable minted id (m.fileKey), used purely to
@@ -267,14 +286,17 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
       //    override (a full share URL or raw key).
       const fileKey = m.fileKey ?? '';
       const embedFileKey = figmaFileKey ? extractFileKey(figmaFileKey) : '';
-      if (!fileKey || !embedFileKey) {
+      // Bootstrap provisions the row before the file is configured, so it runs
+      // without the real Figma file key (the embed key is filled in later once
+      // the user pastes it). Every other purpose needs it to build the embed.
+      if (!fileKey || (!embedFileKey && !isBootstrap)) {
         // Pairing proceeds code-only when the file isn't preview-ready - resolve
         // null without nagging the user with a warning toast.
         if (isPair) {
           settlePair(null);
           return;
         }
-        if (silent) return;
+        if (silent || isBootstrap) return;
         notify(
           'Add this file’s key in the Share tab (Figma file key) to enable the live preview.',
           { level: 'warning' }
@@ -315,7 +337,9 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           isCustom: !!b.customPattern || (Array.isArray(data.tags) && data.tags.includes(CUSTOM_TAG))
         });
       }
-      if (elements.length === 0) {
+      // Bootstrap still provisions an (empty) row with no bindings - that's the
+      // point of first-open provisioning; real bindings get pushed later.
+      if (elements.length === 0 && !isBootstrap) {
         // No bindings → nothing to preview. Pair code-only, quietly.
         if (isPair) {
           settlePair(null);
@@ -331,7 +355,8 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
         return;
       }
       const payload = {
-        // The preview embeds this as the Figma file key - must be the real key.
+        // The preview embeds this as the Figma file key - the real key once
+        // configured, or empty for a first-open bootstrap row (filled in later).
         fileKey: embedFileKey,
         nodeId: m.presentNodeId,
         frame: m.presentNodeBox,
@@ -404,83 +429,83 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
         };
 
-        let token = tokenRef.current;
+        const token = tokenRef.current;
+
+        // Create a fresh server row and adopt its tokens/revision. (No preview
+        // can be open against a token that didn't exist yet, so nothing to relay.)
+        const createAndAdopt = async (): Promise<string> => {
+          const created = await createProject(payload);
+          adopt(created.token, created.publicToken, created.previewToken, created.revision);
+          return created.token;
+        };
+        // The server row is gone and we can't/shouldn't recreate it now - drop
+        // the local token + revision snapshot so the next change starts clean.
+        const forgetToken = (): null => {
+          tokenRef.current = null;
+          baseRevisionRef.current = null;
+          lastSyncedJsonRef.current = null;
+          lastSyncedPayloadRef.current = null;
+          return null;
+        };
+        // Record a confirmed update: adopt the new revision, refresh the cache,
+        // and relay the change to any open preview.
+        const commitUpdate = (revision: number, forced: boolean): string => {
+          baseRevisionRef.current = revision;
+          lastSyncedJsonRef.current = json;
+          lastSyncedPayloadRef.current = nextPayload;
+          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: revision });
+          emitUpdate(revision, forced);
+          return token as string;
+        };
+
         // Skip the round-trip when nothing actually changed since last sync.
         if (token && json === lastSyncedJsonRef.current) return token;
-
-        if (!token) {
-          // Creating the project: no preview can be open against a token that
-          // didn't exist yet, so there's nothing to relay.
-          if (!allowCreate) return null;
-          const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.previewToken, created.revision);
-          return created.token;
-        }
+        if (!token) return allowCreate ? createAndAdopt() : null;
 
         const res = await updateProject(token, payload, baseRevisionRef.current);
-        if (res.kind === 'ok') {
-          baseRevisionRef.current = res.revision;
-          lastSyncedJsonRef.current = json;
-          lastSyncedPayloadRef.current = nextPayload;
-          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: res.revision });
-          emitUpdate(res.revision, false);
-          return token;
-        }
-        if (res.kind === 'gone') {
-          // Token vanished server-side. Recreate when allowed, else forget it.
-          if (!allowCreate) {
-            tokenRef.current = null;
-            baseRevisionRef.current = null;
-            lastSyncedJsonRef.current = null;
-            lastSyncedPayloadRef.current = null;
-            return null;
-          }
-          const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.previewToken, created.revision);
-          return created.token;
-        }
-        // Conflict: someone changed the row since our base. The server is the
-        // source of truth for the base revision, so adopt it - but the Figma
-        // document is the live design, so re-publish our payload on top
-        // (last-writer-wins, now that we're rebased on the server's revision).
+        if (res.kind === 'ok') return commitUpdate(res.revision, false);
+        // Token vanished server-side: recreate when allowed, else forget it.
+        if (res.kind === 'gone') return allowCreate ? createAndAdopt() : forgetToken();
+
+        // Conflict: someone changed the row since our base. Adopt the server's
+        // revision (it's the source of truth for the base) but re-publish our
+        // payload on top - the Figma document is the live design (last-writer-wins).
         const forced = await updateProject(token, payload, res.revision);
-        if (forced.kind === 'ok') {
-          baseRevisionRef.current = forced.revision;
-          lastSyncedJsonRef.current = json;
-          lastSyncedPayloadRef.current = nextPayload;
-          send({ type: 'persist-project-cache', fileKey, config: payload, baseRevision: forced.revision });
-          emitUpdate(forced.revision, true);
-          return token;
-        }
-        if (forced.kind === 'gone') {
-          if (!allowCreate) {
-            tokenRef.current = null;
-            baseRevisionRef.current = null;
-            lastSyncedJsonRef.current = null;
-            lastSyncedPayloadRef.current = null;
-            return null;
-          }
-          const created = await createProject(payload);
-          adopt(created.token, created.publicToken, created.previewToken, created.revision);
-          return created.token;
-        }
+        if (forced.kind === 'ok') return commitUpdate(forced.revision, true);
+        if (forced.kind === 'gone') return allowCreate ? createAndAdopt() : forgetToken();
+
         // Lost a second race - bail; the next change will retry from the new base.
         baseRevisionRef.current = forced.revision;
         throw new Error('Sync conflict - will retry on the next change.');
       };
 
       void runExclusive(async () => {
+        // Bootstrap only provisions a *missing* row: if a token already exists
+        // (created since we fired, or loaded from cache), there's nothing to do
+        // and we must not push the empty bootstrap payload over real data.
+        if (isBootstrap && tokenRef.current) {
+          setSyncStatus('synced');
+          return;
+        }
         setSyncStatus('syncing');
         let token: string | null;
         try {
-          token = await ensurePublished(!silent);
+          // A configured live preview (valid Figma file key) is treated as intent
+          // to share, so even a silent autosync may create the server row and
+          // start syncing - the user no longer has to explicitly copy a link or
+          // pair a phone first for the sync indicator to go live. Bootstrap always
+          // creates (that's its whole job).
+          const configured = isFileKeyValid(figmaFileKey);
+          token = await ensurePublished(!silent || configured || isBootstrap);
         } catch (err) {
-          setSyncStatus('error');
+          // Bootstrap is a silent first-open convenience: on failure just fall
+          // back to idle and let a later configure/sync retry - no error pill.
+          setSyncStatus(isBootstrap ? 'idle' : 'error');
           if (isPair) {
             settlePair(null);
             return;
           }
-          if (!silent) {
+          if (!silent && !isBootstrap) {
             notify(`Could not upload preview data: ${(err as Error).message}`, { level: 'error' });
           }
           return;
@@ -520,7 +545,9 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
         }
 
         // Beyond the sync itself, share actions also need a URL / QR / clipboard.
-        if (purpose === 'autosync' || purpose === 'sync') return;
+        // Bootstrap is provisioning-only - it never opens/copies or touches the
+        // share-link visibility.
+        if (purpose === 'autosync' || purpose === 'sync' || isBootstrap) return;
 
         // Any explicit share re-opens the link to the public: if the user had
         // made it private, handing the link out again necessarily makes it
@@ -592,9 +619,31 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
   // this file's persisted token + cached config (or settle to idle).
   const initProject = (fileKey: string) => {
     fileKeyRef.current = fileKey;
-    if (fileKey) send({ type: 'get-project', fileKey });
-    else setSyncStatus('idle');
+    if (fileKey) {
+      send({ type: 'get-project', fileKey });
+    } else {
+      // No server id to load - nothing to race, so the configure-to-sync trigger
+      // can run immediately.
+      projectReadyRef.current = true;
+      setSyncStatus('idle');
+    }
   };
+
+  // Configuring the live preview auto-starts syncing: the moment the Figma file
+  // key becomes valid, publish to the backend so the sync indicator goes live
+  // without the user having to copy a share link or pair a phone first. Only on
+  // the false→true transition (not every keystroke once valid), and only after
+  // the persisted project state has loaded, so we never create a duplicate row
+  // ahead of the stored token (the init/reopen path syncs via handleProject).
+  const fileKeyValidRef = useRef(false);
+  useEffect(() => {
+    const valid = isFileKeyValid(figmaFileKey);
+    const wasValid = fileKeyValidRef.current;
+    fileKeyValidRef.current = valid;
+    if (valid && !wasValid && projectReadyRef.current) {
+      send({ type: 'request-preview-data', purpose: 'autosync' });
+    }
+  }, [figmaFileKey]);
 
   const showInLivePreview = () => send({ type: 'request-preview-data', purpose: 'open' });
   const copyShareLink = () => send({ type: 'request-preview-data', purpose: 'copy' });

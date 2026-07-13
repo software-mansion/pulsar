@@ -3,20 +3,20 @@
 // (OnboardingPanel) read from here, so the "how do I…" copy never drifts
 // between the two surfaces.
 
-// One step of the first-run carousel. `gif` is the (eventual) animated demo for
-// the step - left undefined for now so the overlay renders a labelled
-// placeholder box. Drop a built asset import here to light it up:
-//   import gifConnectPreset from '../assets/onboarding-connect-preset.gif';
-//   gif: gifConnectPreset
+import { ONBOARDING_VIDEOS } from '../lib/onboardingMedia';
+
+// One step of the first-run carousel. `video` is the short looping demo clip for
+// the step (rendered muted + autoplay in the tour); left undefined it falls back
+// to the labelled placeholder box.
 export interface OnboardingStep {
   id: string;
   title: string;
   // Short, single-idea explanation shown under the demo. One concept per step
   // keeps the tour skimmable (progressive disclosure).
   body: string;
-  // Caption shown inside the placeholder until a real GIF is wired in.
+  // Caption shown inside the placeholder box when there's no clip yet.
   gifPlaceholder: string;
-  gif?: string;
+  video?: string;
 }
 
 // Intro screen shown first in the tour (not part of the FAQ - it's a greeting,
@@ -37,19 +37,29 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: 'bind-preset',
     title: 'Connect a preset to a component',
     body: 'Open the Presets tab, pick a haptic, then select a layer or component on the canvas and click Add. Pulsar attaches the preset to that node so it fires whenever the component is tapped in a preview.',
-    gifPlaceholder: 'Binding a preset to a component'
+    gifPlaceholder: 'Binding a preset to a component',
+    video: ONBOARDING_VIDEOS.bind
   },
   {
     id: 'live-preview',
     title: 'Connect a live preview',
     body: 'On the Live preview tab, paste your Figma file link and scan the QR code with the Pulsar mobile app. Your prototype runs on the phone and plays real haptics as you tap the components you bound.',
-    gifPlaceholder: 'Pairing a phone for live preview'
+    gifPlaceholder: 'Pairing a phone for live preview',
+    video: ONBOARDING_VIDEOS.livePreview
+  },
+  {
+    id: 'preview-on-device',
+    title: 'Preview a preset on your device',
+    body: 'Once a phone is paired, hit Play on any preset in the Presets tab and feel it on your device right away. Choosing haptics by feel - not just by name - makes it far easier to pick the right preset for each component.',
+    gifPlaceholder: 'Playing a preset on the paired phone',
+    video: ONBOARDING_VIDEOS.previewOnDevice
   },
   {
     id: 'share-design',
     title: 'Share a design with a developer',
     body: 'Open the Share tab and publish a share link. Developers open it to feel every bound haptic and copy ready-to-use SDK code for iOS, Android, React Native and more - no Figma access required.',
-    gifPlaceholder: 'Sharing a design with a developer'
+    gifPlaceholder: 'Sharing a design with a developer',
+    video: ONBOARDING_VIDEOS.share
   }
 ];
 
@@ -101,9 +111,8 @@ export const FAQ: FaqEntry[] = [
   }
 ];
 
-// Resource links surfaced on the Help tab. Update these once the public Figma
-// file and example app are live (placeholders point at sensible defaults).
+// Resource links surfaced on the Help tab.
 export const FIGMA_DESIGN_URL =
-  'https://www.figma.com/community/file/pulsar-onboarding-example';
+  'https://www.figma.com/design/i85oRvw6pl12o6c0X1zP6E/Pulsar---Haptics-Figma-Plugin?node-id=0-1';
 export const EXAMPLE_APP_URL = 'https://docs.swmansion.com/pulsar/figma-preview/';
 export const SUPPORT_EMAIL = 'projects@swmansion.com';

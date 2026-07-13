@@ -234,26 +234,5 @@
   cursor: default;
 }
 
-/* Docs-aligned scrollbars on every scrollable surface inside the modal.
-   Thin transparent track, blue-tinted thumb that darkens on hover. */
-.modal-body,
-.code-block {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-blue-20) transparent;
-}
-.modal-body::-webkit-scrollbar,
-.code-block::-webkit-scrollbar { width: 8px; height: 8px; }
-.modal-body::-webkit-scrollbar-track,
-.code-block::-webkit-scrollbar-track { background: transparent; }
-.modal-body::-webkit-scrollbar-thumb,
-.code-block::-webkit-scrollbar-thumb {
-  background: var(--color-blue-20);
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-.modal-body::-webkit-scrollbar-thumb:hover,
-.code-block::-webkit-scrollbar-thumb:hover {
-  background: var(--color-blue-30);
-  background-clip: padding-box;
-}
+/* Scrollbars for the modal body / code block are handled by the global
+   custom-scrollbar rules in common.css. */

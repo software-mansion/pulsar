@@ -19,6 +19,8 @@ import fullscreenIcon from './assets/icon-fullscreen.svg';
 
 const ACTIVE_MS = 900;
 const TAP_DEBOUNCE_MS = 250;
+// Reads to ride out read-after-write lag when a minimum revision is required.
+const REFETCH_ATTEMPTS = 4;
 
 // True when the center point of `inner` lies within `outer`. Used as a fallback
 // "which frame does this element belong to?" test for payloads that don't carry
@@ -66,10 +68,13 @@ export default function App() {
   // minimum revision is known, retry briefly to ride out read-after-write lag so
   // we never settle on a snapshot older than the change that triggered us.
   const refetch = useCallback(async (minRevision?: number) => {
-    for (let attempt = 0; attempt < 4; attempt++) {
+    // Up to REFETCH_ATTEMPTS reads; the last one is accepted even if the server
+    // is still behind minRevision (better a slightly stale snapshot than none).
+    for (let attempt = 0; attempt < REFETCH_ATTEMPTS; attempt++) {
       const res = await readPayload();
       if (res.status === 'ok') {
-        if (minRevision != null && res.revision < minRevision && attempt < 3) {
+        const isLastAttempt = attempt === REFETCH_ATTEMPTS - 1;
+        if (minRevision != null && res.revision < minRevision && !isLastAttempt) {
           await new Promise((r) => setTimeout(r, 250));
           continue;
         }
@@ -446,6 +451,7 @@ export default function App() {
             onPlay={playFromList}
             onOpenFrame={navigateToFrame}
             onShowDetails={setDetailsId}
+            isMobile={isMobile}
             footer={openOnPhoneLink ? <OpenOnPhone deepLink={openOnPhoneLink} /> : undefined}
           />
         )}

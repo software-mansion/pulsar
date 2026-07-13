@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useEscapeKey } from '../lib/useEscapeKey';
 import QRCode from 'qrcode';
 import storeApple from '../assets/store-apple.svg';
 import storeGoogle from '../assets/store-google.png';
@@ -85,14 +86,7 @@ export function OpenOnPhone({ deepLink }: { deepLink: string }) {
   }, [collapsed, showDownloadQr, downloadQr]);
 
   // Close the enlarged view on Escape.
-  useEffect(() => {
-    if (!expanded) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setExpanded(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [expanded]);
+  useEscapeKey(() => setExpanded(false), expanded);
 
   // Don't render the section until the QR is ready (avoids an empty box flash).
   if (!qr) return null;

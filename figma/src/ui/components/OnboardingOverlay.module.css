@@ -18,6 +18,7 @@
   to { opacity: 1; }
 }
 .card {
+  position: relative;
   background: var(--surface);
   border: 2px solid var(--color-blue-50);
   border-radius: var(--radius);
@@ -28,6 +29,30 @@
   padding: 14px;
   gap: 14px;
   animation: card-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Finish-screen confetti - covers the whole card, sits above the content but
+   never intercepts pointer events. */
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: var(--radius);
+  z-index: 3;
+}
+.confetti-piece {
+  position: absolute;
+  top: -16px;
+  opacity: 0;
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.35, 0.2, 0.7, 1);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translate(0, -16px) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--drift), var(--fall)) rotate(var(--spin)); opacity: 0; }
 }
 @keyframes card-in {
   from { opacity: 0; transform: translateY(10px) scale(0.985); }
@@ -79,20 +104,71 @@
 }
 .skip:active { box-shadow: none; }
 
-/* Demo media slot - real GIF or the labelled placeholder, kept at a stable
-   aspect ratio so swapping between steps doesn't jump the layout. */
-.media {
+/* Demo media. Every step's clip is mounted at once (stacked, only the active one
+   shown) so each buffers a single time and paging between steps is instant
+   rather than re-loading. The stack keeps a stable aspect ratio so the layout
+   doesn't jump and the spinner is sized before a clip resolves. */
+.media-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* Collapsed on the welcome / finish screens, which carry no demo clip. */
+.media-hidden { display: none; }
+.media-stack {
+  position: relative;
+  aspect-ratio: 16 / 10;
   border-radius: var(--radius);
   overflow: hidden;
+  background: var(--color-blue-10);
 }
-.gif { display: block; width: 100%; height: auto; border-radius: var(--radius); }
-.gif-placeholder {
+/* One stacked clip - only the active step's is shown; the rest stay mounted
+   (and buffered) behind it. */
+.stack-item {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease;
+}
+.stack-item.active { opacity: 1; visibility: visible; }
+.stack-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Spinner + caption shown over a clip until it has buffered enough to play. */
+.stack-loading {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  aspect-ratio: 16 / 10;
+  padding: 16px;
+  text-align: center;
+  background: var(--color-blue-10);
+  color: var(--color-blue-60);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.stack-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--color-blue-30);
+  border-top-color: var(--color-blue-60);
+  animation: tour-media-spin 0.8s linear infinite;
+}
+@keyframes tour-media-spin {
+  to { transform: rotate(360deg); }
+}
+/* Fallback box when a clip is missing or fails to load. */
+.stack-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 16px;
   text-align: center;
   color: var(--color-blue-60);
@@ -100,14 +176,25 @@
   font-weight: 600;
   background: var(--color-blue-10);
   border: 1px dashed var(--color-blue-30);
-  border-radius: var(--radius);
 }
-/* Gently pulse the play glyph so the placeholder reads as a future demo. */
-.gif-placeholder img { opacity: 0.7; animation: play-pulse 2.4s ease-in-out infinite; }
-@keyframes play-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.12); opacity: 0.9; }
+/* "Open full size video" link tucked just under the active clip. */
+.media-link {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--color-blue-60);
 }
+.media-link:hover { text-decoration: underline; }
+.media-link:active { box-shadow: none; transform: none; }
+.media-link img { opacity: 0.85; }
 .gif-tag {
   font-size: var(--fs-2xs);
   font-weight: 600;
@@ -143,6 +230,14 @@
 /* Step copy. */
 .body { text-align: center; padding: 0 4px; }
 .title { margin: 0 0 6px; font-size: var(--fs-lg); font-weight: 700; color: var(--color-primary); }
+/* Finish screen: pop the "You're all set!" title and settle it on green. The
+   base colour is green too, so it stays green even with animations disabled. */
+.title-finish { color: var(--color-green-50); animation: title-to-green 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes title-to-green {
+  0% { color: var(--color-primary); transform: scale(0.9); }
+  55% { transform: scale(1.08); }
+  100% { color: var(--color-green-50); transform: scale(1); }
+}
 .text { margin: 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); }
 
 /* Progress dots - also clickable to jump to a step. */
@@ -178,7 +273,8 @@
   .card,
   .screen,
   .welcome :global(.pulsar-logo),
-  .gif-placeholder img {
+  .title-finish,
+  .confetti-piece {
     animation: none;
   }
 }

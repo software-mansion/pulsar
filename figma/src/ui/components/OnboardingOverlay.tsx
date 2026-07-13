@@ -1,10 +1,12 @@
 import styles from './OnboardingOverlay.module.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ONBOARDING_STEPS, WELCOME, OUTRO, type OnboardingStep } from './onboardingContent';
 import PulsarLogo from './PulsarLogo';
 import iconClose from '../assets/icon-close.svg';
 import iconChevron from '../assets/icon-chevron-down.svg';
 import iconPlay from '../assets/icon-play.svg';
+import iconExternalLink from '../assets/icon-external-link.svg';
+import { send } from '../figmaBridge';
 
 // The tour leads with a welcome screen (brand mark + greeting), runs the feature
 // steps, and ends on a send-off. The welcome / finish screens share a brand
@@ -19,6 +21,111 @@ const SCREENS: Screen[] = [
   ...ONBOARDING_STEPS.map((s) => ({ kind: 'feature' as const, ...s })),
   { kind: 'finish' }
 ];
+
+// One step's demo clip within the persistent media stack. Every step's clip is
+// mounted for the tour's lifetime so it buffers exactly once (no re-load each
+// time you page to it); only the `active` one is shown and playing. Shows a
+// spinner + caption until it can play, and a labelled placeholder if it has no
+// clip / fails to load.
+function StackVideo({ video, caption, active }: { video?: string; caption: string; active: boolean }) {
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(video ? 'loading' : 'error');
+  const ref = useRef<HTMLVideoElement>(null);
+  // Only the active clip plays; the rest stay paused but buffered so switching to
+  // them is instant. (Explicit play/pause instead of the autoPlay attribute so a
+  // clip that becomes active after it loaded still starts.)
+  useEffect(() => {
+    const v = ref.current;
+    if (!v || status !== 'ready') return;
+    if (active) v.play().catch(() => {});
+    else v.pause();
+  }, [active, status]);
+  const showVideo = !!video && status !== 'error';
+  return (
+    <div className={`${styles['stack-item']}${active ? ` ${styles['active']}` : ''}`} aria-hidden={!active}>
+      {showVideo ? (
+        <>
+          <video
+            ref={ref}
+            className={styles['stack-video']}
+            src={video}
+            aria-label={caption}
+            preload="auto"
+            controls={active}
+            loop
+            muted
+            playsInline
+            onCanPlay={() => setStatus('ready')}
+            onError={() => setStatus('error')}
+          />
+          {status === 'loading' && (
+            <div className={styles['stack-loading']}>
+              <span className={styles['stack-spinner']} aria-hidden="true" />
+              <span>{caption}</span>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className={styles['stack-placeholder']} aria-hidden="true">
+          <img src={iconPlay} alt="" width={20} height={20} />
+          <span>{caption}</span>
+          <span className={styles['gif-tag']}>GIF coming soon</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Self-contained CSS confetti for the finish screen - a burst of small pieces
+// that fall + drift + spin, each randomised once on mount. No external lib
+// (the plugin CSP blocks them) and pointer-events:none so it never eats clicks.
+const CONFETTI_COLORS = ['#1ea672', '#2b59ff', '#ffd166', '#ff6b6b', '#4dd4ac', '#a0c4ff', '#f78fb3'];
+
+function Confetti() {
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: 44 }, (_, i) => {
+        const size = 6 + Math.random() * 6;
+        return {
+          id: i,
+          left: Math.random() * 100,
+          delay: Math.random() * 0.5,
+          duration: 1.9 + Math.random() * 1.5,
+          drift: `${(Math.random() - 0.5) * 90}px`,
+          fall: `${360 + Math.random() * 260}px`,
+          spin: `${(Math.random() > 0.5 ? 1 : -1) * (240 + Math.random() * 480)}deg`,
+          color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+          width: size,
+          height: size * (0.35 + Math.random() * 0.35),
+          round: Math.random() > 0.7
+        };
+      }),
+    []
+  );
+  return (
+    <div className={styles['confetti']} aria-hidden="true">
+      {pieces.map((p) => (
+        <span
+          key={p.id}
+          className={styles['confetti-piece']}
+          style={
+            {
+              left: `${p.left}%`,
+              width: `${p.width}px`,
+              height: `${p.height}px`,
+              background: p.color,
+              borderRadius: p.round ? '50%' : '1px',
+              animationDelay: `${p.delay}s`,
+              animationDuration: `${p.duration}s`,
+              '--drift': p.drift,
+              '--fall': p.fall,
+              '--spin': p.spin
+            } as CSSProperties
+          }
+        />
+      ))}
+    </div>
+  );
+}
 
 // First-run onboarding tour. A full-window overlay that walks through the three
 // core flows (bind a preset → live preview → share) one screen at a time. It is
@@ -67,6 +174,9 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
   return (
     <div className={styles['overlay']} role="dialog" aria-modal="true" aria-label="Welcome to Pulsar">
       <div className={styles['card']}>
+        {/* Keyed on the screen so a fresh burst mounts each time the finish
+            screen is reached (e.g. paging back and forward). */}
+        {screen.kind === 'finish' && <Confetti key={`confetti-${index}`} />}
         <header className={styles['head']}>
           {/* The welcome screen is a greeting, not a numbered step. */}
           {screen.kind === 'feature' && (
@@ -85,8 +195,40 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
           </button>
         </header>
 
+        {/* Persistent media stack: kept OUTSIDE the keyed screen below so the
+            video elements survive navigation - each clip buffers once and is
+            instant on later steps. Collapsed on welcome / finish (no clip). */}
+        <div
+          className={`${styles['media-col']}${
+            screen.kind === 'feature' ? '' : ` ${styles['media-hidden']}`
+          }`}
+        >
+          <div className={styles['media-stack']}>
+            {ONBOARDING_STEPS.map((step) => (
+              <StackVideo
+                key={step.id}
+                video={step.video}
+                caption={step.gifPlaceholder}
+                active={screen.kind === 'feature' && screen.id === step.id}
+              />
+            ))}
+          </div>
+          {screen.kind === 'feature' && screen.video && (
+            <button
+              type="button"
+              className={styles['media-link']}
+              onClick={() => send({ type: 'open-external', url: screen.video! })}
+              title="Open this video full size in your browser"
+            >
+              <img src={iconExternalLink} alt="" width={11} height={11} />
+              Open full size video
+            </button>
+          )}
+        </div>
+
         {/* Keyed on `index` so the wrapper remounts each navigation, replaying
-            the slide-in keyframe from the side matching the paging direction. */}
+            the slide-in keyframe from the side matching the paging direction.
+            Holds only the copy now (the media stack above is persistent). */}
         <div
           key={index}
           className={`${styles['screen']} ${dir >= 0 ? styles['slide-next'] : styles['slide-prev']}`}
@@ -94,7 +236,11 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
           {screen.kind === 'welcome' || screen.kind === 'finish' ? (
             <div className={styles['welcome']}>
               <PulsarLogo size={72} />
-              <h2 className={styles['title']}>
+              <h2
+                className={`${styles['title']}${
+                  screen.kind === 'finish' ? ` ${styles['title-finish']}` : ''
+                }`}
+              >
                 {screen.kind === 'welcome' ? WELCOME.title : OUTRO.title}
               </h2>
               <p className={styles['text']}>
@@ -102,24 +248,10 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
               </p>
             </div>
           ) : (
-            <>
-              <div className={styles['media']}>
-                {screen.gif ? (
-                  <img className={styles['gif']} src={screen.gif} alt={screen.gifPlaceholder} />
-                ) : (
-                  <div className={styles['gif-placeholder']} aria-hidden="true">
-                    <img src={iconPlay} alt="" width={20} height={20} />
-                    <span>{screen.gifPlaceholder}</span>
-                    <span className={styles['gif-tag']}>GIF coming soon</span>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles['body']}>
-                <h2 className={styles['title']}>{screen.title}</h2>
-                <p className={styles['text']}>{screen.body}</p>
-              </div>
-            </>
+            <div className={styles['body']}>
+              <h2 className={styles['title']}>{screen.title}</h2>
+              <p className={styles['text']}>{screen.body}</p>
+            </div>
           )}
         </div>
 

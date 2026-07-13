@@ -594,6 +594,8 @@ body {
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
 .el-row:active { transform: translate(-1px, 1px); box-shadow: -1px 1px 0 var(--color-primary) !important; }
+.el-row-inner { display: flex; align-items: flex-start; gap: 6px; }
+.el-row-main { flex: 1; min-width: 0; }
 .el-row.active {
   background: #fff;
   border-color: var(--color-primary);
@@ -668,6 +670,47 @@ body {
   background: var(--color-primary);
   color: var(--surface);
 }
+
+/* Label on the screen currently shown in the prototype. */
+.active-screen-label {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: var(--surface);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Per-screen "Open screen" button - loads that frame into the prototype iframe. */
+.open-screen-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-30);
+  border-radius: 10px;
+  color: var(--color-blue-60);
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease;
+}
+.open-screen-btn:hover {
+  background: var(--color-blue-20);
+  border-color: var(--color-blue-50);
+  color: var(--color-primary);
+}
+.open-screen-btn:active { transform: translate(-1px, 1px); }
 
 /* Inline name within the el-row haptic line - wrapped in a span so we can
    place a "Custom" pill on the same line without breaking the dot::before. */

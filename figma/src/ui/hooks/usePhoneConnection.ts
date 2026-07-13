@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-
-const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
-const SOCKET_SERVER_URL = 'wss://pulsar-server.swmansion.com';
+import { API_SERVER_URL, SOCKET_SERVER_URL } from '../lib/previewServer';
+import { QR_COLORS } from '../lib/qr';
 
 // Keep the sender socket alive so the server's heartbeat sweep doesn't reap it
 // while the phone is away. Matches the docs Connection component's interval.
@@ -144,11 +143,7 @@ export function usePhoneConnection({
       ? `pulsarapp://figma?token=${encodeURIComponent(pairPreviewToken)}` +
         `&code=${encodeURIComponent(code)}&name=${encodeURIComponent(CONNECTION_NAME)}`
       : `pulsarapp:///?code=${encodeURIComponent(code)}&name=${encodeURIComponent(CONNECTION_NAME)}`;
-    QRCode.toDataURL(deepLink, {
-      margin: 1,
-      color: { dark: '#001a72', light: '#e1f3fa' },
-      width: 220
-    })
+    QRCode.toDataURL(deepLink, { margin: 1, color: QR_COLORS, width: 220 })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(null));
   }, [code, pairPreviewToken]);

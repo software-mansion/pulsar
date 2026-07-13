@@ -1,0 +1,32 @@
+.debug-panel { padding: 12px; gap: 14px; }
+.debug-intro { margin: 4px 0 0; }
+
+.debug-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* Each action is a full-width card button: bold label + a wrapping hint. */
+.debug-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+}
+.debug-btn-label { font-weight: 700; font-size: var(--fs-sm); }
+.debug-btn-hint {
+  font-weight: 400;
+  font-size: var(--fs-2xs);
+  line-height: 1.4;
+  color: var(--muted);
+  white-space: normal;
+}
+
+/* Destructive action: red chrome, and a filled face once armed for confirm. */
+.debug-btn.danger {
+  border-color: #d2392b;
+  box-shadow: -2px 2px 0 #d2392b;
+  color: #d2392b;
+}
+.debug-btn.danger .debug-btn-hint { color: #b4463b; }
+.debug-btn.danger.armed { background: #fdecea; }

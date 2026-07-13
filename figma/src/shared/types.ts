@@ -46,6 +46,9 @@ export type Settings = {
   previewBaseUrlOverride: string;
 };
 
+// A one-off maintenance action fired from the debug tab (developer mode only).
+export type DebugAction = 'clear-storage' | 'reset-onboarding' | 'log-storage';
+
 // One bound node, as forwarded from the main thread to the UI when building the
 // live-preview payload. The UI resolves presetId -> full PresetData before launch.
 // Axis-aligned bounding box in absolute canvas coordinates.
@@ -99,6 +102,11 @@ export interface BoundItem {
 //   - 'autosync': debounced background save - only updates an *existing*
 //     project; never creates a token on its own (avoids spamming the backend
 //     for files the user never chose to share).
+//   - 'bootstrap': fired once on first open to eagerly provision the backend
+//     project (mint the token / share + preview tokens) if this file has none
+//     yet - so the share link and pairing QR exist from the start. Proceeds
+//     even before the real Figma file key is set, and never overwrites an
+//     existing project.
 // 'pair' resolves the file's share (public) token for the phone-pairing QR:
 //   publishes if needed (so the unified QR can carry the preview token), then
 //   hands the public token back to the caller via ensureShared(). Like 'qr'/'copy'
@@ -110,6 +118,7 @@ export type PreviewPurpose =
   | 'qr'
   | 'sync'
   | 'autosync'
+  | 'bootstrap'
   | 'pair';
 
 // Severity of an in-plugin toast. Drives its accent colour, icon, and default
@@ -156,7 +165,9 @@ export type UiToMain =
   // Persist the user-entered real Figma file key (or share URL) for this
   // document into root pluginData (per-file, shared with collaborators).
   | { type: 'persist-file-key'; figmaFileKey: string }
-  | { type: 'resize'; width: number; height: number; commit?: boolean };
+  | { type: 'resize'; width: number; height: number; commit?: boolean }
+  // Developer-mode maintenance action from the debug tab.
+  | { type: 'debug-action'; action: DebugAction };
 
 // Messages: Main -> UI
 export type MainToUi =

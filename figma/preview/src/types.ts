@@ -44,7 +44,8 @@ export interface FrameInfo {
   box: NodeBox;
 }
 
-// The base64'd payload the plugin puts in the URL hash.
+// The design payload the plugin publishes to the server; the preview fetches it
+// by the `?token=` share token (see lib/payload.ts).
 export interface PreviewPayload {
   fileKey: string;
   nodeId: string | null;
