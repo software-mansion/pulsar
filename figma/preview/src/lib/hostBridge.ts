@@ -12,17 +12,20 @@ interface ReactNativeWebView {
   postMessage(message: string): void;
 }
 
+// The injected global, declared so we can read it without `as any` casts.
+declare global {
+  interface Window {
+    ReactNativeWebView?: ReactNativeWebView;
+  }
+}
+
 // Resolve the native bridge from this window or the parent (srcdoc embed),
 // returning undefined when neither is reachable (plain web, cross-origin parent).
 export function getHostBridge(): ReactNativeWebView | undefined {
-  const own = (window as any).ReactNativeWebView as ReactNativeWebView | undefined;
-  if (own) return own;
+  if (window.ReactNativeWebView) return window.ReactNativeWebView;
   try {
-    if (window.parent !== window) {
-      const parentBridge = (window.parent as any).ReactNativeWebView as
-        | ReactNativeWebView
-        | undefined;
-      if (parentBridge) return parentBridge;
+    if (window.parent !== window && window.parent.ReactNativeWebView) {
+      return window.parent.ReactNativeWebView;
     }
   } catch {
     // Cross-origin parent - no reachable bridge.

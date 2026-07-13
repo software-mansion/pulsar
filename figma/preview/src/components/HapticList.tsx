@@ -135,8 +135,8 @@ export function HapticList({
                     onPlay(el.id);
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="el-row-inner">
+                    <div className="el-row-main">
                       <div className="el-haptic">
                         <span className="el-haptic-name">{el.presetName}</span>
                         {el.isCustom && <span className="tag tag-custom">Custom</span>}

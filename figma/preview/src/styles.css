@@ -594,6 +594,8 @@ body {
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
 .el-row:active { transform: translate(-1px, 1px); box-shadow: -1px 1px 0 var(--color-primary) !important; }
+.el-row-inner { display: flex; align-items: flex-start; gap: 6px; }
+.el-row-main { flex: 1; min-width: 0; }
 .el-row.active {
   background: #fff;
   border-color: var(--color-primary);
