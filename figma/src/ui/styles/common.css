@@ -54,6 +54,28 @@ body,
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Custom scrollbars across the whole plugin window - thin transparent track with
+   a blue-tinted thumb that darkens on hover (matches the docs styling). Applies
+   to the window itself and every scroll container; an element that opts out
+   (e.g. a compact tag row) keeps its own more-specific `display: none` rule. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue-20) transparent;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-blue-20);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-blue-30);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner { background: transparent; }
+
 /* ---- Buttons ---- */
 button {
   font-family: inherit;

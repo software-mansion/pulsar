@@ -1,5 +1,5 @@
 import styles from './OnboardingOverlay.module.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ONBOARDING_STEPS, WELCOME, OUTRO, type OnboardingStep } from './onboardingContent';
 import PulsarLogo from './PulsarLogo';
 import iconClose from '../assets/icon-close.svg';
@@ -75,6 +75,58 @@ function StackVideo({ video, caption, active }: { video?: string; caption: strin
   );
 }
 
+// Self-contained CSS confetti for the finish screen - a burst of small pieces
+// that fall + drift + spin, each randomised once on mount. No external lib
+// (the plugin CSP blocks them) and pointer-events:none so it never eats clicks.
+const CONFETTI_COLORS = ['#1ea672', '#2b59ff', '#ffd166', '#ff6b6b', '#4dd4ac', '#a0c4ff', '#f78fb3'];
+
+function Confetti() {
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: 44 }, (_, i) => {
+        const size = 6 + Math.random() * 6;
+        return {
+          id: i,
+          left: Math.random() * 100,
+          delay: Math.random() * 0.5,
+          duration: 1.9 + Math.random() * 1.5,
+          drift: `${(Math.random() - 0.5) * 90}px`,
+          fall: `${360 + Math.random() * 260}px`,
+          spin: `${(Math.random() > 0.5 ? 1 : -1) * (240 + Math.random() * 480)}deg`,
+          color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+          width: size,
+          height: size * (0.35 + Math.random() * 0.35),
+          round: Math.random() > 0.7
+        };
+      }),
+    []
+  );
+  return (
+    <div className={styles['confetti']} aria-hidden="true">
+      {pieces.map((p) => (
+        <span
+          key={p.id}
+          className={styles['confetti-piece']}
+          style={
+            {
+              left: `${p.left}%`,
+              width: `${p.width}px`,
+              height: `${p.height}px`,
+              background: p.color,
+              borderRadius: p.round ? '50%' : '1px',
+              animationDelay: `${p.delay}s`,
+              animationDuration: `${p.duration}s`,
+              '--drift': p.drift,
+              '--fall': p.fall,
+              '--spin': p.spin
+            } as CSSProperties
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
 // First-run onboarding tour. A full-window overlay that walks through the three
 // core flows (bind a preset → live preview → share) one screen at a time. It is
 // always cancellable (Skip / Esc / the X), and the Help tab can relaunch it.
@@ -122,6 +174,9 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
   return (
     <div className={styles['overlay']} role="dialog" aria-modal="true" aria-label="Welcome to Pulsar">
       <div className={styles['card']}>
+        {/* Keyed on the screen so a fresh burst mounts each time the finish
+            screen is reached (e.g. paging back and forward). */}
+        {screen.kind === 'finish' && <Confetti key={`confetti-${index}`} />}
         <header className={styles['head']}>
           {/* The welcome screen is a greeting, not a numbered step. */}
           {screen.kind === 'feature' && (
@@ -181,7 +236,11 @@ export default function OnboardingOverlay({ onClose }: { onClose: () => void }) 
           {screen.kind === 'welcome' || screen.kind === 'finish' ? (
             <div className={styles['welcome']}>
               <PulsarLogo size={72} />
-              <h2 className={styles['title']}>
+              <h2
+                className={`${styles['title']}${
+                  screen.kind === 'finish' ? ` ${styles['title-finish']}` : ''
+                }`}
+              >
                 {screen.kind === 'welcome' ? WELCOME.title : OUTRO.title}
               </h2>
               <p className={styles['text']}>

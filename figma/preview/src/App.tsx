@@ -446,6 +446,7 @@ export default function App() {
             onPlay={playFromList}
             onOpenFrame={navigateToFrame}
             onShowDetails={setDetailsId}
+            isMobile={isMobile}
             footer={openOnPhoneLink ? <OpenOnPhone deepLink={openOnPhoneLink} /> : undefined}
           />
         )}

@@ -18,6 +18,7 @@
   to { opacity: 1; }
 }
 .card {
+  position: relative;
   background: var(--surface);
   border: 2px solid var(--color-blue-50);
   border-radius: var(--radius);
@@ -28,6 +29,30 @@
   padding: 14px;
   gap: 14px;
   animation: card-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Finish-screen confetti - covers the whole card, sits above the content but
+   never intercepts pointer events. */
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: var(--radius);
+  z-index: 3;
+}
+.confetti-piece {
+  position: absolute;
+  top: -16px;
+  opacity: 0;
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.35, 0.2, 0.7, 1);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translate(0, -16px) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--drift), var(--fall)) rotate(var(--spin)); opacity: 0; }
 }
 @keyframes card-in {
   from { opacity: 0; transform: translateY(10px) scale(0.985); }
@@ -205,6 +230,14 @@
 /* Step copy. */
 .body { text-align: center; padding: 0 4px; }
 .title { margin: 0 0 6px; font-size: var(--fs-lg); font-weight: 700; color: var(--color-primary); }
+/* Finish screen: pop the "You're all set!" title and settle it on green. The
+   base colour is green too, so it stays green even with animations disabled. */
+.title-finish { color: var(--color-green-50); animation: title-to-green 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes title-to-green {
+  0% { color: var(--color-primary); transform: scale(0.9); }
+  55% { transform: scale(1.08); }
+  100% { color: var(--color-green-50); transform: scale(1); }
+}
 .text { margin: 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); }
 
 /* Progress dots - also clickable to jump to a step. */
@@ -239,7 +272,9 @@
   .overlay,
   .card,
   .screen,
-  .welcome :global(.pulsar-logo) {
+  .welcome :global(.pulsar-logo),
+  .title-finish,
+  .confetti-piece {
     animation: none;
   }
 }

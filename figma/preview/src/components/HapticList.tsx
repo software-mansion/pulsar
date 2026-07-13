@@ -1,6 +1,10 @@
 import { useMemo, type ReactNode } from 'react';
 import type { ElementInfo, FrameInfo } from '../types';
 
+// Synthetic bucket id for bindings with no owning frame. Not a real Figma
+// node-id, so it can't be opened in the prototype.
+const UNASSIGNED = '__unassigned';
+
 export function HapticList({
   elements,
   frames,
@@ -12,6 +16,7 @@ export function HapticList({
   onPlay,
   onOpenFrame,
   onShowDetails,
+  isMobile = false,
   footer
 }: {
   elements: ElementInfo[];
@@ -22,10 +27,14 @@ export function HapticList({
   activeId: string;
   onActivate: (id: string) => void;
   onPlay: (id: string) => void;
-  // Open the frame this element lives in (the preview jumps to that screen).
-  // Optional so the list can render without navigation wired up.
-  onOpenFrame?: (frameId: string) => void;
+  // Open a frame in the prototype (the preview jumps to that screen). Passing the
+  // name lets the host label the screen while it loads. Optional so the list can
+  // render without navigation wired up.
+  onOpenFrame?: (frameId: string, frameName?: string) => void;
   onShowDetails: (id: string) => void;
+  // Desktop only surfaces the per-screen "Open screen" button (the side panel
+  // sits next to the prototype there); on mobile a row tap already opens it.
+  isMobile?: boolean;
   // Optional pinned content below the scrollable list (e.g. the open-on-phone QR).
   footer?: ReactNode;
 }) {
@@ -34,7 +43,6 @@ export function HapticList({
   // order in the frames Map). Bindings with no frameId fall into a synthetic
   // "Unassigned" bucket so they're still reachable.
   const groups = useMemo(() => {
-    const UNASSIGNED = '__unassigned';
     const byFrame = new Map<string, ElementInfo[]>();
     for (const el of elements) {
       const key = el.frameId ?? UNASSIGNED;
@@ -95,6 +103,22 @@ export function HapticList({
                 className={`screen-head${group.id === currentFrameId ? ' active' : ''}`}
                 title={group.name}
               >
+                {/* The screen currently on view gets an "Active screen" label;
+                    every other real screen gets a desktop button to load it into
+                    the prototype iframe (reuses PrototypeView's keep-alive cache). */}
+                {group.id === currentFrameId ? (
+                  <span className="active-screen-label">Active</span>
+                ) : onOpenFrame && !isMobile && group.id !== UNASSIGNED ? (
+                  <button
+                    type="button"
+                    className="open-screen-btn"
+                    title={`Open ${group.name} in the preview`}
+                    onClick={() => onOpenFrame(group.id, group.name)}
+                  >
+                    <span aria-hidden="true">↗</span>
+                    Open screen
+                  </button>
+                ) : null}
                 <span className="screen-name">{group.name}</span>
                 <span className="screen-count">{group.items.length}</span>
               </div>

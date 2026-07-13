@@ -140,17 +140,5 @@
 }
 .tag-usage-label { font-weight: 700; }
 
-/* Docs-aligned scrollbar - thin transparent track, blue-tinted thumb. */
-.modal-body { scrollbar-width: thin; scrollbar-color: var(--color-blue-20) transparent; }
-.modal-body::-webkit-scrollbar { width: 8px; }
-.modal-body::-webkit-scrollbar-track { background: transparent; }
-.modal-body::-webkit-scrollbar-thumb {
-  background: var(--color-blue-20);
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-.modal-body::-webkit-scrollbar-thumb:hover {
-  background: var(--color-blue-30);
-  background-clip: padding-box;
-}
+/* The modal-body scrollbar is handled by the global custom-scrollbar rules in
+   common.css. The horizontal .docs-tabs strip keeps its own thinner bar below. */

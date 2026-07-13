@@ -9,7 +9,7 @@
 // can be rate-limited or removed. Move these to a durable host (e.g.
 // pulsar-server.swmansion.com, already allowlisted) before a public release.
 export const ONBOARDING_VIDEOS = {
-  bind: 'https://github.com/user-attachments/assets/126d5e7b-73d5-4509-abe9-baede9c0368b',
+  bind: 'https://github.com/user-attachments/assets/371b8423-5a60-46dc-8499-e8e17131550a',
   link: 'https://github.com/user-attachments/assets/b97a471c-c4c2-42f3-a7f4-4af8bd4afbd9',
   livePreview: 'https://github.com/user-attachments/assets/14e64152-4e44-4b8d-b379-22deaf731b62',
   previewOnDevice: 'https://github.com/user-attachments/assets/9be36fb7-a1fd-496f-b1ad-57061e58d1f3',
