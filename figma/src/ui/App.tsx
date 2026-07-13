@@ -1,6 +1,7 @@
 import styles from './App.module.css';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import PRESETS from './presets-data';
+import { usePresetsUiStore } from './store';
 import type { BoundItem, CatalogEntry, SelectionInfo, Settings } from '../shared/types';
 import { onMessage, send } from './figmaBridge';
 import { applyFilter, filterRevealing, useFilterStateInit, type FilterState } from './components/Filters';
@@ -24,7 +25,6 @@ import ResizeHandle from './components/ResizeHandle';
 import { useToast } from './components/Toast';
 import { usePreviewSync } from './hooks/usePreviewSync';
 import { usePersistOnChange } from './hooks/usePersistOnChange';
-import { toggleInSet } from './lib/collections';
 import { DEFAULT_SETTINGS, DEV_MODE } from './lib/settings';
 import { isFileKeyValid } from './lib/fileKey';
 import { playPreset, stopAll } from './audio/player';
@@ -45,16 +45,28 @@ export default function App() {
   // makes sense while the phone is actually connected, not merely paired.
   const [phoneConnected, setPhoneConnected] = useState(false);
 
-  const [selection, setSelection] = useState<SelectionInfo | null>(null);
   const [tab, setTab] = useState<Tab>('presets');
   // First-run onboarding tour. Auto-opens once (gated on the persisted
   // `onboardingSeen` flag from init); the Help tab can relaunch it any time.
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [tagsGuideOpen, setTagsGuideOpen] = useState(false);
   const [filter, setFilter] = useState<FilterState>(useFilterStateInit());
-  const [favourites, setFavourites] = useState<Set<string>>(new Set());
   const [favouritesOnly, setFavouritesOnly] = useState(false);
+
+  // Presets-tab interaction state lives in the store so individual PresetCards
+  // can subscribe to just their own favourite/bound flag (see store.ts). App
+  // reads the whole values here (for filtering, the selection bar, the modal);
+  // the actions are stable references safe to pass to memoized children.
+  const selection = usePresetsUiStore((s) => s.selection);
+  const openId = usePresetsUiStore((s) => s.openId);
+  const tagsGuideOpen = usePresetsUiStore((s) => s.tagsGuideOpen);
+  const favourites = usePresetsUiStore((s) => s.favourites);
+  const scrollToId = usePresetsUiStore((s) => s.scrollToId);
+  const setSelection = usePresetsUiStore((s) => s.setSelection);
+  const setOpenId = usePresetsUiStore((s) => s.setOpenId);
+  const setTagsGuideOpen = usePresetsUiStore((s) => s.setTagsGuideOpen);
+  const setFavourites = usePresetsUiStore((s) => s.setFavourites);
+  const toggleFavourite = usePresetsUiStore((s) => s.toggleFavourite);
+  const setScrollToId = usePresetsUiStore((s) => s.setScrollToId);
   const [boundItems, setBoundItems] = useState<BoundItem[]>([]);
   const [customPresets, setCustomPresets] = useState<CatalogEntry[]>([]);
   // The real Figma file key (or share URL) for this document - needed for the
@@ -62,8 +74,6 @@ export default function App() {
   const [figmaFileKey, setFigmaFileKey] = useState('');
   // The Figma document name, advertised to the phone as the connection label.
   const [documentName, setDocumentName] = useState('');
-  // Set when jumping to a preset from the selection bar; PresetsTab scrolls to it.
-  const [scrollToId, setScrollToId] = useState<string | null>(null);
 
   // Custom presets first, then the bundled catalogue.
   const allPresets = useMemo(() => [...customPresets, ...PRESETS], [customPresets]);
@@ -159,8 +169,6 @@ export default function App() {
   const removeCustomPreset = (id: string) =>
     setCustomPresets((prev) => prev.filter((e) => e.id !== id));
 
-  const toggleFavourite = (id: string) => setFavourites((prev) => toggleInSet(prev, id));
-
   // The play-preset handler captured stale settings/token on mount. Rebind it on changes.
   useEffect(() => {
     const off = onMessage((m) => {
@@ -203,13 +211,18 @@ export default function App() {
   // - the two steps of the Live preview configurator. Gates the Presets-tab reminder.
   const liveConfigComplete = isFileKeyValid(figmaFileKey) && hapticsToken != null;
 
-  const playEntry = (e: CatalogEntry) => {
-    stopAll();
-    if (hapticsToken && phoneConnected) broadcastToPhone(hapticsToken, e.data.name);
-    if (settings.soundInEdit) playPreset(e.id, e.data).catch(() => {});
-  };
+  // Stable across favourite/selection changes (deps only shift on pairing/settings)
+  // so the memoized PresetCards don't re-render when an unrelated card is favourited.
+  const playEntry = useCallback(
+    (e: CatalogEntry) => {
+      stopAll();
+      if (hapticsToken && phoneConnected) broadcastToPhone(hapticsToken, e.data.name);
+      if (settings.soundInEdit) playPreset(e.id, e.data).catch(() => {});
+    },
+    [hapticsToken, phoneConnected, settings.soundInEdit]
+  );
 
-  const bindEntry = (e: CatalogEntry) => {
+  const bindEntry = useCallback((e: CatalogEntry) => {
     send({
       type: 'bind-preset',
       // Inline the pattern for custom presets so a binding survives even if the
@@ -220,7 +233,7 @@ export default function App() {
         ...(e.category === 'custom' ? { customPattern: e.data } : {})
       }
     });
-  };
+  }, []);
 
   // Jump from the selection bar to a bound preset: switch to the list, clear any
   // filters hiding it, play it, and ask PresetsTab to scroll it into view.
@@ -330,8 +343,6 @@ export default function App() {
           settings={settings}
           onSettingsChange={setSettings}
           filtered={filtered}
-          favourites={favourites}
-          selection={selection}
           onToggleFavourite={toggleFavourite}
           onPlay={playEntry}
           onBind={bindEntry}

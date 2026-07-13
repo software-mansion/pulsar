@@ -5,6 +5,7 @@ import { normalizeId } from '../lib/ids';
 import { useElementSize } from '../lib/useElementSize';
 import { HighlightOverlay } from './HighlightOverlay';
 import { PrototypeLoader } from './PrototypeLoader';
+import { usePreviewStore } from '../store';
 
 // How many visited frames to keep mounted (active + recent). Each one is a full
 // Figma embed, so this is a memory/CPU vs. snappiness trade-off - keep it modest
@@ -29,8 +30,6 @@ export function PrototypeView({
   nodeId,
   frame,
   elements,
-  showHighlights,
-  activeId,
   fullscreen = false,
   deviceFrame,
   loaded,
@@ -45,8 +44,6 @@ export function PrototypeView({
   nodeId: string | null;
   frame: NodeBox | null;
   elements: ElementInfo[];
-  showHighlights: boolean;
-  activeId: string;
   fullscreen?: boolean;
   deviceFrame: boolean;
   loaded: boolean;
@@ -58,6 +55,12 @@ export function PrototypeView({
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const size = useElementSize(stageRef);
+
+  // `highlightsOn` is the only view-state PrototypeView needs; reading it here
+  // (rather than receiving showHighlights as a prop) means toggling it doesn't
+  // go through App. activeId is not read at all - the individual HighlightBoxes
+  // subscribe to it, so a hover never re-renders this iframe host.
+  const highlightsOn = usePreviewStore((s) => s.highlightsOn);
 
   const activeFrameId = nodeId ?? '';
 
@@ -140,6 +143,9 @@ export function PrototypeView({
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
+  // In fullscreen we show only the Figma content - no overlay/highlights.
+  const showHighlights = highlightsOn && !fullscreen && frame !== null && elements.length > 0;
+
   return (
     <div className={`frame-wrap${fullscreen ? ' fullscreen' : ''}`}>
       <div className="stage" ref={stageRef}>
@@ -160,7 +166,7 @@ export function PrototypeView({
           />
         ))}
         {showHighlights && frame && (
-          <HighlightOverlay frame={frame} elements={elements} size={size} activeId={activeId} />
+          <HighlightOverlay frame={frame} elements={elements} size={size} />
         )}
       </div>
       <PrototypeLoader loaded={loaded} />
