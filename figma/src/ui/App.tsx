@@ -11,6 +11,7 @@ import LivePreviewTab from './components/LivePreviewTab';
 import LivePreviewPanel from './components/LivePreviewPanel';
 import OnboardingPanel from './components/OnboardingPanel';
 import OnboardingOverlay from './components/OnboardingOverlay';
+import DebugPanel from './components/DebugPanel';
 import {
   usePhoneConnection,
   phoneStatusOf,
@@ -22,7 +23,7 @@ import PulsarLogo from './components/PulsarLogo';
 import ResizeHandle from './components/ResizeHandle';
 import { useToast } from './components/Toast';
 import { usePreviewSync } from './hooks/usePreviewSync';
-import { DEFAULT_SETTINGS } from './lib/settings';
+import { DEFAULT_SETTINGS, DEV_MODE } from './lib/settings';
 import { isFileKeyValid } from './lib/fileKey';
 import { playPreset, stopAll } from './audio/player';
 
@@ -31,7 +32,8 @@ export type { SyncStatus } from './hooks/usePreviewSync';
 
 // 'live' = the "Live preview" tab (file key + phone pairing); 'preview' = the
 // "Share" tab (share link / sync). The internal names predate the split.
-type Tab = 'presets' | 'live' | 'preview' | 'onboarding';
+// 'debug' only appears in developer mode.
+type Tab = 'presets' | 'live' | 'preview' | 'onboarding' | 'debug';
 
 export default function App() {
   const { notify } = useToast();
@@ -310,7 +312,10 @@ export default function App() {
           <span>Pulsar</span>
         </div>
         <div className="spacer" />
-        {(['presets', 'live', 'preview', 'onboarding'] as const).map((t) => (
+        {(['presets', 'live', 'preview', 'onboarding', 'debug'] as const)
+          // The debug tab only exists in developer mode (compile-time flag).
+          .filter((t) => t !== 'debug' || DEV_MODE)
+          .map((t) => (
           <span
             key={t}
             className={`${styles['tab']} ${tab === t ? styles['active'] : ''}`}
@@ -423,6 +428,8 @@ export default function App() {
       {tab === 'onboarding' && (
         <OnboardingPanel onStartOnboarding={() => setShowOnboarding(true)} />
       )}
+
+      {tab === 'debug' && <DebugPanel onShowOnboarding={() => setShowOnboarding(true)} />}
 
       {showOnboarding && (
         <OnboardingOverlay

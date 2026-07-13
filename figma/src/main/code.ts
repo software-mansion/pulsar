@@ -768,5 +768,37 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       }
       break;
     }
+    // Developer-mode maintenance actions from the debug tab.
+    case 'debug-action': {
+      if (msg.action === 'clear-storage') {
+        // Wipe every clientStorage key (settings, tokens, caches, favourites,
+        // onboarding, window size…) and the per-file root pluginData (the minted
+        // file id + the user-entered Figma file key).
+        const keys = await figma.clientStorage.keysAsync();
+        await Promise.all(keys.map((k) => figma.clientStorage.deleteAsync(k)));
+        figma.root.setPluginData(FILE_ID_KEY, '');
+        figma.root.setPluginData(FIGMA_FILE_KEY, '');
+        postToUi({
+          type: 'toast',
+          message: 'Cleared all Pulsar plugin data. Reopen the plugin for a fresh state.',
+          level: 'success',
+          duration: 6000
+        });
+      } else if (msg.action === 'reset-onboarding') {
+        await figma.clientStorage.deleteAsync(fileScopedKey(ONBOARDING_SEEN_KEY));
+        postToUi({ type: 'toast', message: 'Onboarding reset for this file.', level: 'success' });
+      } else if (msg.action === 'log-storage') {
+        const keys = await figma.clientStorage.keysAsync();
+        const store: Record<string, unknown> = {};
+        for (const k of keys) store[k] = await figma.clientStorage.getAsync(k);
+        console.log('[Pulsar debug] clientStorage', store);
+        console.log('[Pulsar debug] root pluginData', {
+          fileId: figma.root.getPluginData(FILE_ID_KEY),
+          figmaFileKey: figma.root.getPluginData(FIGMA_FILE_KEY)
+        });
+        postToUi({ type: 'toast', message: 'Logged plugin storage to the console.', level: 'info' });
+      }
+      break;
+    }
   }
 };

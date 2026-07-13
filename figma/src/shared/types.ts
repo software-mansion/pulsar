@@ -46,6 +46,9 @@ export type Settings = {
   previewBaseUrlOverride: string;
 };
 
+// A one-off maintenance action fired from the debug tab (developer mode only).
+export type DebugAction = 'clear-storage' | 'reset-onboarding' | 'log-storage';
+
 // One bound node, as forwarded from the main thread to the UI when building the
 // live-preview payload. The UI resolves presetId -> full PresetData before launch.
 // Axis-aligned bounding box in absolute canvas coordinates.
@@ -162,7 +165,9 @@ export type UiToMain =
   // Persist the user-entered real Figma file key (or share URL) for this
   // document into root pluginData (per-file, shared with collaborators).
   | { type: 'persist-file-key'; figmaFileKey: string }
-  | { type: 'resize'; width: number; height: number; commit?: boolean };
+  | { type: 'resize'; width: number; height: number; commit?: boolean }
+  // Developer-mode maintenance action from the debug tab.
+  | { type: 'debug-action'; action: DebugAction };
 
 // Messages: Main -> UI
 export type MainToUi =
