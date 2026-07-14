@@ -159,7 +159,7 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* Minimal exit affordance in fullscreen — faint until hovered, presses on
+/* Minimal exit affordance in fullscreen - faint until hovered, presses on
    click in the docs' canonical button motion. */
 .exit-fs {
   position: fixed;
@@ -218,6 +218,52 @@ body {
   transform: translate(1px, -1px);
 }
 .nav-toggle:active { box-shadow: none; transform: translate(-3px, 3px); }
+
+/* In-app "current screen" indicator: a small centred pill naming the frame on
+   view. Sits below the notch. Tappable to collapse to an icon-only dot so it can
+   be tucked away when the viewer doesn't need it. */
+.frame-indicator {
+  position: fixed;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: 70vw;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 26, 114, 0.82); /* --color-primary, translucent */
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 26, 114, 0.25);
+  -webkit-tap-highlight-color: transparent;
+  transition: padding 120ms ease, transform 120ms ease;
+}
+.frame-indicator:active {
+  transform: translateX(-50%) scale(0.94);
+}
+/* Collapsed: icon-only circle. */
+.frame-indicator.collapsed {
+  gap: 0;
+  padding: 6px;
+}
+.frame-indicator svg {
+  display: block;
+  flex: 0 0 auto;
+}
+.frame-indicator-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* On-canvas highlight overlay --------------------------------------------- */
 .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
@@ -307,6 +353,233 @@ body {
 }
 
 .list { flex: 1; overflow: auto; padding: 10px; scrollbar-width: thin; }
+
+/* Open-on-phone - pinned footer of the sidebar: the open-this-preview QR up top,
+   then a "get the app" section with store badges. */
+.open-on-phone {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--color-blue-10);
+}
+/* Header row - title on the left, hide (collapse) button on the right (its own
+   row, so it never overlaps the QR below). */
+.open-on-phone-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.open-on-phone-hide {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-blue-60);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+.open-on-phone-hide:hover { opacity: 1; background: var(--color-blue-20); }
+.open-on-phone-hide img { display: block; }
+
+/* Collapsed state - a one-line reopener with a mini QR thumbnail. */
+.open-on-phone-reopen {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: var(--color-blue-10);
+  color: var(--color-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease;
+}
+.open-on-phone-reopen:hover { background: var(--color-blue-20); }
+.open-on-phone-reopen-qr {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 2px;
+  background: #fff;
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+}
+.open-on-phone-reopen-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.open-on-phone-reopen-cta {
+  flex-shrink: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--color-blue-60);
+}
+
+.open-on-phone-title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.open-on-phone-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.open-on-phone-sub {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fs-2xs);
+  line-height: 1.4;
+  color: var(--color-blue-60);
+}
+.open-on-phone-qr {
+  flex-shrink: 0;
+  display: block;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+.open-on-phone-qr:hover { border-color: var(--color-blue-50); transform: scale(1.04); }
+.open-on-phone-qr img { display: block; width: 96px; height: 96px; }
+
+/* "Get the app" - store badges for visitors who haven't installed Pulsar yet,
+   separated from the QR above by a hairline. */
+.open-on-phone-getapp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-blue-20);
+  text-align: center;
+}
+.open-on-phone-getapp-label {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--color-blue-60);
+}
+.open-on-phone-stores {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.open-on-phone-stores a {
+  display: inline-flex;
+  transition: transform 120ms ease;
+}
+.open-on-phone-stores a:hover { transform: translateY(-2px); }
+.open-on-phone-stores img { display: block; height: 34px; width: auto; }
+
+/* Quiet "Show QR code" toggle that reveals the download QRs. */
+.open-on-phone-qr-toggle {
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  color: var(--color-blue-60);
+  cursor: pointer;
+}
+.open-on-phone-qr-toggle:hover { color: var(--color-primary); text-decoration: underline; }
+
+/* Scannable download QRs - one per store, so any phone can install the app. */
+.open-on-phone-download-qrs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 2px;
+}
+.open-on-phone-download-qr {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.open-on-phone-download-qr img {
+  display: block;
+  width: 84px;
+  height: 84px;
+  padding: 3px;
+  background: #fff;
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+}
+.open-on-phone-download-qr figcaption {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--color-blue-60);
+}
+
+/* Enlarged QR - full-screen tinted backdrop with a centered white card so the
+   code is easy to scan from a phone. */
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 26, 114, 0.45);
+}
+.qr-overlay-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px;
+  background: #fff;
+  border: 2px solid var(--color-blue-50);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+.qr-overlay-card img {
+  display: block;
+  width: min(300px, 70vmin);
+  height: min(300px, 70vmin);
+}
+.qr-overlay-card p {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.qr-overlay-close {
+  border: 2px solid var(--color-blue-50);
+  background: var(--surface);
+  color: var(--color-primary);
+  border-radius: var(--radius);
+  padding: 6px 16px;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.qr-overlay-close:hover { background: var(--color-blue-10); }
 .el-row {
   display: flex;
   flex-direction: column;
@@ -321,6 +594,8 @@ body {
   transition: transform 60ms ease, box-shadow 60ms ease;
 }
 .el-row:active { transform: translate(-1px, 1px); box-shadow: -1px 1px 0 var(--color-primary) !important; }
+.el-row-inner { display: flex; align-items: flex-start; gap: 6px; }
+.el-row-main { flex: 1; min-width: 0; }
 .el-row.active {
   background: #fff;
   border-color: var(--color-primary);
@@ -396,7 +671,48 @@ body {
   color: var(--surface);
 }
 
-/* Inline name within the el-row haptic line — wrapped in a span so we can
+/* Label on the screen currently shown in the prototype. */
+.active-screen-label {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: var(--surface);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Per-screen "Open screen" button - loads that frame into the prototype iframe. */
+.open-screen-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-30);
+  border-radius: 10px;
+  color: var(--color-blue-60);
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease;
+}
+.open-screen-btn:hover {
+  background: var(--color-blue-20);
+  border-color: var(--color-blue-50);
+  color: var(--color-primary);
+}
+.open-screen-btn:active { transform: translate(-1px, 1px); }
+
+/* Inline name within the el-row haptic line - wrapped in a span so we can
    place a "Custom" pill on the same line without breaking the dot::before. */
 .el-haptic-name {
   white-space: nowrap;
@@ -404,7 +720,7 @@ body {
   text-overflow: ellipsis;
 }
 
-/* "Custom" accent pill — same recipe as .tag but tinted blue-20 fill so it
+/* "Custom" accent pill - same recipe as .tag but tinted blue-20 fill so it
    visually distinguishes from the white pills used in PresetDetailsModal. */
 .tag-custom {
   margin: 0;
@@ -441,7 +757,7 @@ body {
 }
 .details-btn:active { transform: translate(-1px, 1px); }
 
-/* Modal — covers the whole viewport, with a docs-style card.
+/* Modal - covers the whole viewport, with a docs-style card.
    Visual recipe mirrors docs/src/components/landing/Articles/Articles.module.scss
    and docs/src/content/docs/components/Preset/Preset.module.scss. */
 .modal-backdrop {
@@ -468,7 +784,7 @@ body {
   overflow: hidden;
 }
 
-/* Header — title left, close button right, separated by the docs accent line. */
+/* Header - title left, close button right, separated by the docs accent line. */
 .modal-head {
   display: flex;
   align-items: flex-start;
@@ -514,7 +830,7 @@ body {
 }
 .modal-close:active { transform: translate(-1px, 1px); box-shadow: none; }
 
-/* Body sections — even rhythm, with the tags/description sitting against the
+/* Body sections - even rhythm, with the tags/description sitting against the
    white background and each section card-rendered against the blue-10 accent. */
 .modal-body {
   padding: 16px 20px 20px;
@@ -530,7 +846,7 @@ body {
   color: var(--color-primary);
 }
 
-/* Meta strip — three little chips with label/value pairs. */
+/* Meta strip - three little chips with label/value pairs. */
 .modal-meta {
   display: flex;
   gap: 8px;
@@ -561,7 +877,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Section block — Usage / JSON config. */
+/* Section block - Usage / JSON config. */
 .modal-section {
   display: flex;
   flex-direction: column;
@@ -590,7 +906,7 @@ body {
   margin-top: 2px;
 }
 
-/* SDK tab strip — Pulsar-style underline tabs, kept distinct from the plugin's
+/* SDK tab strip - Pulsar-style underline tabs, kept distinct from the plugin's
    top-level tab class so theming the modal doesn't leak. */
 .docs-tabs {
   display: flex;
@@ -621,7 +937,7 @@ body {
   border-top-right-radius: var(--radius);
 }
 
-/* Code block (JSON + SDK snippet) — docs CodeTabs.contentArea recipe. We
+/* Code block (JSON + SDK snippet) - docs CodeTabs.contentArea recipe. We
    intentionally wrap long lines instead of letting the user scroll sideways:
    the modal is narrow enough that horizontal scroll is fiddly, and the only
    things that overflow are long Swift/Kotlin import paths and JSON values
@@ -647,7 +963,7 @@ body {
 }
 
 /* Copy-to-clipboard affordance docked in the top-right corner of a code
-   block — mirrors the docs preset modal (.copyButton over .jsonContainer):
+   block - mirrors the docs preset modal (.copyButton over .jsonContainer):
    a flat icon chip that blends into the blue-10 code surface and masks the
    text scrolling beneath it. */
 .code-block-wrap {
@@ -682,7 +998,7 @@ body {
   transform: scale(0.9);
 }
 
-/* Custom scrollbars — applied to every scrollable surface inside the modal
+/* Custom scrollbars - applied to every scrollable surface inside the modal
    (and the sidebar list for parity). Mirrors the docs site's clean look: thin
    transparent track, blue-tinted thumb that darkens on hover. Firefox uses
    `scrollbar-width`/`scrollbar-color`; Chromium/WebKit uses the ::-webkit-*
@@ -719,7 +1035,7 @@ body {
   background-clip: padding-box;
 }
 
-/* Tags row inside the modal — also reusable across the app. */
+/* Tags row inside the modal - also reusable across the app. */
 .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* Tag pill (docs style). Variants: .tag-white (default), .tag-custom (blue). */
@@ -737,7 +1053,7 @@ body {
 }
 .tag-white { background: var(--surface); }
 
-/* Docs-style button — used for Copy and other secondary actions. Matches the
+/* Docs-style button - used for Copy and other secondary actions. Matches the
    click animation pattern from docs/src/content/docs/custom.css (.sl-link-card). */
 button.docs-btn {
   font-family: inherit;

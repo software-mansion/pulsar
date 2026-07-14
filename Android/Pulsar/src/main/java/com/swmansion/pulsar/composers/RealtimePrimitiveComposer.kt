@@ -32,20 +32,24 @@ open class RealtimePrimitiveComposer(
     private val handler = Handler(Looper.getMainLooper())
     private val loopRunnable = Runnable { loop() }
 
-    override fun start() {
-        if (!isPlaying.compareAndSet(false, true)) return
+    private fun start(amplitude: Float, frequency: Float) {
+        if (isPlaying.get()) {
+            stop()
+        }
+
+        isPlaying.set(true)
+        set(amplitude, frequency)
         loop()
     }
 
-    override fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean) {
-        if (!isPlaying.get()) {
-            if (!startIfNeeded) return
-            start()
-            if (!isPlaying.get()) return
-        }
+    override fun set(amplitude: Float, frequency: Float) {
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
         currentIntervalMs = (minIntervalMs + (1 - frequency) * (maxIntervalMs - minIntervalMs)).toLong()
+
+        if (!isPlaying.get()) {
+            start(currentAmplitude, currentFrequency)
+        }
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {

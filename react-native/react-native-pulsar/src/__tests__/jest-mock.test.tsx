@@ -32,9 +32,7 @@ describe('react-native-pulsar/jest-mock', () => {
 
   it('mocks the hooks and the composers they return', () => {
     const realtime = useRealtimeComposer();
-    realtime.start();
     realtime.set(1, 200);
-    expect(realtime.start).toHaveBeenCalled();
     expect(realtime.set).toHaveBeenCalledWith(1, 200);
     expect(realtime.isActive()).toBe(false);
 

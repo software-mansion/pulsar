@@ -1,0 +1,88 @@
+/* "Bound components" accordion body - intro copy, empty state, and the
+   per-binding "component → preset" chip rows grouped by frame. */
+.bound-intro { margin: 0 0 8px; font-size: var(--fs-xs); }
+.bound-empty { margin: 0; padding: 4px 2px; }
+.bound-groups { margin-top: 0; }
+
+/* Each binding reads like the sticky selection bar: a "component → preset" pair
+   of chips. The whole row is the click target (reveal on canvas + play), so the
+   chips themselves aren't interactive. */
+.bound-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+}
+.bound-item:hover { background: var(--color-blue-10); border-color: var(--color-blue-30); }
+.bound-item:active { transform: scale(0.99); }
+
+/* Chip styling mirrors SelectionBar's .sel-link so the two surfaces match. */
+.bound-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 0 1 auto;
+  max-width: 150px;
+  padding: 2px 7px;
+  border: 1px solid var(--color-blue-50);
+  border-radius: var(--radius-sm);
+  background: var(--color-blue-10);
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.bound-chip > img { flex-shrink: 0; display: block; }
+.bound-chip-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Preset chip - dashed border + play glyph to read as "plays on click", same
+   as the selection bar's preset chip. */
+.bound-chip--preset { background: var(--surface); border-style: dashed; }
+.bound-arrow { flex-shrink: 0; color: var(--muted); }
+
+/* Bound-tab grouping - one section per top-level Figma frame that owns at
+   least one binding. Mirrors the preview's .screen-group treatment so the
+   "Bound" panel and the preview's "Haptic elements" sidebar read as the same
+   panel rendered in different chromes. */
+.bound-group { margin-bottom: 14px; }
+.bound-group:last-child { margin-bottom: 0; }
+.bound-group-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.bound-group-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bound-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 6px;
+  height: 16px;
+  border-radius: 10px;
+  background: var(--color-blue-10);
+  color: var(--color-blue-60);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}

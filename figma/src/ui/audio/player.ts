@@ -1,9 +1,9 @@
 import { AudioPatternUtility } from './AudioPatternUtility';
 import type { PresetData } from '../../shared/types';
 
-// Audio playback for the plugin. Backed by AudioPatternUtility — a verbatim copy
+// Audio playback for the plugin. Backed by AudioPatternUtility - a verbatim copy
 // of the docs' WebAudio renderer (pulsar/docs/src/content/docs/components/Preset/
-// audio-player.ts) — so the heard result matches the documentation exactly.
+// audio-player.ts) - so the heard result matches the documentation exactly.
 // Inside the Figma iframe there's no vibration API, so audio is the only output.
 // Mirrors figma/preview/src/audio/player.ts; keep the two in sync.
 

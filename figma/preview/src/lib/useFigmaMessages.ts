@@ -6,7 +6,6 @@ import { FIGMA_ORIGINS, type FigmaEmbedEvent } from './embed';
 // useCallback) or accept that the listener re-binds when they change.
 export function useFigmaMessages(handlers: {
   onInitialLoad?: () => void;
-  onPresentedNodeChanged?: (presentedNodeId: string) => void;
   onMousePressOrRelease?: (targetNodeId: string) => void;
   onLoginScreen?: () => void;
 }) {
@@ -19,9 +18,9 @@ export function useFigmaMessages(handlers: {
         case 'INITIAL_LOAD':
           handlers.onInitialLoad?.();
           break;
-        case 'PRESENTED_NODE_CHANGED':
-          handlers.onPresentedNodeChanged?.(msg.data?.presentedNodeId ?? '');
-          break;
+        // PRESENTED_NODE_CHANGED is intentionally handled inside PrototypeView
+        // (it attributes the event to the active iframe in the keep-alive cache),
+        // so it's deliberately not routed here.
         case 'MOUSE_PRESS_OR_RELEASE':
           handlers.onMousePressOrRelease?.(msg.data?.targetNodeId ?? '');
           break;

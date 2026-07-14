@@ -43,7 +43,6 @@ export default function SensorHapticsDemo() {
     }),
     ({ isScreenActive, sensorX, sensorY }) => {
       if (!isScreenActive) {
-        composer.stop();
         return;
       }
 
@@ -106,7 +105,7 @@ export default function SensorHapticsDemo() {
         if (postBounceSpeed > 0.5) {
           const amplitude = interpolate(postBounceSpeed, [0.5, 12], [0.1, 0.5], Extrapolation.CLAMP);
           const frequency = interpolate(postBounceSpeed, [0.5, 12], [0.2, 0.7], Extrapolation.CLAMP);
-          composer.set(amplitude, frequency, true);
+          composer.set(amplitude, frequency);
         } else {
           composer.stop();
         }
@@ -121,7 +120,7 @@ export default function SensorHapticsDemo() {
         if (velocityMagnitude > 0.5) {
           const amplitude = interpolate(velocityMagnitude, [0.5, 12], [0.1, 0.5], Extrapolation.CLAMP);
           const frequency = interpolate(velocityMagnitude, [0.5, 12], [0.2, 0.7], Extrapolation.CLAMP);
-          composer.set(amplitude, frequency, true);
+          composer.set(amplitude, frequency);
         } else {
           composer.stop();
         }

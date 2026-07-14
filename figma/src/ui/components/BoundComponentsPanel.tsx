@@ -1,15 +1,24 @@
+import styles from './BoundComponentsPanel.module.css';
 import { useMemo } from 'react';
 import type { BoundItem } from '../../shared/types';
+import iconPlay from '../assets/icon-play.svg';
+import iconLink from '../assets/icon-link.svg';
+import iconChevron from '../assets/icon-chevron-down.svg';
 
 const UNASSIGNED = '__unassigned';
 
+// "Bound components" accordion - lives in the Presets tab's controls card. Lists
+// every component that has a haptic preset bound, grouped by top-level frame;
+// each row reads "component → preset". Clicking a row reveals the node on the
+// canvas and plays its preset. The summary counter shows how many components are
+// bound (mirrors the "Custom presets" accordion's counter). The list stays
+// fresh on its own: App re-requests it whenever the selection changes, and
+// binding/unbinding pushes a selection update.
 export default function BoundComponentsPanel({
   items,
-  onRefresh,
   onSelect
 }: {
   items: BoundItem[];
-  onRefresh: () => void;
   onSelect: (item: BoundItem) => void;
 }) {
   // Group bound items by their top-level frame, preserving the order each
@@ -37,64 +46,68 @@ export default function BoundComponentsPanel({
   }, [items]);
 
   return (
-    <div className="col scroll" style={{ padding: 12, gap: 8, flex: 1, minHeight: 0 }}>
-      <div className="row">
-        <div style={{ fontWeight: 700, fontSize: 'var(--fs-lg)' }}>Bound components</div>
-        <div className="spacer" />
-        <button className="ghost" onClick={onRefresh} title="Refresh list">
-          Refresh
-        </button>
-      </div>
-      <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>
-        Components with a haptic preset bound. Click one to hear it and jump to it
-        in the canvas.
-      </p>
+    <details className="accordion acc-row">
+      <summary className="acc-head">
+        <span className="acc-icon">
+          <img src={iconLink} alt="" />
+        </span>
+        <span className="acc-title">Selected presets</span>
+        {items.length > 0 && (
+          <span className="tag active tag-flush">{items.length}</span>
+        )}
+        <span className="acc-chevron" aria-hidden="true">
+          <img src={iconChevron} alt="" />
+        </span>
+      </summary>
 
-      {items.length === 0 ? (
-        <p className="muted" style={{ padding: '16px 2px' }}>
-          No components have haptics bound yet. Select a node and bind a preset.
-        </p>
-      ) : (
-        <div style={{ marginTop: 4 }}>
-          {groups.map((group) => (
-            <div key={group.id} className="bound-group">
-              <div className="bound-group-head" title={group.name}>
-                <span className="bound-group-name">{group.name}</span>
-                <span className="bound-group-count">{group.items.length}</span>
-              </div>
-              {group.items.map((item) => (
-                <div
-                  key={item.nodeId}
-                  className="preset-card"
-                  style={{ cursor: 'pointer', marginBottom: 8 }}
-                  onClick={() => onSelect(item)}
-                  title="Play & reveal in canvas"
-                >
-                  <div className="row" style={{ gap: 6 }}>
-                    <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-                      {item.presetName}
-                    </span>
-                    <div className="spacer" />
-                    <span className="bound-badge">{item.nodeType}</span>
+      <div className="col acc-body">
+        {items.length === 0 ? (
+          <p className={`muted ${styles['bound-empty']}`}>
+            No components have haptics bound yet. Select a node and bind a preset.
+          </p>
+        ) : (
+          <>
+            <p className={`muted ${styles['bound-intro']}`}>
+              Click one to play it and reveal it on the canvas.
+            </p>
+            <div className={styles['bound-groups']}>
+              {groups.map((group) => (
+                <div key={group.id} className={styles['bound-group']}>
+                  <div className={styles['bound-group-head']} title={group.name}>
+                    <span className={styles['bound-group-name']}>{group.name}</span>
+                    <span className={styles['bound-group-count']}>{group.items.length}</span>
                   </div>
-                  <div
-                    className="muted"
-                    style={{
-                      fontSize: 'var(--fs-xs)',
-                      marginTop: 2,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    {item.nodeName}
-                  </div>
+                  {group.items.map((item) => (
+                    <div
+                      key={item.nodeId}
+                      className={styles['bound-item']}
+                      onClick={() => onSelect(item)}
+                      title="Play & reveal in canvas"
+                    >
+                      {/* Reads like the sticky selection bar: this component →
+                          this preset. The whole row is the click target (reveal +
+                          play), so the chips are non-interactive. */}
+                      <span className={styles['bound-chip']} title={item.nodeName}>
+                        <span className={styles['bound-chip-label']}>{item.nodeName}</span>
+                      </span>
+                      <span className={styles['bound-arrow']} aria-hidden>
+                        →
+                      </span>
+                      <span
+                        className={`${styles['bound-chip']} ${styles['bound-chip--preset']}`}
+                        title={item.presetName}
+                      >
+                        <img src={iconPlay} alt="" width={9} height={9} />
+                        <span className={styles['bound-chip-label']}>{item.presetName}</span>
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+          </>
+        )}
+      </div>
+    </details>
   );
 }

@@ -55,7 +55,7 @@ dependencies {
 }
 
 group = "com.swmansion"
-version = System.getenv("LIB_VERSION") ?: "1.1.2" // pulsar-sync:android-version
+version = "1.2.0" // pulsar-sync:android-version
 
 afterEvaluate {
     publishing {

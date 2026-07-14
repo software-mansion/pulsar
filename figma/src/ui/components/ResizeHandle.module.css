@@ -1,0 +1,43 @@
+/* Drag affordances for resizing the plugin window. Figma anchors the window at
+   its top-left, so only the right edge, bottom edge and bottom-right corner can
+   resize. */
+
+/* Bottom-right corner grip (both axes). */
+.resize-handle {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  height: 22px;
+  /* Above the floating scroll-to-top FAB (z-index 1000) so it never steals the
+     corner. */
+  z-index: 1001;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.resize-handle img { display: block; }
+
+/* Right edge (width). Kept narrow so it overlaps the vertical scrollbar as
+   little as possible; stops above the corner grip. */
+.resize-edge-right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 22px;
+  width: 5px;
+  z-index: 1001;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+/* Bottom edge (height); stops left of the corner grip. */
+.resize-edge-bottom {
+  position: fixed;
+  left: 0;
+  right: 22px;
+  bottom: 0;
+  height: 5px;
+  z-index: 1001;
+  cursor: ns-resize;
+  touch-action: none;
+}

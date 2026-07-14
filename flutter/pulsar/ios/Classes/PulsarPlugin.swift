@@ -117,14 +117,6 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       result(nil)
 
     // MARK: — RealtimeComposer
-    case "RealtimeComposer_start":
-      if let strategyError = applyRealtimeStrategy(args) {
-        result(strategyError)
-        return
-      }
-      realtimeComposer.start()
-      result(nil)
-
     case "RealtimeComposer_set":
       guard let amplitude = args?["amplitude"] as? Double,
             let frequency = args?["frequency"] as? Double else {
@@ -135,8 +127,7 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         result(strategyError)
         return
       }
-      let startIfNeeded = (args?["startIfNeeded"] as? Bool) ?? false
-      realtimeComposer.set(amplitude: Float(amplitude), frequency: Float(frequency), startIfNeeded: startIfNeeded)
+      realtimeComposer.set(amplitude: Float(amplitude), frequency: Float(frequency))
       result(nil)
 
     case "RealtimeComposer_stop":

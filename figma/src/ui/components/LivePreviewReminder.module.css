@@ -1,0 +1,46 @@
+/* "Finish your Live preview configuration" reminder shown at the top of the
+   Presets tab while the file key isn't set or no phone is paired. A soft callout
+   (blue-10 fill, amber accent stripe) with a single Configure CTA that jumps to
+   the Live preview tab. */
+
+.reminder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 8px 0;
+  padding: 10px 12px;
+  /* Filled light orange/yellow with a strong amber border so the unfinished
+     setup is hard to miss. */
+  border: 2px solid #e8990c;
+  border-radius: var(--radius);
+  background: #fff4d6;
+}
+
+.reminder-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reminder-icon img { display: block; width: 15px; height: 15px; }
+
+.reminder-main { flex: 1; min-width: 0; }
+.reminder-title { font-weight: 600; font-size: var(--fs-sm); line-height: 1.35; }
+
+/* Amber CTA matching the callout - filled warm yellow with the same strong
+   border + offset shadow as the rest of the plugin's buttons. */
+button.reminder-cta {
+  flex-shrink: 0;
+  align-self: center;
+  background: #ffce73;
+  border-color: #e8990c;
+  box-shadow: -2px 2px 0 #e8990c;
+  color: var(--color-primary);
+}
+button.reminder-cta:active {
+  box-shadow: -1px 1px 0 #e8990c;
+}

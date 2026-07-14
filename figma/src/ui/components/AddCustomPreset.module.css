@@ -1,0 +1,55 @@
+/* Custom presets accordion body - JSON editor, error line, and saved-preset
+   rows with edit/delete icon buttons. */
+textarea.preset-editor {
+  background: var(--color-blue-10);
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  padding: 10px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: var(--fs-2xs);
+  line-height: 1.5;
+  color: var(--color-primary);
+  resize: vertical;
+}
+.preset-error { color: crimson; font-size: var(--fs-2xs); }
+/* Saved custom-preset rows, packed tighter than the default .col gap. */
+.custom-preset-list { gap: 6px; }
+.preset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--color-blue-10);
+  border-radius: var(--radius);
+  font-size: var(--fs-xs);
+}
+.preset-row-icon { flex-shrink: 0; width: 15px; height: 15px; opacity: 0.7; }
+.preset-row-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Compact square icon button (edit / delete in lists). Resets the signature
+   button chrome to a flat blue-bordered chip. */
+button.icon-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: none;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+button.icon-btn:hover { background: var(--color-blue-10); border-color: var(--color-blue-50); box-shadow: none; transform: none; }
+button.icon-btn:active { box-shadow: none; transform: scale(0.9); }
+button.icon-btn:disabled { opacity: 0.4; cursor: default; }
+button.icon-btn img { display: block; width: 15px; height: 15px; }

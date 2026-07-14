@@ -46,6 +46,9 @@ export type Settings = {
   previewBaseUrlOverride: string;
 };
 
+// A one-off maintenance action fired from the debug tab (developer mode only).
+export type DebugAction = 'clear-storage' | 'reset-onboarding' | 'log-storage';
+
 // One bound node, as forwarded from the main thread to the UI when building the
 // live-preview payload. The UI resolves presetId -> full PresetData before launch.
 // Axis-aligned bounding box in absolute canvas coordinates.
@@ -83,7 +86,7 @@ export interface BoundItem {
   presetName: string;
   // Id + name of the top-level frame the bound node sits under. Used to
   // group entries by screen in the Bound panel. Both null when the node
-  // isn't nested inside a frame-like ancestor (rare — usually means the
+  // isn't nested inside a frame-like ancestor (rare - usually means the
   // user bound a top-level frame itself).
   frameId: string | null;
   frameName: string | null;
@@ -92,14 +95,35 @@ export interface BoundItem {
 // Why the UI asked the main thread to rebuild the preview payload. The main
 // thread echoes it back on the `preview-data` reply so the UI's single handler
 // knows whether to open a browser, copy a link/token, render a QR, or just run
-// a (silent) server sync — without a shared mutable ref that auto-sync and
+// a (silent) server sync - without a shared mutable ref that auto-sync and
 // user actions could race on.
 //   - 'open' / 'copy' / 'copy-token' / 'qr': explicit user share actions.
-//   - 'sync': manual "Sync now" — publishes (creating a token if needed).
-//   - 'autosync': debounced background save — only updates an *existing*
+//   - 'sync': manual "Sync now" - publishes (creating a token if needed).
+//   - 'autosync': debounced background save - only updates an *existing*
 //     project; never creates a token on its own (avoids spamming the backend
 //     for files the user never chose to share).
-export type PreviewPurpose = 'open' | 'copy' | 'copy-token' | 'qr' | 'sync' | 'autosync';
+//   - 'bootstrap': fired once on first open to eagerly provision the backend
+//     project (mint the token / share + preview tokens) if this file has none
+//     yet - so the share link and pairing QR exist from the start. Proceeds
+//     even before the real Figma file key is set, and never overwrites an
+//     existing project.
+// 'pair' resolves the file's share (public) token for the phone-pairing QR:
+//   publishes if needed (so the unified QR can carry the preview token), then
+//   hands the public token back to the caller via ensureShared(). Like 'qr'/'copy'
+//   it is an explicit share action, so it re-opens the link to the public.
+export type PreviewPurpose =
+  | 'open'
+  | 'copy'
+  | 'copy-token'
+  | 'qr'
+  | 'sync'
+  | 'autosync'
+  | 'bootstrap'
+  | 'pair';
+
+// Severity of an in-plugin toast. Drives its accent colour, icon, and default
+// auto-dismiss timeout (see the UI's Toast component).
+export type ToastLevel = 'info' | 'success' | 'warning' | 'error';
 
 // Messages: UI -> Main
 export type UiToMain =
@@ -111,12 +135,24 @@ export type UiToMain =
   | { type: 'persist-haptics-token'; token: string | null }
   | { type: 'persist-favourites'; favourites: string[] }
   | { type: 'persist-custom-presets'; presets: CatalogEntry[] }
+  // Mark the first-run onboarding tour as seen so it doesn't auto-open again.
+  // Stored per-user in clientStorage (not per-file), so the tour shows once.
+  | { type: 'persist-onboarding-seen'; seen: boolean }
   // Per-file project state. The server token and cached config are keyed by
   // fileKey so opening the plugin in another design file gets its own token
   // instead of clobbering the first file's shared preview.
   | { type: 'get-project'; fileKey: string }
-  // Persist this file's tokens: secret edit `token` + read-only `publicToken`.
-  | { type: 'persist-project-token'; fileKey: string; token: string; publicToken: string }
+  // Persist this file's tokens: secret edit `token`, read-only share
+  // `publicToken`, and the read-only private `previewToken` (the pairing QR).
+  // previewToken is optional/nullable so a partial recovery (e.g. only the share
+  // token changed) doesn't clobber a known preview token with an empty value.
+  | {
+      type: 'persist-project-token';
+      fileKey: string;
+      token: string;
+      publicToken: string;
+      previewToken?: string | null;
+    }
   | { type: 'persist-project-cache'; fileKey: string; config: unknown; baseRevision: number | null }
   // Persist just the share-link visibility for a file (the public/private
   // toggle), without rewriting the cached config. Keyed by fileKey like the
@@ -126,8 +162,12 @@ export type UiToMain =
   | { type: 'request-bound-list' }
   | { type: 'focus-node'; nodeId: string }
   | { type: 'open-external'; url: string }
+  // Persist the user-entered real Figma file key (or share URL) for this
+  // document into root pluginData (per-file, shared with collaborators).
+  | { type: 'persist-file-key'; figmaFileKey: string }
   | { type: 'resize'; width: number; height: number; commit?: boolean }
-  | { type: 'notify'; message: string };
+  // Developer-mode maintenance action from the debug tab.
+  | { type: 'debug-action'; action: DebugAction };
 
 // Messages: Main -> UI
 export type MainToUi =
@@ -135,12 +175,26 @@ export type MainToUi =
       type: 'init';
       settings: Settings;
       hapticsToken: string | null;
+      // The Figma document name (`figma.root.name`), shown as the connection's
+      // label on the paired phone. Advertised on the pairing handshake.
+      documentName: string;
       // Stable per-document key minted by the main thread (root pluginData).
       fileKey: string | null;
+      // The real Figma file key (or share URL) the user saved for this document,
+      // used to build the live-preview embed. Empty until entered. Stored in root
+      // pluginData, so it's per-file and shared with collaborators.
+      figmaFileKey: string;
       favourites: string[];
       customPresets: CatalogEntry[];
+      // Whether the first-run onboarding tour has already been shown. False
+      // (the default) makes the UI auto-open the tour on first launch.
+      onboardingSeen: boolean;
     }
   | { type: 'selection'; node: SelectionInfo | null }
+  // The designer focused (selected or edited a node inside) a top-level frame.
+  // The UI relays this to a paired phone so its live preview follows along and
+  // presents that frame. Only emitted when the focused frame actually changes.
+  | { type: 'frame-focus'; nodeId: string; frameName: string }
   | { type: 'play-preset'; presetId: string } // emitted when a bound node is clicked in editor
   | { type: 'bound-list'; items: BoundItem[] }
   // Reply to `get-project`: this file's persisted token + last cached config
@@ -153,6 +207,9 @@ export type MainToUi =
       // Read-only share token, or null when unknown (never shared, or a legacy
       // share the cold-start reconcile hasn't recovered yet).
       publicToken: string | null;
+      // Read-only private preview token (the pairing QR), or null when unknown.
+      // Recovered from the server on cold start for legacy/pre-split shares.
+      previewToken: string | null;
       config: unknown | null;
       baseRevision: number | null;
       // Last-known share-link visibility for this file. Defaults to true (public)
@@ -163,6 +220,11 @@ export type MainToUi =
   // The Figma document changed. The UI debounces this into a background
   // auto-sync so the server snapshot stays fresh as the designer edits.
   | { type: 'doc-changed' }
+  // Ask the UI to surface an in-plugin toast. Used for plugin-originated
+  // feedback (bind/unbind results, missing-node errors) that previously went to
+  // the easy-to-miss figma.notify(). `duration` overrides the per-level default
+  // (ms); 0 keeps the toast until the user dismisses it.
+  | { type: 'toast'; message: string; level?: ToastLevel; duration?: number }
   | {
       type: 'preview-data';
       // Echoed back from the originating request so the handler knows what to do.

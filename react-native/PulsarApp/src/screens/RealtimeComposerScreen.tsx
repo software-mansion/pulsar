@@ -76,7 +76,6 @@ export default function RealtimeComposerScreen() {
       const normalizedX = (x / containerSize.value.width);
       const normalizedY = ((containerSize.value.height - y) / containerSize.value.height);
 
-      composer.start();
       composer.set(normalizedY, normalizedX);
     })
     .onUpdate((event: any) => {

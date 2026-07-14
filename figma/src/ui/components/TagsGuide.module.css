@@ -1,0 +1,144 @@
+/* Tags guide modal - rendered inside App's .modal-card chrome. Head bar and
+   close button mirror PresetDetail.module.css; the underlined tab strip mirrors
+   its .docs-tabs; the per-tag cards mirror the docs TagDescription recipe
+   (blue-10 fill, white tag pill with offset shadow). */
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--color-blue-20);
+  background: var(--color-blue-10);
+}
+.modal-head-text { flex: 1; min-width: 0; }
+.modal-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.25;
+}
+.modal-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--color-blue-20);
+  border-radius: var(--radius);
+  color: var(--color-primary);
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.modal-close:hover {
+  background: var(--color-blue-10);
+  border-color: var(--color-blue-50);
+  box-shadow: -2px 2px 0 var(--color-blue-50);
+  transform: translate(1px, -1px);
+}
+.modal-close:active { transform: translate(-1px, 1px); box-shadow: none; }
+
+.modal-body {
+  padding: 14px 16px 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Underlined tab strip - mirrors the docs `Tabs` component: one horizontal,
+   left-aligned row that scrolls (rather than wraps) when the dimensions don't
+   fit, adjacent tabs sharing a continuous underline, and the active tab marked
+   by a blue-50 underline + blue-10 fill (no rounded top). Scrolls away with the
+   content (not pinned), matching the docs. */
+.docs-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  /* overflow-x:auto makes this a scroll container (overflow-y would resolve to
+     auto too), so pin overflow-y to hidden, and keep flex-shrink:0 so it doesn't
+     collapse to nothing as a flex item in the column body. The underline is
+     drawn per-tab (below), not on this container - so an active tab paints one
+     clean, solid blue-50 border with no overlap artifacts at its corners. */
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue-20) transparent;
+}
+.docs-tabs::-webkit-scrollbar { height: 6px; }
+.docs-tabs::-webkit-scrollbar-track { background: transparent; }
+.docs-tabs::-webkit-scrollbar-thumb { background: var(--color-blue-20); }
+.docs-tab {
+  flex: none;
+  padding: 8px 16px;
+  border: 0;
+  /* Each tab owns its underline; adjacent tabs form one continuous line, the
+     active one turning blue-50. No negative margin, so no clipped corners. */
+  border-bottom: 2px solid var(--color-blue-10);
+  /* Override the global button radius - tabs are square. */
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.docs-tab:hover { color: var(--color-primary); background: var(--color-blue-10); transform: none; box-shadow: none; }
+.docs-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-blue-50);
+  background: var(--color-blue-10);
+}
+.docs-tab:active { transform: none; box-shadow: none; }
+
+/* Per-tag cards - one blue-10 card per tag, matching docs TagDescription. */
+.tag-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tag-card {
+  background: var(--color-blue-10);
+  padding: 16px;
+  border-radius: var(--radius);
+}
+.tag-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--surface);
+  border: 2px solid var(--color-blue-50);
+  border-radius: 2px;
+  box-shadow: -2px 2px 0 var(--color-blue-50);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 14px;
+}
+.tag-desc {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+.tag-usage {
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--color-primary);
+}
+.tag-usage-label { font-weight: 700; }
+
+/* The modal-body scrollbar is handled by the global custom-scrollbar rules in
+   common.css. The horizontal .docs-tabs strip keeps its own thinner bar below. */

@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, ActivityIndicator, ScrollView } from 'react-native';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { StyleSheet, View, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import type { Pattern } from 'react-native-pulsar';
 
 import { FIGMA_PREVIEW_URL } from '@/constants/Connection';
+import { connectionType, useConnections } from '@/contexts/ConnectionsContext';
 import { usePlayPatternFromHost } from '@/src/haptics/playPattern';
 import { ThemedText } from '@/components/themed-text';
+import { Icon } from '@/components/Icon';
 import BasicLayout from '@/components/BasicLayout';
 import Card from '@/components/Card';
 import Point from '@/components/Point';
-import Input from '@/components/Input';
-import Button from '@/components/Button';
 import SvgIcon from '@/components/SvgIcon';
+import ConnectionList from '@/components/home/ConnectionList';
+import NowPlayingToast from '@/components/NowPlayingToast';
 import { Margins } from '@/constants/theme';
 
 const defaultEdges = {
@@ -31,6 +33,24 @@ const fullscreenEdges = {
   right: 'off',
 };
 
+// Build a script that delivers a live haptics-config update into the preview.
+// The preview runs either at the top level (local dev) or inside an <iframe
+// srcdoc> (the production docs embed), so we post to the top document AND to
+// every child iframe's contentWindow — same-origin (the srcdoc inherits our
+// origin), so the post is allowed.
+function buildPreviewInjection(envelope: unknown): string {
+  // JSON is a valid JS expression on the ES2019+ engines these WebViews use
+  // (U+2028/U+2029 are legal in string literals), so embed it directly.
+  const json = JSON.stringify(envelope);
+  return (
+    `(function(){try{var u=${json};` +
+    `window.postMessage(u,'*');` +
+    `var f=document.querySelectorAll('iframe');` +
+    `for(var i=0;i<f.length;i++){try{f[i].contentWindow&&f[i].contentWindow.postMessage(u,'*');}catch(e){}}` +
+    `}catch(e){}})();true;`
+  );
+}
+
 // Figma tab. Two modes:
 //   1. Deep-linked from the Figma plugin (`pulsarapp://figma?token=<token>`)
 //      → render the standalone live-preview web app inside a WebView and bridge
@@ -39,14 +59,17 @@ const fullscreenEdges = {
 //      describing what Figma Live Preview is and how to connect a design file.
 export default function FigmaScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
-  const paramToken = typeof params.token === 'string' ? params.token : '';
-  const [enteredToken, setEnteredToken] = useState('');
-  const token = paramToken || enteredToken;
+  const token = typeof params.token === 'string' ? params.token : '';
 
-  if (token) {
-    return <FigmaPreviewWebView token={token} />;
-  }
-  return <FigmaExplainer onConnect={(t) => setEnteredToken(t.trim())} />;
+  // The "preset received" banner overlays both modes (live preview + explainer),
+  // so a preset played from the plugin is visible while the user sits on the
+  // Figma screen too - not only on the home tab.
+  return (
+    <View style={styles.screen}>
+      {token ? <FigmaPreviewWebView token={token} /> : <FigmaExplainer />}
+      <NowPlayingToast />
+    </View>
+  );
 }
 
 function FigmaPreviewWebView({ token }: { token: string }) {
@@ -60,6 +83,49 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   const webRef = useRef<WebView>(null);
   const playFromHost = usePlayPatternFromHost();
   const navigation = useNavigation();
+  const router = useRouter();
+  const { lastPreviewUpdate } = useConnections();
+
+  // Manage the loading overlay ourselves instead of the WebView's built-in
+  // startInLoadingState. That built-in overlay only clears on the *initial*
+  // load, so when the preview fails and the WebView instead lands on Figma's
+  // login page, the spinner stayed up and swallowed taps on the login button.
+  // Here we drop it as soon as any content finishes loading (onLoadEnd fires on
+  // success and failure), and the overlay is pointerEvents="none" so it can
+  // never trap a tap even if it lingers.
+  const [loading, setLoading] = useState(true);
+
+  // Leave the active preview and return to the Figma list/explainer by clearing
+  // the route's token (FigmaScreen renders the explainer when it's empty).
+  const closePreview = useCallback(() => {
+    setTabBarHidden(false);
+    router.setParams({ token: '' });
+  }, [router]);
+
+  // Deliver live haptics-config updates relayed by the plugin into the preview.
+  // Seed the handled nonce at mount so an update that arrived before this
+  // preview opened doesn't fire on first render; only newer ones inject.
+  const handledNonceRef = useRef<number | null>(lastPreviewUpdate?.nonce ?? null);
+  useEffect(() => {
+    const update = lastPreviewUpdate;
+    if (!update || handledNonceRef.current === update.nonce) return;
+    handledNonceRef.current = update.nonce;
+    // Ignore updates targeting a different preview than the one we're showing.
+    if (update.previewToken && update.previewToken !== token) return;
+    webRef.current?.injectJavaScript(
+      buildPreviewInjection({
+        type: 'pulsar-haptics-update',
+        kind: update.kind,
+        fromRevision: update.fromRevision,
+        toRevision: update.toRevision,
+        diff: update.diff,
+        // Set only for 'preview-frame-focus'; undefined keys are dropped by
+        // JSON.stringify so the haptics diff/refetch envelopes are unchanged.
+        nodeId: update.nodeId,
+        frameName: update.frameName,
+      })
+    );
+  }, [lastPreviewUpdate, token]);
 
   const [tabBarHidden, setTabBarHidden] = useState(false);
   useEffect(() => {
@@ -92,28 +158,50 @@ function FigmaPreviewWebView({ token }: { token: string }) {
 
   return (
     <SafeAreaView edges={(tabBarHidden ? fullscreenEdges : defaultEdges) as any} style={styles.safeArea}>
-      <WebView
-        ref={webRef}
-        source={{ uri: previewUrl }}
-        originWhitelist={['*']}
-        javaScriptEnabled
-        domStorageEnabled
-        onMessage={onMessage}
-        startInLoadingState
-        renderLoading={() => (
-          <View style={styles.loader}>
+      {!tabBarHidden && (
+        <View style={styles.previewBar}>
+          <TouchableOpacity onPress={closePreview} style={styles.closeBtn} hitSlop={8}>
+            <Icon name="x" size={20} color="#001A72" />
+            <ThemedText type="defaultSemiBold" style={styles.closeLabel}>
+              Close preview
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
+      <View style={styles.webContainer}>
+        <WebView
+          ref={webRef}
+          source={{ uri: previewUrl }}
+          originWhitelist={['*']}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={onMessage}
+          onLoadEnd={() => setLoading(false)}
+          style={styles.webview}
+        />
+        {loading && (
+          <View style={styles.loader} pointerEvents="none">
             <ActivityIndicator />
           </View>
         )}
-        style={styles.webview}
-      />
+      </View>
     </SafeAreaView>
   );
 }
 
-function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
-  const [manualToken, setManualToken] = useState('');
-  const canConnect = manualToken.trim().length > 0;
+function FigmaExplainer() {
+  const router = useRouter();
+  const { connections, remove, reconnect } = useConnections();
+
+  // Only Figma producers belong on this screen — browser connections stay on
+  // the home list. A preview can only be reopened once its token has arrived.
+  const figmaConnections = connections.filter((c) => connectionType(c) === 'figma');
+
+  // We're already on the Figma tab, so update the route param in place rather
+  // than pushing a new screen; FigmaScreen renders the WebView when it's set.
+  const openPreview = (token: string) => router.setParams({ token });
+  const editConnection = (connectionId: string) =>
+    router.push({ pathname: '/editConnectionModal', params: { connectionId } });
 
   return (
     <SafeAreaView edges={defaultEdges as any} style={styles.safeArea}>
@@ -128,6 +216,19 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
             Connect a Figma design to your phone and feel haptics when
             you tap on a component in the prototype preview.
           </ThemedText>
+
+          {figmaConnections.length > 0 && (
+            <View style={Margins.marginTop4X}>
+              <ThemedText type="subtitle">Your Figma previews</ThemedText>
+              <ConnectionList
+                connections={figmaConnections}
+                onRemove={remove}
+                onReconnect={reconnect}
+                onOpenPreview={openPreview}
+                onEdit={editConnection}
+              />
+            </View>
+          )}
 
           <Card style={Margins.marginTop4X}>
             <ThemedText type="subtitle">How to connect Figma</ThemedText>
@@ -151,37 +252,10 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
             </Point>
             <Point index={4}>
               <ThemedText>
-                Scan the QR code (or paste the token above) - PulsarApp opens
-                straight on this screen with the preview loaded.
+                Scan the QR code - PulsarApp opens straight on this screen
+                with the preview loaded.
               </ThemedText>
             </Point>
-          </Card>
-
-          <Card style={Margins.marginTop4X}>
-            <ThemedText type="subtitle">Connect with a token</ThemedText>
-            <ThemedText style={Margins.marginTop2X}>
-              Already have a share token from the Figma plugin? Paste it here
-              to open the preview without scanning the QR code.
-            </ThemedText>
-            <Input
-              placeholder="Paste preview token"
-              style={Margins.marginTop3X}
-              value={manualToken}
-              onChangeText={setManualToken}
-              keyboardType="default"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <Button
-              label="Connect"
-              style={Margins.marginTop3X}
-              enabled={canConnect}
-              onClick={() => {
-                if (canConnect) onConnect(manualToken);
-              }}
-            />
           </Card>
 
         </BasicLayout>
@@ -191,12 +265,43 @@ function FigmaExplainer({ onConnect }: { onConnect: (token: string) => void }) {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   safeArea: {
     flex: 1,
   },
   webContainer: { flex: 1, backgroundColor: '#fff' },
   webview: { flex: 1 },
-  loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  previewBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1F3FA',
+    backgroundColor: '#fff',
+  },
+  closeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+  },
+  closeLabel: {
+    color: '#001A72',
+  },
+  loader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
   scrollContent: { paddingBottom: 40 },
   titleContainer: {
     flexDirection: 'row',

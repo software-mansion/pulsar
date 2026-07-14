@@ -1,0 +1,74 @@
+/* Filters accordion body - favourites switch row + tag groups. The accordion
+   chrome itself is shared (common.css). */
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+.filter-toggle :global(.star) { color: var(--color-primary); }
+.filter-toggle-label { flex: 1; }
+.filter-group { margin-bottom: 12px; }
+.filter-group--flush { margin-bottom: 0; }
+
+/* Flex the title so the info trigger sits centred against the "Filters" label
+   rather than dropping below its baseline. */
+.filters-title {
+  display: flex;
+  align-items: center;
+}
+
+/* "Learn more about tags" - quiet text link above the tag groups, same action
+   as the info icon by the title. */
+.tags-learn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-blue-60);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.tags-learn:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+.tags-learn:active { transform: none; box-shadow: none; }
+.tags-learn img { display: block; opacity: 0.85; }
+
+/* Info trigger next to the "Filters" title - opens the tags guide. Flat icon
+   chip that only colours up on hover so it stays quiet in the header. */
+.tags-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0;
+  vertical-align: middle;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+.tags-info-btn:hover { opacity: 1; background: var(--surface); box-shadow: none; transform: none; }
+.tags-info-btn:active { transform: none; box-shadow: none; }
+.tags-info-btn img { display: block; }
