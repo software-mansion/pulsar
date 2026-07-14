@@ -4,30 +4,26 @@ import android.os.Build
 import android.os.VibrationEffect
 import androidx.annotation.RequiresApi
 import com.swmansion.pulsar.types.PatternData
-import kotlin.math.roundToInt
 
 class ImpulseCompositionHapticBuilder {
 
     companion object {
         /**
-         * Width of a single impulse rendered as a plain waveform on devices that can't play
-         * primitives. The continuous-envelope fallback collapses a transient into a ~2 ms peak
-         * (and dilutes its amplitude across coarse 13 Hz steps), which is far too short to spin up
-         * a weak ERM/LRA actuator — so the tap is silent on cheaper/older devices even though it
-         * fires on capable ones. Web's Vibration API hits the same hardware with a >=20 ms
-         * full-power on-pulse and works, so we mirror that here: 20 ms is long enough to engage the
-         * motor yet short enough to still read as a tap.
+         * Minimum peak width used when an impulse-only preset has to fall back to the generic
+         * control-point path because the device cannot play primitives. The impulse ends up
+         * rendered as a plain on/off waveform pulse roughly this wide.
+         *
+         * Determined empirically, like [ControlLineBuilder]'s step rate. The default 15 ms peak is
+         * sized for envelope hardware; a cheap ERM cannot spin up in that time, so the tap is
+         * simply never felt. Measured on a moto g05 (no primitives, no amplitude control, so every
+         * impulse degrades to a bare on/off pulse): a 20 ms pulse is imperceptible, 40 ms is
+         * clearly felt. For reference the vendor's own EFFECT_CLICK on that device is 35 ms and
+         * EFFECT_TICK is 54 ms, so ~40 ms is the width the hardware itself treats as a tap.
+         *
+         * Raising this further would trade rhythm for strength: impulses closer together than the
+         * pulse width can no longer be told apart.
          */
-        private const val IMPULSE_PULSE_DURATION_MS = 20L
-
-        /**
-         * Minimum amplitude (0..255) for an impulse on devices with amplitude control. A soft
-         * impulse scaled straight to e.g. 13/255 sits below a weak actuator's start threshold and
-         * never engages; flooring it keeps quiet impulses perceptible instead of silent. Capable
-         * devices never reach this path (they play primitives), so this only trades fine amplitude
-         * resolution for reliability on hardware that lacks it.
-         */
-        private const val MIN_IMPULSE_AMPLITUDE = 64
+        const val MIN_IMPULSE_TRANSITION_MS = 40L
 
         /**
          * Returns true if the preset consists only of impulses:
@@ -36,37 +32,6 @@ class ImpulseCompositionHapticBuilder {
         fun isImpulsesOnly(preset: PatternData): Boolean {
             if (preset.discretePattern.isEmpty()) return false
             return preset.continuousPattern.amplitude.none { it.value > 0f }
-        }
-
-        /**
-         * Builds the alternating off/on timing array (and matching amplitudes) for an impulse-only
-         * preset: each impulse becomes a gap from the previous pulse followed by a fixed-width,
-         * (near-)full-power pulse. Pure function, extracted for testing without the Android
-         * VibrationEffect framework. Returns null when there is nothing playable.
-         */
-        fun buildImpulseWaveform(preset: PatternData): Pair<LongArray, IntArray>? {
-            val impulses = preset.discretePattern.sortedBy { it.time }
-            if (impulses.isEmpty()) return null
-
-            val timings = ArrayList<Long>()
-            val amplitudes = ArrayList<Int>()
-            var cursor = 0L
-
-            for (impulse in impulses) {
-                val gap = (impulse.time - cursor).coerceAtLeast(0L)
-                timings.add(gap)
-                amplitudes.add(0)
-
-                timings.add(IMPULSE_PULSE_DURATION_MS)
-                val amplitude = (impulse.amplitude.coerceIn(0f, 1f) * 255).roundToInt()
-                    .coerceIn(MIN_IMPULSE_AMPLITUDE, 255)
-                amplitudes.add(amplitude)
-
-                cursor = impulse.time + IMPULSE_PULSE_DURATION_MS
-            }
-
-            if (timings.none { it > 0L }) return null
-            return timings.toLongArray() to amplitudes.toIntArray()
         }
     }
 
@@ -97,23 +62,6 @@ class ImpulseCompositionHapticBuilder {
         }
 
         return composition.compose()
-    }
-
-    /**
-     * Plain-waveform fallback for impulse-only presets on devices that can't play primitives
-     * (API < 30, or actuators without primitive support). Each impulse is rendered as a crisp,
-     * (near-)full-power pulse so it reliably engages weak ERM/LRA hardware — the case where the
-     * continuous-envelope path produces a sub-perceptible smear. Returns null if nothing playable.
-     */
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createWaveformEffect(preset: PatternData, engine: HapticEngineWrapper): VibrationEffect? {
-        val (timings, amplitudes) = buildImpulseWaveform(preset) ?: return null
-        return if (engine.isAmplitudeSupported()) {
-            VibrationEffect.createWaveform(timings, amplitudes, -1)
-        } else {
-            // No amplitude control: the alternating off/on timings already drive full power.
-            VibrationEffect.createWaveform(timings, -1)
-        }
     }
 
     @SupportedVibrationPrimitive

@@ -22,33 +22,67 @@ class HapticBuilder(private val engine: HapticEngineWrapper) {
     if (impulseCompositionEnabled && ImpulseCompositionHapticBuilder.isImpulsesOnly(preset)) {
       val effect = impulseCompositionBuilder.createCompositionEffect(preset, engine)
       if (effect != null) return effect
-      // Primitives unavailable (API < 30 or unsupported actuator): render the impulses as a crisp
-      // waveform instead of letting them collapse into the sub-perceptible continuous fallback.
-      val waveformEffect = impulseCompositionBuilder.createWaveformEffect(preset, engine)
-      if (waveformEffect != null) return waveformEffect
+      return createImpulseFallbackEffect(preset)
     }
     val controlPoints = convertToControlPoints(preset)
     return vibrationEffectsGenerator.convertToVibrationEffect(controlPoints)
   }
 
-  private fun convertToControlPoints(preset: PatternData): ControlLineBuilder {
-    val amplitudeLine = ValueLineBuilder(preset.continuousPattern.amplitude)
-    val frequencyLine = ValueLineBuilder(preset.continuousPattern.frequency)
-
-    val peakLineBuilder = PeakLineBuilder(engine.getMinControlPointDurationMillis())
-    val discreteAmplitudeLine = peakLineBuilder.convertToContinuousPatternOfAmplitude(preset.discretePattern, amplitudeLine)
-    val discreteFrequencyLine = peakLineBuilder.convertToContinuousPatternOfFrequency(preset.discretePattern, frequencyLine)
-
-    amplitudeLine.mergeLine(discreteAmplitudeLine)
-    frequencyLine.mergeLine(discreteFrequencyLine)
-
-    val configLine = ConfigLineBuilder(amplitudeLine, frequencyLine)
-
-    return ControlLineBuilder(configLine)
+  /**
+   * Fallback for impulse-only presets on hardware that cannot play primitives (API < 30, or an
+   * actuator without primitive support).
+   *
+   * The default path quantizes the control line into ~13 Hz steps and area-averages each bucket
+   * ([ControlLineBuilder.getStepsPoints]). That is right for continuous envelopes, but it destroys
+   * transients: an impulse is only ~14 ms wide, so averaging it across a 76 ms bucket drops it to
+   * ~8-30/255 — below a weak actuator's start threshold — and neighbouring impulses smear together
+   * into one buzz instead of separate taps.
+   *
+   * Impulse-only presets have few control points and no envelope to keep up with, so we skip the
+   * quantizer and hand the linear points straight to [VibrationEffectsGenerator], which already
+   * picks the right representation for the device (advanced/basic envelope, amplitude waveform, or
+   * timing-only waveform) and honours the simulated compatibility mode.
+   */
+  @RequiresApi(Build.VERSION_CODES.O)
+  private fun createImpulseFallbackEffect(preset: PatternData): VibrationEffect? {
+    // Widen the peak so it still engages a sluggish ERM/LRA once rendered as a plain waveform,
+    // without dropping below the resolution an envelope-capable device asks for.
+    val minTransitionDuration = maxOf(
+      engine.getMinControlPointDurationMillis(),
+      ImpulseCompositionHapticBuilder.MIN_IMPULSE_TRANSITION_MS,
+    )
+    val controlLine = convertToControlPoints(preset, minTransitionDuration)
+    return vibrationEffectsGenerator.convertToVibrationEffect(controlLine.getLinearPoints())
   }
+
+  private fun convertToControlPoints(
+    preset: PatternData,
+    minTransitionDuration: Long = engine.getMinControlPointDurationMillis(),
+  ): ControlLineBuilder = buildControlLine(preset, minTransitionDuration)
 
   fun simulateCompatibilityMode(mode: CompatibilityMode) {
     vibrationEffectsGenerator.simulateCompatibilityMode(mode)
   }
 
+  companion object {
+    /**
+     * Turns a preset into the control line the effect generator consumes. Pure — takes the peak
+     * width instead of reading it off the engine, so it is exercisable without an Android device.
+     */
+    fun buildControlLine(preset: PatternData, minTransitionDuration: Long): ControlLineBuilder {
+      val amplitudeLine = ValueLineBuilder(preset.continuousPattern.amplitude)
+      val frequencyLine = ValueLineBuilder(preset.continuousPattern.frequency)
+
+      val peakLineBuilder = PeakLineBuilder(minTransitionDuration)
+      val discreteAmplitudeLine = peakLineBuilder.convertToContinuousPatternOfAmplitude(preset.discretePattern, amplitudeLine)
+      val discreteFrequencyLine = peakLineBuilder.convertToContinuousPatternOfFrequency(preset.discretePattern, frequencyLine)
+
+      amplitudeLine.mergeLine(discreteAmplitudeLine)
+      frequencyLine.mergeLine(discreteFrequencyLine)
+
+      val configLine = ConfigLineBuilder(amplitudeLine, frequencyLine)
+
+      return ControlLineBuilder(configLine)
+    }
+  }
 }
