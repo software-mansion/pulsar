@@ -30,7 +30,7 @@ def getStringPropertyOrEnv(name, defaultValue) {
   return (projectValue ?: System.getenv(name) ?: defaultValue).toString()
 }
 
-def useLocalPulsarAndroid = getStringPropertyOrEnv("USE_LOCAL_PULSAR_ANDROID", "1") == "1"
+def useLocalPulsarAndroid = getStringPropertyOrEnv("USE_LOCAL_PULSAR_ANDROID", "0") == "1"
 def pulsarAndroidVersion = getStringPropertyOrEnv("PULSAR_ANDROID_MAVEN_VERSION", "1.1.2") // pulsar-sync:rn-pulsar-android
 def localPulsarAndroidDir = new File(projectDir, "../../../Android/Pulsar")
 def localPulsarAndroidSourceDir = new File(localPulsarAndroidDir, "src/main/java")
