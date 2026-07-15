@@ -1,10 +1,11 @@
+import styles from './PresetDetail.module.css';
 import { useEffect, useState } from 'react';
 import type { CatalogEntry } from '../../shared/types';
 import { CUSTOM_TAG } from '../../shared/types';
 import Visualization from './Visualization';
 import iconClose from '../assets/icon-close.svg';
 import iconPlay from '../assets/icon-play.svg';
-import iconSmartphone from '../assets/icon-smartphone.svg';
+import iconChevronDown from '../assets/icon-chevron-down.svg';
 import iconCopy from '../assets/icon-copy.svg';
 import iconCheck from '../assets/icon-check.svg';
 import { builtInSnippet, customSnippet, LANGS, type Lang } from './sdkSnippets';
@@ -19,15 +20,11 @@ export default function PresetDetail({
   entry,
   onClose,
   onPlay,
-  onPlayOnPhone,
-  canPlayOnPhone,
   onBind
 }: {
   entry: CatalogEntry;
   onClose: () => void;
   onPlay: () => void;
-  onPlayOnPhone: () => void;
-  canPlayOnPhone: boolean;
   onBind: () => void;
 }) {
   const isCustom = Array.isArray(entry.data.tags) && entry.data.tags.includes(CUSTOM_TAG);
@@ -37,7 +34,7 @@ export default function PresetDetail({
     : builtInSnippet(lang, entry.data.name);
   const json = JSON.stringify(entry.data, null, 2);
 
-  // Esc closes — same affordance the preview's modal exposes.
+  // Esc closes - same affordance the preview's modal exposes.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -49,6 +46,9 @@ export default function PresetDetail({
   // Brief "Copied" confirmation that swaps the copy glyph for a check ~1.2s,
   // ported from the preview modal so the affordance feels identical.
   const [copiedKey, setCopiedKey] = useState<'snippet' | 'json' | null>(null);
+  // Raw pattern data starts collapsed - it's reference detail, not the first
+  // thing most users want when opening a preset.
+  const [rawOpen, setRawOpen] = useState(false);
   const copy = (text: string, key: 'snippet' | 'json') => {
     navigator.clipboard?.writeText(text).then(
       () => {
@@ -61,85 +61,76 @@ export default function PresetDetail({
 
   return (
     <>
-      <header className="modal-head">
-        <div className="modal-head-text">
-          <div className="modal-title">{entry.data.name}</div>
+      <header className={styles['modal-head']}>
+        <div className={styles['modal-head-text']}>
+          <div className={styles['modal-title']}>{entry.data.name}</div>
         </div>
-        <button className="modal-close" onClick={onClose} title="Close (Esc)" aria-label="Close">
+        <button className={styles['modal-close']} onClick={onClose} title="Close (Esc)" aria-label="Close">
           <img src={iconClose} alt="" width={14} height={14} />
         </button>
       </header>
 
-      <div className="modal-body">
-        {/* Action row — Play / Phone / Bind. These are plugin-specific and
-            have no counterpart in the preview's modal. Bind is the primary
-            CTA (filled blue-20). */}
-        <div className="row preset-actions">
-          <button className="ghost preset-action-btn" onClick={onPlay} title="Play this preset locally">
+      <div className={styles['modal-body']}>
+        {/* Action row - Play / Add. These are plugin-specific and have no
+            counterpart in the preview's modal. Play plays sound locally and
+            haptics on the paired phone; Add is the primary CTA (filled
+            blue-20) that binds the preset to the selected node. */}
+        <div className={`row ${styles['preset-actions']}`}>
+          <button className="ghost preset-action-btn" onClick={onPlay} title="Play this preset">
             <img src={iconPlay} alt="" width={14} height={14} />
             <span>Play</span>
           </button>
-          {canPlayOnPhone && (
-            <button
-              className="ghost preset-action-btn"
-              onClick={onPlayOnPhone}
-              title="Play on the paired phone"
-            >
-              <img src={iconSmartphone} alt="" width={14} height={14} />
-              <span>Phone</span>
-            </button>
-          )}
           <div className="spacer" />
-          <button className="primary" onClick={onBind} title="Bind this preset to the selected node">
-            Bind
+          <button className="primary" onClick={onBind} title="Add this preset to the selected node">
+            Add
           </button>
         </div>
 
-        {/* Tags row — Custom pill comes first when applicable, then any other
+        {/* Tags row - Custom pill comes first when applicable, then any other
             tags as white pills, matching the preview's filter order. */}
         {(entry.data.tags.length > 0 || isCustom) && (
-          <div className="tags-row">
-            {isCustom && <span className="tag tag-custom">Custom</span>}
+          <div className={styles['tags-row']}>
+            {isCustom && <span className={`tag ${styles['tag-custom']}`}>Custom</span>}
             {entry.data.tags
               .filter((t) => t !== CUSTOM_TAG)
               .map((t) => (
-                <span key={t} className="tag tag-white">
+                <span key={t} className={`tag ${styles['tag-white']}`}>
                   {t}
                 </span>
               ))}
           </div>
         )}
 
-        {/* Waveform — drawn by the existing Visualization component from the
+        {/* Waveform - drawn by the existing Visualization component from the
             preset's discrete + continuous arrays. Kept here because seeing the
             shape is part of the plugin's preset-browsing workflow (the preview
             tucks the visual into its prototype iframe instead). */}
         <Visualization data={entry.data} height={80} />
 
         {entry.data.description && (
-          <p className="modal-description">{entry.data.description}</p>
+          <p className={styles['modal-description']}>{entry.data.description}</p>
         )}
 
-        <section className="modal-section">
-          <div className="modal-section-head">
+        <section className={styles['modal-section']}>
+          <div className={styles['modal-section-head']}>
             <h3>Usage</h3>
           </div>
-          <div className="docs-tabs">
+          <div className={styles['docs-tabs']}>
             {LANGS.map((l) => (
               <button
                 key={l}
                 type="button"
-                className={`docs-tab${lang === l ? ' active' : ''}`}
+                className={`${styles['docs-tab']}${lang === l ? ` ${styles['active']}` : ''}`}
                 onClick={() => setLang(l)}
               >
                 {l}
               </button>
             ))}
           </div>
-          <div className="code-block-wrap">
-            <pre className="code-block">{snippet}</pre>
+          <div className={styles['code-block-wrap']}>
+            <pre className={styles['code-block']}>{snippet}</pre>
             <button
-              className="code-copy-btn"
+              className={styles['code-copy-btn']}
               onClick={() => copy(snippet, 'snippet')}
               title="Copy"
               aria-label={copiedKey === 'snippet' ? 'Copied' : 'Copy'}
@@ -154,26 +145,40 @@ export default function PresetDetail({
           </div>
         </section>
 
-        <section className="modal-section">
-          <div className="modal-section-head">
+        <section className={`${styles['modal-section']} ${styles['collapsible-section']}`}>
+          <button
+            type="button"
+            className={styles['collapsible-head']}
+            onClick={() => setRawOpen((v) => !v)}
+            aria-expanded={rawOpen}
+          >
             <h3>Raw pattern data</h3>
-          </div>
-          <div className="code-block-wrap">
-            <pre className="code-block">{json}</pre>
-            <button
-              className="code-copy-btn"
-              onClick={() => copy(json, 'json')}
-              title="Copy"
-              aria-label={copiedKey === 'json' ? 'Copied' : 'Copy'}
-            >
-              <img
-                src={copiedKey === 'json' ? iconCheck : iconCopy}
-                alt=""
-                width={16}
-                height={16}
-              />
-            </button>
-          </div>
+            <img
+              src={iconChevronDown}
+              alt=""
+              width={14}
+              height={14}
+              className={`${styles['collapsible-chevron']}${rawOpen ? ` ${styles['open']}` : ''}`}
+            />
+          </button>
+          {rawOpen && (
+            <div className={styles['code-block-wrap']}>
+              <pre className={styles['code-block']}>{json}</pre>
+              <button
+                className={styles['code-copy-btn']}
+                onClick={() => copy(json, 'json')}
+                title="Copy"
+                aria-label={copiedKey === 'json' ? 'Copied' : 'Copy'}
+              >
+                <img
+                  src={copiedKey === 'json' ? iconCheck : iconCopy}
+                  alt=""
+                  width={16}
+                  height={16}
+                />
+              </button>
+            </div>
+          )}
         </section>
       </div>
     </>

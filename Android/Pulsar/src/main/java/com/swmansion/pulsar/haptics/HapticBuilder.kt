@@ -22,29 +22,44 @@ class HapticBuilder(private val engine: HapticEngineWrapper) {
     if (impulseCompositionEnabled && ImpulseCompositionHapticBuilder.isImpulsesOnly(preset)) {
       val effect = impulseCompositionBuilder.createCompositionEffect(preset, engine)
       if (effect != null) return effect
+      return createImpulseFallbackEffect(preset)
     }
     val controlPoints = convertToControlPoints(preset)
     return vibrationEffectsGenerator.convertToVibrationEffect(controlPoints)
   }
 
-  private fun convertToControlPoints(preset: PatternData): ControlLineBuilder {
-    val amplitudeLine = ValueLineBuilder(preset.continuousPattern.amplitude)
-    val frequencyLine = ValueLineBuilder(preset.continuousPattern.frequency)
-
-    val peakLineBuilder = PeakLineBuilder(engine.getMinControlPointDurationMillis())
-    val discreteAmplitudeLine = peakLineBuilder.convertToContinuousPatternOfAmplitude(preset.discretePattern, amplitudeLine)
-    val discreteFrequencyLine = peakLineBuilder.convertToContinuousPatternOfFrequency(preset.discretePattern, frequencyLine)
-
-    amplitudeLine.mergeLine(discreteAmplitudeLine)
-    frequencyLine.mergeLine(discreteFrequencyLine)
-
-    val configLine = ConfigLineBuilder(amplitudeLine, frequencyLine)
-
-    return ControlLineBuilder(configLine)
+  @RequiresApi(Build.VERSION_CODES.O)
+  private fun createImpulseFallbackEffect(preset: PatternData): VibrationEffect? {
+    val controlLine = convertToControlPoints(preset)
+    return vibrationEffectsGenerator.convertToVibrationEffect(controlLine.getLinearPoints())
   }
+
+  private fun convertToControlPoints(preset: PatternData): ControlLineBuilder =
+    buildControlLine(preset, engine.getMinControlPointDurationMillis())
 
   fun simulateCompatibilityMode(mode: CompatibilityMode) {
     vibrationEffectsGenerator.simulateCompatibilityMode(mode)
   }
 
+  companion object {
+    /**
+     * Turns a preset into the control line the effect generator consumes. Pure — takes the peak
+     * width instead of reading it off the engine, so it is exercisable without an Android device.
+     */
+    fun buildControlLine(preset: PatternData, minTransitionDuration: Long): ControlLineBuilder {
+      val amplitudeLine = ValueLineBuilder(preset.continuousPattern.amplitude)
+      val frequencyLine = ValueLineBuilder(preset.continuousPattern.frequency)
+
+      val peakLineBuilder = PeakLineBuilder(minTransitionDuration)
+      val discreteAmplitudeLine = peakLineBuilder.convertToContinuousPatternOfAmplitude(preset.discretePattern, amplitudeLine)
+      val discreteFrequencyLine = peakLineBuilder.convertToContinuousPatternOfFrequency(preset.discretePattern, frequencyLine)
+
+      amplitudeLine.mergeLine(discreteAmplitudeLine)
+      frequencyLine.mergeLine(discreteFrequencyLine)
+
+      val configLine = ConfigLineBuilder(amplitudeLine, frequencyLine)
+
+      return ControlLineBuilder(configLine)
+    }
+  }
 }

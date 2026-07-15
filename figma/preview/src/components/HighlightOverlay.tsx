@@ -1,9 +1,10 @@
-import type { CSSProperties } from 'react';
+import { memo, type CSSProperties } from 'react';
 import type { ElementInfo, NodeBox } from '../types';
+import { usePreviewStore } from '../store';
 
 // The iframe fills the whole stage (100%×100%); Figma renders the frame with
 // scaling=contain, which fits the frame INSIDE the iframe and centers it, but
-// reserves a small fixed inset (measured empirically against the live embed —
+// reserves a small fixed inset (measured empirically against the live embed -
 // see fitFrame). We reproduce that exact fit+center transform so the overlay
 // boxes land on the rendered components.
 //
@@ -42,31 +43,43 @@ function boxStyle(
   };
 }
 
+// One highlight box. Memoized + subscribes to whether *this* element is the
+// active one, so lighting up a highlight on hover re-renders only the box that
+// gains (and the one that loses) the active state - not the whole overlay.
+const HighlightBox = memo(function HighlightBox({
+  id,
+  presetName,
+  style
+}: {
+  id: string;
+  presetName: string;
+  style: CSSProperties;
+}) {
+  const active = usePreviewStore((s) => s.activeId === id);
+  return (
+    <div className={`hl${active ? ' active' : ''}`} style={style}>
+      <span className="hl-label">{presetName}</span>
+    </div>
+  );
+});
+
+// The overlay container no longer subscribes to activeId, so it re-renders only
+// when the frame / elements / size change (navigation, resize) - never on a hover.
 export function HighlightOverlay({
   frame,
   elements,
-  size,
-  activeId
+  size
 }: {
   frame: NodeBox;
   elements: ElementInfo[];
   size: { width: number; height: number };
-  activeId: string;
 }) {
   return (
     <div className="overlay">
       {elements.map((el) => {
         const style = boxStyle(el, frame, size);
         if (!style) return null;
-        return (
-          <div
-            key={el.id}
-            className={`hl${activeId === el.id ? ' active' : ''}`}
-            style={style}
-          >
-            <span className="hl-label">{el.presetName}</span>
-          </div>
-        );
+        return <HighlightBox key={el.id} id={el.id} presetName={el.presetName} style={style} />;
       })}
     </div>
   );

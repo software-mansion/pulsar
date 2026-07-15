@@ -351,12 +351,8 @@ private class AndroidPatternComposerHandle(
 private class AndroidRealtimeComposerHandle(
     private val composer: AndroidRealtimeComposer,
 ) : RealtimeComposerHandle {
-    override fun start() {
-        composer.start()
-    }
-
-    override fun set(amplitude: Float, frequency: Float, startIfNeeded: Boolean) {
-        composer.set(amplitude, frequency, startIfNeeded)
+    override fun set(amplitude: Float, frequency: Float) {
+        composer.set(amplitude, frequency)
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {

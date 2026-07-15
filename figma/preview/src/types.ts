@@ -44,7 +44,8 @@ export interface FrameInfo {
   box: NodeBox;
 }
 
-// The base64'd payload the plugin puts in the URL hash.
+// The design payload the plugin publishes to the server; the preview fetches it
+// by the `?token=` share token (see lib/payload.ts).
 export interface PreviewPayload {
   fileKey: string;
   nodeId: string | null;
@@ -54,7 +55,7 @@ export interface PreviewPayload {
   bindings: Record<string, PresetData>; // node id (incl. descendants) -> preset
   // frame-like-node id → { human name, absolute canvas box } for every frame
   // that contains at least one bound element. Optional for backward
-  // compatibility — older payloads stored just NodeBox; the loader normalises
+  // compatibility - older payloads stored just NodeBox; the loader normalises
   // those to FrameInfo with a synthetic name.
   frames?: Record<string, FrameInfo | NodeBox>;
 }

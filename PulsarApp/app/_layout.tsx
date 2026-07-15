@@ -15,6 +15,7 @@ import { FavouritesProvider } from '@/contexts/FavouritesContext';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { PlaygroundProvider } from '@/contexts/PlaygroundContext';
 import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
+import { ConnectionsProvider } from '@/contexts/ConnectionsContext';
 import { posthog } from '@/src/config/posthog';
 import { SENTRY_CONFIG } from '@/src/config/public';
 
@@ -78,26 +79,29 @@ function RootLayout() {
           maxElementsCaptured: 20,
         }}
       >
-        <StoreReviewProvider>
-          <FilterProvider>
-            <FavouritesProvider>
-            <OnboardingProvider>
-              <PlaygroundProvider>
-                <ThemeProvider value={{...DefaultTheme, ...Theme}}>
-                  <Stack>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
-                    <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags', headerShown: false }} />
-                    <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
-                    <Stack.Screen name="playgroundSettingsModal" options={{ presentation: 'modal', title: 'Playground settings', headerShown: false }} />
-                  </Stack>
-                  <StatusBar style="auto" />
-                </ThemeProvider>
-              </PlaygroundProvider>
-            </OnboardingProvider>
-            </FavouritesProvider>
-          </FilterProvider>
-        </StoreReviewProvider>
+        <ConnectionsProvider>
+          <StoreReviewProvider>
+            <FilterProvider>
+              <FavouritesProvider>
+              <OnboardingProvider>
+                <PlaygroundProvider>
+                  <ThemeProvider value={{...DefaultTheme, ...Theme}}>
+                    <Stack>
+                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="filtersModal" options={{ presentation: 'modal', title: 'Filters', headerShown: false }} />
+                      <Stack.Screen name="tagsModal" options={{ presentation: 'modal', title: 'Tags', headerShown: false }} />
+                      <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
+                      <Stack.Screen name="playgroundSettingsModal" options={{ presentation: 'modal', title: 'Playground settings', headerShown: false }} />
+                      <Stack.Screen name="editConnectionModal" options={{ presentation: 'modal', title: 'Connection', headerShown: false }} />
+                    </Stack>
+                    <StatusBar style="auto" />
+                  </ThemeProvider>
+                </PlaygroundProvider>
+              </OnboardingProvider>
+              </FavouritesProvider>
+            </FilterProvider>
+          </StoreReviewProvider>
+        </ConnectionsProvider>
       </PostHogProvider>
     </GestureHandlerRootView>
   );

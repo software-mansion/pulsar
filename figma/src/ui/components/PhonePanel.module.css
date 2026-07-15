@@ -1,0 +1,117 @@
+/* Phone pairing panel - status card shared by every pairing state, plus the
+   awaiting-pair QR layout. */
+.phone-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+}
+.phone-card-ic {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phone-card-ic img { display: block; width: 20px; height: 20px; }
+.phone-card-main { flex: 1; min-width: 0; }
+.phone-card-title { font-size: var(--fs-sm); font-weight: 600; margin-bottom: 3px; }
+.phone-card-text { font-size: var(--fs-xs); color: var(--color-blue-60); line-height: 1.45; margin: 0 0 10px; }
+.phone-card-text:last-child { margin-bottom: 0; }
+/* Disconnect + Refresh sit on one row under the status copy. */
+.phone-card-actions { gap: 8px; flex-wrap: wrap; }
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.status-dot.ok { background: #1d9e75; }
+.status-dot.err { background: #d85a30; }
+/* Awaiting-pair (QR) layout. */
+.phone-await {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-blue-10);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.phone-qr { width: 200px; height: 200px; border-radius: var(--radius); background: var(--surface); }
+/* Pairing code - emphasised monospace with wide tracking. */
+.phone-code { font-weight: 700; letter-spacing: 0.08em; }
+.phone-await-hint { margin-bottom: 0; }
+
+/* "Get the app" helper - store badges + an optional store-download QR, for
+   users who don't have the Pulsar app installed yet. */
+.phone-getapp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  text-align: center;
+}
+.phone-getapp-label {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--muted);
+}
+.phone-store-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+/* The badge image is the whole control - strip the default button chrome. */
+button.phone-store-link {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  border-radius: var(--radius);
+  transition: transform 120ms ease;
+}
+button.phone-store-link:hover { transform: translateY(-2px); }
+button.phone-store-link:active { transform: translateY(0); box-shadow: none; }
+.phone-store-badge { display: block; height: 36px; width: auto; }
+
+/* Compact "Show QR code" toggle. */
+button.phone-getapp-toggle { padding: 4px 10px; font-size: var(--fs-xs); }
+
+/* Two small store-download QR codes, one per platform, side by side. */
+.phone-store-qrs {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.phone-store-qr {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.phone-store-qr img {
+  width: 110px;
+  height: 110px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.phone-store-qr figcaption {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--color-blue-60);
+}

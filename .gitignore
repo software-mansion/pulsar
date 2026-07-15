@@ -1,12 +1,11 @@
 /playground
+/pulsar-private
 archive
 .DS_Store
 .claude
 .vscode
 .md
 .idea
-mlekoscripts
-docs/server_copy
 .agents
 pulsar-haptics-workspace
 skills-lock.json

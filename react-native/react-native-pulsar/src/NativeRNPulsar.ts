@@ -36,8 +36,7 @@ export interface Spec extends TurboModule {
   Pulsar_enableImpulseCompositionMode(state: boolean): void;
   Pulsar_setRealtimeComposerStrategy(strategy: RealtimeComposerStrategy): void;
 
-  RealtimeComposer_start(): void;
-  RealtimeComposer_set(amplitude: number, frequency: number, startIfNeeded: boolean): void;
+  RealtimeComposer_set(amplitude: number, frequency: number): void;
   RealtimeComposer_stop(): void;
   RealtimeComposer_isActive(): boolean;
   RealtimeComposer_playDiscrete(amplitude: number, frequency: number): void;

@@ -1,9 +1,9 @@
 import { AudioPatternUtility } from './AudioPatternUtility';
 import type { PresetData } from '../types';
 
-// Audio playback for the standalone preview. Backed by AudioPatternUtility — a
+// Audio playback for the standalone preview. Backed by AudioPatternUtility - a
 // verbatim copy of the docs' WebAudio renderer (pulsar/docs/src/content/docs/
-// components/Preset/audio-player.ts) — so the heard result matches the
+// components/Preset/audio-player.ts) - so the heard result matches the
 // documentation exactly. Mirrors figma/src/ui/audio/player.ts; keep in sync.
 
 // One renderer per preset name so the parsed pattern and rendered audio buffer

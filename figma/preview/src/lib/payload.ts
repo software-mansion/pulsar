@@ -7,18 +7,18 @@ const API_SERVER_URL = "https://pulsar-server.swmansion.com";
 // Read the `?token=` query param from the current URL, falling back to the
 // parent window's URL when we're embedded inside an <iframe srcdoc>. Srcdoc
 // iframes always read `location.search === ''` because their effective URL is
-// the synthetic `about:srcdoc`, so we have to climb up one level — this is
+// the synthetic `about:srcdoc`, so we have to climb up one level - this is
 // what the docs `/figma-preview` page (docs/src/components/preview/Preview.astro)
 // relies on to forward its own query string into the embed. Same-origin only;
 // any SecurityError on a cross-origin parent falls back to no token.
-function getTokenFromUrl(): string | null {
+export function getTokenFromUrl(): string | null {
   const own = new URLSearchParams(location.search).get('token');
   if (own) return own;
   if (window.parent !== window) {
     try {
       return new URLSearchParams(window.parent.location.search).get('token');
     } catch {
-      // cross-origin parent — give up and behave like there's no token.
+      // cross-origin parent - give up and behave like there's no token.
     }
   }
   return null;
@@ -30,7 +30,7 @@ function getTokenFromUrl(): string | null {
 //   - 'no-token' → no ?token= in the URL (the bare preview app).
 //   - 'missing'  → token present but the project is gone / unreadable (404 etc.).
 export type PayloadResult =
-  | { status: 'ok'; payload: PreviewPayload }
+  | { status: 'ok'; payload: PreviewPayload; revision: number }
   | { status: 'private' }
   | { status: 'no-token' }
   | { status: 'missing' };
@@ -53,18 +53,23 @@ export async function readPayload(): Promise<PayloadResult> {
     // can explain the link was revoked rather than showing "no design loaded".
     if (res.status === 403) return { status: 'private' };
     if (!res.ok) return { status: 'missing' };
-    const data = (await res.json()) as { success: boolean; config?: PreviewPayload | string };
+    const data = (await res.json()) as {
+      success: boolean;
+      config?: PreviewPayload | string;
+      revision?: number;
+    };
     if (!data.success || !data.config) return { status: 'missing' };
+    const revision = typeof data.revision === 'number' ? data.revision : 0;
     // Server returns the parsed object when storage was JSON; fall back to
     // parsing if it handed back a raw string for any reason.
     if (typeof data.config === 'string') {
       try {
-        return { status: 'ok', payload: JSON.parse(data.config) as PreviewPayload };
+        return { status: 'ok', payload: JSON.parse(data.config) as PreviewPayload, revision };
       } catch {
         return { status: 'missing' };
       }
     }
-    return { status: 'ok', payload: data.config };
+    return { status: 'ok', payload: data.config, revision };
   } catch {
     return { status: 'missing' };
   }

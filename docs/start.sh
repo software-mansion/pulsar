@@ -3,8 +3,8 @@
 npm run dev &
 DOCS_PID=$!
 
-# Start the main server
-cd ./server
+# Start the main server (moved to the private repo at pulsar-private/server)
+cd ../pulsar-private/server
 
 npm run watch &
 TSC_PID=$!

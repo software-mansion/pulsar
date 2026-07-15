@@ -1,7 +1,7 @@
 {
   "name": "pulsar-figma-plugin",
   "version": "0.1.0",
-  "description": "Pulsar haptics for Figma — bind presets to components, hear them in edit & prototype mode, play on a paired phone.",
+  "description": "Pulsar haptics for Figma - bind presets to components, hear them in edit & prototype mode, play on a paired phone.",
   "private": true,
   "scripts": {
     "build": "vite build --config vite.main.config.ts && vite build",
@@ -10,9 +10,9 @@
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.108.0",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@types/qrcode": "^1.5.5",
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.0",
     "typescript": "^5.6.3",
@@ -22,6 +22,7 @@
   "dependencies": {
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.14"
   }
 }

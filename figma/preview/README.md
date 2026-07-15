@@ -3,7 +3,7 @@
 A standalone **Vite + React + TypeScript** app that embeds a Figma prototype (via
 the [Figma Embed API](https://developers.figma.com/docs/embeds/embed-api/)),
 highlights every element that has a haptic bound, lists those haptics in a side
-panel, and plays the **audio haptics** on tap — the same WebAudio engine the
+panel, and plays the **audio haptics** on tap - the same WebAudio engine the
 plugin uses in edit mode.
 
 ## How it works
@@ -56,9 +56,9 @@ This is a **self-contained package** with its own `package.json` and
 
 ## Requirements
 
-- **OAuth client id** — set in [`src/lib/embed.ts`](src/lib/embed.ts) as
+- **OAuth client id** - set in [`src/lib/embed.ts`](src/lib/embed.ts) as
   `CLIENT_ID` (the project's id `2EUn8wVWgJHsMsjlcRB9nQ`).
-- **Embed origin** — the host serving this app must be registered as an *embed
+- **Embed origin** - the host serving this app must be registered as an *embed
   origin* on that OAuth app, or the embed will refuse to send events. The app
   sends the current `location.hostname` as `embed-host`. Register
   `docs.swmansion.com` for production (and `localhost` for local dev) in your
