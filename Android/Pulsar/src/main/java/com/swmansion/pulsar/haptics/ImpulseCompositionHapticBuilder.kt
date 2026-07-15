@@ -9,23 +9,6 @@ class ImpulseCompositionHapticBuilder {
 
     companion object {
         /**
-         * Minimum peak width used when an impulse-only preset has to fall back to the generic
-         * control-point path because the device cannot play primitives. The impulse ends up
-         * rendered as a plain on/off waveform pulse roughly this wide.
-         *
-         * Determined empirically, like [ControlLineBuilder]'s step rate. The default 15 ms peak is
-         * sized for envelope hardware; a cheap ERM cannot spin up in that time, so the tap is
-         * simply never felt. Measured on a moto g05 (no primitives, no amplitude control, so every
-         * impulse degrades to a bare on/off pulse): a 20 ms pulse is imperceptible, 40 ms is
-         * clearly felt. For reference the vendor's own EFFECT_CLICK on that device is 35 ms and
-         * EFFECT_TICK is 54 ms, so ~40 ms is the width the hardware itself treats as a tap.
-         *
-         * Raising this further would trade rhythm for strength: impulses closer together than the
-         * pulse width can no longer be told apart.
-         */
-        const val MIN_IMPULSE_TRANSITION_MS = 40L
-
-        /**
          * Returns true if the preset consists only of impulses:
          * discretePattern is non-empty and continuousPattern has no non-zero amplitude points.
          */

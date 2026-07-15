@@ -34,31 +34,25 @@ class HapticBuilder(private val engine: HapticEngineWrapper) {
    *
    * The default path quantizes the control line into ~13 Hz steps and area-averages each bucket
    * ([ControlLineBuilder.getStepsPoints]). That is right for continuous envelopes, but it destroys
-   * transients: an impulse is only ~14 ms wide, so averaging it across a 76 ms bucket drops it to
-   * ~8-30/255 — below a weak actuator's start threshold — and neighbouring impulses smear together
-   * into one buzz instead of separate taps.
+   * transients: averaging an impulse across a 76 ms bucket drops it to ~8-30/255 — below a weak
+   * actuator's start threshold — and neighbouring impulses smear together into one buzz instead of
+   * separate taps.
    *
    * Impulse-only presets have few control points and no envelope to keep up with, so we skip the
    * quantizer and hand the linear points straight to [VibrationEffectsGenerator], which already
    * picks the right representation for the device (advanced/basic envelope, amplitude waveform, or
-   * timing-only waveform) and honours the simulated compatibility mode.
+   * timing-only waveform) and honours the simulated compatibility mode. The peaks are already sized
+   * for the actuator by [HapticEngineWrapper.getMinControlPointDurationMillis], which widens them
+   * on hardware too sluggish to feel a short pulse.
    */
   @RequiresApi(Build.VERSION_CODES.O)
   private fun createImpulseFallbackEffect(preset: PatternData): VibrationEffect? {
-    // Widen the peak so it still engages a sluggish ERM/LRA once rendered as a plain waveform,
-    // without dropping below the resolution an envelope-capable device asks for.
-    val minTransitionDuration = maxOf(
-      engine.getMinControlPointDurationMillis(),
-      ImpulseCompositionHapticBuilder.MIN_IMPULSE_TRANSITION_MS,
-    )
-    val controlLine = convertToControlPoints(preset, minTransitionDuration)
+    val controlLine = convertToControlPoints(preset)
     return vibrationEffectsGenerator.convertToVibrationEffect(controlLine.getLinearPoints())
   }
 
-  private fun convertToControlPoints(
-    preset: PatternData,
-    minTransitionDuration: Long = engine.getMinControlPointDurationMillis(),
-  ): ControlLineBuilder = buildControlLine(preset, minTransitionDuration)
+  private fun convertToControlPoints(preset: PatternData): ControlLineBuilder =
+    buildControlLine(preset, engine.getMinControlPointDurationMillis())
 
   fun simulateCompatibilityMode(mode: CompatibilityMode) {
     vibrationEffectsGenerator.simulateCompatibilityMode(mode)

@@ -109,12 +109,17 @@ class HapticEngineWrapper(private val context: Context) {
                 vibrationService.frequencyProfile !== null
     }
 
+    fun hasPrimitiveSupport(): Boolean {
+        return isPrimitiveSupported(VibrationEffect.Composition.PRIMITIVE_CLICK)
+    }
+
     fun getMinControlPointDurationMillis(): Long {
-        return if (isEnvelopeSupported()) {
-            vibrator?.envelopeEffectInfo?.minControlPointDurationMillis ?: 15L
-        } else {
-            15L
-        }
+        return resolveMinControlPointDuration(
+            isEnvelopeSupported = isEnvelopeSupported(),
+            hasPrimitiveSupport = hasPrimitiveSupport(),
+            vendorMinControlPointDurationMillis =
+                if (isEnvelopeSupported()) vibrator?.envelopeEffectInfo?.minControlPointDurationMillis else null,
+        )
     }
 
     fun getFrequencyProfile() : VibratorFrequencyProfile? {
@@ -151,7 +156,21 @@ class HapticEngineWrapper(private val context: Context) {
         }
     }
 
-    private companion object {
-        const val TAG = "Pulsar"
+    companion object {
+        private const val TAG = "Pulsar"
+
+        const val DEFAULT_MIN_CONTROL_POINT_DURATION_MS = 15L
+        const val WEAK_ACTUATOR_MIN_CONTROL_POINT_DURATION_MS = 35L
+
+        fun resolveMinControlPointDuration(
+            isEnvelopeSupported: Boolean,
+            hasPrimitiveSupport: Boolean,
+            vendorMinControlPointDurationMillis: Long?,
+        ): Long = when {
+            isEnvelopeSupported ->
+                vendorMinControlPointDurationMillis ?: DEFAULT_MIN_CONTROL_POINT_DURATION_MS
+            !hasPrimitiveSupport -> WEAK_ACTUATOR_MIN_CONTROL_POINT_DURATION_MS
+            else -> DEFAULT_MIN_CONTROL_POINT_DURATION_MS
+        }
     }
 }

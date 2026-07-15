@@ -19,7 +19,8 @@ import org.junit.Test
  */
 class ImpulseCompositionHapticBuilderTest {
 
-    private val impulseWidth = ImpulseCompositionHapticBuilder.MIN_IMPULSE_TRANSITION_MS
+    /** What [HapticEngineWrapper] hands us on hardware without primitive support. */
+    private val impulseWidth = HapticEngineWrapper.WEAK_ACTUATOR_MIN_CONTROL_POINT_DURATION_MS
 
     /** Stomp: three full-power impulses at 0 / 75 / 150 ms, no continuous envelope. */
     private val stomp = PatternData(
