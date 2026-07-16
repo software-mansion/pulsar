@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { SOCKET_SERVER_URL } from '@/constants/Connection';
 
+import { localDeviceName } from './deviceName';
 import type { ConnectionStatus } from './types';
 
 const PING_INTERVAL_MS = 25_000;
@@ -59,7 +60,11 @@ export function useLiveSockets({ onStatus, onMessage, onFailed }: Callbacks) {
         kind === 'new'
           ? `type=receiver&action=new_connection&code=${encodeURIComponent(value)}`
           : `type=receiver&action=reuse_connection&token=${encodeURIComponent(value)}`;
-      const socket = new WebSocket(`${SOCKET_SERVER_URL}?${query}`);
+      // Advertise this phone's model so the producer can label it. It MUST go on both
+      // paths: the relay reads identity off the socket at notification time, so a
+      // reconnect that omitted it would silently drop the name on every restore.
+      const identity = `&name=${encodeURIComponent(localDeviceName())}`;
+      const socket = new WebSocket(`${SOCKET_SERVER_URL}?${query}${identity}`);
       const entry: LiveSocket = { socket, ping: null, timeout: null };
       live.current.set(id, entry);
       cbRef.current.onStatus(id, 'connecting');
