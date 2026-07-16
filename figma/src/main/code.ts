@@ -3,7 +3,6 @@
 import type {
   BindingMeta,
   BoundItem,
-  CatalogEntry,
   FrameInfo,
   MainToUi,
   NodeBox,
@@ -50,7 +49,6 @@ const LEGACY_PREVIEW_TOKEN_KEY = 'pulsar:previewToken';
 // only thing evicted (oldest-first) when clientStorage runs out of space.
 const PROJECT_CACHE_PREFIX = 'pulsar:project:';
 const FAVOURITES_KEY = 'pulsar:favourites';
-const CUSTOM_PRESETS_KEY = 'pulsar:customPresets';
 // Flag: has the first-run onboarding tour been shown? Namespaced per-file (see
 // fileScopedKey) and per-user (clientStorage), so the tour auto-opens once for
 // each new project instead of only once per machine.
@@ -208,8 +206,8 @@ async function getProjectCache(fileKey: string): Promise<ProjectCache | null> {
 
 // Drop the least-recently-written project cache (excluding `exceptKey`, the one
 // we're trying to write). Returns false when there is nothing left to evict.
-// Only ever touches PROJECT_CACHE_PREFIX keys - tokens, settings, favourites,
-// custom presets and the haptics token are all off-limits.
+// Only ever touches PROJECT_CACHE_PREFIX keys - tokens, settings, favourites
+// and the haptics token are all off-limits.
 async function evictOldestProjectCache(exceptKey: string): Promise<boolean> {
   const keys = (await figma.clientStorage.keysAsync()).filter(
     (k) => k.startsWith(PROJECT_CACHE_PREFIX) && k !== exceptKey
@@ -265,11 +263,6 @@ async function setProjectCache(
 async function loadFavourites(): Promise<string[]> {
   const raw = await figma.clientStorage.getAsync(FAVOURITES_KEY);
   return Array.isArray(raw) ? raw : [];
-}
-
-async function loadCustomPresets(): Promise<CatalogEntry[]> {
-  const raw = await figma.clientStorage.getAsync(CUSTOM_PRESETS_KEY);
-  return Array.isArray(raw) ? (raw as CatalogEntry[]) : [];
 }
 
 async function loadOnboardingSeen(): Promise<boolean> {
@@ -615,12 +608,11 @@ figma.on('selectionchange', () => {
 figma.ui.onmessage = async (msg: UiToMain) => {
   switch (msg.type) {
     case 'ui-ready': {
-      const [settings, hapticsToken, favourites, customPresets, onboardingSeen] =
+      const [settings, hapticsToken, favourites, onboardingSeen] =
         await Promise.all([
           loadSettings(),
           loadToken(),
           loadFavourites(),
-          loadCustomPresets(),
           loadOnboardingSeen()
         ]);
       postToUi({
@@ -631,7 +623,6 @@ figma.ui.onmessage = async (msg: UiToMain) => {
         fileKey: resolveFileKey(),
         figmaFileKey: getFigmaFileKey(),
         favourites,
-        customPresets,
         onboardingSeen
       });
       pushSelection();
@@ -706,9 +697,6 @@ figma.ui.onmessage = async (msg: UiToMain) => {
       break;
     case 'persist-favourites':
       await figma.clientStorage.setAsync(FAVOURITES_KEY, msg.favourites);
-      break;
-    case 'persist-custom-presets':
-      await figma.clientStorage.setAsync(CUSTOM_PRESETS_KEY, msg.presets);
       break;
     case 'persist-onboarding-seen':
       await figma.clientStorage.setAsync(fileScopedKey(ONBOARDING_SEEN_KEY), msg.seen);

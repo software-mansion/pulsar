@@ -13,5 +13,6 @@ export const ONBOARDING_VIDEOS = {
   link: 'https://github.com/user-attachments/assets/b97a471c-c4c2-42f3-a7f4-4af8bd4afbd9',
   livePreview: 'https://github.com/user-attachments/assets/14e64152-4e44-4b8d-b379-22deaf731b62',
   previewOnDevice: 'https://github.com/user-attachments/assets/9be36fb7-a1fd-496f-b1ad-57061e58d1f3',
+  resize: 'https://github.com/user-attachments/assets/70fb5f00-92d2-47fe-a1c2-d1a272d57065',
   share: 'https://github.com/user-attachments/assets/08d240de-60b6-4486-9adf-a7f0154876b0'
 } as const;

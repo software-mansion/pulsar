@@ -1,9 +1,14 @@
 /* Selection bar - the sticky strip above the list showing the selected node and
-   its bound preset. Both names are interactive: the component name reveals the
-   node on the canvas, the preset name jumps to + plays it. They're styled as
-   bordered chips so it's obvious they're clickable. */
+   its bound preset. Two forms: full-size at rest (a teaching surface - icon,
+   headline, next action) and compact once the list scrolls, which is the form
+   that has to stay cheap on screen. `.condensed` is the only switch; everything
+   below transitions between the two.
+
+   Both names are interactive: the component name reveals the node on the canvas,
+   the preset name jumps to + plays it. They're styled as bordered chips so it's
+   obvious they're clickable. */
 .sel-bar {
-  padding: 6px 10px;
+  padding: 12px;
   background: var(--color-blue-10);
   border-bottom: 1px solid var(--border);
   /* Soft drop shadow on the bottom edge lifts the bar off the list below,
@@ -12,7 +17,53 @@
   position: relative;
   z-index: 1;
   font-size: var(--fs-xs);
+  transition: padding 240ms ease;
 }
+.sel-bar.condensed { padding: 6px 10px; }
+
+/* --- The hero block: icon + headline + next action. Collapses to nothing when
+   condensed. The 1fr -> 0fr grid row is what animates: it gives a height
+   transition without hard-coding a pixel height that the copy could outgrow. */
+.sel-hero {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 240ms ease, opacity 160ms ease;
+}
+.sel-bar.condensed .sel-hero {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.sel-hero-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-height: 0;
+  overflow: hidden;
+}
+.sel-hero-copy { padding-bottom: 10px; }
+/* Icon disc - same chip language as the accordion heads. */
+.sel-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--color-blue-20);
+}
+.sel-hero-icon img { display: block; }
+.sel-hero-title {
+  font-weight: 700;
+  font-size: var(--fs-md);
+  line-height: 1.3;
+}
+.sel-hero-body { margin: 2px 0 0; font-size: var(--fs-xs); line-height: 1.45; }
+
+/* --- The slot row: component -> preset, filled in as the user goes. Present in
+   both forms; only its scale changes. */
+.sel-row { gap: 6px; }
 .sel-info {
   display: inline-flex;
   align-items: center;
@@ -23,8 +74,8 @@ button.sel-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  max-width: 130px;
-  padding: 1px 6px;
+  max-width: 160px;
+  padding: 4px 9px;
   border: 1px solid var(--color-blue-50);
   border-radius: var(--radius-sm);
   background: var(--color-blue-10);
@@ -36,6 +87,7 @@ button.sel-link {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: padding 240ms ease, max-width 240ms ease;
 }
 /* The label text itself ellipsizes; the icon stays fixed. */
 button.sel-link > img { flex-shrink: 0; display: block; }
@@ -45,13 +97,16 @@ button.sel-link:active { box-shadow: none; transform: scale(0.97); }
 button.sel-link--preset { background: var(--surface); border-style: dashed; }
 button.sel-link--preset:hover { background: var(--color-blue-10); }
 .sel-arrow { color: var(--muted); flex-shrink: 0; }
-/* Empty preset slot - dashed chip mirroring the preset chip's shape so the
-   "component → preset" relation is visible even before a preset is bound. Muted
-   and non-interactive since there's nothing to act on yet. */
+/* Empty slot - dashed chip mirroring the filled chip's shape so the
+   "component -> preset" relation is visible before anything is bound. Muted and
+   non-interactive since there's nothing to act on yet; the label names where the
+   thing comes from rather than restating that it's missing. */
 .sel-placeholder {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 6px;
+  /* inline-block, not inline-flex: as a flex item this blockifies either way,
+     and text-overflow only ellipsizes inside a block container - as a flex one
+     the label just gets sheared off mid-word when it outgrows max-width. */
+  display: inline-block;
+  padding: 4px 9px;
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
   color: var(--muted);
@@ -61,7 +116,48 @@ button.sel-link--preset:hover { background: var(--color-blue-10); }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: padding 240ms ease;
+}
+/* The slot the user has to act on next: lifted out of the muted placeholder look
+   (blue border, full-strength label) and given a slow outward ripple, so the eye
+   lands on the step being asked for. Mirrors the step-celebrate ripple in
+   LivePreviewTab, in blue and looping rather than one-shot. Long cycle and a
+   small radius on purpose - it has to be findable at a glance without nagging
+   while someone works. */
+.sel-placeholder.pending {
+  border-color: var(--color-blue-50);
+  color: var(--color-primary);
+  animation: sel-pending-pulse 2s ease-out infinite;
+}
+@keyframes sel-pending-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(56, 172, 221, 0.45); }
+  60% { box-shadow: 0 0 0 6px rgba(56, 172, 221, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(56, 172, 221, 0); }
+}
+/* Compact form - back to the original chip metrics. The pulse is a first-run
+   teaching cue, and the compact bar is the form you're in once you're working -
+   a ripple looping next to a scrolling list is pure distraction, so it stops. */
+.sel-bar.condensed .sel-placeholder.pending { animation: none; }
+
+.sel-bar.condensed button.sel-link,
+.sel-bar.condensed .sel-placeholder {
+  padding: 1px 6px;
+  max-width: 160px;
 }
 /* The Remove button drops the signature offset shadow to sit flat in the bar. */
 button.sel-remove { box-shadow: none; }
 button.sel-remove:active { box-shadow: none; }
+
+/* Shrinking on scroll is an affordance, not decoration - honour a reduced-motion
+   preference by snapping between the two forms instead. */
+@media (prefers-reduced-motion: reduce) {
+  .sel-bar,
+  .sel-hero,
+  button.sel-link,
+  .sel-placeholder {
+    transition: none;
+  }
+  /* The pending slot keeps its blue border - only the looping ripple goes, so
+     the "act here next" cue survives without the motion. */
+  .sel-placeholder.pending { animation: none; }
+}

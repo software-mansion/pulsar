@@ -60,6 +60,13 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     body: 'Open the Share tab and publish a share link. Developers open it to feel every bound haptic and copy ready-to-use SDK code for iOS, Android, React Native and more - no Figma access required.',
     gifPlaceholder: 'Sharing a design with a developer',
     video: ONBOARDING_VIDEOS.share
+  },
+  {
+    id: 'resize-window',
+    title: 'Resize the plugin window',
+    body: 'Drag the grip in the bottom-right corner to make the window bigger, or the right and bottom edges to change just the width or height. Figma plugin windows can’t be dragged from their outer edges, so these handles are the only way. Pulsar remembers the size for next time.',
+    gifPlaceholder: 'Resizing the plugin window',
+    video: ONBOARDING_VIDEOS.resize
   }
 ];
 
@@ -89,7 +96,7 @@ export const FAQ: FaqEntry[] = [
     id: 'custom-presets',
     question: 'Can I create my own presets?',
     answer:
-      'Yes. On the Presets tab use "Add custom preset" to paste a custom haptic pattern as JSON. Your custom presets appear at the top of the list and can be bound just like the built-in ones.'
+      'Not yet. Pulsar Studio - a visual editor for designing your own haptic patterns - is in development. Open the Custom presets section on the Presets tab to join the early-access list.'
   },
   {
     id: 'tags',
@@ -116,3 +123,6 @@ export const FIGMA_DESIGN_URL =
   'https://www.figma.com/design/i85oRvw6pl12o6c0X1zP6E/Pulsar---Haptics-Figma-Plugin?node-id=0-1';
 export const EXAMPLE_APP_URL = 'https://docs.swmansion.com/pulsar/figma-preview/';
 export const SUPPORT_EMAIL = 'projects@swmansion.com';
+// Pulsar Studio - the visual pattern editor that replaces the removed
+// paste-your-own-JSON flow. The docs page hosts the early-access sign-up form.
+export const STUDIO_URL = 'https://docs.swmansion.com/pulsar/pulsar-studio/';

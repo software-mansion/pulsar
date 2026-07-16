@@ -4,6 +4,8 @@ import iconExternalLink from '../assets/icon-external-link.svg';
 import iconLink from '../assets/icon-link.svg';
 import iconGlobe from '../assets/icon-globe.svg';
 import iconLock from '../assets/icon-lock.svg';
+import DemoVideo from './DemoVideo';
+import { ONBOARDING_VIDEOS } from '../lib/onboardingMedia';
 
 // Share tab - the hand-off / sharing surface. The file key, phone pairing, and
 // the server-sync status all live in the Live preview tab now; this tab is just
@@ -40,6 +42,10 @@ export default function LivePreviewPanel({
           preview in a browser and feel every bound haptic.
         </p>
       </div>
+
+      {/* The same clip the onboarding carousel uses for its "Share a design with
+          a developer" step - shows the copy-link → open-in-browser hand-off. */}
+      <DemoVideo src={ONBOARDING_VIDEOS.share} caption="How sharing a design works" />
 
       {/* Share-link visibility. When public, anyone with the link can open the
           preview; flip it off to revoke access without losing the share token.

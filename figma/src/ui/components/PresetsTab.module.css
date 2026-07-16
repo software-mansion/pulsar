@@ -4,16 +4,26 @@
 
 .preset-scroll { flex: 1; }
 
-/* Grouped controls card - Filters / Custom presets / Phone share one bordered
-   panel below the search box, replacing the old loose accordion rows. */
-.controls-section {
+/* Library section - the Pulsar Studio notice + bound components. Divided off from the
+   filter block below, since neither acts on the list. */
+.library-section {
   padding: 8px;
   border-bottom: 1px solid var(--border);
 }
+
+/* Filter block - search, filters and the result count, stacked straight onto
+   the list. Deliberately has no bottom border: the controls and the results
+   they produce should read as one surface. */
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+.filter-intro { margin: 4px 0 0; font-size: var(--fs-xs); line-height: 1.5; }
 .controls-search { position: relative; }
 .controls-search-clear { position: absolute; right: 4px; top: 4px; margin: 0; }
 .controls-card {
-  margin-top: 8px;
   border: 1px solid var(--color-blue-20);
   border-radius: var(--radius);
   overflow: hidden;
@@ -24,8 +34,9 @@
 .controls-card > :global(.acc-row) { border-top: 1px solid var(--color-blue-10); padding-top: 0; }
 .controls-card > :global(.acc-row):first-child { border-top: none; }
 
-/* Results toolbar - count + sound toggle + layout switch. */
-.list-toolbar { padding: 4px 8px; gap: 6px; margin-top: 8px; }
+/* Results toolbar - count + sound toggle + layout switch. Last row of the
+   filter block, so it takes its spacing from the section's gap. */
+.list-toolbar { padding: 0 2px; gap: 6px; }
 .list-toolbar-meta { font-size: var(--fs-xs); }
 .list-toolbar-toggle {
   gap: 6px;

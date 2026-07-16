@@ -19,18 +19,18 @@ export interface PresetData {
 
 export interface CatalogEntry {
   id: string;
-  category: 'user' | 'system' | 'custom';
+  category: 'user' | 'system';
   platform: 'ios' | 'android' | null;
   data: PresetData;
 }
 
-// Tag applied to user-supplied custom presets so they can be filtered.
-export const CUSTOM_TAG = 'Custom';
-
 export interface BindingMeta {
   presetId: string;
   presetName: string;
-  // Optional inlined custom JSON (when the user pastes a custom pattern).
+  // Legacy, read-only: bindings made by the removed custom-preset editor inlined
+  // their pattern here. Nothing writes it any more, but existing bindings in
+  // users' files still carry it and resolve through it - dropping the field
+  // would silently strip those nodes from the live preview.
   customPattern?: PresetData;
 }
 
@@ -64,6 +64,7 @@ export interface PreviewBinding {
   nodeName: string;
   presetId: string;
   presetName: string;
+  // Legacy - see BindingMeta.customPattern.
   customPattern?: PresetData;
   // Absolute bounding box, used to position on-canvas highlights in the preview.
   box: NodeBox | null;
@@ -134,7 +135,6 @@ export type UiToMain =
   | { type: 'persist-settings'; settings: Settings }
   | { type: 'persist-haptics-token'; token: string | null }
   | { type: 'persist-favourites'; favourites: string[] }
-  | { type: 'persist-custom-presets'; presets: CatalogEntry[] }
   // Mark the first-run onboarding tour as seen so it doesn't auto-open again.
   // Stored per-user in clientStorage (not per-file), so the tour shows once.
   | { type: 'persist-onboarding-seen'; seen: boolean }
@@ -185,7 +185,6 @@ export type MainToUi =
       // pluginData, so it's per-file and shared with collaborators.
       figmaFileKey: string;
       favourites: string[];
-      customPresets: CatalogEntry[];
       // Whether the first-run onboarding tour has already been shown. False
       // (the default) makes the UI auto-open the tour on first launch.
       onboardingSeen: boolean;
