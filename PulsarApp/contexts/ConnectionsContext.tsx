@@ -11,7 +11,7 @@ import React, {
   type ReactNode,
 } from 'react';
 import { AppState } from 'react-native';
-import { Presets } from 'react-native-pulsar';
+import { Presets, usePatternComposer, type Pattern } from 'react-native-pulsar';
 
 import { SOCKET_SERVER_URL } from '@/constants/Connection';
 import { playPattern } from '@/src/haptics/playPattern';
@@ -159,6 +159,14 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   // preview consumer (e.g. a binding toggled back and forth).
   const previewNonceRef = useRef(0);
 
+  // One composer for playing full JSON presets pushed over a broadcast (Pulsar
+  // Studio's "Play on device"). `parse`/`play` are stable, but the socket handler
+  // is a useCallback closure, so read the composer through a ref that every render
+  // keeps current rather than closing over the first one.
+  const composer = usePatternComposer(undefined);
+  const composerRef = useRef(composer);
+  composerRef.current = composer;
+
   useEffect(() => {
     connectionsRef.current = connections;
   }, [connections]);
@@ -290,6 +298,27 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
             if (typeof msg === 'string') {
               const found = playPattern(msg);
               notify(found, msg);
+            } else if (
+              msg &&
+              typeof msg === 'object' &&
+              (msg as { kind?: unknown }).kind === 'haptic-preset' &&
+              (msg as { pattern?: unknown }).pattern
+            ) {
+              // A full JSON preset pushed from Pulsar Studio. Unlike the string
+              // path, this ALWAYS plays the supplied waveform via the composer —
+              // never a same-named built-in — so an edited preset plays as edited.
+              // Older app builds don't match this branch (the object isn't a
+              // 'preview-*'), so they harmlessly ignore it: the backward-compat seam.
+              const preset = msg as { kind: string; name?: string; pattern: Pattern };
+              let played = false;
+              try {
+                composerRef.current.parse(preset.pattern);
+                composerRef.current.play();
+                played = true;
+              } catch {
+                played = false;
+              }
+              notify(played, preset.name ?? 'Haptic preset');
             } else if (
               msg &&
               typeof msg === 'object' &&
