@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CUSTOM_TAG, type CatalogEntry, type Settings } from '../../shared/types';
+import { type CatalogEntry, type Settings } from '../../shared/types';
 import { onMessage, send } from '../figmaBridge';
 import { copyToClipboard } from '../lib/clipboard';
 import { extractFileKey, isFileKeyValid } from '../lib/fileKey';
@@ -332,9 +332,10 @@ export function usePreviewSync({ settings, figmaFileKey, presetById, notify, onP
           presetName: b.presetName,
           box: b.box,
           frameId: b.frameId,
-          // Marked custom when the binding inlines a custom pattern (always
-          // user-defined) or when the resolved preset carries the Custom tag.
-          isCustom: !!b.customPattern || (Array.isArray(data.tags) && data.tags.includes(CUSTOM_TAG))
+          // Legacy bindings from the removed custom-preset editor inline their
+          // pattern; nothing new can be custom, so this is only ever true for
+          // those. The preview renders a "Custom" pill off it.
+          isCustom: !!b.customPattern
         });
       }
       // Bootstrap still provisions an (empty) row with no bindings - that's the

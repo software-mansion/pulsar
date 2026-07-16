@@ -1,0 +1,9 @@
+/* Custom presets accordion body - the Pulsar Studio coming-soon notice. */
+.studio-text { margin: 0; font-size: var(--fs-xs); line-height: 1.5; }
+.studio-text b { font-weight: 700; }
+button.studio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+}

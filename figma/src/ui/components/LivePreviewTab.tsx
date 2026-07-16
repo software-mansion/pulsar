@@ -6,11 +6,10 @@ import type { SyncStatus } from '../App';
 import { isFileKeyValid } from '../lib/fileKey';
 import iconCheck from '../assets/icon-check.svg';
 import iconChevron from '../assets/icon-chevron-down.svg';
-import iconPlay from '../assets/icon-play.svg';
 import iconRefresh from '../assets/icon-refresh.svg';
-import iconExternalLink from '../assets/icon-external-link.svg';
 import { ONBOARDING_VIDEOS } from '../lib/onboardingMedia';
 import { send } from '../figmaBridge';
+import DemoVideo from './DemoVideo';
 
 // Server-sync status copy + dot colour for the footer pill (moved here from the
 // Share tab) - reflects whether the shared preview's data matches the server.
@@ -32,64 +31,6 @@ const HANDOFF_OPEN_MS = 1400;
 // Figma file key (the embed needs it); step 2 pairs a phone so bound haptics
 // play on the device. Step 2 stays locked until step 1 is valid. Deliberately
 // separate from LivePreviewPanel, which is the "share" tab.
-
-// A media slot for a short demo. Pass `src` (a remote clip) to play it muted +
-// looping; until it has buffered enough to play we overlay a spinner + caption,
-// and on a load error we fall back to the labelled placeholder.
-function ConfiguratorMedia({ src, caption }: { src?: string; caption: string }) {
-  // 'loading' until the clip can play, 'ready' once it can, 'error' if it fails.
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(src ? 'loading' : 'error');
-  const showVideo = !!src && status !== 'error';
-  return (
-    <div className={styles['configurator-media-wrap']}>
-      <figure className={styles['configurator-media']}>
-        {showVideo ? (
-          <>
-            <video
-              className={styles['configurator-media-img']}
-              src={src}
-              aria-label={caption}
-              // Buffer up front so both steps' clips are ready when the tab
-              // opens - the collapsed step's video loads without waiting for its
-              // accordion to be expanded.
-              preload="auto"
-              controls
-              autoPlay
-              loop
-              muted
-              playsInline
-              onCanPlay={() => setStatus('ready')}
-              onError={() => setStatus('error')}
-            />
-            {status === 'loading' && (
-              <div className={styles['configurator-media-loading']}>
-                <span className={styles['configurator-media-spinner']} aria-hidden="true" />
-                <span className={styles['configurator-media-caption']}>{caption}</span>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className={styles['configurator-media-ph']}>
-            <img src={iconPlay} alt="" width={18} height={18} />
-            <span className={styles['configurator-media-caption']}>{caption}</span>
-            <span className={styles['configurator-media-tag']}>Demo</span>
-          </div>
-        )}
-      </figure>
-      {src && (
-        <button
-          type="button"
-          className={styles['configurator-media-link']}
-          onClick={() => send({ type: 'open-external', url: src })}
-          title="Open this video full size in your browser"
-        >
-          <img src={iconExternalLink} alt="" width={11} height={11} />
-          Open full size video
-        </button>
-      )}
-    </div>
-  );
-}
 
 // One numbered step card. `done` flips it to the green completed look (check in
 // the disc); `locked` dims it and blocks interaction until it's the user's turn;
@@ -301,7 +242,7 @@ export default function LivePreviewTab({
         open={expandedStep === 1}
         onToggle={() => toggleStep(1)}
       >
-        <ConfiguratorMedia src={ONBOARDING_VIDEOS.link} caption="Where to copy this file’s link" />
+        <DemoVideo src={ONBOARDING_VIDEOS.link} caption="Where to copy this file’s link" />
         <p className={styles['configurator-text']}>
           In Figma’s top bar, open <b>Share → Copy link</b>, then paste it below.
           A full link or the raw key both work.
@@ -344,7 +285,7 @@ export default function LivePreviewTab({
         open={expandedStep === 2}
         onToggle={() => toggleStep(2)}
       >
-        <ConfiguratorMedia src={ONBOARDING_VIDEOS.livePreview} caption="Scan the QR with the Pulsar app" />
+        <DemoVideo src={ONBOARDING_VIDEOS.livePreview} caption="Scan the QR with the Pulsar app" />
         <p className={styles['configurator-text']}>
           Scanning opens your live preview in the Pulsar app - tap any bound
           element and feel its haptics on your device in real time, as you edit.

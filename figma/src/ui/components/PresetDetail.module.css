@@ -222,17 +222,6 @@
   margin: 0;
   cursor: default;
 }
-/* Custom-preset accent - blue-20 fill, no border, signals user-defined. */
-:global(.tag).tag-custom {
-  margin: 0;
-  padding: 4px 10px;
-  background: var(--color-blue-20);
-  border: none;
-  color: var(--color-primary);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: default;
-}
 
 /* Scrollbars for the modal body / code block are handled by the global
    custom-scrollbar rules in common.css. */

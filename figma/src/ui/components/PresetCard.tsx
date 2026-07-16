@@ -6,6 +6,7 @@ import { usePresetsUiStore } from '../store';
 import iconPlay from '../assets/icon-play.svg';
 import iconClock from '../assets/icon-clock.svg';
 import iconInfo from '../assets/icon-info.svg';
+import iconPlus from '../assets/icon-plus.svg';
 
 const formatDuration = (ms: number) =>
   ms >= 1000 ? `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)} s` : `${Math.round(ms)} ms`;
@@ -45,6 +46,19 @@ const PresetCard = memo(function PresetCard({
     </button>
   );
 
+  // Bind-to-selection action - shared by both layouts.
+  const bindButton = (
+    <button
+      className={`primary ${styles['bind-button']}`}
+      onClick={() => onBind(entry)}
+      title="Bind to selection"
+      aria-label="Bind to selection"
+    >
+      <img src={iconPlus} alt="" width={13} height={13} />
+      Add
+    </button>
+  );
+
   const boundBadge = isBound ? (
     <span className="bound-badge">● selected</span>
   ) : null;
@@ -69,9 +83,7 @@ const PresetCard = memo(function PresetCard({
           {formatDuration(data.duration)}
         </span>
         {favButton}
-        <button className="primary" onClick={() => onBind(entry)} title="Bind to selection" aria-label="Bind to selection">
-          Add
-        </button>
+        {bindButton}
       </div>
     );
   }
@@ -82,22 +94,30 @@ const PresetCard = memo(function PresetCard({
   return (
     <div className="preset-card" data-preset-id={entry.id}>
       <div className={styles['preset-card-head']}>
-        <span className={styles['preset-card-name']}>{data.name}</span>
+        <span className={styles['preset-card-title']}>
+          <span className={styles['preset-card-name']}>{data.name}</span>
+          {/* Quiet info affordance right by the name - mirrors the "Filters"
+              accordion title. */}
+          <button
+            type="button"
+            className={styles['info-btn']}
+            onClick={() => onOpen(entry.id)}
+            title="Details"
+            aria-label="Open details"
+          >
+            <img src={iconInfo} alt="" width={14} height={14} />
+          </button>
+        </span>
         {boundBadge}
         <span className={styles['preset-dur']} title="Pattern duration">
           <img src={iconClock} alt="" />
           {formatDuration(data.duration)}
         </span>
         {favButton}
-        <button className="ghost icon" onClick={() => onOpen(entry.id)} title="Details" aria-label="Open details">
-          <img src={iconInfo} alt="" width={14} height={14} />
-        </button>
         <button className="ghost icon" onClick={() => onPlay(entry)} title="Play" aria-label="Play">
           <img src={iconPlay} alt="" width={14} height={14} />
         </button>
-        <button className="primary" onClick={() => onBind(entry)} title="Bind to selection" aria-label="Bind to selection">
-          Add
-        </button>
+        {bindButton}
       </div>
       {data.tags.length > 0 && (
         <div className={styles['preset-card-tags']}>

@@ -1,14 +1,13 @@
 import styles from './PresetDetail.module.css';
 import { useEffect, useState } from 'react';
 import type { CatalogEntry } from '../../shared/types';
-import { CUSTOM_TAG } from '../../shared/types';
 import Visualization from './Visualization';
 import iconClose from '../assets/icon-close.svg';
 import iconPlay from '../assets/icon-play.svg';
 import iconChevronDown from '../assets/icon-chevron-down.svg';
 import iconCopy from '../assets/icon-copy.svg';
 import iconCheck from '../assets/icon-check.svg';
-import { builtInSnippet, customSnippet, LANGS, type Lang } from './sdkSnippets';
+import { builtInSnippet, LANGS, type Lang } from './sdkSnippets';
 
 // Plugin's preset-detail modal. Mirrors the preview app's PresetDetailsModal
 // recipe (docs-style head bar, blue-10 inner sections, underlined SDK tabs,
@@ -27,11 +26,8 @@ export default function PresetDetail({
   onPlay: () => void;
   onBind: () => void;
 }) {
-  const isCustom = Array.isArray(entry.data.tags) && entry.data.tags.includes(CUSTOM_TAG);
   const [lang, setLang] = useState<Lang>('Swift');
-  const snippet = isCustom
-    ? customSnippet(lang, entry.data)
-    : builtInSnippet(lang, entry.data.name);
+  const snippet = builtInSnippet(lang, entry.data.name);
   const json = JSON.stringify(entry.data, null, 2);
 
   // Esc closes - same affordance the preview's modal exposes.
@@ -86,18 +82,14 @@ export default function PresetDetail({
           </button>
         </div>
 
-        {/* Tags row - Custom pill comes first when applicable, then any other
-            tags as white pills, matching the preview's filter order. */}
-        {(entry.data.tags.length > 0 || isCustom) && (
+        {/* Tags row - white pills, matching the preview's filter order. */}
+        {entry.data.tags.length > 0 && (
           <div className={styles['tags-row']}>
-            {isCustom && <span className={`tag ${styles['tag-custom']}`}>Custom</span>}
-            {entry.data.tags
-              .filter((t) => t !== CUSTOM_TAG)
-              .map((t) => (
-                <span key={t} className={`tag ${styles['tag-white']}`}>
-                  {t}
-                </span>
-              ))}
+            {entry.data.tags.map((t) => (
+              <span key={t} className={`tag ${styles['tag-white']}`}>
+                {t}
+              </span>
+            ))}
           </div>
         )}
 

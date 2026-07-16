@@ -12,7 +12,7 @@ import { toggleInSet } from './lib/collections';
 // Deliberately scoped: the server-sync / phone-pairing machinery in
 // usePreviewSync / usePhoneConnection is untouched (it's delicate, ref-based by
 // design, and can't be exercised outside Figma), and persisted/hook-input state
-// (settings, figmaFileKey, hapticsToken, customPresets) stays in App.
+// (settings, figmaFileKey, hapticsToken) stays in App.
 
 interface PresetsUiState {
   // Favourited preset ids. Seeded from the plugin's persisted data on `init` and
@@ -29,6 +29,10 @@ interface PresetsUiState {
   // When set, PresetsTab scrolls that preset into view + flashes it, then clears
   // it via setScrollToId(null).
   scrollToId: string | null;
+  // Whether the selection bar has shrunk to its compact form. PresetsTab flips
+  // it from the list's scroll position; SelectionBar subscribes. Lives here so
+  // scrolling re-renders that one bar rather than App + all 151 cards.
+  selectionCondensed: boolean;
 
   setFavourites: (ids: Set<string>) => void;
   toggleFavourite: (id: string) => void;
@@ -36,6 +40,7 @@ interface PresetsUiState {
   setOpenId: (id: string | null) => void;
   setTagsGuideOpen: (open: boolean) => void;
   setScrollToId: (id: string | null) => void;
+  setSelectionCondensed: (condensed: boolean) => void;
 }
 
 export const usePresetsUiStore = create<PresetsUiState>((set) => ({
@@ -44,11 +49,13 @@ export const usePresetsUiStore = create<PresetsUiState>((set) => ({
   openId: null,
   tagsGuideOpen: false,
   scrollToId: null,
+  selectionCondensed: false,
 
   setFavourites: (favourites) => set({ favourites }),
   toggleFavourite: (id) => set((s) => ({ favourites: toggleInSet(s.favourites, id) })),
   setSelection: (selection) => set({ selection }),
   setOpenId: (openId) => set({ openId }),
   setTagsGuideOpen: (tagsGuideOpen) => set({ tagsGuideOpen }),
-  setScrollToId: (scrollToId) => set({ scrollToId })
+  setScrollToId: (scrollToId) => set({ scrollToId }),
+  setSelectionCondensed: (selectionCondensed) => set({ selectionCondensed })
 }));

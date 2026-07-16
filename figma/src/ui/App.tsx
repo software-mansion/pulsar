@@ -68,21 +68,17 @@ export default function App() {
   const toggleFavourite = usePresetsUiStore((s) => s.toggleFavourite);
   const setScrollToId = usePresetsUiStore((s) => s.setScrollToId);
   const [boundItems, setBoundItems] = useState<BoundItem[]>([]);
-  const [customPresets, setCustomPresets] = useState<CatalogEntry[]>([]);
   // The real Figma file key (or share URL) for this document - needed for the
   // live-preview embed. Seeded from root pluginData on init, remembered per-file.
   const [figmaFileKey, setFigmaFileKey] = useState('');
   // The Figma document name, advertised to the phone as the connection label.
   const [documentName, setDocumentName] = useState('');
 
-  // Custom presets first, then the bundled catalogue.
-  const allPresets = useMemo(() => [...customPresets, ...PRESETS], [customPresets]);
-
   const presetById = useMemo(() => {
     const m = new Map<string, CatalogEntry>();
-    for (const p of allPresets) m.set(p.id, p);
+    for (const p of PRESETS) m.set(p.id, p);
     return m;
-  }, [allPresets]);
+  }, []);
 
   // Live-preview / sharing sync - owns the server token bookkeeping and the
   // share affordances; listens for project / doc-changed / preview-data itself.
@@ -127,7 +123,6 @@ export default function App() {
         setSettings(m.settings);
         setHapticsToken(m.hapticsToken);
         setFavourites(new Set(m.favourites));
-        setCustomPresets(m.customPresets ?? []);
         setFigmaFileKey(m.figmaFileKey ?? '');
         setDocumentName(m.documentName ?? '');
         // Auto-open the tour on first launch, then never again unless relaunched
@@ -157,17 +152,10 @@ export default function App() {
   usePersistOnChange(settings, () => send({ type: 'persist-settings', settings }));
   usePersistOnChange(figmaFileKey, () => send({ type: 'persist-file-key', figmaFileKey }));
   usePersistOnChange(favourites, () => send({ type: 'persist-favourites', favourites: [...favourites] }));
-  usePersistOnChange(customPresets, () => send({ type: 'persist-custom-presets', presets: customPresets }));
 
   useEffect(() => {
     send({ type: 'persist-haptics-token', token: hapticsToken });
   }, [hapticsToken]);
-
-  const addCustomPreset = (entry: CatalogEntry) => setCustomPresets((prev) => [entry, ...prev]);
-  const updateCustomPreset = (id: string, entry: CatalogEntry) =>
-    setCustomPresets((prev) => prev.map((e) => (e.id === id ? entry : e)));
-  const removeCustomPreset = (id: string) =>
-    setCustomPresets((prev) => prev.filter((e) => e.id !== id));
 
   // The play-preset handler captured stale settings/token on mount. Rebind it on changes.
   useEffect(() => {
@@ -202,9 +190,9 @@ export default function App() {
   }, [hapticsToken, phoneConnected, previewSync.previewToken]);
 
   const filtered = useMemo(() => {
-    const base = applyFilter(allPresets, filter);
+    const base = applyFilter(PRESETS, filter);
     return favouritesOnly ? base.filter((e) => favourites.has(e.id)) : base;
-  }, [allPresets, filter, favouritesOnly, favourites]);
+  }, [filter, favouritesOnly, favourites]);
   const openEntry = openId ? presetById.get(openId) ?? null : null;
 
   // Live preview is "configured" once the file key is set and a phone is paired
@@ -225,12 +213,9 @@ export default function App() {
   const bindEntry = useCallback((e: CatalogEntry) => {
     send({
       type: 'bind-preset',
-      // Inline the pattern for custom presets so a binding survives even if the
-      // custom preset is later removed from the list.
       binding: {
         presetId: e.id,
-        presetName: e.data.name,
-        ...(e.category === 'custom' ? { customPattern: e.data } : {})
+        presetName: e.data.name
       }
     });
   }, []);
@@ -329,10 +314,6 @@ export default function App() {
           setFilter={setFilter}
           favouritesOnly={favouritesOnly}
           setFavouritesOnly={setFavouritesOnly}
-          customPresets={customPresets}
-          onAddCustomPreset={addCustomPreset}
-          onUpdateCustomPreset={updateCustomPreset}
-          onRemoveCustomPreset={removeCustomPreset}
           boundItems={boundItems}
           onSelectBound={selectBoundItem}
           liveConfigComplete={liveConfigComplete}

@@ -16,6 +16,14 @@ button.fav-plain:active { box-shadow: none; transform: scale(0.9); }
 button.fav-plain[aria-pressed='true'] { color: var(--color-primary); }
 button.fav-plain :global(.star) { color: inherit; }
 
+/* Bind action - plus glyph + label on one line. */
+button.bind-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* Duration pill - clock glyph + value, white chip on the tinted card. */
 .preset-dur {
   display: inline-flex;
@@ -37,7 +45,7 @@ button.fav-plain :global(.star) { color: inherit; }
 .preset-card-head { display: flex; align-items: center; gap: 8px; }
 /* Equal-height action buttons (Details · Play · Add) on the head row; widths
    vary with content (icon vs "Add" label). */
-.preset-card-head button:not(.fav-plain) {
+.preset-card-head button:not(.fav-plain):not(.info-btn) {
   height: 28px;
   padding: 0 10px;
   display: inline-flex;
@@ -45,8 +53,15 @@ button.fav-plain :global(.star) { color: inherit; }
   justify-content: center;
   flex-shrink: 0;
 }
-.preset-card-name {
+/* Name + its info button travel together and take the row's spare width; the
+   name itself ellipsises so the icon stays pinned to the end of the text. */
+.preset-card-title {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.preset-card-name {
   min-width: 0;
   font-weight: 700;
   font-size: var(--fs-lg);
@@ -54,6 +69,28 @@ button.fav-plain :global(.star) { color: inherit; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Info icon by the name - same quiet treatment as the Filters accordion's. */
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+.info-btn:hover { opacity: 1; background: var(--surface); box-shadow: none; transform: none; }
+.info-btn:active { transform: none; box-shadow: none; }
+.info-btn img { display: block; }
+
 .preset-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
 .wv-panel { position: relative; margin-top: 10px; }
 button.wv-play { position: absolute; right: 8px; bottom: 8px; }

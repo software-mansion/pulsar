@@ -339,7 +339,7 @@ in `clientStorage` (all main-thread, in `src/main/code.ts`):
   cached payload + the server revision it synced at. These are the **only**
   thing evicted (oldest `lastAccess` first) when `clientStorage` hits its quota
   - see `setProjectCache` / `evictOldestProjectCache`. Tokens, settings,
-  favourites, custom presets and the haptics token are off-limits.
+  favourites and the haptics token are off-limits.
 
 `fileKey` is resolved as `figma.fileKey ?? extractFileKey(fileKeyOverride)` and
 must be the **same** key used at share time and for storage, or a file's token
@@ -411,10 +411,11 @@ namespaces).
 Two copies that must stay in sync:
 
 - Plugin: `figma/src/ui/components/sdkSnippets.ts` - exports `LANGS`,
-  `builtInSnippet(lang, name)`, `customSnippet(lang, data)`.
+  `builtInSnippet(lang, name)`.
 - Preview: `figma/preview/src/components/PresetDetailsModal.tsx` - same
   functions inlined (kept inline because the preview is a smaller surface
-  and there's no `shared/` for it).
+  and there's no `shared/` for it). Still carries `customSnippet(lang, data)`
+  for legacy custom bindings, which the plugin no longer authors.
 
 Source of truth for the content is `docs/src/content/docs/sdk/*.mdx`. If you
 fix a snippet here, fix it there too. Six SDKs covered: Swift, Android, KMP,

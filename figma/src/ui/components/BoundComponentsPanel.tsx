@@ -11,7 +11,7 @@ const UNASSIGNED = '__unassigned';
 // every component that has a haptic preset bound, grouped by top-level frame;
 // each row reads "component → preset". Clicking a row reveals the node on the
 // canvas and plays its preset. The summary counter shows how many components are
-// bound (mirrors the "Custom presets" accordion's counter). The list stays
+// bound. The list stays
 // fresh on its own: App re-requests it whenever the selection changes, and
 // binding/unbinding pushes a selection update.
 export default function BoundComponentsPanel({

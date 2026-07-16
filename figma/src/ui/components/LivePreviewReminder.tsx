@@ -12,7 +12,7 @@ export default function LivePreviewReminder({ onConfigure }: { onConfigure: () =
       </span>
       <div className={styles['reminder-main']}>
         <div className={styles['reminder-title']}>
-          To use Live Preview you need to finish configuration
+          To use Live Preview you need to connect Pulsar App
         </div>
       </div>
       <button className={styles['reminder-cta']} onClick={onConfigure}>

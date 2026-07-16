@@ -9,7 +9,6 @@ import iconInfo from '../assets/icon-info.svg';
 // Tag grouping mirrors the docs `TagsInfo`. Within a group selections are OR'd;
 // across groups they are AND'd.
 const TAG_GROUPS: { groupName: string; tags: string[] }[] = [
-  { groupName: 'Source', tags: ['Custom'] },
   { groupName: 'Intensity', tags: ['Gentle', 'Substantial', 'Bold'] },
   { groupName: 'Sharpness', tags: ['Soft', 'Flexible', 'Rigid'] },
   { groupName: 'Shape', tags: ['Peak', 'Impulses', 'Solid', 'Bumps', 'Saw', 'Pattern', 'Ramp'] },
@@ -173,8 +172,8 @@ export function applyFilter(entries: CatalogEntry[], state: FilterState): Catalo
       return false;
     });
   } else {
-    // Default dataset: user presets plus any user-created custom presets.
-    active = entries.filter((e) => e.category === 'user' || e.category === 'custom');
+    // Default dataset: the curated user presets.
+    active = entries.filter((e) => e.category === 'user');
   }
 
   // 2. Tag groups: OR within group, AND across groups.
@@ -215,7 +214,7 @@ export function useFilterStateInit(): FilterState {
 }
 
 // Build a filter state that surfaces `entry` in the list, clearing any search /
-// tag filters and selecting the right dataset (user/custom by default, or the
+// tag filters and selecting the right dataset (user by default, or the
 // matching system-preset group for bundled iOS/Android presets). Used when the
 // user jumps to a bound preset from the selection bar.
 export function filterRevealing(entry: CatalogEntry): FilterState {
