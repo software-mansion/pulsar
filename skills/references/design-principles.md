@@ -200,4 +200,3 @@ Even on devices that report API support, behavior varies widely between manufact
 - **Composition primitives availability:** Even on API 31+, not all `PRIMITIVE_*` constants are supported on every device. Pulsar falls back gracefully, but complex compositions may be silently simplified on unsupported hardware.
 
 When targeting Android, treat haptics as progressively enhanced: the experience should still be usable without haptic feedback, and improvements in fidelity should be treated as additive rather than required.
-

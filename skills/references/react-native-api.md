@@ -1,5 +1,9 @@
 # Pulsar React Native — API Overview
 
+Pulsar haptics implementation for React Native and Expo apps using react-native-pulsar. Use when the user is writing TypeScript/React Native code and needs haptics, presets, worklet-compatible haptic calls, usePatternComposer, useRealtimeComposer, or migration from expo-haptics.
+
+`react-native-pulsar` — TypeScript SDK for React Native and Expo apps. Requires New Architecture (RN 0.71+) and `react-native-worklets`. All preset functions and hook methods are Reanimated worklet-compatible: safe to call inside gesture handlers without leaving the worklet context.
+
 ## Installation
 
 ```bash
@@ -39,7 +43,7 @@ const tap = Gesture.Tap().onEnd(() => {
 });
 ```
 
-See [Presets Guide](presets-guide.md) for the full list of available presets, with descriptions and usage guidance.
+See [Preset Selection](preset-selection.md) and [Preset Catalog](preset-catalog.md) for the full list of available presets, with descriptions and usage guidance.
 
 ---
 
@@ -184,13 +188,13 @@ function MyComponent() {
 }
 ```
 
-For pattern design tips — amplitude ranges, frequency ranges, and when to use discrete vs. continuous patterns — see [Design Principles — Custom Pattern Parameters](../common/design-principles.md#custom-pattern-parameters).
+For pattern design tips — amplitude ranges, frequency ranges, and when to use discrete vs. continuous patterns — see [Design Principles — Custom Pattern Parameters](design-principles.md#custom-pattern-parameters).
 
 ---
 
 ## Gesture-Based Haptics with useRealtimeComposer
 
-> **Gesture design guide:** For design principles, parameter mapping, phase tables, and common gesture patterns (drag-and-drop, snap points, pull-to-refresh, swipe-to-delete), see [Gesture-Based Haptics](../common/gesture-haptics.md). This section covers the React Native hook API only.
+> **Gesture design guide:** For design principles, parameter mapping, phase tables, and common gesture patterns (drag-and-drop, snap points, pull-to-refresh, swipe-to-delete), see [Gesture-Based Haptics](gesture-haptics.md). This section covers the React Native hook API only.
 
 `useRealtimeComposer` lets you modulate haptic intensity and sharpness in real time, synchronized with user gestures.
 

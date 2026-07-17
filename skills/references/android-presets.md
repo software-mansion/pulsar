@@ -1,6 +1,6 @@
 # Choosing the Right Preset
 
-See (../common/presets-guide.md) for the full categorized preset reference — all descriptions and "when to use" guidance apply equally to Android.
+See [preset-selection.md](preset-selection.md) and [preset-catalog.md](preset-catalog.md) for the full categorized preset reference — all descriptions and "when to use" guidance apply equally to Android.
 
 All presets are called on the object returned by `pulsar.getPresets()`.
 

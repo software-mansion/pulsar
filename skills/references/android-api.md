@@ -1,5 +1,9 @@
 # Pulsar Android — API Overview
 
+Pulsar haptics implementation for Android apps using the Kotlin SDK (com.swmansion:pulsar). Use when the user is writing Kotlin/Android code and needs haptics, CompatibilityMode, VibrationEffect, RealtimeComposerStrategy, or PatternComposer.
+
+Kotlin SDK (`com.swmansion:pulsar`) built on `VibrationEffect`, Composition API, and Envelope API. Handles API-level differences and hardware fragmentation automatically via `CompatibilityMode`. Audio simulation is enabled by default in debug builds so haptic patterns can be heard on the Android Emulator.
+
 ## Installation
 
 Add Pulsar to your module's `build.gradle` (Groovy DSL):
@@ -92,7 +96,7 @@ override fun onTouchEvent(event: MotionEvent): Boolean {
 }
 ```
 
-See [Presets Guide](presets-guide.md) for the full list of available presets, with descriptions and usage guidance.
+See [Preset Selection](preset-selection.md) and [Preset Catalog](preset-catalog.md) for the full list of available presets, with descriptions and usage guidance.
 
 ### Playing a Preset by Name
 
@@ -290,7 +294,7 @@ button.setOnClickListener {
 
 ### Pattern Design Tips
 
-See [Design Principles — Custom Pattern Parameters](../common/design-principles.md#custom-pattern-parameters) for amplitude and frequency range guidance, and when to use discrete vs. continuous patterns.
+See [Design Principles — Custom Pattern Parameters](design-principles.md#custom-pattern-parameters) for amplitude and frequency range guidance, and when to use discrete vs. continuous patterns.
 
 **Android-specific notes:**
 - On devices without Envelope API (below API 36), `continuousPattern` frequency is ignored; only amplitude is used.
@@ -300,7 +304,7 @@ See [Design Principles — Custom Pattern Parameters](../common/design-principle
 
 ## Gesture-Based Haptics with RealtimeComposer
 
-> **Gesture design guide:** For design principles, parameter mapping, phase tables, and common gesture patterns (drag-and-drop, snap points, pull-to-refresh, swipe-to-delete), see [Gesture-Based Haptics](../common/gesture-haptics.md). This section covers the Android API surface and strategy selection only.
+> **Gesture design guide:** For design principles, parameter mapping, phase tables, and common gesture patterns (drag-and-drop, snap points, pull-to-refresh, swipe-to-delete), see [Gesture-Based Haptics](gesture-haptics.md). This section covers the Android API surface and strategy selection only.
 
 `RealtimeComposer` provides real-time haptic control — update amplitude and frequency continuously as a gesture evolves.
 

@@ -1,6 +1,6 @@
 # Gesture-Based Haptics — Android
 
-For general design principles, gesture phases, snap points, and common patterns see **[../common/gesture-haptics.md](../common/gesture-haptics.md)**.
+For general design principles, gesture phases, snap points, and common patterns see **[gesture-haptics.md](gesture-haptics.md)**.
 
 ---
 

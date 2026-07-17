@@ -1,5 +1,9 @@
 # Pulsar iOS — API Overview
 
+Pulsar haptics implementation for iOS apps using the Swift SDK. Use when the user is writing Swift/SwiftUI/UIKit code and needs haptics, CoreHaptics wrapping, PatternComposer, RealtimeComposer, or migration from UIKit haptics.
+
+Swift SDK built on CoreHaptics (iOS 13+). Wraps `CHHapticEngine` lifecycle, pattern compilation, and player management behind a simple preset and composer API. Audio simulation is enabled by default in debug builds so haptic patterns can be heard on the iOS Simulator.
+
 ## Installation
 
 ### Swift Package Manager (Xcode)
@@ -56,7 +60,7 @@ presets.buzz()
 
 `getPresets()` returns the same `PresetsWrapper` instance on every call — it is lazily created and then reused. Preset methods are synchronous and return immediately.
 
-See [Presets Guide](presets-guide.md) for the full list of available presets, with descriptions and usage guidance.
+See [Preset Selection](preset-selection.md) and [Preset Catalog](preset-catalog.md) for the full list of available presets, with descriptions and usage guidance.
 
 ---
 
@@ -272,13 +276,13 @@ struct CustomHapticView: View {
 
 ### Pattern Design Tips
 
-See [Design Principles — Custom Pattern Parameters](../common/design-principles.md#custom-pattern-parameters) for amplitude and frequency range guidance, and when to use discrete vs. continuous patterns.
+See [Design Principles — Custom Pattern Parameters](design-principles.md#custom-pattern-parameters) for amplitude and frequency range guidance, and when to use discrete vs. continuous patterns.
 
 ---
 
 ## Real-Time Haptics with RealtimeComposer
 
-> **Gesture design guide:** For design principles, parameter mapping, phase tables, and common gesture patterns (drag-and-drop, snap points, pull-to-refresh, swipe-to-delete), see [Gesture-Based Haptics](../common/gesture-haptics.md). This section covers the iOS API surface only.
+> **Gesture design guide:** For design principles, parameter mapping, phase tables, and common gesture patterns (drag-and-drop, snap points, pull-to-refresh, swipe-to-delete), see [Gesture-Based Haptics](gesture-haptics.md). This section covers the iOS API surface only.
 
 `RealtimeComposer` lets you modulate haptic intensity and sharpness in real time, synchronized with live gesture values. Get the shared instance from `pulsar.getRealtimeComposer()`.
 

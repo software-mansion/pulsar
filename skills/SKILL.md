@@ -20,38 +20,30 @@ Pulsar is a cross-platform haptic feedback SDK with 150+ named presets, custom p
 ## How to Use This Skill
 
 1. **Identify the platform** from the user's code (file extensions, imports, framework).
-   - TypeScript / React Native / Expo → read [React Native](references/react-native/SKILL.md)
-   - Swift / SwiftUI / UIKit → read [iOS](references/ios/SKILL.md)
-   - Kotlin / Android → read [Android](references/android/SKILL.md)
+   - TypeScript / React Native / Expo → use the [React Native API](references/react-native-api.md)
+   - Swift / SwiftUI / UIKit → use the [iOS API](references/ios-api.md)
+   - Kotlin / Android → use the [Android API](references/android-api.md)
    - If unclear, ask: "Are you working in React Native, iOS Swift, or Android Kotlin?"
 
-2. **Load the platform SKILL.md** — it lists which reference files to read for the task.
+2. **Load only the references needed for the task:**
+   - Choosing a preset → read [preset selection](references/preset-selection.md), [preset catalog](references/preset-catalog.md), and the platform preset reference: [React Native](references/react-native-presets.md), [iOS](references/ios-presets.md), or [Android](references/android-presets.md).
+   - Installation, API calls, composer usage, caching, preloading, configuration, or compatibility → read the relevant platform API: [React Native](references/react-native-api.md), [iOS](references/ios-api.md), or [Android](references/android-api.md).
+   - Best practices, accessibility, when to use or avoid haptics, or custom pattern design → read [design principles](references/design-principles.md).
+   - Real-time haptics driven by drag, swipe, or pan gestures using RealtimeComposer → read [gesture haptics](references/gesture-haptics.md), the platform API, and the platform notes: [React Native](references/react-native-gesture-haptics.md), [iOS](references/ios-gesture-haptics.md), or [Android](references/android-gesture-haptics.md).
+   - Replacing `expo-haptics` with Pulsar → read [React Native migration](references/react-native-migration.md) and the [React Native API](references/react-native-api.md).
 
-3. **Use the right reference for the task:**
-   - **presets-guide** — choosing which preset to use
-   - **api-overview** — implementation help (installation, API calls, composer usage)
-   - **design-principles** — best practices, accessibility, when to use or avoid haptics
-   - **gesture-haptics** — real-time haptics driven by drag, swipe, or pan gestures using RealtimeComposer
-   - **migration** (React Native only) — replacing `expo-haptics` with Pulsar
-
-4. **Always prefer presets over custom patterns.** First consult `presets-guide` — Pulsar ships 150+ named presets covering most interactions. Only reach for `PatternComposer` / `RealtimeComposer` (via `design-principles` and `api-overview`) when no preset fits the interaction well.
+3. **Always prefer presets over custom patterns.** First consult [preset selection](references/preset-selection.md) and the [preset catalog](references/preset-catalog.md) — Pulsar ships 150+ named presets covering most interactions. Only reach for `PatternComposer` / `RealtimeComposer` via [design principles](references/design-principles.md) and the relevant platform API when no preset fits the interaction well.
 
 ## Reference Files
 
-- **migration** (references/react-native/migration.md) — Full `expo-haptics` → Pulsar mapping table, before/after code examples, and an explanation of what Pulsar adds beyond `expo-haptics`.
+- **migration** ([references/react-native-migration.md](references/react-native-migration.md)) — Full `expo-haptics` → Pulsar mapping table, before/after code examples, and an explanation of what Pulsar adds beyond `expo-haptics`.
 
-- **design-principles** (references/common/design-principles.md) — Shared across all platforms. Design rules, emotion-to-preset mapping table, accessibility guidance, iOS hardware notes (Taptic Engine by device generation, iPad/Mac Catalyst), and Android limitations (hardware fragmentation, API-level requirements, CompatibilityMode, RealtimeComposerStrategy).
+- **design-principles** ([references/design-principles.md](references/design-principles.md)) — Shared across all platforms. Design rules, emotion-to-preset mapping table, accessibility guidance, iOS hardware notes (Taptic Engine by device generation, iPad/Mac Catalyst), and Android limitations (hardware fragmentation, API-level requirements, CompatibilityMode, RealtimeComposerStrategy).
 
-- **gesture-haptics** (references/common/gesture-haptics.md) — Shared across all platforms. Real-time gesture-driven haptics with RealtimeComposer: parameter mapping, phase tables, and patterns for drag-and-drop, snap points, pull-to-refresh, and swipe-to-delete.
+- **gesture-haptics** ([references/gesture-haptics.md](references/gesture-haptics.md)) — Shared across all platforms. Real-time gesture-driven haptics with RealtimeComposer: parameter mapping, phase tables, and patterns for drag-and-drop, snap points, pull-to-refresh, and swipe-to-delete.
 
-- **presets-guide** (references/common/presets-guide.md) — Preset selection workflow, clarifying questions, tag selection guide, and the full 150+ preset reference with descriptions and tags.
+- **preset-selection** ([references/preset-selection.md](references/preset-selection.md)) — Preset selection workflow, clarifying questions, tag selection guide, and response format rules.
 
-- **api-overview** (references/<ios|android|react-native>/api-overview.md) — Per-platform. Full API reference: installation, presets, system presets with platform mapping, PatternComposer, RealtimeComposer, caching/preloading, the configuration API, and HapticSupport/CompatibilityMode for graceful degradation.
+- **preset-catalog** ([references/preset-catalog.md](references/preset-catalog.md)) — Full 150+ preset reference with descriptions and tags.
 
-## Platform Skills
-
-- **[React Native](references/react-native/SKILL.md)** — Use when the project is React Native or Expo (TypeScript/JavaScript).
-
-- **[iOS](references/ios/SKILL.md)** — Use when the project is native iOS (Swift/Objective-C).
-
-- **[Android](references/android/SKILL.md)** — Use when the project is native Android (Kotlin/Java).
+- **platform APIs** — Full API references for [React Native](references/react-native-api.md), [iOS](references/ios-api.md), and [Android](references/android-api.md): installation, presets, system presets with platform mapping, PatternComposer, RealtimeComposer, caching/preloading, the configuration API, and HapticSupport/CompatibilityMode for graceful degradation.

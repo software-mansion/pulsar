@@ -1,6 +1,6 @@
 # Choosing the Right Preset
 
-See [common/presets-guide.md](../common/presets-guide.md) for the full categorized preset reference — all descriptions and "when to use" guidance apply equally to iOS.
+See [preset-selection.md](preset-selection.md) and [preset-catalog.md](preset-catalog.md) for the full categorized preset reference — all descriptions and "when to use" guidance apply equally to iOS.
 
 All presets are called on the `PresetsWrapper` object returned by `pulsar.getPresets()`.
 
