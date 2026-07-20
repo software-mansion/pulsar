@@ -2,37 +2,51 @@
 
 ## Contents
 
-- [Interaction model](#interaction-model)
-- [Parameter mapping](#parameter-mapping)
-- [Gesture phases](#gesture-phases)
+- [Core design principle: physical coupling](#core-design-principle-physical-coupling)
+- [Mapping gesture values to haptic parameters](#mapping-gesture-values-to-haptic-parameters)
+- [Gesture phases and when to fire](#gesture-phases-and-when-to-fire)
+- [Resistance and boundary haptics](#resistance-and-boundary-haptics)
+- [Common patterns](#common-patterns)
 - [React Native](#react-native)
 - [iOS](#ios)
 - [Android](#android)
-- [Performance and cleanup](#performance-and-cleanup)
+- [Throttling, performance, and cleanup](#throttling-performance-and-cleanup)
 
-## Interaction Model
+## Core Design Principle: Physical Coupling
 
-Use RealtimeComposer when haptic output must track a changing gesture. The signal should feel physically coupled to motion: quiet when movement pauses, stronger with speed or resistance, and stopped when the gesture ends.
+Gesture haptics should feel caused by the gesture, not merely triggered by it. Use `RealtimeComposer`, not `PatternComposer`, when values change during interaction:
 
-Use a preset instead for a single threshold, tick, landing, or completed state change.
+- Update parameters on gesture callbacks, not only at start or end.
+- Track speed or pressure with amplitude.
+- Quiet output when movement pauses; intensify it when movement accelerates or resistance rises.
+- Use a preset or discrete event for one threshold, tick, landing, or completed state change.
 
-## Parameter Mapping
+## Mapping Gesture Values to Haptic Parameters
 
-- velocity to amplitude: `clamp(abs(velocity) / expectedMaximum, 0, 1)`
-- distance to a boundary to frequency: rise from soft/neutral toward crisp as resistance increases
-- snap point: layer one short discrete event over any continuous signal
+Velocity to amplitude is useful for swipes, drags, and scrolls where force matters:
 
-Choose normalization constants from actual gesture telemetry and tune on hardware. Do not copy example divisors blindly.
+```ts
+amplitude = clamp(abs(velocity) / maxExpectedVelocity, 0, 1)
+```
 
-## Gesture Phases
+Apply a square-root or logarithmic curve if linear mapping feels too twitchy at low speeds.
+
+Position or distance to a boundary can drive frequency for resistance feedback:
+
+- Raise frequency as the drag approaches its limit; use `0.3–0.5` in free space and up to `0.7` near a boundary.
+- Choose normalization constants from actual gesture telemetry and tune on hardware. Do not copy example divisors blindly.
+
+## Gesture Phases and When to Fire
 
 | Phase | Action |
 |---|---|
-| began | Prepare composer; avoid feedback until motion or a meaningful event occurs. |
-| changed | Update amplitude and frequency from normalized values. |
-| threshold or snap | Fire one discrete event such as `ping`, `chip`, or `snap`. |
-| completed | Stop continuous output; optionally play a landing preset. |
-| cancelled | Stop immediately; normally play no completion event. |
+| **Began** | Prepare or start `RealtimeComposer`; do not fire a discrete event yet. |
+| **Changed** | Update amplitude and frequency continuously from gesture values. |
+| **Snap point hit** | Layer one crisp discrete event (`ping`, `chip`, `snap`, or `peck`) over the continuous signal. Fire exactly when UI snaps, within the 45–75 ms sync window. For scroll tickers, fire the same light event at each tick. |
+| **Boundary reached** | Briefly spike amplitude, then return to the continuous level. See [Resistance and boundary haptics](#resistance-and-boundary-haptics). |
+| **Ended — settled** | Stop continuous output; fire one landing event (`stamp`, `lock`, or `snap`). |
+| **Ended — released mid-drag** | Stop output; optionally fire a release event sized to release velocity. |
+| **Cancelled, interrupted, or failed** | Stop immediately; normally fire no completion event, or use a very soft fade. |
 
 ## React Native
 
@@ -121,10 +135,33 @@ Android simulates realtime output according to device support:
 
 Pass a strategy to `getRealtimeComposer(strategy = ...)` when device-specific tuning is necessary. Otherwise keep automatic selection.
 
-## Performance and Cleanup
+## Resistance and Boundary Haptics
+
+For spring boundaries, rubberband edges, and pull-to-refresh thresholds:
+
+- Gradually raise amplitude as the drag nears the limit: about `0.3` for free drag, `0.7` near the limit, and `0.9` at the limit.
+- Increase frequency to signal stiffness.
+- At the hard boundary, fire a brief spike, then let amplitude fall.
+- When the user crosses a meaningful threshold, fire a distinct confirmation event such as `stamp()` or `lock()`.
+
+## Common Patterns
+
+| Gesture | Continuous signal | Discrete events |
+|---|---|---|
+| Drag-and-drop | Low amplitude (`0.2`), neutral frequency (`0.4`) | Snap on drop-target enter; `stamp()` on release. |
+| Rubberband edge | Rising amplitude and frequency as drag extends | Spike at maximum extension. |
+| Scroll ticker | Usually none | Light `ping()` or `chip()` at each tick. |
+| Swipe-to-delete | Rising amplitude past threshold | `cleave()` on delete confirmation. |
+| Pull-to-refresh | None during pull; slight rumble (`0.2`) above threshold | `lock()` or `stamp()` at release-to-refresh. |
+| Pinch-to-zoom | Low amplitude (`0.15–0.25`), velocity-mapped | Event only at zoom boundary. |
+| Slider knob | Low amplitude (`0.1–0.2`) or none | `ping()` at each notch or step. |
+
+## Throttling, Performance, and Cleanup
 
 - Create or obtain composer once per interaction owner, not per move event.
-- Keep update callbacks cheap and allocation-free.
+- Update on gesture callbacks; 60 Hz is safe on most devices.
+- Keep callbacks cheap and allocation-free; pre-compute parameter curves when calculations are expensive.
 - Stop on end, cancellation, interruption, and unmount/disposal.
+- A running composer without an attached gesture drains battery and can interfere with other haptics.
 - Avoid continuous feedback for ordinary scrolling or long uncontrolled operations.
 - Pair important snap, drop, or delete outcomes with the corresponding visual state change.
