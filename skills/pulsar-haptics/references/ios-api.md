@@ -96,6 +96,4 @@ showAchievementBanner() // visual feedback remains available
 
 Do not infer hardware support from device name. Use the runtime check. Simulator audio does not reproduce physical feel.
 
-For custom patterns, read [PatternComposer](pattern-composer.md). For `RealtimeComposer`, read [gesture haptics](gesture-haptics.md).
-
-Official docs: [Pulsar iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios/).
+Read the [Pulsar iOS SDK documentation](https://docs.swmansion.com/pulsar/sdk/ios/) only when this reference does not cover the requested API or when current version and installation details must be verified.
