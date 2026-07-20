@@ -1,0 +1,14 @@
+{
+  "skill_name": "pulsar-haptics",
+  "cases": [
+    {"query": "Add Pulsar haptics to this React Native confirm button", "should_trigger": true},
+    {"query": "Which tactile preset fits a destructive Android action?", "should_trigger": true},
+    {"query": "Build a Core Haptics-like custom envelope using Pulsar on iOS", "should_trigger": true},
+    {"query": "Replace expo-haptics with react-native-pulsar", "should_trigger": true},
+    {"query": "Make this animation feel more responsive", "should_trigger": false},
+    {"query": "Detect when the user shakes the phone", "should_trigger": false},
+    {"query": "Add visual feedback to this button", "should_trigger": false},
+    {"query": "This button responds slowly; optimize its performance", "should_trigger": false},
+    {"query": "Add an audio rumble to this game", "should_trigger": false}
+  ]
+}

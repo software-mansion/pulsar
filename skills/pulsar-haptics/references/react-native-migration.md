@@ -93,5 +93,5 @@ function handleButtonPress() {
 
 - Pulsar functions are **synchronous and worklet-compatible** — no `await` needed.
 - 150+ named presets let you match the haptic character to the action semantics.
-- Caching and preloading give you **zero-latency playback** on critical interactions.
+- Caching and preloading reduce first-play latency on critical interactions.
 - Custom `Pattern` composition and real-time `useRealtimeComposer` have no expo-haptics equivalent.
