@@ -10,12 +10,23 @@
 
 ## Choose a Pattern Model
 
-A custom pattern can combine:
+React Native represents a fixed pattern with this type; Swift and Kotlin use the equivalent platform types shown below.
 
-- discrete points: individual taps with `time`, `amplitude`, and `frequency`
-- continuous envelopes: time/value curves for amplitude and frequency
+```ts
+type Pattern = {
+  discretePattern: Array<{
+    time: number;      // ms from pattern start
+    amplitude: number; // 0–1, intensity
+    frequency: number; // 0–1, sharpness (0 = soft, 1 = crisp)
+  }>;
+  continuousPattern: {
+    amplitude: Array<{ time: number; value: number }>; // amplitude envelope
+    frequency: Array<{ time: number; value: number }>; // frequency envelope
+  };
+};
+```
 
-Values use `0...1`; time uses milliseconds. Use discrete points for impacts or rhythms. Use continuous envelopes for sustained, evolving texture. Use [RealtimeComposer](gesture-haptics.md) instead when live gesture values control output.
+PatternComposer plays static patterns whose complete timeline is defined before playback. It does not accept values that change while an interaction is running.
 
 ## React Native
 
@@ -45,13 +56,36 @@ function CustomHapticButton() {
 }
 ```
 
-Hook surface:
+### Hook API
 
 ```ts
-const { play, stop, parse, isParsed } = usePatternComposer(pattern?);
+const { play, stop, parse, isParsed } = usePatternComposer(pattern); // argument optional
 ```
 
-The hook reparses when `pattern` changes and releases resources on unmount. Composer methods are worklet-compatible.
+- `play(): void` — play the parsed pattern. Does nothing when no pattern is parsed.
+- `stop(): void` — stop playback of the parsed pattern. Does nothing when no pattern is parsed.
+- `parse(pattern: Pattern): void` — prepare a static pattern natively and store its pattern ID for later, reusable playback.
+- `isParsed(): boolean` — return whether the hook currently holds a parsed pattern ID.
+
+Pass a fixed pattern to `usePatternComposer(pattern)` for automatic parsing. Call `parse` explicitly when the pattern becomes available or is selected after hook creation, or when it must be prepared before a latency-sensitive interaction. Do not parse again for every playback; call `play` on the prepared pattern.
+
+Example with explicit preparation:
+
+```tsx
+function PatternControls() {
+  const composer = usePatternComposer();
+
+  return (
+    <>
+      <Button title="Prepare" onPress={() => composer.parse(pattern)} />
+      <Button title="Play" onPress={() => composer.isParsed() && composer.play()} />
+      <Button title="Stop" onPress={composer.stop} />
+    </>
+  );
+}
+```
+
+The hook reparses when its optional `pattern` argument changes and releases the current pattern on unmount. `play` and `stop` are worklet-compatible.
 
 ## iOS
 
