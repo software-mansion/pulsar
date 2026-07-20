@@ -29,7 +29,10 @@ Use Pulsar to add intentional, accessible haptics across React Native, iOS, and 
 | Add Swift, SwiftUI, or UIKit code       | Read [iOS API](references/ios-api.md).                                                                                |
 | Add Kotlin or Android code              | Read [Android API](references/android-api.md).                                                                        |
 | Custom static pattern                   | Read [PatternComposer](references/pattern-composer.md) when the full timeline is known before playback; also read the platform API. |
-| Gesture-driven or live pattern          | Read [gesture haptics](references/gesture-haptics.md) when amplitude or frequency changes during the interaction.   |
+| Platform-neutral gesture design         | Read [gesture haptics](references/gesture-haptics.md) for physical coupling, parameter mapping, phases, patterns, and lifecycle rules. |
+| React Native or Expo gesture code       | Read [gesture haptics](references/gesture-haptics.md) plus [React Native gesture haptics](references/gesture-haptics-react-native.md). |
+| Swift, SwiftUI, or UIKit gesture code   | Read [gesture haptics](references/gesture-haptics.md) plus [iOS gesture haptics](references/gesture-haptics-ios.md). |
+| Kotlin or Android gesture code          | Read [gesture haptics](references/gesture-haptics.md) plus [Android gesture haptics](references/gesture-haptics-android.md). |
 | Review design, safety, or accessibility | Read [design principles](references/design-principles.md).                                                            |
 | Replace `expo-haptics`                  | Read [React Native migration](references/react-native-migration.md).                                                  |
 

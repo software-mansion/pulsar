@@ -2,15 +2,17 @@
 
 ## Contents
 
+- [API structure](#api-structure)
 - [Core design principle: physical coupling](#core-design-principle-physical-coupling)
 - [Mapping gesture values to haptic parameters](#mapping-gesture-values-to-haptic-parameters)
 - [Gesture phases and when to fire](#gesture-phases-and-when-to-fire)
 - [Resistance and boundary haptics](#resistance-and-boundary-haptics)
 - [Common patterns](#common-patterns)
-- [React Native](#react-native)
-- [iOS](#ios)
-- [Android](#android)
 - [Throttling, performance, and cleanup](#throttling-performance-and-cleanup)
+
+## API structure
+
+`RealtimeComposer` handles values that change during a gesture. Obtain it before interaction, then call `set` to start or update continuous output and `stop` when interaction ends. `playDiscrete` requests a short snap event; iOS can layer it over continuous output, while Android behavior depends on strategy and device and may interrupt or restart the active vibration. Use a named preset for a discrete landing, threshold, or completion event. React Native exposes this through `useRealtimeComposer()`; iOS and Android expose it through `pulsar.getRealtimeComposer()`.
 
 ## Core Design Principle: Physical Coupling
 
@@ -40,100 +42,13 @@ Position or distance to a boundary can drive frequency for resistance feedback:
 
 | Phase | Action |
 |---|---|
-| **Began** | Prepare or start `RealtimeComposer`; do not fire a discrete event yet. |
+| **Began** | Obtain the composer; do not fire a discrete event yet. The first continuous `set` call starts output on current implementations. |
 | **Changed** | Update amplitude and frequency continuously from gesture values. |
 | **Snap point hit** | Layer one crisp discrete event (`ping`, `chip`, `snap`, or `peck`) over the continuous signal. Fire exactly when UI snaps, within the 45–75 ms sync window. For scroll tickers, fire the same light event at each tick. |
 | **Boundary reached** | Briefly spike amplitude, then return to the continuous level. See [Resistance and boundary haptics](#resistance-and-boundary-haptics). |
 | **Ended — settled** | Stop continuous output; fire one landing event (`stamp`, `lock`, or `snap`). |
 | **Ended — released mid-drag** | Stop output; optionally fire a release event sized to release velocity. |
 | **Cancelled, interrupted, or failed** | Stop immediately; normally fire no completion event, or use a very soft fade. |
-
-## React Native
-
-Composer methods are worklet-compatible:
-
-```tsx
-const realtime = useRealtimeComposer();
-
-const pan = Gesture.Pan()
-  .onUpdate((event) => {
-    const amplitude = Math.min(Math.abs(event.velocityX) / 800, 1);
-    realtime.set(amplitude, 0.5);
-  })
-  .onEnd(() => {
-    realtime.stop();
-    Presets.snap();
-  })
-  .onFinalize(() => {
-    realtime.stop();
-  });
-```
-
-Hook surface:
-
-```ts
-const { set, playDiscrete, stop, isActive } = useRealtimeComposer();
-```
-
-Android strategy can be selected globally:
-
-```ts
-Settings.setRealtimeComposerStrategy(
-  RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES
-);
-```
-
-## iOS
-
-`getRealtimeComposer()` returns one shared realtime channel per `Pulsar` instance:
-
-```swift
-let realtime = pulsar.getRealtimeComposer()
-
-switch gesture.state {
-case .changed:
-  let speed = hypot(velocity.x, velocity.y)
-  realtime.set(amplitude: Float(min(speed / 1000, 1)), frequency: 0.5)
-case .ended:
-  realtime.stop()
-  pulsar.getPresets().snap()
-case .cancelled, .failed:
-  realtime.stop()
-default:
-  break
-}
-```
-
-Use `playDiscrete(amplitude:frequency:)` for a snap point without stopping the continuous channel.
-
-## Android
-
-```kotlin
-val realtime = pulsar.getRealtimeComposer()
-
-when (event.action) {
-    MotionEvent.ACTION_MOVE -> {
-        val amplitude = computeVelocity(event).coerceIn(0f, 1f)
-        realtime.set(amplitude = amplitude, frequency = 0.5f)
-    }
-    MotionEvent.ACTION_UP -> {
-        realtime.stop()
-        pulsar.getPresets().snap()
-    }
-    MotionEvent.ACTION_CANCEL -> realtime.stop()
-}
-```
-
-Android simulates realtime output according to device support:
-
-| Strategy | Use |
-|---|---|
-| `ENVELOPE_WITH_DISCRETE_PRIMITIVES` | Default hybrid when supported. |
-| `ENVELOPE` | Smooth sustained envelopes on advanced devices. |
-| `PRIMITIVE_COMPLEX` | Better frequency approximation with primitives. |
-| `PRIMITIVE_TICK` | Broadest lower-capability fallback. |
-
-Pass a strategy to `getRealtimeComposer(strategy = ...)` when device-specific tuning is necessary. Otherwise keep automatic selection.
 
 ## Resistance and Boundary Haptics
 
