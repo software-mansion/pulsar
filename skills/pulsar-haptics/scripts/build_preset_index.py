@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Build the compact skill preset index from canonical Pulsar preset JSON files."""
+"""Build compact skill preset index from canonical Pulsar preset JSON files.
+
+Canonical source files live in ``docs/src/content/docs/assets/presets/*.json``.
+Generated index is written to ``skills/pulsar-haptics/references/presets.json``
+by default.
+
+Regenerate from repository root with::
+
+    python skills/pulsar-haptics/scripts/build_preset_index.py
+"""
 
 from __future__ import annotations
 
