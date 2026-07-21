@@ -12,7 +12,7 @@
 
 ## API structure
 
-`RealtimeComposer` handles values that change during a gesture. Obtain it before interaction, then call `set` to start or update continuous output and `stop` when interaction ends. `playDiscrete` requests a short snap event; iOS can layer it over continuous output, while Android behavior depends on strategy and device and may interrupt or restart the active vibration. Use a named preset for a discrete landing, threshold, or completion event. React Native exposes this through `useRealtimeComposer()`; iOS and Android expose it through `pulsar.getRealtimeComposer()`.
+`RealtimeComposer` handles values that change during a gesture. Obtain it before interaction, update continuous output as values change, and stop it when interaction ends. Use a discrete impulse or named preset for a landing, threshold, or completion event. Platform implementations define their own method signatures, layering constraints, and capability fallbacks.
 
 ## Core Design Principle: Physical Coupling
 
@@ -42,9 +42,9 @@ Position or distance to a boundary can drive frequency for resistance feedback:
 
 | Phase | Action |
 |---|---|
-| **Began** | Obtain the composer; do not fire a discrete event yet. The first continuous `set` call starts output on current implementations. |
+| **Began** | Obtain the composer; do not fire a discrete event yet. The first continuous update starts output on current implementations. |
 | **Changed** | Update amplitude and frequency continuously from gesture values. |
-| **Snap point hit** | Layer one crisp discrete event (`ping`, `chip`, `snap`, or `peck`) over the continuous signal. Fire exactly when UI snaps, within the 45–75 ms sync window. For scroll tickers, fire the same light event at each tick. |
+| **Snap point hit** | Request one crisp discrete event (`ping`, `chip`, `snap`, or `peck`) at the snap. Fire exactly when UI snaps, within the 45–75 ms sync window. For scroll tickers, fire the same light event at each tick. |
 | **Boundary reached** | Briefly spike amplitude, then return to the continuous level. See [Resistance and boundary haptics](#resistance-and-boundary-haptics). |
 | **Ended — settled** | Stop continuous output; fire one landing event (`stamp`, `lock`, or `snap`). |
 | **Ended — released mid-drag** | Stop output; optionally fire a release event sized to release velocity. |

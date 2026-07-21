@@ -3,7 +3,7 @@
 ## Use Haptics Intentionally
 
 - Add haptics to attract attention, confirm a state change, or reinforce a deliberate physical interaction.
-- Build a clear causal relationship between an action and its haptic. Trigger feedback when the selection lands, action completes, boundary is crossed, or error occurs.
+- Associate each cue with one clear event: a landed selection, completed action, crossed boundary, or error.
 - Avoid feedback for passive reading, ordinary scrolling, hover, or low-information layout changes.
 - Use haptics as enhancement, not decoration. If feedback has no clear meaning, omit it.
 
@@ -39,20 +39,19 @@
 
 ## Design Custom Patterns Carefully
 
-- Prefer a platform-semantic preset when one communicates the intended meaning. Create a custom pattern only when timing, texture, or interaction dynamics require it.
+- Prefer platform-semantic feedback for standard meanings; use custom patterns when timing, texture, or interaction dynamics require them.
 - Use transient events for taps, ticks, impacts, and rhythm. Use continuous envelopes for sustained effects that evolve over time.
 - Keep amplitude and frequency values within `0...1`; start conservatively and tune on hardware.
 - Use lower frequency for softer sensations and higher frequency for crisper sensations where hardware supports frequency control.
 - Align pattern duration with interaction duration. A tap must not produce a lingering sequence.
-- Use RealtimeComposer when live interaction values drive output, and stop it on completion, cancellation, interruption, or unmount.
+- Choose `RealtimeComposer` when live interaction values drive output.
 
 ## Preserve Accessibility and User Control
 
-- Respect system haptic settings and provide an in-app off switch for frequent or expressive feedback.
+- Offer an in-app off switch for frequent or expressive feedback.
 - Keep every flow understandable and usable without tactile feedback.
 - Offer intensity choices when haptics are central to an accessibility-focused experience.
 - Expect perception to vary with sensory sensitivity, neuropathy, age, grip, device, and actuator hardware.
-- Test with representative users and physical devices. Simulator audio does not validate tactile quality.
 
 ## Account for Platform Behavior
 

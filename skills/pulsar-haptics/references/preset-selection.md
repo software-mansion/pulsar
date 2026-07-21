@@ -12,8 +12,6 @@ Infer these facts from code and the request:
 - timing: one-shot, repeated, or sustained
 - physical character: soft/organic, neutral, or crisp/mechanical
 
-Ask at most two questions only for facts that would change the recommendation.
-
 ## 2. Map Four Tags
 
 Choose one value from each axis:
@@ -45,12 +43,6 @@ python3 scripts/find_presets.py --intensity Substantial --texture Rigid --shape 
 
 Use `--query`, `--name`, or fewer tags when exact filtering returns no candidates. Never invent preset names.
 
-## 4. Recommend
+## 4. Validate the Match
 
-Return:
-
-1. one primary preset and why its semantics fit
-2. platform-specific invocation only when requested or useful
-3. up to three alternatives, each tied to a concrete change in context
-
-When no preset fits exact timing or texture, propose `PatternComposer`. If the user already requested a custom pattern, proceed without asking permission again.
+Confirm the returned preset description and duration fit the event, not only the requested tags. Reject candidates whose documented meaning conflicts with the interaction. Never invent a preset name.

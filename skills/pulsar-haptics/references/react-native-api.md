@@ -104,6 +104,4 @@ const tap = Gesture.Tap().onEnd(() => {
 });
 ```
 
-For custom patterns, read [PatternComposer](pattern-composer.md). For `useRealtimeComposer`, read [gesture haptics](gesture-haptics.md).
-
 Read the [Pulsar React Native SDK documentation](https://docs.swmansion.com/pulsar/sdk/react-native/) only when this reference does not cover the requested API or when current version and installation details must be verified.

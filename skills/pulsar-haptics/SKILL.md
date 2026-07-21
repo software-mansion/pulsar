@@ -36,7 +36,7 @@ Use Pulsar to add intentional, accessible haptics across React Native, iOS, and 
 | Review design, safety, or accessibility | Read [design principles](references/design-principles.md).                                                            |
 | Replace `expo-haptics`                  | Read [React Native migration](references/react-native-migration.md).                                                  |
 
-4. Load a platform API only when code or platform behavior is needed. Do not read every reference.
+4. Follow these routes exactly. Platform gesture references are self-contained; load a general platform API only for additional non-gesture needs.
 
 ## Non-negotiable Rules
 
