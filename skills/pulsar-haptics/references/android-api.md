@@ -15,7 +15,7 @@ Groovy DSL (`build.gradle`):
 
 ```groovy
 dependencies {
-    implementation 'com.swmansion:pulsar:1.0.0'
+    implementation 'com.swmansion:pulsar:1.2.0'
 }
 ```
 
@@ -23,7 +23,7 @@ Kotlin DSL (`build.gradle.kts`):
 
 ```kotlin
 dependencies {
-    implementation("com.swmansion:pulsar:1.0.0")
+    implementation("com.swmansion:pulsar:1.2.0")
 }
 ```
 
@@ -112,17 +112,17 @@ presets.systemNotificationError()
 presets.systemSelection()
 ```
 
-| Pulsar method | Android equivalent |
-|---|---|
-| `systemImpactLight()` | `VibrationEffect.EFFECT_TICK` approx. |
-| `systemImpactMedium()` | `VibrationEffect.EFFECT_CLICK` approx. |
-| `systemImpactHeavy()` | `VibrationEffect.EFFECT_HEAVY_CLICK` approx. |
-| `systemImpactSoft()` | Soft waveform approximation |
-| `systemImpactRigid()` | Rigid waveform approximation |
-| `systemNotificationSuccess()` | Success waveform pattern |
-| `systemNotificationWarning()` | Warning waveform pattern |
-| `systemNotificationError()` | Error waveform pattern |
-| `systemSelection()` | `HapticFeedbackConstants.CLOCK_TICK` approx. |
+| Pulsar method                 | Android equivalent                           |
+| ----------------------------- | -------------------------------------------- |
+| `systemImpactLight()`         | `VibrationEffect.EFFECT_TICK` approx.        |
+| `systemImpactMedium()`        | `VibrationEffect.EFFECT_CLICK` approx.       |
+| `systemImpactHeavy()`         | `VibrationEffect.EFFECT_HEAVY_CLICK` approx. |
+| `systemImpactSoft()`          | Soft waveform approximation                  |
+| `systemImpactRigid()`         | Rigid waveform approximation                 |
+| `systemNotificationSuccess()` | Success waveform pattern                     |
+| `systemNotificationWarning()` | Warning waveform pattern                     |
+| `systemNotificationError()`   | Error waveform pattern                       |
+| `systemSelection()`           | `HapticFeedbackConstants.CLOCK_TICK` approx. |
 
 Android-specific methods also expose `HapticFeedbackConstants`, predefined `VibrationEffect` values, and composition primitives. Prefer cross-platform methods unless native Android feel or an Android-only API is required.
 
@@ -134,17 +134,17 @@ All configuration methods are available directly on the `Pulsar` instance.
 val pulsar = Pulsar(context)
 ```
 
-| Method | Purpose |
-|---|---|
-| `pulsar.enableHaptics(state: Boolean)` | Globally enable or disable all haptic feedback. |
-| `pulsar.enableSound(state: Boolean)` | Enable or disable audio simulation (enabled by default in debug). |
-| `pulsar.enableCache(state: Boolean)` | Enable or disable preset caching (enabled by default). |
-| `pulsar.clearCache()` | Free all cached preset players. |
-| `pulsar.preloadPresets(presetNames: List<String>)` | Preload named presets at startup. |
-| `pulsar.stopHaptics()` | Stop all currently playing haptics. |
-| `pulsar.hapticSupport()` | Return `CompatibilityMode` for the current device. |
-| `pulsar.forceHapticsSupportLevel(mode: CompatibilityMode)` | Override detected support level for testing/debug. |
-| `pulsar.enableImpulseCompositionMode(state: Boolean)` | Enable or disable `VibrationEffect.Composition` for impulse-only presets. |
+| Method                                                     | Purpose                                                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `pulsar.enableHaptics(state: Boolean)`                     | Globally enable or disable all haptic feedback.                           |
+| `pulsar.enableSound(state: Boolean)`                       | Enable or disable audio simulation (enabled by default in debug).         |
+| `pulsar.enableCache(state: Boolean)`                       | Enable or disable preset caching (enabled by default).                    |
+| `pulsar.clearCache()`                                      | Free all cached preset players.                                           |
+| `pulsar.preloadPresets(presetNames: List<String>)`         | Preload named presets at startup.                                         |
+| `pulsar.stopHaptics()`                                     | Stop all currently playing haptics.                                       |
+| `pulsar.hapticSupport()`                                   | Return `CompatibilityMode` for the current device.                        |
+| `pulsar.forceHapticsSupportLevel(mode: CompatibilityMode)` | Override detected support level for testing/debug.                        |
+| `pulsar.enableImpulseCompositionMode(state: Boolean)`      | Enable or disable `VibrationEffect.Composition` for impulse-only presets. |
 
 ### Audio Simulation
 
@@ -174,11 +174,11 @@ pulsar.enableImpulseCompositionMode(false)
 
 `CompatibilityMode` reflects device capability, not only Android version:
 
-| Level | Behavior |
-|---|---|
-| `NO_SUPPORT` | Skip haptics. |
-| `LIMITED_SUPPORT` | Timing-based fallback. |
-| `STANDARD_SUPPORT` | Amplitude-capable playback. |
+| Level              | Behavior                                                     |
+| ------------------ | ------------------------------------------------------------ |
+| `NO_SUPPORT`       | Skip haptics.                                                |
+| `LIMITED_SUPPORT`  | Timing-based fallback.                                       |
+| `STANDARD_SUPPORT` | Amplitude-capable playback.                                  |
 | `ADVANCED_SUPPORT` | Rich envelope and frequency behavior where hardware permits. |
 
 ```kotlin
