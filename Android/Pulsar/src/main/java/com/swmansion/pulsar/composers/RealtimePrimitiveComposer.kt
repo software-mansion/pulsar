@@ -6,6 +6,7 @@ import android.os.Looper
 import android.os.VibrationEffect
 import androidx.annotation.RequiresApi
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.haptics.PwmTimingSimulator
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.RealtimeComposable
 import java.util.concurrent.atomic.AtomicBoolean
@@ -16,6 +17,13 @@ open class RealtimePrimitiveComposer(
 ) : RealtimeComposable {
     private var minIntervalMs = 10L
     private var maxIntervalMs = 100L
+
+    // On no-amplitude devices below API 33 the system ignores createOneShot's amplitude
+    // argument, so intensity is simulated through the PWM pulse length instead, mirroring
+    // the web RealtimeComposer. API 33+ keeps using scalable composition primitives.
+    private val usesPwmFallback =
+        compatibilityMode == CompatibilityMode.LIMITED_SUPPORT &&
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 
     init {
         if (compatibilityMode == CompatibilityMode.LIMITED_SUPPORT) {
@@ -45,7 +53,13 @@ open class RealtimePrimitiveComposer(
     override fun set(amplitude: Float, frequency: Float) {
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
-        currentIntervalMs = (minIntervalMs + (1 - frequency) * (maxIntervalMs - minIntervalMs)).toLong()
+        currentIntervalMs = if (usesPwmFallback) {
+            // PWM cycle: the ON pulse encodes intensity, the OFF gap encodes frequency.
+            PwmTimingSimulator.shotLength(currentAmplitude) +
+                PwmTimingSimulator.pauseLength(currentFrequency)
+        } else {
+            (minIntervalMs + (1 - frequency) * (maxIntervalMs - minIntervalMs)).toLong()
+        }
 
         if (!isPlaying.get()) {
             start(currentAmplitude, currentFrequency)
@@ -74,9 +88,13 @@ open class RealtimePrimitiveComposer(
             return
         }
 
-        val effect = createCompositionEffect(currentAmplitude, currentFrequency)
-        engine.vibrate(effect)
-        handler.postDelayed(loopRunnable, currentIntervalMs)
+        // On the PWM fallback a zero-intensity tick is silence: skip the pulse but keep
+        // the loop alive so intensity can rise again on the next set().
+        if (!usesPwmFallback || currentAmplitude > 0f) {
+            val effect = createCompositionEffect(currentAmplitude, currentFrequency)
+            engine.vibrate(effect)
+        }
+        handler.postDelayed(loopRunnable, currentIntervalMs.coerceAtLeast(1L))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -88,6 +106,12 @@ open class RealtimePrimitiveComposer(
                     amplitude,
                     0
                 ).compose()
+        } else if (usesPwmFallback) {
+            // No amplitude control: encode intensity as the ON pulse length (PWM duty cycle).
+            VibrationEffect.createOneShot(
+                PwmTimingSimulator.shotLength(amplitude).coerceAtLeast(1L),
+                255
+            )
         } else {
             VibrationEffect.createOneShot(10, (amplitude * 255).toInt().coerceIn(0, 255))
         }
