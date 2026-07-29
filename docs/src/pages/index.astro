@@ -30,6 +30,15 @@ import arrowIcon from '../assets/landing-page/arrow.svg';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {/* Load DM Sans / DM Mono via <link> (not a CSS @import): bundled @import
+        rules get reordered below other declarations in the production build and
+        are then ignored, dropping the font back to the system default. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+    />
     <meta
       name="description"
       content="Pulsar is an open-source library that offers ready-to-use haptic presets. With it, you can add haptics to your Kotlin, Swift, or React Native app in minutes."

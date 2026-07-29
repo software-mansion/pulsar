@@ -42,7 +42,20 @@
 .left {
   flex: 1 1 0;
   min-width: 0;
-  max-width: 560px;
+  max-width: 646px;
+  box-sizing: border-box;
+  // Reserve a left gutter the Pulsar mark lives in, so "Created by", the title
+  // and the subtitle all share one left edge and the title keeps the full column
+  // width (enough to wrap to three lines, matching the design).
+  padding-left: 86px;
+
+  @media (max-width: 960px) {
+    padding-left: 70px;
+  }
+
+  @media (max-width: 480px) {
+    padding-left: 56px;
+  }
 }
 
 .createdBy {
@@ -60,18 +73,26 @@
 }
 
 .titleRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  position: relative;
   margin-top: 28px;
 
   .mark {
+    position: absolute;
+    // Pull the mark into the reserved gutter, flush with the column's left edge,
+    // and align its top with the title's first line (as in the design).
+    left: -80px;
+    top: -10px;
     width: 70px;
     height: 70px;
-    flex-shrink: 0;
-    margin-top: -10px;
+
+    @media (max-width: 960px) {
+      left: -70px;
+      width: 54px;
+      height: 54px;
+    }
 
     @media (max-width: 480px) {
+      left: -56px;
       width: 40px;
       height: 40px;
     }

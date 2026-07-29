@@ -227,7 +227,9 @@ export function StudioHero() {
           <div className={styles.titleRow}>
             <img className={styles.mark} src={pulsarLogo.src} alt="" aria-hidden="true" />
             <h1 className={styles.title}>
-              Pulsar Haptics Studio: Everything You Need to Create Custom Haptics
+              {/* Non-breaking space keeps "to" with "Create" so the title wraps
+                  as "Everything You Need" / "to Create Custom Haptics" per the design. */}
+              Pulsar Studio:<br/>Everything You Need to{'\u00A0'}Create Custom Haptics
             </h1>
           </div>
 

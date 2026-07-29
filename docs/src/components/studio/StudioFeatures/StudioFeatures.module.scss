@@ -75,19 +75,206 @@
   flex-shrink: 0;
   width: 140px;
   height: 140px;
-  position: relative;
-  overflow: hidden;
   background-color: #fbfeff;
   border-radius: 2px;
-
-  img {
-    position: absolute;
-    display: block;
-    max-width: none;
-  }
 
   @media (max-width: 480px) {
     width: 104px;
     height: 104px;
+  }
+}
+
+.icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+// Elements that scale need their transform box scoped to themselves so the
+// origin is their own centre, not the SVG viewport.
+.createCircle,
+.genBar,
+.previewLogo,
+.previewPhone {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+// The phone frame stays hidden until its card is playing.
+.previewPhone {
+  opacity: 0;
+}
+
+// ── Animations — only run while the card is "playing" (hovered or spotlighted).
+// (Design is animated in JS so its line follows the nodes.)
+.playing {
+  .tweakThumb {
+    animation: featTweakSlide 1.7s ease-in-out infinite alternate;
+  }
+  .genBar {
+    animation: featGenBounce 0.9s ease-in-out infinite;
+  }
+  // Same timeline for all three (so they fade out together), but each slides
+  // back in a little later than the last.
+  .createCircle:nth-of-type(1) {
+    animation: featCreate1 2.8s ease-in-out infinite;
+  }
+  .createCircle:nth-of-type(2) {
+    animation: featCreate2 2.8s ease-in-out infinite;
+  }
+  .createCircle:nth-of-type(3) {
+    animation: featCreate3 2.8s ease-in-out infinite;
+  }
+  .previewLogo {
+    animation: featPreviewLogo 3s ease-in-out infinite;
+  }
+  .previewPhone {
+    animation: featPreviewPhone 3s ease-in-out infinite;
+  }
+  .exportArrow {
+    animation: featExportBounce 1.3s ease-in-out infinite;
+  }
+}
+
+@keyframes featTweakSlide {
+  from {
+    transform: translateX(-13px);
+  }
+  to {
+    transform: translateX(13px);
+  }
+}
+
+@keyframes featGenBounce {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+// Every circle fades out in place together (0–10%), jumps left while invisible,
+// then slides back in — each one a touch later than the previous.
+@keyframes featCreate1 {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  10% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  10.01% {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  32% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes featCreate2 {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  10% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  10.01%,
+  20% {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  42% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes featCreate3 {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  10% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  10.01%,
+  30% {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  52% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Logo shrinks in, holds, then returns.
+@keyframes featPreviewLogo {
+  0%,
+  12% {
+    transform: scale(1);
+  }
+  42%,
+  70% {
+    transform: scale(0.52);
+  }
+  95%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+// Phone frame fades/scales in around the shrinking logo, then out.
+@keyframes featPreviewPhone {
+  0%,
+  16% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+  42%,
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes featExportBounce {
+  0%,
+  100% {
+    transform: translateY(-5px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playing * {
+    animation: none !important;
   }
 }
