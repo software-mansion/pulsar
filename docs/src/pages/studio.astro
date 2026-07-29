@@ -1,0 +1,77 @@
+---
+import { BasicLayout } from '../components/landing/Layouts/BasicLayout';
+import { TopBar } from '../components/landing/TopBar/TopBar';
+import { SwmSection } from '../components/landing/SwmSection/SwmSection';
+import { StudioHero } from '../components/studio/StudioHero/StudioHero';
+import { StudioFeatures } from '../components/studio/StudioFeatures/StudioFeatures';
+import { StudioWaitlist } from '../components/studio/StudioWaitlist/StudioWaitlist';
+import { StudioWhyPulsar } from '../components/studio/StudioWhyPulsar/StudioWhyPulsar';
+import '../styles/index.css';
+import commonStyle from '../components/landing/common.module.scss';
+import GTMBody from '../components/gtm-body.astro';
+import GTMHead from '../components/gtm-head.astro';
+import PostHog from '../components/posthog.astro';
+import { BASE_PATH } from '../../config';
+import swmLogo from '../assets/swm-logo.svg';
+import starIcon from '../assets/landing-page/star.svg';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pulsar Haptics Studio is an all-in-one tool for designing, modifying, and deploying custom haptics for iOS, Android, and React Native. Join the waitlist for early access."
+    />
+    <meta
+      name="keywords"
+      content="haptics studio, custom haptics, haptic editor, design haptics, react native haptics, ios haptics, android haptics, haptic feedback tool"
+    />
+    <title>Pulsar Haptics Studio: Everything You Need to Create Custom Haptics</title>
+    {/* Self-referencing canonical so tracking-param variants consolidate to the
+        clean URL. Starlight pages get this automatically; this hand-rolled page
+        needs it set explicitly. */}
+    <link rel="canonical" href={new URL(`${BASE_PATH}/studio/`, Astro.site).href} />
+    <link rel="icon" type="image/svg+xml" href={`${BASE_PATH}/logo.svg`} />
+    <link rel="preload" as="image" type="image/svg+xml" href={swmLogo.src} />
+    <link rel="preload" as="image" type="image/svg+xml" href={starIcon.src} />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Pulsar Haptics Studio: Everything You Need to Create Custom Haptics"
+    />
+    <meta
+      property="og:description"
+      content="An all-in-one tool for designing, modifying, and deploying custom haptics is coming soon. Join the waitlist."
+    />
+    <meta property="og:image" content="https://docs.swmansion.com/pulsar/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Pulsar Haptics Studio: Everything You Need to Create Custom Haptics"
+    />
+    <meta
+      name="twitter:description"
+      content="An all-in-one tool for designing, modifying, and deploying custom haptics is coming soon. Join the waitlist."
+    />
+    <meta name="twitter:image" content="https://docs.swmansion.com/pulsar/og.png" />
+    <GTMHead />
+    <PostHog />
+  </head>
+  <body>
+    <GTMBody />
+    <div class={commonStyle.bottomBorder}>
+      <BasicLayout>
+        <TopBar client:load />
+      </BasicLayout>
+    </div>
+
+    <StudioHero />
+    <StudioFeatures />
+    <StudioWaitlist client:load />
+    <StudioWhyPulsar />
+    <SwmSection />
+  </body>
+</html>
