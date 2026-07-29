@@ -43,20 +43,17 @@ jobs:
           fi
 
       # Why we point the path dep at a uniquely-named symlink instead of
-      # `iOS/Pulsar` directly. Flutter 3.44.1's plugin SPM integration
-      # mirrors the plugin under `<App>/ios/Flutter/ephemeral/Packages/
-      # .packages/pulsar` — the *podspec* name (`flutter/pulsar/ios/
-      # pulsar.podspec` is named `pulsar`), not the Dart name
-      # (`pulsar_haptics`). Pointing the path dep at `iOS/Pulsar`
-      # collides with that symlink's last path component on macOS's
-      # case-insensitive filesystem under SPM tools-5.9: SPM derives
-      # the same identity `pulsar` from both and reports a self-cycle
+      # `iOS/Pulsar` directly. Flutter's plugin SPM integration mirrors
+      # the plugin under `<App>/ios/Flutter/ephemeral/Packages/
+      # .packages/<plugin>`, which was `pulsar` while the podspec was:
+      # SPM then derived the identity `pulsar` from `iOS/Pulsar` too on
+      # macOS's case-insensitive filesystem and reported a self-cycle
       # with the misleading "cyclic dependency between packages
       # FlutterGeneratedPluginSwiftPackage -> pulsar_haptics ->
-      # pulsar_haptics requires tools-version 6.0 or later" wording.
-      # The `name:` alias on the dep isn't honored as a tie-breaker
-      # under tools-5.9. Route through `$RUNNER_TEMP/pulsar-sdk-source`
-      # so the resolved path ends in a unique component.
+      # pulsar_haptics requires tools-version 6.0 or later" wording
+      # (the `name:` alias is no tie-breaker under tools-5.9). The
+      # mirror is `pulsar_haptics` now, so keep the symlink only as a
+      # guard against the next name that collides.
       - name: Patch plugin SPM dep to local iOS/Pulsar sources
         env:
           PULSAR_ABS_PATH: ${{ github.workspace }}/iOS/Pulsar
