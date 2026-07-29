@@ -10,13 +10,27 @@ type Status = 'idle' | 'loading' | 'success' | 'error';
 
 export function StudioWaitlist() {
   const [status, setStatus] = useState<Status>('idle');
+  // The mandatory consent checkbox starts unchecked — the user must opt in
+  // explicitly. `consentError` drives the inline hint shown when they try to
+  // submit without it.
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState(false);
+  const [newsletter, setNewsletter] = useState(false);
 
   // Posts to the server's public /waitlist route, which adds the subscriber to the
-  // MailerLite "Pulsar Studio" group. The API token stays server-side — the browser
-  // only ever sees this endpoint.
+  // MailerLite "Pulsar Studio" group (and, when opted in, the "SWM newsletter"
+  // group too). The API token stays server-side — the browser only ever sees this
+  // endpoint.
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (status === 'loading') return;
+
+    // The product-updates consent is required. Block submission and surface a
+    // message instead of silently sending nothing.
+    if (!consent) {
+      setConsentError(true);
+      return;
+    }
 
     const form = e.currentTarget;
     const data = new FormData(form);
@@ -31,10 +45,13 @@ export function StudioWaitlist() {
           name: data.get('name'),
           company: data.get('company'),
           position: data.get('position'),
+          newsletter,
         }),
       });
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       setStatus('success');
+      setConsent(false);
+      setNewsletter(false);
       form.reset();
     } catch {
       setStatus('error');
@@ -85,11 +102,27 @@ export function StudioWaitlist() {
           />
 
           <label className={styles.checkboxRow}>
-            <input type="checkbox" defaultChecked required />
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => {
+                setConsent(e.target.checked);
+                if (e.target.checked) setConsentError(false);
+              }}
+            />
             <span>I would like to receive Pulsar Haptics Studio product updates.*</span>
           </label>
+          {consentError && (
+            <p className={styles.error} role="alert">
+              Please confirm you'd like to receive product updates to join the waitlist.
+            </p>
+          )}
           <label className={styles.checkboxRow}>
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              checked={newsletter}
+              onChange={(e) => setNewsletter(e.target.checked)}
+            />
             <span>I would also like to receive the Software Mansion newsletter (optional).</span>
           </label>
 
