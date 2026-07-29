@@ -229,7 +229,7 @@ export function StudioHero() {
             <h1 className={styles.title}>
               {/* Non-breaking space keeps "to" with "Create" so the title wraps
                   as "Everything You Need" / "to Create Custom Haptics" per the design. */}
-              Pulsar Haptics Studio: Everything You Need to{'\u00A0'}Create Custom Haptics
+              Pulsar Studio: Everything You Need to{'\u00A0'}Create Custom Haptics
             </h1>
           </div>
 
