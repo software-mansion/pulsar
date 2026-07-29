@@ -1,7 +1,6 @@
 // Web variant of CodeTabs styles. Same look as the mobile tabs, but the code panel
 // (.contentArea) gets the same thin, hover-revealed scrollbar used by the tab header
 // and the visualization panel — instead of the default browser scrollbar.
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
 @mixin thin-scrollbar {
   scrollbar-width: thin;
