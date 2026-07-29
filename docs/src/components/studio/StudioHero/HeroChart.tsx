@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import styles from './HeroChart.module.scss';
 
-// Inline, dynamic version of the Figma hero chart: same grid / area / line /
-// marker styling, but the line points are driven by props so it can morph to the
-// waveform of whichever emoji preset is playing.
+// Inline, editable version of the Figma hero chart: same grid / area / line /
+// marker styling, but the line points are (a) driven by props so it can morph to
+// the waveform of whichever emoji preset is playing, and (b) draggable — grab a
+// node and move it up/down to reshape the line and area in place.
 
 const VIEW_W = 465;
 const VIEW_H = 202;
@@ -30,15 +32,20 @@ const V_LINES = Array.from({ length: 8 }, (_, k) => Math.round((k * VIEW_W) / 8)
 const H_LINES = Array.from({ length: 5 }, (_, k) => Math.round((k * VIEW_H) / 5)).slice(1);
 
 export function HeroChart({ values }: { values: number[] }) {
-  // `display` is what's rendered; it tweens toward `values` whenever the target
-  // (the active preset) changes, so the line morphs instead of snapping.
+  // `display` is what's rendered; it tweens toward `values` when the target (the
+  // active preset) changes, and is edited directly while a node is dragged.
   const [display, setDisplay] = useState<number[]>(values);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const dragIndexRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    // A live node drag owns the shape; don't let a preset morph fight it.
+    if (dragIndexRef.current !== null) return;
+
     const from = display;
     const to = values;
-    // Guard against a length change (all presets share the same N, but be safe).
     if (from.length !== to.length) {
       setDisplay(to);
       return;
@@ -55,9 +62,51 @@ export function HeroChart({ values }: { values: number[] }) {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    // Intentionally only re-run when the target changes, not on every tween tick.
+    // Only re-run when the target changes, not on every tween tick / edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values]);
+
+  // Map a screen Y coordinate to a 0..1 amplitude value. preserveAspectRatio is
+  // "none", so the vertical scale is simply rect.height ↔ VIEW_H.
+  const valueFromClientY = useCallback((clientY: number): number => {
+    const svg = svgRef.current;
+    if (!svg) return 0;
+    const rect = svg.getBoundingClientRect();
+    const svgY = ((clientY - rect.top) / rect.height) * VIEW_H;
+    const value = (PLOT_BOTTOM - svgY) / (PLOT_BOTTOM - PLOT_TOP);
+    return Math.max(0, Math.min(1, value));
+  }, []);
+
+  const onPointerMove = useCallback(
+    (e: PointerEvent) => {
+      const i = dragIndexRef.current;
+      if (i === null) return;
+      const value = valueFromClientY(e.clientY);
+      setDisplay((prev) => {
+        const next = prev.slice();
+        next[i] = value;
+        return next;
+      });
+    },
+    [valueFromClientY],
+  );
+
+  const onPointerUp = useCallback(() => {
+    dragIndexRef.current = null;
+    setDragIndex(null);
+    window.removeEventListener('pointermove', onPointerMove);
+  }, [onPointerMove]);
+
+  const onNodeDown = (i: number) => (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Stop any in-flight morph so the drag has sole control of the shape.
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    dragIndexRef.current = i;
+    setDragIndex(i);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp, { once: true });
+  };
 
   const n = display.length;
   const linePoints = display.map((v, i) => `${xAt(i, n).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ');
@@ -67,7 +116,13 @@ export function HeroChart({ values }: { values: number[] }) {
     ` L ${PLOT_RIGHT} ${PLOT_BOTTOM} Z`;
 
   return (
-    <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="none" role="img" aria-label="Haptic waveform">
+    <svg
+      ref={svgRef}
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      preserveAspectRatio="none"
+      role="img"
+      aria-label="Editable haptic waveform — drag a point to reshape it"
+    >
       <g stroke="#E1F3FA" strokeWidth="1.5">
         {V_LINES.map((x) => (
           <line key={`v${x}`} x1={x} y1="0" x2={x} y2={VIEW_H} />
@@ -88,11 +143,25 @@ export function HeroChart({ values }: { values: number[] }) {
         strokeLinejoin="round"
       />
 
-      <g fill="#FBFEFF" stroke="#38ACDD" strokeWidth="2.5">
-        {display.map((v, i) => (
-          <circle key={i} cx={xAt(i, n)} cy={yAt(v)} r="4.5" />
-        ))}
-      </g>
+      {display.map((v, i) => {
+        const cx = xAt(i, n);
+        const cy = yAt(v);
+        return (
+          <g key={i} className={`${styles.node} ${dragIndex === i ? styles.dragging : ''}`}>
+            <circle
+              className={styles.marker}
+              cx={cx}
+              cy={cy}
+              r="4.5"
+              fill="#FBFEFF"
+              stroke="#38ACDD"
+              strokeWidth="2.5"
+            />
+            {/* Larger transparent hit target for easy grabbing. */}
+            <circle className={styles.hit} cx={cx} cy={cy} r="13" onPointerDown={onNodeDown(i)} />
+          </g>
+        );
+      })}
     </svg>
   );
 }

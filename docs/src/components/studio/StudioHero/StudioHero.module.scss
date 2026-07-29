@@ -117,6 +117,7 @@
 }
 
 .right {
+  position: relative;
   flex-shrink: 0;
   width: 430px;
   max-width: 100%;
@@ -127,13 +128,111 @@
   }
 }
 
+// "Tap me" hint — a hand-drawn arrow pointing at the emoji tiles, doing a small
+// double-tap pulse (same idea as the landing page's interactive-phone arrow).
+.tapHint {
+  position: absolute;
+  top: 34px;
+  right: 10px;
+  z-index: 4;
+  pointer-events: none;
+  transform: rotate(-12deg);
+  transition: opacity 0.35s ease;
+
+  @media (max-width: 480px) {
+    top: 30px;
+    right: 6px;
+  }
+}
+
+.tapHintIcon {
+  display: block;
+  width: 62px;
+  height: 62px;
+  transform-origin: center;
+  animation: studioTapPulse 3s ease-in-out infinite;
+
+  @media (max-width: 480px) {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+.tapHintHidden {
+  opacity: 0;
+}
+
+// Two quick "presses", then rest — mirrors the landing arrow's cursorClick.
+@keyframes studioTapPulse {
+  0%,
+  32%,
+  100% {
+    transform: scale(1);
+  }
+  8% {
+    transform: scale(0.82);
+  }
+  16% {
+    transform: scale(1);
+  }
+  24% {
+    transform: scale(0.82);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tapHintIcon {
+    animation: none;
+  }
+}
+
 .card {
+  position: relative;
   width: 100%;
+  box-sizing: border-box;
   border: 2px solid var(--color-blue-50);
   border-radius: 4px;
   background-color: #fbfeff;
   box-shadow: -4px 4px 0 var(--color-blue-50);
   overflow: hidden;
+}
+
+// Desktop only — the card floats and can be dragged by its title bar / resized
+// from the corner.
+.cardInteractive {
+  will-change: transform, width;
+
+  .cardBar {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+}
+
+.resizeHandle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  height: 22px;
+  z-index: 3;
+  cursor: nwse-resize;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid var(--color-blue-50);
+    border-bottom: 2px solid var(--color-blue-50);
+  }
 }
 
 .cardBar {

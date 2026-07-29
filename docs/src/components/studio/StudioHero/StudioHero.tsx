@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './StudioHero.module.scss';
 import { Button } from '../../landing/Button/Button';
 import { HeroChart } from './HeroChart';
@@ -11,6 +11,7 @@ import emojiStar from '../../../assets/landing-page/emoji2.svg';
 import emojiSad from '../../../assets/landing-page/emoji3.svg';
 import emojiHappy from '../../../assets/landing-page/emoji4.svg';
 import emojiNeutral from '../../../assets/landing-page/emoji_neutral.svg';
+import tapArrow from '../../../assets/landing-page/arrow.svg';
 
 import applausePreset from '../../../content/docs/assets/presets/Applause.json';
 import powerDownPreset from '../../../content/docs/assets/presets/PowerDown.json';
@@ -88,11 +89,101 @@ const emojiTiles: EmojiTile[] = [
 // of the original static chart.
 const DEFAULT_VALUES = [0.1, 0.28, 0.18, 0.5, 0.34, 0.66, 0.42, 0.82, 0.5];
 
+// Drag/resize is a desktop affordance — the mock is a flex item beside the copy.
+// Below this width it stacks full-width and stays static.
+const INTERACTIVE_QUERY = '(min-width: 961px)';
+const CARD_MIN_W = 300;
+const CARD_MAX_W = 600;
+// Height reserved for the floating card so resizing it never reflows the section.
+// Matches the card's natural height at its default width.
+const CARD_RESERVED_H = 374;
+
+type Gesture =
+  | { mode: 'drag'; px: number; py: number; ox: number; oy: number; bounds: Bounds }
+  | { mode: 'resize'; px: number; py: number; ow: number; maxW: number };
+
+interface Bounds {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
 export function StudioHero() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // The "tap me" arrow hint fades away once the user touches the window.
+  const [hasInteracted, setHasInteracted] = useState(false);
   const playersRef = useRef<AudioPatternUtility[]>([]);
   const parsedRef = useRef<boolean[]>([]);
   const playingRef = useRef<AudioPatternUtility | null>(null);
+
+  // ── Draggable / resizable window ──────────────────────────────────────────
+  const heroRef = useRef<HTMLElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const gestureRef = useRef<Gesture | null>(null);
+  const [interactive, setInteractive] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  // Explicit width once the user resizes; until then the card keeps its CSS width
+  // (measuring at mount is fragile — a bad layout moment could freeze a wrong size).
+  const [width, setWidth] = useState<number | null>(null);
+
+  // Only enable drag/resize on the desktop layout.
+  useEffect(() => {
+    const mq = window.matchMedia(INTERACTIVE_QUERY);
+    const sync = () => setInteractive(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  const onPointerMove = useCallback((e: PointerEvent) => {
+    const g = gestureRef.current;
+    if (!g) return;
+    const dx = e.clientX - g.px;
+    const dy = e.clientY - g.py;
+    if (g.mode === 'drag') {
+      setPos({
+        x: Math.min(Math.max(g.ox + dx, g.bounds.minX), g.bounds.maxX),
+        y: Math.min(Math.max(g.oy + dy, g.bounds.minY), g.bounds.maxY),
+      });
+    } else {
+      setWidth(Math.min(Math.max(g.ow + Math.max(dx, dy), CARD_MIN_W), g.maxW));
+    }
+  }, []);
+
+  const onPointerUp = useCallback(() => {
+    gestureRef.current = null;
+    window.removeEventListener('pointermove', onPointerMove);
+  }, [onPointerMove]);
+
+  const startGesture = (mode: 'drag' | 'resize') => (e: React.PointerEvent) => {
+    if (!interactive || !heroRef.current || !cardRef.current) return;
+    e.preventDefault();
+    setHasInteracted(true);
+    const hero = heroRef.current.getBoundingClientRect();
+    const card = cardRef.current.getBoundingClientRect();
+
+    if (mode === 'drag') {
+      // The card's position with translate removed, relative to the hero — the
+      // frame the offset is clamped within so the window can't leave the hero.
+      const naturalLeft = card.left - pos.x - hero.left;
+      const naturalTop = card.top - pos.y - hero.top;
+      const bounds: Bounds = {
+        minX: -naturalLeft,
+        maxX: Math.max(-naturalLeft, hero.width - card.width - naturalLeft),
+        minY: -naturalTop,
+        maxY: Math.max(-naturalTop, hero.height - card.height - naturalTop),
+      };
+      gestureRef.current = { mode, px: e.clientX, py: e.clientY, ox: pos.x, oy: pos.y, bounds };
+    } else {
+      // Don't let it grow past the hero's right edge from where it currently sits.
+      const maxW = Math.min(CARD_MAX_W, Math.max(CARD_MIN_W, hero.right - card.left));
+      gestureRef.current = { mode, px: e.clientX, py: e.clientY, ow: card.width, maxW };
+    }
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp, { once: true });
+  };
 
   // Stable references (module-level / precomputed) so HeroChart only re-morphs
   // when the active preset actually changes.
@@ -100,6 +191,7 @@ export function StudioHero() {
 
   const handleEmojiClick = async (index: number) => {
     setActiveIndex(index);
+    setHasInteracted(true);
 
     // Real device haptics where supported.
     if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
@@ -122,7 +214,7 @@ export function StudioHero() {
   };
 
   return (
-    <section className={styles.hero}>
+    <section className={styles.hero} ref={heroRef}>
       <div className={styles.grid} aria-hidden="true" />
 
       <div className={styles.inner}>
@@ -150,9 +242,20 @@ export function StudioHero() {
           </div>
         </div>
 
-        <div className={styles.right}>
-          <div className={styles.card}>
-            <div className={styles.cardBar}>
+        <div
+          className={styles.right}
+          style={interactive ? { height: CARD_RESERVED_H } : undefined}
+        >
+          <div
+            ref={cardRef}
+            className={`${styles.card} ${interactive ? styles.cardInteractive : ''}`}
+            style={
+              interactive
+                ? { width: width ?? undefined, transform: `translate(${pos.x}px, ${pos.y}px)` }
+                : undefined
+            }
+          >
+            <div className={styles.cardBar} onPointerDown={startGesture('drag')}>
               <div className={styles.dots}>
                 <span />
                 <span />
@@ -182,6 +285,23 @@ export function StudioHero() {
                 <HeroChart values={chartValues} />
               </div>
             </div>
+
+            {interactive && (
+              <div
+                className={styles.resizeHandle}
+                onPointerDown={startGesture('resize')}
+                aria-hidden="true"
+              />
+            )}
+          </div>
+
+          {/* "Tap me" hint pointing at the emoji tiles; fades once the user
+              interacts with the window. */}
+          <div
+            className={`${styles.tapHint} ${hasInteracted ? styles.tapHintHidden : ''}`}
+            aria-hidden="true"
+          >
+            <img className={styles.tapHintIcon} src={tapArrow.src} alt="" />
           </div>
         </div>
       </div>
