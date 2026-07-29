@@ -240,7 +240,7 @@ export function StudioHero() {
 
           <div className={styles.ctaRow}>
             <Button label="Join the waitlist" url="#waitlist" />
-            <span className={styles.priceHint}>with pricing starting from <b style={{ fontSize: '24px' }}>9$</b></span>
+            <span className={styles.priceHint}>with pricing starting from <b style={{ fontSize: '22px' }}>9$</b>/month</span>
           </div>
         </div>
 

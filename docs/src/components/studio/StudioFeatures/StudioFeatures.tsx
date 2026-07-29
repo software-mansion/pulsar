@@ -215,34 +215,87 @@ interface Feature {
   lead: string;
   rest: string;
   Icon: (props: IconProps) => ReactElement;
+  // How long to keep the icon animating after the pointer leaves so the current
+  // motion arc completes gracefully instead of snapping to rest. Roughly one
+  // full CSS cycle per card (or a full sine period for the JS-driven Design).
+  windDownMs: number;
 }
 
 const features: Feature[] = [
-  { lead: 'Design', rest: ' custom haptic patterns from scratch', Icon: DesignIcon },
-  { lead: 'Tweak', rest: ' existing presets so they match your project', Icon: TweakIcon },
-  { lead: 'Generate', rest: ' haptics from audio', Icon: GenerateIcon },
-  { lead: 'Create', rest: ' haptics that match your Lottie animations', Icon: CreateIcon },
+  { lead: 'Design', rest: ' custom haptic patterns from scratch', Icon: DesignIcon, windDownMs: 2860 },
+  { lead: 'Tweak', rest: ' existing presets so they match your project', Icon: TweakIcon, windDownMs: 3400 },
+  { lead: 'Generate', rest: ' haptics from audio', Icon: GenerateIcon, windDownMs: 900 },
+  { lead: 'Create', rest: ' haptics that match your Lottie animations', Icon: CreateIcon, windDownMs: 2800 },
   {
     lead: 'Preview',
     rest: ' everything in Figma or on a real device, using our companion app',
     Icon: PreviewIcon,
+    windDownMs: 3000,
   },
-  { lead: 'Export', rest: ' the generated code and hand it off to your developers', Icon: ExportIcon },
+  { lead: 'Export', rest: ' the generated code and hand it off to your developers', Icon: ExportIcon, windDownMs: 1300 },
 ];
 
 export function StudioFeatures() {
   const [autoIndex, setAutoIndex] = useState(0);
   const [hovered, setHovered] = useState<number | null>(null);
-  // Hover wins; otherwise the idle auto-cycle spotlights one card at a time so
-  // people can see what each feature does without everything moving at once.
-  const playing = hovered ?? autoIndex;
+  // Any card the pointer just left keeps its `.playing` class for roughly one
+  // full animation cycle so its motion arc can complete instead of snapping.
+  // A set (not a single index) so a card the user moved off of keeps finishing
+  // while the newly hovered card starts up — no jump on inter-card transitions.
+  const [finishing, setFinishing] = useState<ReadonlySet<number>>(() => new Set());
+  const finishTimers = useRef<Map<number, number>>(new Map());
+
+  const isPlaying = (i: number) =>
+    hovered === i || finishing.has(i) || (hovered === null && autoIndex === i);
+
+  const clearFinishTimer = (i: number) => {
+    const t = finishTimers.current.get(i);
+    if (t !== undefined) {
+      window.clearTimeout(t);
+      finishTimers.current.delete(i);
+    }
+  };
+
+  const dropFinishing = (i: number) =>
+    setFinishing((prev) => {
+      if (!prev.has(i)) return prev;
+      const next = new Set(prev);
+      next.delete(i);
+      return next;
+    });
+
+  const startWindDown = (i: number) => {
+    clearFinishTimer(i);
+    setFinishing((prev) => new Set(prev).add(i));
+    const t = window.setTimeout(() => {
+      dropFinishing(i);
+      finishTimers.current.delete(i);
+    }, features[i].windDownMs);
+    finishTimers.current.set(i, t);
+  };
 
   useEffect(() => {
-    // Freeze the cycle while a card is hovered; resume where it left off after.
+    // Auto-cycle keeps ticking whenever nothing is actively hovered — a
+    // still-winding-down card doesn't block the next spotlight. When the
+    // spotlight moves on, the outgoing card is added to `finishing` so its
+    // motion arc completes instead of snapping.
     if (hovered !== null) return;
-    const id = setInterval(() => setAutoIndex((i) => (i + 1) % features.length), CYCLE_MS);
+    const id = setInterval(() => {
+      setAutoIndex((prev) => {
+        startWindDown(prev);
+        return (prev + 1) % features.length;
+      });
+    }, CYCLE_MS);
     return () => clearInterval(id);
   }, [hovered]);
+
+  useEffect(() => {
+    const timers = finishTimers.current;
+    return () => {
+      timers.forEach((t) => window.clearTimeout(t));
+      timers.clear();
+    };
+  }, []);
 
   return (
     <section className={styles.section}>
@@ -255,16 +308,24 @@ export function StudioFeatures() {
             return (
               <div
                 key={f.lead}
-                className={`${styles.card} ${playing === i ? styles.playing : ''}`}
-                onMouseEnter={() => setHovered(i)}
-                onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
+                className={`${styles.card} ${isPlaying(i) ? styles.playing : ''}`}
+                onMouseEnter={() => {
+                  clearFinishTimer(i);
+                  dropFinishing(i);
+                  setHovered(i);
+                }}
+                onMouseLeave={() => {
+                  if (hovered !== i) return;
+                  setHovered(null);
+                  startWindDown(i);
+                }}
               >
                 <p className={styles.text}>
                   <strong>{f.lead}</strong>
                   {f.rest}
                 </p>
                 <div className={styles.art}>
-                  <Icon playing={playing === i} />
+                  <Icon playing={isPlaying(i)} />
                 </div>
               </div>
             );
