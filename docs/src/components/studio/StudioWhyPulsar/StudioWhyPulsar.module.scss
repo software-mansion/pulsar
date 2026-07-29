@@ -1,0 +1,116 @@
+.section {
+  background-color: #ffffff;
+  overflow: hidden;
+  padding: 80px 0 100px;
+
+  @media (max-width: 768px) {
+    padding: 56px 0 60px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 40px 0 44px;
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+
+  @media (max-width: 768px) {
+    gap: 24px;
+  }
+}
+
+.left {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 520px;
+  padding: 24px 0;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.paragraph {
+  margin: 24px 0 0;
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  color: var(--color-primary);
+}
+
+.link {
+  display: inline-block;
+  margin-top: 24px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.right {
+  flex-shrink: 0;
+  width: 150px;
+  height: 340px;
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+
+  @media (max-width: 560px) {
+    display: none;
+  }
+}
+
+.tileColumn {
+  position: absolute;
+  top: 0;
+  left: 6px;
+  display: flex;
+  flex-direction: column;
+  // Continuous upward scroll. Every tile carries the same margin-bottom, so the
+  // duplicated set is laid out identically and -50% is exactly one copy's height.
+  animation: studioTileMarquee 16s linear infinite;
+  will-change: transform;
+}
+
+@keyframes studioTileMarquee {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tileColumn {
+    animation: none;
+  }
+}
+
+.tile {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  margin-bottom: 32px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border: 2px solid var(--color-blue-50);
+  border-radius: 6px;
+  box-shadow: -4px 4px 0 var(--color-blue-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
