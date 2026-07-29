@@ -67,6 +67,10 @@ export class AudioPatternUtility {
 
     this.stop();
 
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume();
+    }
+
     this.currentSource = this.audioContext.createBufferSource();
     this.currentSource.buffer = this.renderedBuffer;
     this.currentSource.connect(this.audioContext.destination);
