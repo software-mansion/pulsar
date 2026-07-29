@@ -307,12 +307,14 @@
 
 .emojiRow {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
 .emojiTile {
   aspect-ratio: 1;
+  box-sizing: border-box;
+  min-width: 0;
   background-color: #fbfeff;
   border: 2px solid var(--color-blue-50);
   border-radius: 4px;
