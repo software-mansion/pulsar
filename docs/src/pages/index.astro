@@ -9,6 +9,7 @@ import '../styles/index.css';
 import commonStyle from '../components/landing/common.module.scss';
 import { VisitPlayground } from '../components/landing/VisitPlayground/VisitPlayground';
 import { SdkSection } from '../components/landing/SdkSection/SdkSection';
+import { StudioSection } from '../components/landing/StudioSection/StudioSection';
 import { AppShowcase } from '../components/landing/AppShowcase/AppShowcase';
 import { Articles } from '../components/landing/Articles/Articles';
 import { Testimonials } from '../components/landing/Testimonials/Testimonials';
@@ -92,6 +93,10 @@ Presets that you can hear and feel with Live Preview." />
 
     <BasicLayout className={commonStyle.spaceTopLarge}>
       <SdkSection />
+    </BasicLayout>
+
+    <BasicLayout className={commonStyle.spaceTopLarge}>
+      <StudioSection client:visible />
     </BasicLayout>
 
     <BasicLayout className={commonStyle.spaceTopLarge}>
