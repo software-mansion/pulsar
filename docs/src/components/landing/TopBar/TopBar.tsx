@@ -29,6 +29,7 @@ export function TopBar() {
           <a href={`${BASE_PATH}/presets-playground/`}>Presets</a>
           <a href={`${BASE_PATH}/getting-started/`}>Getting started</a>
           <a href={`${BASE_PATH}/sdk/overview/`}>Docs</a>
+          <a href={`${BASE_PATH}/studio/`}>Studio</a>
         </div>
         <a href="https://github.com/software-mansion/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
@@ -63,6 +64,9 @@ export function TopBar() {
               </a>
               <a href={`${BASE_PATH}/sdk/overview/`} onClick={closeMenu}>
                 Docs
+              </a>
+              <a href={`${BASE_PATH}/studio/`} onClick={closeMenu}>
+                Studio
               </a>
             </nav>
             <div className={styles.mobileMenuFooter}>
