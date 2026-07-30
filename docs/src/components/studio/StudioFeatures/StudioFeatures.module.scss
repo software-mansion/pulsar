@@ -100,43 +100,47 @@
   transform-origin: center;
 }
 
-// The phone frame stays hidden until its card is playing.
+// ── Continuous, always-on animations ─────────────────────────────────────────
+// No gating — every icon loops forever. Each loop is seamless (0% == 100% or
+// `alternate`), so the infinite repeat never shows a seam. (The Design line is
+// driven in JS — see StudioFeatures.tsx — so it has no rule here.)
+
+// Thumbs slide back and forth; negative delays stagger them. Safe here because
+// the animation is never added/removed — the delay just phase-shifts a running
+// loop rather than seeking-and-snapping on mount.
+.tweakThumb {
+  animation: loopTweakSlide 1.7s ease-in-out infinite alternate;
+}
+
+.genBar {
+  animation: loopGenBounce 0.9s ease-in-out infinite;
+}
+
+.createCircle:nth-of-type(1) {
+  animation: loopCreate1 2.8s ease-in-out infinite;
+}
+.createCircle:nth-of-type(2) {
+  animation: loopCreate2 2.8s ease-in-out infinite;
+}
+.createCircle:nth-of-type(3) {
+  animation: loopCreate3 2.8s ease-in-out infinite;
+}
+
+.previewLogo {
+  animation: loopPreviewLogo 3s ease-in-out infinite;
+}
 .previewPhone {
   opacity: 0;
+  animation: loopPreviewPhone 3s ease-in-out infinite;
 }
 
-// ── Animations — only run while the card is "playing" (hovered or spotlighted).
-// (Design is animated in JS so its line follows the nodes.)
-.playing {
-  .tweakThumb {
-    animation: featTweakSlide 1.7s ease-in-out infinite alternate;
-  }
-  .genBar {
-    animation: featGenBounce 0.9s ease-in-out infinite;
-  }
-  // Same timeline for all three (so they fade out together), but each slides
-  // back in a little later than the last.
-  .createCircle:nth-of-type(1) {
-    animation: featCreate1 2.8s ease-in-out infinite;
-  }
-  .createCircle:nth-of-type(2) {
-    animation: featCreate2 2.8s ease-in-out infinite;
-  }
-  .createCircle:nth-of-type(3) {
-    animation: featCreate3 2.8s ease-in-out infinite;
-  }
-  .previewLogo {
-    animation: featPreviewLogo 3s ease-in-out infinite;
-  }
-  .previewPhone {
-    animation: featPreviewPhone 3s ease-in-out infinite;
-  }
-  .exportArrow {
-    animation: featExportBounce 1.3s ease-in-out infinite;
-  }
+.exportArrow {
+  animation: loopExportBounce 1.3s ease-in-out infinite;
 }
 
-@keyframes featTweakSlide {
+// ── Keyframes ────────────────────────────────────────────────────────────────
+
+@keyframes loopTweakSlide {
   from {
     transform: translateX(-13px);
   }
@@ -145,7 +149,7 @@
   }
 }
 
-@keyframes featGenBounce {
+@keyframes loopGenBounce {
   0%,
   100% {
     transform: scaleY(0.4);
@@ -155,9 +159,7 @@
   }
 }
 
-// Every circle fades out in place together (0–10%), jumps left while invisible,
-// then slides back in — each one a touch later than the previous.
-@keyframes featCreate1 {
+@keyframes loopCreate1 {
   0% {
     opacity: 1;
     transform: translateX(0);
@@ -180,7 +182,7 @@
   }
 }
 
-@keyframes featCreate2 {
+@keyframes loopCreate2 {
   0% {
     opacity: 1;
     transform: translateX(0);
@@ -204,7 +206,7 @@
   }
 }
 
-@keyframes featCreate3 {
+@keyframes loopCreate3 {
   0% {
     opacity: 1;
     transform: translateX(0);
@@ -228,8 +230,7 @@
   }
 }
 
-// Logo shrinks in, holds, then returns.
-@keyframes featPreviewLogo {
+@keyframes loopPreviewLogo {
   0%,
   12% {
     transform: scale(1);
@@ -244,8 +245,7 @@
   }
 }
 
-// Phone frame fades/scales in around the shrinking logo, then out.
-@keyframes featPreviewPhone {
+@keyframes loopPreviewPhone {
   0%,
   16% {
     opacity: 0;
@@ -263,7 +263,7 @@
   }
 }
 
-@keyframes featExportBounce {
+@keyframes loopExportBounce {
   0%,
   100% {
     transform: translateY(-5px);
@@ -274,7 +274,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .playing * {
+  // The JS-driven Design line honours reduced-motion in the component itself.
+  .tweakThumb,
+  .genBar,
+  .createCircle,
+  .previewLogo,
+  .previewPhone,
+  .exportArrow {
     animation: none !important;
+  }
+  .previewPhone {
+    opacity: 0;
   }
 }

@@ -2,25 +2,25 @@ import { useEffect, useRef, useState, type ReactElement } from 'react';
 import styles from './StudioFeatures.module.scss';
 import { BasicLayout } from '../../landing/Layouts/BasicLayout';
 
-const NAVY = '#001A72';
-const STROKE = 3;
-// How long each card holds the spotlight during the idle auto-cycle.
-const CYCLE_MS = 2600;
-
-interface IconProps {
-  playing: boolean;
-}
-
 // ── Inline, animatable icons ────────────────────────────────────────────────
 // Same navy line-art as the Figma icons, inlined so their parts can be animated.
-// Most animations are CSS (gated by the card's `.playing` class); Design is
-// JS-driven so its line reshapes together with its nodes.
+// Every icon animates continuously — there is no hover/spotlight gating. Because
+// nothing ever starts or stops, there are no add/remove snap points; the only
+// smoothness requirement is a seamless loop wrap, so each CSS animation either
+// has 0% == 100% or ping-pongs with `alternate`.
+//
+// The Design line reshapes together with its nodes, which CSS can't express in a
+// cross-browser way (animating a path's `d` isn't supported in Firefox), so it
+// keeps the JS requestAnimationFrame approach — just running in a permanent loop.
+
+const NAVY = '#001A72';
+const STROKE = 3;
 
 const DESIGN_XS = [12, 38, 60, 84, 108];
 const DESIGN_BASE_Y = [84, 50, 76, 40, 68];
 const DESIGN_NODES = [1, 2, 3]; // middle points get a marker + bob
 
-function DesignIcon({ playing }: IconProps): ReactElement {
+function DesignIcon(): ReactElement {
   const [ys, setYs] = useState(DESIGN_BASE_Y);
   const rafRef = useRef<number | null>(null);
 
@@ -28,7 +28,7 @@ function DesignIcon({ playing }: IconProps): ReactElement {
     const reduce =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!playing || reduce) {
+    if (reduce) {
       setYs(DESIGN_BASE_Y);
       return;
     }
@@ -49,7 +49,7 @@ function DesignIcon({ playing }: IconProps): ReactElement {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [playing]);
+  }, []);
 
   const points = DESIGN_XS.map((x, i) => `${x},${ys[i].toFixed(1)}`).join(' ');
   return (
@@ -123,7 +123,7 @@ function GenerateIcon(): ReactElement {
           className={styles.genBar}
           x={x - 2.5}
           y={60 - h / 2}
-          width="5"
+          width={STROKE}
           height={h}
           rx="2.5"
           fill={NAVY}
@@ -214,118 +214,39 @@ function ExportIcon(): ReactElement {
 interface Feature {
   lead: string;
   rest: string;
-  Icon: (props: IconProps) => ReactElement;
-  // How long to keep the icon animating after the pointer leaves so the current
-  // motion arc completes gracefully instead of snapping to rest. Roughly one
-  // full CSS cycle per card (or a full sine period for the JS-driven Design).
-  windDownMs: number;
+  Icon: () => ReactElement;
 }
 
 const features: Feature[] = [
-  { lead: 'Design', rest: ' custom haptic patterns from scratch', Icon: DesignIcon, windDownMs: 2860 },
-  { lead: 'Tweak', rest: ' existing presets so they match your project', Icon: TweakIcon, windDownMs: 3400 },
-  { lead: 'Generate', rest: ' haptics from audio', Icon: GenerateIcon, windDownMs: 900 },
-  { lead: 'Create', rest: ' haptics that match your Lottie animations', Icon: CreateIcon, windDownMs: 2800 },
+  { lead: 'Design', rest: ' custom haptic patterns from scratch', Icon: DesignIcon },
+  { lead: 'Tweak', rest: ' existing presets so they match your project', Icon: TweakIcon },
+  { lead: 'Generate', rest: ' haptics from audio', Icon: GenerateIcon },
+  { lead: 'Create', rest: ' haptics that match your Lottie animations', Icon: CreateIcon },
   {
     lead: 'Preview',
     rest: ' everything in Figma or on a real device, using our companion app',
     Icon: PreviewIcon,
-    windDownMs: 3000,
   },
-  { lead: 'Export', rest: ' the generated code and hand it off to your developers', Icon: ExportIcon, windDownMs: 1300 },
+  { lead: 'Export', rest: ' the generated code and hand it off to your developers', Icon: ExportIcon },
 ];
 
 export function StudioFeatures() {
-  const [autoIndex, setAutoIndex] = useState(0);
-  const [hovered, setHovered] = useState<number | null>(null);
-  // Any card the pointer just left keeps its `.playing` class for roughly one
-  // full animation cycle so its motion arc can complete instead of snapping.
-  // A set (not a single index) so a card the user moved off of keeps finishing
-  // while the newly hovered card starts up — no jump on inter-card transitions.
-  const [finishing, setFinishing] = useState<ReadonlySet<number>>(() => new Set());
-  const finishTimers = useRef<Map<number, number>>(new Map());
-
-  const isPlaying = (i: number) =>
-    hovered === i || finishing.has(i) || (hovered === null && autoIndex === i);
-
-  const clearFinishTimer = (i: number) => {
-    const t = finishTimers.current.get(i);
-    if (t !== undefined) {
-      window.clearTimeout(t);
-      finishTimers.current.delete(i);
-    }
-  };
-
-  const dropFinishing = (i: number) =>
-    setFinishing((prev) => {
-      if (!prev.has(i)) return prev;
-      const next = new Set(prev);
-      next.delete(i);
-      return next;
-    });
-
-  const startWindDown = (i: number) => {
-    clearFinishTimer(i);
-    setFinishing((prev) => new Set(prev).add(i));
-    const t = window.setTimeout(() => {
-      dropFinishing(i);
-      finishTimers.current.delete(i);
-    }, features[i].windDownMs);
-    finishTimers.current.set(i, t);
-  };
-
-  useEffect(() => {
-    // Auto-cycle keeps ticking whenever nothing is actively hovered — a
-    // still-winding-down card doesn't block the next spotlight. When the
-    // spotlight moves on, the outgoing card is added to `finishing` so its
-    // motion arc completes instead of snapping.
-    if (hovered !== null) return;
-    const id = setInterval(() => {
-      setAutoIndex((prev) => {
-        startWindDown(prev);
-        return (prev + 1) % features.length;
-      });
-    }, CYCLE_MS);
-    return () => clearInterval(id);
-  }, [hovered]);
-
-  useEffect(() => {
-    const timers = finishTimers.current;
-    return () => {
-      timers.forEach((t) => window.clearTimeout(t));
-      timers.clear();
-    };
-  }, []);
-
   return (
     <section className={styles.section}>
       <BasicLayout>
         <h2 className={styles.heading}>Bring tailor-made haptics into your product</h2>
 
         <div className={styles.grid}>
-          {features.map((f, i) => {
+          {features.map((f) => {
             const Icon = f.Icon;
             return (
-              <div
-                key={f.lead}
-                className={`${styles.card} ${isPlaying(i) ? styles.playing : ''}`}
-                onMouseEnter={() => {
-                  clearFinishTimer(i);
-                  dropFinishing(i);
-                  setHovered(i);
-                }}
-                onMouseLeave={() => {
-                  if (hovered !== i) return;
-                  setHovered(null);
-                  startWindDown(i);
-                }}
-              >
+              <div key={f.lead} className={styles.card}>
                 <p className={styles.text}>
                   <strong>{f.lead}</strong>
                   {f.rest}
                 </p>
                 <div className={styles.art}>
-                  <Icon playing={isPlaying(i)} />
+                  <Icon />
                 </div>
               </div>
             );

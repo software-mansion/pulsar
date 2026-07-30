@@ -121,7 +121,6 @@
   margin-top: 40px;
   display: flex;
   align-items: center;
-  gap: 18px;
   flex-wrap: wrap;
 
   @media (max-width: 480px) {
@@ -135,6 +134,7 @@
   color: var(--color-blue-100);
   background-color: var(--color-blue-20);
   padding: 6px 12px;
+  margin-top: -3px;
 }
 
 .right {
