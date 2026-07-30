@@ -6,9 +6,9 @@
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
+      "types": "./lib/typescript/src/index.d.ts",
       "source": "./src/index.tsx",
       "react-native": "./src/index.tsx",
-      "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
     "./jest-mock": "./jest-mock.js",
