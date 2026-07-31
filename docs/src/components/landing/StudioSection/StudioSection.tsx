@@ -1,49 +1,54 @@
 import { Button } from '../Button/Button';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import styles from './StudioSection.module.scss';
-import { BASE_PATH } from '../../../../config';
 
-const NAVY = '#001A72';
+import heroChart from '../../../assets/landing-page/studio-features/hero-chart.svg';
+import emojiStar from '../../../assets/landing-page/emoji2.svg';
+import emojiSad from '../../../assets/landing-page/emoji3.svg';
+import emojiHappy from '../../../assets/landing-page/emoji4.svg';
+import emojiNeutral from '../../../assets/landing-page/emoji_neutral.svg';
 
-// What Studio lets you do — short labels echoing the Studio landing feature grid.
+// What Studio lets you do — echoing the Studio landing feature tiles.
 const highlights = [
-  'Design patterns from scratch',
-  'Tweak existing presets',
+  'Design custom haptic patterns from scratch',
+  'Tweak existing presets to match your project',
   'Generate haptics from audio',
-  'Match your Lottie animations',
-  'Preview on real devices',
+  'Create haptics that match your Lottie animations',
+  'Preview in Figma or on a real device',
   'Export production-ready code',
 ];
 
-// Static preview of the Studio editor: an editable-looking haptic waveform with
-// draggable nodes, in the Pulsar navy line-art style.
-const WAVE_XS = [10, 46, 82, 118, 154, 190, 226];
-const WAVE_YS = [70, 40, 58, 22, 52, 34, 64];
-const WAVE_NODES = [1, 3, 5];
+const emojiTiles = [
+  { src: emojiStar.src, label: 'Applause' },
+  { src: emojiSad.src, label: 'Power Down' },
+  { src: emojiHappy.src, label: 'Bloom' },
+  { src: emojiNeutral.src, label: 'Heartbeat' },
+];
 
 function StudioPreview() {
-  const points = WAVE_XS.map((x, i) => `${x},${WAVE_YS[i]}`).join(' ');
   return (
     <div className={styles.preview}>
       <div className={styles.previewBar}>
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.previewTitle}>Pulsar Studio</span>
+        <div className={styles.dots}>
+          <span className={styles.dot} />
+          <span className={styles.dot} />
+          <span className={styles.dot} />
+        </div>
+        <div className={styles.urlPill}>pulsar.swmansion.com/studio</div>
       </div>
       <div className={styles.previewBody}>
-        <svg viewBox="0 0 236 92" className={styles.wave} fill="none" aria-hidden="true">
-          <polyline
-            points={points}
-            stroke={NAVY}
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {WAVE_NODES.map((i) => (
-            <circle key={i} cx={WAVE_XS[i]} cy={WAVE_YS[i]} r="6" fill="#fff" stroke={NAVY} strokeWidth="3" />
+        <div className={styles.emojiRow}>
+          {emojiTiles.map((tile) => (
+            <div key={tile.label} className={styles.emojiTile}>
+              <img src={tile.src} alt={tile.label} />
+            </div>
           ))}
-        </svg>
+        </div>
+        <img
+          src={heroChart.src}
+          alt="Pulsar Studio haptic waveform editor preview"
+          className={styles.heroChart}
+        />
       </div>
     </div>
   );
@@ -55,7 +60,7 @@ export function StudioSection({ className }: { className?: string }) {
       <div className={styles.left}>
         <SectionHeader
           title="Design your own with Pulsar Studio"
-          subtitle="An all-in-one tool for designing, tweaking, and generating custom haptics - then exporting production-ready code. Currently in development."
+          subtitle="Pulsar Studio is a visual haptic editor for designing custom patterns, previewing them live on device, and exporting production-ready code for iOS, Android, and React Native. Currently in development."
           align="left"
         />
         <ul className={styles.highlights}>
@@ -67,7 +72,7 @@ export function StudioSection({ className }: { className?: string }) {
           <Button
             label="Join the waitlist"
             variant="filled"
-            url={`${BASE_PATH}/studio/#waitlist`}
+            url="https://pulsar.swmansion.com/studio"
             onClick={() => window.posthog?.capture('studio_section_waitlist_clicked')}
           />
         </div>
