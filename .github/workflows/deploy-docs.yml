@@ -49,9 +49,9 @@ jobs:
           npm ci
           npm run build
 
-      - name: Install figma-preview dependencies
-        working-directory: figma/preview
-        run: npm ci
+#      - name: Install figma-preview dependencies
+#        working-directory: figma/preview
+#        run: npm ci
 
       - name: Build docs
         working-directory: docs
