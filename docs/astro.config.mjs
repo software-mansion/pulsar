@@ -69,10 +69,14 @@ export default defineConfig({
         // },
         {
           label: 'Pulsar Studio',
-          slug: 'pulsar-studio',
+          link: 'https://pulsar.swmansion.com/studio',
           badge: {
             text: 'Soon',
             variant: 'note',
+          },
+          attrs: {
+            target: '_blank',
+            rel: 'noopener noreferrer',
           },
         },
         {
