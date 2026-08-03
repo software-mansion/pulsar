@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'docs/**'
-      - 'figma/preview/**'
       - 'web/Pulsar/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
@@ -38,20 +37,11 @@ jobs:
         working-directory: docs
         run: npm ci
 
-      # The docs build's prebuild step (scripts/build-figma-preview.mjs) bundles
-      # the standalone figma/preview app into an embedded <iframe srcdoc>. That
-      # app imports `pulsar-haptics` from web/Pulsar via a file: dependency, so
-      # web/Pulsar must be built (its dist/ is gitignored) and figma/preview's
-      # deps installed before the docs build runs.
-      - name: Build web haptics (pulsar-haptics) for the figma-preview embed
+      - name: Build web haptics (pulsar-haptics)
         working-directory: web/Pulsar
         run: |
           npm ci
           npm run build
-
-#      - name: Install figma-preview dependencies
-#        working-directory: figma/preview
-#        run: npm ci
 
       - name: Build docs
         working-directory: docs
