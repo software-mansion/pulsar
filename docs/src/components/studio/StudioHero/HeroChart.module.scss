@@ -1,0 +1,16 @@
+.marker {
+  pointer-events: none;
+  transition: r 0.12s ease;
+}
+
+.hit {
+  fill: transparent;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+// Enlarge the marker on hover / while dragging so it reads as grabbable.
+.node:hover .marker,
+.node.dragging .marker {
+  r: 7;
+}

@@ -1,0 +1,237 @@
+.section {
+  position: relative;
+  overflow: hidden;
+  background-color: #e1f3fa;
+  border-top: 1px solid var(--color-blue-50);
+  border-bottom: 1px solid var(--color-blue-50);
+  padding: 72px 0 88px;
+
+  @media (max-width: 480px) {
+    padding: 48px 0 56px;
+  }
+}
+
+.waves {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+
+  img {
+    display: block;
+    width: 100%;
+    max-width: 1440px;
+    height: auto;
+  }
+}
+
+// Two sizes, mirrored left/right — matching the Figma layout (bigger star upper
+// and closer to the form, smaller star lower and further out).
+.star {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  // Gentle vertical float. Uses transform so it never fights the top/left
+  // positioning; per-star duration/delay/amplitude keep them out of sync.
+  animation: studioStarFloat var(--float-dur, 4.5s) ease-in-out var(--float-delay, 0s) infinite;
+  will-change: transform;
+}
+
+@keyframes studioStarFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--float-amp, -10px));
+  }
+}
+
+.starTopLeft {
+  width: 122px;
+  top: 145px;
+  left: calc(40% - 275px);
+  --float-amp: -12px;
+  --float-dur: 4.6s;
+  --float-delay: -0.4s;
+}
+.starBottomLeft {
+  width: 101px;
+  top: 232px;
+  left: calc(40% - 349px);
+  --float-amp: -8px;
+  --float-dur: 5.4s;
+  --float-delay: -2.1s;
+}
+.starTopRight {
+  width: 122px;
+  top: 145px;
+  left: calc(60% + 153px);
+  --float-amp: -10px;
+  --float-dur: 5s;
+  --float-delay: -1.2s;
+}
+.starBottomRight {
+  width: 101px;
+  top: 232px;
+  left: calc(60% + 247px);
+  --float-amp: -7px;
+  --float-dur: 4.2s;
+  --float-delay: -3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .starTopLeft {
+    width: 92px;
+    top: 118px;
+    left: calc(40% - 210px);
+  }
+  .starBottomLeft {
+    width: 76px;
+    top: 188px;
+    left: calc(40% - 262px);
+  }
+  .starTopRight {
+    width: 92px;
+    top: 118px;
+    left: calc(60% + 118px);
+  }
+  .starBottomRight {
+    width: 76px;
+    top: 188px;
+    left: calc(60% + 186px);
+  }
+}
+
+@media (max-width: 560px) {
+  .star {
+    display: none;
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  max-width: 522px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.subtitle {
+  margin: 16px auto 0;
+  max-width: 420px;
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  color: var(--color-primary);
+}
+
+.form {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 18px;
+  border: 2px solid var(--color-blue-30);
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  line-height: 1.2;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: #7a93b3;
+  }
+
+  &:focus {
+    border-color: var(--color-blue-50);
+    box-shadow: 0 0 0 3px rgba(56, 172, 221, 0.2);
+  }
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: var(--font-size-2xs);
+  line-height: 1.4;
+  color: var(--color-primary);
+  cursor: pointer;
+
+  &:first-of-type {
+    margin-top: 8px;
+  }
+
+  input {
+    margin: 1px 0 0;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    accent-color: var(--color-blue-50);
+    cursor: pointer;
+  }
+}
+
+.fineprint {
+  margin: 8px 0 0;
+  font-size: var(--font-size-2xs);
+  line-height: 1.5;
+  color: #6b83a3;
+
+  a {
+    color: #6b83a3;
+    text-decoration: underline;
+  }
+}
+
+.submitRow {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+
+  button:disabled {
+    opacity: 0.65;
+    cursor: progress;
+  }
+}
+
+.thanks {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-blue-60);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  color: var(--color-pink-100, #ff6259);
+}

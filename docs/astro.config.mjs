@@ -32,6 +32,24 @@ export default defineConfig({
         // './src/content/docs/legacy-style.css',
         '@fontsource/bebas-neue/400.css',
       ],
+      // Load DM Sans / DM Mono via a <head> <link> rather than a CSS @import.
+      // In the production build, bundled @import rules get reordered below other
+      // declarations and are then ignored by the browser (falling back to a
+      // system font). A head <link> is order-independent and always applies.
+      head: [
+        { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
+        {
+          tag: 'link',
+          attrs: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true },
+        },
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'stylesheet',
+            href: 'https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap',
+          },
+        },
+      ],
       pagination: false,
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/software-mansion/pulsar' },
@@ -51,11 +69,7 @@ export default defineConfig({
         // },
         {
           label: 'Pulsar Studio',
-          slug: 'pulsar-studio',
-          badge: {
-            text: 'Soon',
-            variant: 'note',
-          },
+          link: 'https://docs.swmansion.com/pulsar/studio/',
         },
         {
           label: 'SDK',
