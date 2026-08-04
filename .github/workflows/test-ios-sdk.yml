@@ -47,6 +47,8 @@ jobs:
           echo "Using simulator $UDID"
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
+      # Main suites — real behavior on the simulator. Excludes the CoreHaptics mock suite,
+      # which swizzles CoreHaptics process-wide and must not race the real-behavior assertions.
       - name: Run Pulsar package tests
         working-directory: iOS/Pulsar
         run: |
@@ -54,12 +56,27 @@ jobs:
             -scheme Pulsar \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             -skipPackagePluginValidation \
+            -skip-testing:PulsarTests/CoreHapticsMockTests \
             -resultBundlePath TestResults.xcresult
 
-      - name: Upload test result bundle
+      # CoreHaptics mock suite — swizzles CHHapticEngine to verify the wrapper's interaction with
+      # CoreHaptics. Run in isolation so the global swizzle can't affect the suites above.
+      - name: Run CoreHaptics mock suite (isolated)
+        working-directory: iOS/Pulsar
+        run: |
+          xcodebuild test \
+            -scheme Pulsar \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
+            -skipPackagePluginValidation \
+            -only-testing:PulsarTests/CoreHapticsMockTests \
+            -resultBundlePath MockTestResults.xcresult
+
+      - name: Upload test result bundles
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ios-test-results
-          path: iOS/Pulsar/TestResults.xcresult
+          path: |
+            iOS/Pulsar/TestResults.xcresult
+            iOS/Pulsar/MockTestResults.xcresult
           if-no-files-found: ignore
