@@ -77,6 +77,32 @@ class ImpulseCompositionHapticBuilderTest {
     }
 
     @Test
+    fun aPresetWithNoDiscreteEventsIsNotImpulsesOnly() {
+        val continuousOnly = PatternData(
+            rawContinuousPattern = listOf(
+                listOf(listOf(0.0f, 0.8f), listOf(100.0f, 0.0f)),
+                listOf(listOf(0.0f, 0.5f), listOf(100.0f, 0.5f)),
+            ),
+            rawDiscretePattern = listOf(),
+        )
+        assertFalse(ImpulseCompositionHapticBuilder.isImpulsesOnly(continuousOnly))
+    }
+
+    @Test
+    fun anAllZeroContinuousAmplitudeStillCountsAsImpulsesOnly() {
+        // A flat, silent continuous channel accompanying real impulses does not disqualify the
+        // impulse-only fast path — only a *non-zero* continuous amplitude does.
+        val impulsesWithSilentEnvelope = PatternData(
+            rawContinuousPattern = listOf(
+                listOf(listOf(0.0f, 0.0f), listOf(200.0f, 0.0f)),
+                listOf(listOf(0.0f, 0.5f), listOf(200.0f, 0.5f)),
+            ),
+            rawDiscretePattern = listOf(listOf(0.0f, 1.0f, 0.3f)),
+        )
+        assertTrue(ImpulseCompositionHapticBuilder.isImpulsesOnly(impulsesWithSilentEnvelope))
+    }
+
+    @Test
     fun keepsEveryImpulseADistinctFullPowerPulse() {
         val points = impulseFallbackPoints(stomp)
 
