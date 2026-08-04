@@ -30,6 +30,9 @@ class HapticBuilder(private val engine: HapticEngineWrapper) {
 
   @RequiresApi(Build.VERSION_CODES.O)
   private fun createImpulseFallbackEffect(preset: PatternData): VibrationEffect? {
+    if (vibrationEffectsGenerator.resolvesToTimingWaveform()) {
+      return vibrationEffectsGenerator.convertToImpulseTimingWaveform(preset.discretePattern)
+    }
     val controlLine = convertToControlPoints(preset)
     return vibrationEffectsGenerator.convertToVibrationEffect(controlLine.getLinearPoints())
   }

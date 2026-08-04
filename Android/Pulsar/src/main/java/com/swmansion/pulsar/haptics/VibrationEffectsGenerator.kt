@@ -5,6 +5,7 @@ import android.os.VibrationEffect
 import android.os.vibrator.VibratorFrequencyProfile
 import androidx.annotation.RequiresApi
 import com.swmansion.pulsar.types.CompatibilityMode
+import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ControlPoint
 import kotlin.collections.plus
 import kotlin.math.roundToInt
@@ -15,45 +16,61 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun convertToVibrationEffect(controlLine: ControlLineBuilder) : VibrationEffect? {
-        return if (
+        if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
             && engine.isEnvelopeSupported()
             && forcedCompatibilityMode >= CompatibilityMode.STANDARD_SUPPORT
         ) {
-            val points = controlLine.getLinearPoints()
-            if (engine.isFrequencyProfileSupported() && forcedCompatibilityMode == CompatibilityMode.ADVANCED_SUPPORT) {
-                convertToAdvanceEnvelope(points)
-            } else {
-                convertToBasicEnvelope(points)
-            }
+            return buildEnvelope(controlLine.getLinearPoints())
+        }
+
+        val points = controlLine.getStepsPoints()
+        return if (usesAmplitudeWaveform()) {
+            convertToAmplitudeWaveform(points)
         } else {
-            val points = controlLine.getStepsPoints()
-            if (engine.isAmplitudeSupported() && forcedCompatibilityMode >= CompatibilityMode.LIMITED_SUPPORT) {
-                convertToAmplitudeWaveform(points)
-            } else {
-                convertToTimingWaveform(points)
-            }
+            convertToPwmWaveform(points)
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun convertToVibrationEffect(points: List<ControlPoint>) : VibrationEffect? {
-        return if (
+        if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA
             && engine.isEnvelopeSupported()
             && forcedCompatibilityMode >= CompatibilityMode.STANDARD_SUPPORT
         ) {
-            if (engine.isFrequencyProfileSupported() && forcedCompatibilityMode == CompatibilityMode.ADVANCED_SUPPORT) {
-                convertToAdvanceEnvelope(points)
-            } else {
-                convertToBasicEnvelope(points)
-            }
+            return buildEnvelope(points)
+        }
+
+        return if (usesAmplitudeWaveform()) {
+            convertToAmplitudeWaveform(points)
         } else {
-            if (engine.isAmplitudeSupported() && forcedCompatibilityMode >= CompatibilityMode.LIMITED_SUPPORT) {
-                convertToAmplitudeWaveform(points)
-            } else {
-                convertToTimingWaveform(points)
-            }
+            convertToPwmWaveform(points)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun convertToImpulseTimingWaveform(impulses: List<ConfigPoint>): VibrationEffect? {
+        val timings = pwmGenerator.buildImpulseTimings(impulses) ?: return null
+        return VibrationEffect.createWaveform(timings, -1)
+    }
+
+    fun resolvesToTimingWaveform(): Boolean {
+        val usesEnvelope = Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
+            engine.isEnvelopeSupported() &&
+            forcedCompatibilityMode >= CompatibilityMode.STANDARD_SUPPORT
+        return !usesEnvelope && !usesAmplitudeWaveform()
+    }
+
+    private fun usesAmplitudeWaveform(): Boolean =
+        engine.isAmplitudeSupported() && forcedCompatibilityMode >= CompatibilityMode.STANDARD_SUPPORT
+
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+    private fun buildEnvelope(points: List<ControlPoint>): VibrationEffect {
+        return if (engine.isFrequencyProfileSupported() && forcedCompatibilityMode == CompatibilityMode.ADVANCED_SUPPORT) {
+            convertToAdvanceEnvelope(points)
+        } else {
+            convertToBasicEnvelope(points)
         }
     }
 
@@ -128,28 +145,13 @@ class VibrationEffectsGenerator(val engine: HapticEngineWrapper) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun convertToTimingWaveform(controlPoints: List<ControlPoint>): VibrationEffect? {
-        var timings = longArrayOf(0)
-        var isVibrating = false
-
-        controlPoints.forEach {
-            val duration = it.duration
-            val shouldVibrate = it.intensity > 0
-
-            if (shouldVibrate != isVibrating) {
-            timings += duration
-            isVibrating = shouldVibrate
-            } else if (timings.isNotEmpty()) {
-            timings[timings.lastIndex] += duration
-            }
-        }
-
-        if (!hasPlayableWaveform(timings)) {
-            return null
-        }
-
+    private fun convertToPwmWaveform(controlPoints: List<ControlPoint>): VibrationEffect? {
+        val timings = pwmGenerator.buildPwmTimings(controlPoints) ?: return null
         return VibrationEffect.createWaveform(timings, -1)
     }
+
+    private val pwmGenerator: PwmHapticsGenerator =
+        PwmHapticsGenerator.forActuator(engine.getMinControlPointDurationMillis())
 
     private fun hasPlayableWaveform(timings: LongArray): Boolean {
         return timings.isNotEmpty() && timings.any { it > 0L }
