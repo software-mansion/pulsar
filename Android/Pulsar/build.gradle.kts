@@ -41,6 +41,12 @@ android {
     buildFeatures {
         buildConfig = true
     }
+    testOptions {
+        unitTests {
+            // Robolectric needs the Android resources/manifest available to unit tests.
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -49,6 +55,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.14.1")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.kotlinx.serialization.json)

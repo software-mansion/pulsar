@@ -70,6 +70,16 @@ class ValueLineBuilderTest {
     }
 
     @Test
+    fun interpolatesAcrossTheCorrectSegmentWithThreePoints() {
+        // Two segments: 0→0.4 over [0,100], then 0.4→1.0 over [100,200]. Interpolation must pick
+        // the right segment either side of the knot at 100.
+        val builder = line(0L to 0f, 100L to 0.4f, 200L to 1f)
+        assertEquals(0.2f, builder.valueForX(50L), 1e-6f)   // first segment midpoint
+        assertEquals(0.4f, builder.valueForX(100L), 1e-6f)  // exact knot
+        assertEquals(0.7f, builder.valueForX(150L), 1e-6f)  // second segment midpoint
+    }
+
+    @Test
     fun singlePointLineReturnsItsValueEverywhere() {
         // A one-point line is treated as a constant — the size==1 short-circuit runs before the
         // out-of-range zeroing, so even far-away x's return the point's value.
@@ -98,6 +108,27 @@ class ValueLineBuilderTest {
         // Endpoints outside the window survive.
         assertEquals(0.2f, baseline.valueForX(0L), 1e-6f)
         assertEquals(0.2f, baseline.valueForX(100L), 1e-6f)
+    }
+
+    @Test
+    fun mergeLineHandlesMultipleConsecutiveGroups() {
+        val baseline = line(
+            0L to 0.2f, 25L to 0.2f, 50L to 0.2f, 75L to 0.2f, 100L to 0.2f,
+            125L to 0.2f, 150L to 0.2f, 175L to 0.2f, 200L to 0.2f,
+        )
+        // Two 4-point peak groups: [25,40,60,75] and [125,140,160,175].
+        val peaks = line(
+            25L to 0.2f, 40L to 1f, 60L to 1f, 75L to 0.2f,
+            125L to 0.2f, 140L to 1f, 160L to 1f, 175L to 0.2f,
+        )
+
+        baseline.mergeLine(peaks)
+
+        assertEquals("first peak", 1f, baseline.valueForX(50L), 1e-6f)
+        assertEquals("second peak", 1f, baseline.valueForX(150L), 1e-6f)
+        assertEquals("baseline between the peaks survives", 0.2f, baseline.valueForX(100L), 1e-6f)
+        assertEquals("baseline before the first peak survives", 0.2f, baseline.valueForX(0L), 1e-6f)
+        assertEquals("baseline after the last peak survives", 0.2f, baseline.valueForX(200L), 1e-6f)
     }
 
     @Test

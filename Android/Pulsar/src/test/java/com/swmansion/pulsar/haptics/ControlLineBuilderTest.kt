@@ -86,6 +86,22 @@ class ControlLineBuilderTest {
     }
 
     @Test
+    fun quantizerAreaAveragesARisingRampIntoIncreasingBuckets() {
+        // Exercises the trapezoidal averaging (averageValuesInSegment): a 0→1 ramp must yield
+        // monotonically increasing bucket intensities, each near the bucket's midpoint value.
+        val line = controlLine(
+            amplitude = listOf(0L to 0f, 1000L to 1f),
+            frequency = listOf(0L to 0f, 1000L to 1f),
+        )
+
+        val intensities = line.getStepsPoints().map { it.intensity }
+
+        assertEquals("ramp buckets must be sorted ascending", intensities.sortedBy { it }, intensities)
+        assertTrue("ramp should start faint", intensities.first() < 0.1f)
+        assertTrue("ramp should end near full", intensities.last() > 0.9f)
+    }
+
+    @Test
     fun emptyConfigProducesNoStepPoints() {
         val line = ControlLineBuilder(ConfigLineBuilder(ValueLineBuilder(), ValueLineBuilder()))
         assertTrue(line.getStepsPoints().isEmpty())
