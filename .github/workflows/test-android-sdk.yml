@@ -1,0 +1,46 @@
+name: Test Android SDK
+
+# Runs the Android Pulsar library's JVM unit tests on any change to the SDK
+# sources (Android/Pulsar/**). These are plain JUnit tests that exercise the
+# pure haptics logic (line builders, quantizer, PWM, impulse composition) and
+# run on the JVM without an emulator.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Android/Pulsar/**'
+      - '.github/workflows/test-android-sdk.yml'
+  pull_request:
+    paths:
+      - 'Android/Pulsar/**'
+      - '.github/workflows/test-android-sdk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run Pulsar library unit tests
+        working-directory: Android/PulsarApp
+        run: ./gradlew :Pulsar:testDebugUnitTest
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-unit-test-report
+          path: Android/Pulsar/build/reports/tests/testDebugUnitTest
+          if-no-files-found: ignore
