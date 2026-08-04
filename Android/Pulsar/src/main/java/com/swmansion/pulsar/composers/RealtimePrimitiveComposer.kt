@@ -17,6 +17,9 @@ open class RealtimePrimitiveComposer(
     private var minIntervalMs = 10L
     private var maxIntervalMs = 100L
 
+    private val pwmFallback: RealtimePwmComposer? =
+        if (engine.hasPrimitiveSupport()) null else RealtimePwmComposer(engine)
+
     init {
         if (compatibilityMode == CompatibilityMode.LIMITED_SUPPORT) {
             minIntervalMs = 60L
@@ -43,6 +46,11 @@ open class RealtimePrimitiveComposer(
     }
 
     override fun set(amplitude: Float, frequency: Float) {
+        if (pwmFallback != null) {
+            pwmFallback.set(amplitude, frequency)
+            return
+        }
+
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
         currentIntervalMs = (minIntervalMs + (1 - frequency) * (maxIntervalMs - minIntervalMs)).toLong()
@@ -53,6 +61,11 @@ open class RealtimePrimitiveComposer(
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {
+        if (pwmFallback != null) {
+            pwmFallback.playDiscrete(amplitude, frequency)
+            return
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }
@@ -61,13 +74,21 @@ open class RealtimePrimitiveComposer(
     }
 
     override fun stop() {
+        if (pwmFallback != null) {
+            pwmFallback.stop()
+            return
+        }
+
         if (!isPlaying.compareAndSet(true, false)) return
 
         handler.removeCallbacks(loopRunnable)
         engine.stop()
     }
 
-    override fun isActive(): Boolean = isPlaying.get()
+    override fun isActive(): Boolean {
+        if (pwmFallback != null) return pwmFallback.isActive()
+        return isPlaying.get()
+    }
 
     private fun loop() {
         if (!isPlaying.get() || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
