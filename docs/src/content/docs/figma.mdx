@@ -1,0 +1,92 @@
+---
+title: Figma → code
+description: Implement the haptics a designer bound in Figma. Read per-node Pulsar presets from the file and turn them into SDK calls in your app.
+---
+
+Designers bind haptic **presets** to components with the
+[Pulsar Haptics Figma plugin](https://www.figma.com/community/plugin/1636329411590799509).
+This page is for the **developer** who then implements that design in code and
+wants the haptics implemented too.
+
+## Why the Figma MCP alone isn't enough
+
+A coding agent using Figma's Dev Mode MCP (`get_design_context` / `get_metadata`)
+receives only visuals, layout, and text — **never haptics**. So Pulsar publishes
+each binding two ways that a developer *can* read:
+
+1. **Shared plugin data on each bound node** — the source of truth, readable by any
+   tool with file access (the Figma MCP's `use_figma`, or the REST API with
+   `plugin_data=shared`). No Pulsar plugin install required on your side.
+2. **A frame-level annotation** — a Dev Mode note on every screen that has haptics,
+   pointing here. It reaches a vanilla Figma MCP automatically, so an agent gets a
+   hint to come looking even with nothing installed.
+
+## The fastest path: install the skill
+
+Give your coding agent the `pulsar-figma-haptics` skill and it will do the read +
+wire-up for you whenever you implement a Figma design:
+
+```text
+/plugin marketplace add software-mansion-labs/skills
+/plugin install skills@swmansion
+/reload-plugins
+```
+
+Then, after generating UI from a Figma screen, the agent reads each node's Pulsar
+binding and adds the matching preset call.
+
+## The data contract
+
+Each bound node carries, in **shared plugin data**:
+
+| Namespace | Key | Value |
+| --- | --- | --- |
+| `pulsar` | `binding` | JSON: `{ "v": 1, "presetId": string, "presetName": string, "customPattern"?: object }` |
+| `pulsar` | `binding-negated` | non-empty ⇒ node is explicitly unbound; skip it |
+
+`presetName` (e.g. `"DogBark"`) is what becomes an SDK call. Skip any node whose
+`binding-negated` is set.
+
+## Reading it by hand
+
+**Via the Figma MCP `use_figma`** (no token) — list every bound node on the page:
+
+```js
+const NS = 'pulsar';
+return figma.currentPage
+  .findAllWithCriteria({ sharedPluginData: { namespace: NS, keys: ['binding'] } })
+  .filter((n) => !n.getSharedPluginData(NS, 'binding-negated'))
+  .map((n) => ({ nodeId: n.id, nodeName: n.name, ...JSON.parse(n.getSharedPluginData(NS, 'binding')) }));
+```
+
+**Via the REST API** (needs a Figma token):
+
+```sh
+curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+  "https://api.figma.com/v1/files/$FILE_KEY/nodes?ids=$NODE_IDS&plugin_data=shared" \
+  | jq '.. | .sharedPluginData? // empty'
+```
+
+## Mapping a preset to a call
+
+Built-in presets are called by name; the method is `presetName` in camelCase
+(`"DogBark"` → `dogBark`).
+
+| Platform | Call for `dogBark` |
+| --- | --- |
+| React Native | `import { Presets } from 'react-native-pulsar';` → `Presets.dogBark();` |
+| iOS (Swift) | `pulsar.getPresets().dogBark()` |
+| Android (Kotlin) | `pulsar.getPresets().dogBark()` |
+| Flutter | `await pulsar.getPresets().dogBark();` |
+| Kotlin Multiplatform | `pulsar.getPresets().play("DogBark")` |
+| Web | `await pulsar.getPresets().play('dogBark');` |
+
+Fire it on the element's natural interaction (press, toggle, submit). For install
+and full APIs, see the [SDK overview](/pulsar/sdk/overview/) and the per-platform
+pages.
+
+## Custom patterns
+
+A binding may carry a `customPattern` object instead of a built-in preset (legacy
+custom patterns). Play it as a raw `Pattern` — in React Native via
+[`usePatternComposer`](/pulsar/sdk/react-native/) — rather than a named preset call.
