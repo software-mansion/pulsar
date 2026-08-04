@@ -44,11 +44,15 @@ import Foundation
     self.discretePattern = discretePattern
   }
   public init(line: [[[Double]]], bar: [[Double]]) {
+    let amplitudeRaw = line.count > 0 ? line[0] : []
+    let frequencyRaw = line.count > 1 ? line[1] : []
     self.continuousPattern = ContinuousPattern(
-      amplitude: line[0].map { ValuePoint(time: Double($0[0]), value: Float($0[1])) },
-      frequency: line[1].map { ValuePoint(time: Double($0[0]), value: Float($0[1])) }
+      amplitude: amplitudeRaw.compactMap { $0.count >= 2 ? ValuePoint(time: $0[0], value: Float($0[1])) : nil },
+      frequency: frequencyRaw.compactMap { $0.count >= 2 ? ValuePoint(time: $0[0], value: Float($0[1])) : nil }
     )
-    self.discretePattern = bar.map { DiscretePoint(time: Double($0[0]), amplitude: Float($0[1]), frequency: Float($0[2])) }
+    self.discretePattern = bar.compactMap {
+      $0.count >= 3 ? DiscretePoint(time: $0[0], amplitude: Float($0[1]), frequency: Float($0[2])) : nil
+    }
   }
 }
 
