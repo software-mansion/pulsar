@@ -40,13 +40,13 @@ class PeakLineBuilder(private val minTransitionDuration: Long = 15L) {
     }
 
     private fun peakTiming(time: Long): List<Long> {
-        val slopeDuration = (minTransitionDuration * 0.75).toLong()
-        val peakDuration = (minTransitionDuration * 0.25).toLong()
+        val halfPeakDuration = (minTransitionDuration * 0.25 / 2).toLong()
+        val slopeDuration = minTransitionDuration - 2 * halfPeakDuration
         return listOf(
-            time - slopeDuration - peakDuration / 2,
-            time - peakDuration / 2,
-            time + peakDuration / 2,
-            time + peakDuration / 2 + 1L,
+            time - slopeDuration - halfPeakDuration,
+            time - halfPeakDuration,
+            time + halfPeakDuration,
+            time + halfPeakDuration + 1L,
         )
     }
 }
