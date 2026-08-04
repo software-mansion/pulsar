@@ -61,8 +61,8 @@ public class RealtimeComposer: NSObject {
     guard engine.isHapticsEnabled else { return }
     guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
 
-    let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: amplitude)
-    let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: frequency)
+    let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: min(max(amplitude, 0), 1))
+    let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: min(max(frequency, 0), 1))
     let event = CHHapticEvent(eventType: .hapticTransient, parameters: [intensityParam, sharpnessParam], relativeTime: 0)
 
     do {

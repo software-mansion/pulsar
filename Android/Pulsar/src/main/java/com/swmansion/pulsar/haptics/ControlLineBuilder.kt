@@ -73,8 +73,8 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
 
             points.add(
                 ControlPoint(
-                    intensity = amplitudeArea / duration,
-                    sharpness = frequencyArea / duration,
+                    intensity = (amplitudeArea / duration).coerceIn(0f, 1f),
+                    sharpness = (frequencyArea / duration).coerceIn(0f, 1f),
                     duration = duration,
                 )
             )
@@ -91,7 +91,13 @@ class ControlLineBuilder(val configLine: ConfigLineBuilder) {
             if (i > 0) {
                 duration = point.time - configLine.points[i - 1].time
             }
-            points.add(ControlPoint(point.amplitude, point.frequency, duration))
+            points.add(
+                ControlPoint(
+                    point.amplitude.coerceIn(0f, 1f),
+                    point.frequency.coerceIn(0f, 1f),
+                    duration,
+                )
+            )
         }
         return points
     }

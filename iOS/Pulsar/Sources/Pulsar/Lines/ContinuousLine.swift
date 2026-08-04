@@ -7,5 +7,6 @@ public struct ContinuousLine {
   
   public mutating func reset() {
     intensityCurveLine.reset()
+    sharpnessCurveLine.reset()
   }
 }

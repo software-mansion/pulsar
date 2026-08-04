@@ -1,0 +1,65 @@
+name: Test iOS SDK
+
+# Runs the iOS Pulsar Swift Package test suite on any change to the SDK
+# sources (iOS/Pulsar/**). The package imports UIKit, so it cannot be built
+# for the macOS host — the tests must run against an iOS Simulator via
+# xcodebuild. On the simulator CHHapticEngine reports haptics unsupported, so
+# the suite covers construction, data transforms, line/curve geometry, preset
+# resolution/caching and audio buffer rendering (not real haptic playback).
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'iOS/Pulsar/**'
+      - '.github/workflows/test-ios-sdk.yml'
+  pull_request:
+    paths:
+      - 'iOS/Pulsar/**'
+      - '.github/workflows/test-ios-sdk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Resolve an available iPhone simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available \
+            | grep -E "iPhone [0-9]+" \
+            | grep -oE "[0-9A-F]{8}-[0-9A-F-]{27}" \
+            | head -1)
+          if [ -z "$UDID" ]; then
+            echo "::error::No available iPhone simulator found on the runner." >&2
+            xcrun simctl list devices available >&2
+            exit 1
+          fi
+          echo "Using simulator $UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Run Pulsar package tests
+        working-directory: iOS/Pulsar
+        run: |
+          xcodebuild test \
+            -scheme Pulsar \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
+            -skipPackagePluginValidation \
+            -resultBundlePath TestResults.xcresult
+
+      - name: Upload test result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: iOS/Pulsar/TestResults.xcresult
+          if-no-files-found: ignore

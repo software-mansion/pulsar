@@ -17,8 +17,8 @@ public struct DiscreteLine {
     let event = CHHapticEvent(
       eventType: .hapticTransient,
       parameters: [
-        CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-        CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
+        CHHapticEventParameter(parameterID: .hapticIntensity, value: min(max(intensity, 0), 1)),
+        CHHapticEventParameter(parameterID: .hapticSharpness, value: min(max(sharpness, 0), 1))
       ],
       relativeTime: timestamp / 1000.0,
     )
