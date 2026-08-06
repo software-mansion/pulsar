@@ -5,15 +5,17 @@ import { VisualizationPanel } from '../VisualizationPanel/VisualizationPanel';
 import { Accordion } from '../Accordion/Accordion';
 import { Tag } from '../Tag/Tag';
 import { Modal } from '../Modal/Modal';
-import type { PresetConfig } from './types';
+import type { PresetConfig, PatternData } from './types';
 import codeIcon from '../../assets/new_assets/code.svg';
 import copyIcon from '../../assets/new_assets/copy.svg';
+import editIcon from '../../assets/new_assets/edit.svg';
 import playIcon from '../../assets/new_assets/play.svg';
 import pauseIcon from '../../assets/new_assets/pause.svg';
 import heartIcon from '../../assets/new_assets/heart.svg';
 import heartFillIcon from '../../assets/new_assets/heart-fill.svg';
 import { AudioPatternUtility } from './audio-player';
 import { API_SERVER_URL } from '../config';
+import { openInStudio } from '../studioLink';
 
 declare global {
   interface Window {
@@ -21,6 +23,12 @@ declare global {
       capture: (event: string, properties?: Record<string, unknown>) => void;
     };
   }
+}
+
+/** Open this preset in Pulsar Studio for editing (new tab). */
+function editInStudio(data: PatternData) {
+  window.posthog?.capture('preset_edit_in_studio', { preset_name: data.name });
+  openInStudio(data);
 }
 
 function getSwiftPresetImport(shortName: string) {
@@ -142,6 +150,9 @@ function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitio
         <button className={style.compactCodeButton} onClick={() => setDefinitionOpen(true)}>
           <img src={codeIcon.src} alt="Definition" />
         </button>
+        <button className={style.compactEditButton} onClick={() => editInStudio(data)} title="Edit in Pulsar Studio" aria-label="Edit in Pulsar Studio">
+          <img src={editIcon.src} alt="Edit in Studio" />
+        </button>
         <button className={style.compactPlayButton} onClick={handlePlayClick}>
           <img src={isPlaying ? pauseIcon.src : playIcon.src} alt={isPlaying ? 'Pause' : 'Play'} />
         </button>
@@ -212,6 +223,9 @@ export function Preset(preset: PresetProps) {
         </button>
         <button className={style.definitionButton} onClick={() => setDefinitionOpen(true)}>
           <img src={codeIcon.src} alt="Definition" />
+        </button>
+        <button className={style.editButton} onClick={() => editInStudio(data)} title="Edit in Pulsar Studio" aria-label="Edit in Pulsar Studio">
+          <img src={editIcon.src} alt="Edit in Studio" />
         </button>
       </div>
 

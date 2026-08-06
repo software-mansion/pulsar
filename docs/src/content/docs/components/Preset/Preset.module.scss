@@ -52,6 +52,7 @@
 }
 
 .definitionButton,
+.editButton,
 .heartButton {
   cursor: pointer;
   border-radius: 4px;
@@ -183,6 +184,7 @@
   }
 
   .compactCodeButton,
+  .compactEditButton,
   .compactPlayButton {
     cursor: pointer;
     border-radius: 4px;
