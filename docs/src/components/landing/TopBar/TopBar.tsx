@@ -21,10 +21,10 @@ export function TopBar() {
   return (
     <>
       <div className={styles.container}>
-        <div className={styles.logoHolder}>
+        <a className={styles.logoHolder} href={`${BASE_PATH}/`}>
           <img src={logo.src} alt="Logo" />
           <span>Pulsar</span>
-        </div>
+        </a>
         <div className={styles.menuItems}>
           <a href={`${BASE_PATH}/presets-playground/`}>Presets</a>
           <a href={`${BASE_PATH}/getting-started/`}>Getting started</a>
@@ -44,10 +44,10 @@ export function TopBar() {
         <div className={styles.mobileMenuOverlay} onClick={closeMenu}>
           <div className={styles.mobileMenu} onClick={(e) => e.stopPropagation()}>
             <div className={styles.mobileMenuHeader}>
-              <div className={styles.logoHolder}>
+              <a className={styles.logoHolder} href={`${BASE_PATH}/`} onClick={closeMenu}>
                 <img src={logo.src} alt="Logo" />
                 <span>Pulsar</span>
-              </div>
+              </a>
               <img
                 src={closeIcon.src}
                 className={styles.closeButton}
