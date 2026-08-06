@@ -13,7 +13,10 @@ import type { PatternData } from './Preset/types';
 
 /** The full URL that opens this preset for editing in Studio. */
 export function buildStudioEditUrl(data: PatternData): string {
-  return `${STUDIO_URL}/open?preset=${encodeURIComponent(data.name)}`;
+  // TEMPORARY: Studio's `/open?preset=<name>` deep link isn't live yet, so route
+  // users to the Studio waitlist instead. Restore the line below once Studio ships.
+  // return `${STUDIO_URL}/open?preset=${encodeURIComponent(data.name)}`;
+  return 'https://docs.swmansion.com/pulsar/studio/#waitlist';
 }
 
 /** Open the preset in Studio in a new tab. */
