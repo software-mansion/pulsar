@@ -79,6 +79,12 @@ class HapticEngineWrapper(private val context: Context) {
         return hapticBuilder
     }
 
+    fun getContext(): Context = context
+
+    fun supportsAudioCoupledHaptics(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && (vibrator?.hasVibrator() == true)
+    }
+
     fun isAmplitudeSupported(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && vibrationService.hasAmplitudeControl()
     }

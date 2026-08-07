@@ -3,9 +3,11 @@ package com.swmansion.pulsar.composers
 import android.os.Build
 import android.os.VibrationEffect
 import android.util.Log
+import com.swmansion.pulsar.audio.AudioHapticPlayer
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.SoundData
 
 class PatternComposer(
     private val engine: HapticEngineWrapper,
@@ -17,6 +19,9 @@ class PatternComposer(
 
     private var vibrationEffect: VibrationEffect? = null
     private var audioBuffer: ByteArray? = null
+
+    private var soundPlayer: AudioHapticPlayer? = null
+    private var useCoupledHaptics = false
 
     fun parsePattern(hapticsData: PatternData) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -36,18 +41,49 @@ class PatternComposer(
         audioBuffer = audioSimulator.parsePattern(hapticsData)
     }
 
+    fun parsePatternWithSound(hapticsData: PatternData, sound: SoundData) {
+        parsePattern(hapticsData)
+
+        soundPlayer?.release()
+        useCoupledHaptics = sound.hapticChannels && engine.supportsAudioCoupledHaptics()
+        soundPlayer = AudioHapticPlayer(
+            context = engine.getContext(),
+            sound = sound,
+            hapticChannelsMuted = !useCoupledHaptics,
+        ).also { it.load() }
+    }
+
     fun play() {
-        audioSimulator.play(audioBuffer)
-        vibrationEffect?.let { engine.vibrate(it) }
+        val player = soundPlayer
+        if (player != null) {
+            player.play()
+            if (!useCoupledHaptics) {
+                vibrationEffect?.let { engine.vibrate(it) }
+            }
+        } else {
+            audioSimulator.play(audioBuffer)
+            vibrationEffect?.let { engine.vibrate(it) }
+        }
     }
 
     fun playAudioOnly() {
-        audioSimulator.play(audioBuffer)
+        val player = soundPlayer
+        if (player != null) {
+            player.play()
+        } else {
+            audioSimulator.play(audioBuffer)
+        }
     }
 
     fun stop() {
+        soundPlayer?.stop()
         audioSimulator.stop()
         engine.stop()
+    }
+
+    fun release() {
+        soundPlayer?.release()
+        soundPlayer = null
     }
 
     private fun summarizePattern(hapticsData: PatternData): String {

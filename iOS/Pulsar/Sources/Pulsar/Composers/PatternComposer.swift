@@ -13,6 +13,7 @@ public class PatternComposer: NSObject {
   private var discretePattern: CHHapticPattern?
   private var audioBuffer: AVAudioPCMBuffer?
   private var audioSimulator: AudioSimulator!
+  private var hasSound = false
 
   public convenience init(engine: HapticEngineWrapper, audioSimulator: AudioSimulator) {
     self.init()
@@ -25,8 +26,18 @@ public class PatternComposer: NSObject {
   }
 
   @objc public func parsePattern(hapticsData: PatternData) {
+    parse(hapticsData: hapticsData, audioEvent: nil)
+  }
+
+  @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0) {
+    let audioEvent = makeAudioEvent(uri: uri, volume: volume, offset: offset)
+    parse(hapticsData: hapticsData, audioEvent: audioEvent)
+  }
+
+  private func parse(hapticsData: PatternData, audioEvent: CHHapticEvent?) {
     discreteLine.reset()
     continuousLine.reset()
+    hasSound = audioEvent != nil
 
     let intensityCurveLine = continuousLine.intensityCurveLine
     let sharpnessCurveLine = continuousLine.sharpnessCurveLine
@@ -65,9 +76,10 @@ public class PatternComposer: NSObject {
         continuousPlayerId = engine.createPlayer(pattern: pattern)
       }
 
-      if (!discreteLine.getEvents.isEmpty) {
+      let discreteEvents = discreteLine.getEvents + (audioEvent.map { [$0] } ?? [])
+      if (!discreteEvents.isEmpty) {
         let pattern = try CHHapticPattern(
-          events: discreteLine.getEvents,
+          events: discreteEvents,
           parameters: []
         )
         discretePattern = pattern
@@ -85,8 +97,23 @@ public class PatternComposer: NSObject {
     self.play()
   }
 
+  private func makeAudioEvent(uri: String, volume: Float, offset: Double) -> CHHapticEvent? {
+    guard let url = PatternComposer.resolveSoundURL(uri) else {
+      print("Pulsar: could not resolve sound uri: \(uri)")
+      return nil
+    }
+    guard let resourceID = engine.registerAudioResource(url: url) else { return nil }
+    return CHHapticEvent(
+      audioResourceID: resourceID,
+      parameters: [CHHapticEventParameter(parameterID: .audioVolume, value: volume)],
+      relativeTime: max(0, offset) / 1000.0
+    )
+  }
+
   @objc public func play() {
-    audioSimulator.play(buffer: audioBuffer)
+    if !hasSound {
+      audioSimulator.play(buffer: audioBuffer)
+    }
     if let id = continuousPlayerId { engine.playPlayer(id: id, pattern: continuousPattern) }
     if let id = discretePlayerId { engine.playPlayer(id: id, pattern: discretePattern) }
   }
@@ -101,6 +128,15 @@ public class PatternComposer: NSObject {
     if let id = discretePlayerId { engine.stopPlayer(id: id) }
   }
 
+  private static func resolveSoundURL(_ uri: String) -> URL? {
+    if uri.hasPrefix("file://") { return URL(string: uri) }
+    if FileManager.default.fileExists(atPath: uri) { return URL(fileURLWithPath: uri) }
+    let ns = uri as NSString
+    let name = ns.deletingPathExtension
+    let ext = ns.pathExtension.isEmpty ? "caf" : ns.pathExtension
+    return Bundle.main.url(forResource: name, withExtension: ext)
+  }
+
   @objc public func dispose() {
     stop()
     if let id = continuousPlayerId { engine.removePlayer(id: id) }
@@ -110,5 +146,6 @@ public class PatternComposer: NSObject {
     continuousPattern = nil
     discretePattern = nil
     audioBuffer = nil
+    hasSound = false
   }
 }
