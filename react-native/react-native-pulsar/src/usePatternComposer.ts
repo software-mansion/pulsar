@@ -1,10 +1,18 @@
 import { useCallback, useEffect } from 'react';
+import { Image } from 'react-native';
 import Pulsar from './NativeRNPulsar';
-import type { Pattern, PatternComposer } from './types';
+import type { Pattern, PatternComposer, Sound } from './types';
 import { useSharableState } from './useSharableState';
 
-// workaround for RN prototype caching issue 
+// workaround for RN prototype caching issue
 Pulsar.PatternComposer_play;
+
+function resolveSoundUri(uri: Sound['uri']): string | undefined {
+  if (typeof uri === 'number') {
+    return Image.resolveAssetSource(uri)?.uri;
+  }
+  return uri;
+}
 
 export default function usePatternComposer(pattern?: Pattern): PatternComposer {
   const patternId = useSharableState(-1);
@@ -26,7 +34,14 @@ export default function usePatternComposer(pattern?: Pattern): PatternComposer {
   }, []);
 
   const parse = useCallback((pattern: Pattern) => {
-    const newPatternId = Pulsar.PatternComposer_parsePattern(pattern);
+    const resolvedUri = pattern.sound ? resolveSoundUri(pattern.sound.uri) : undefined;
+    let newPatternId: number;
+    if (pattern.sound && resolvedUri) {
+      const { volume = 1, offset = 0 } = pattern.sound;
+      newPatternId = Pulsar.PatternComposer_parsePatternWithSound(pattern, resolvedUri, volume, offset);
+    } else {
+      newPatternId = Pulsar.PatternComposer_parsePattern(pattern);
+    }
     patternId.set(newPatternId);
   }, [pattern]);
 
