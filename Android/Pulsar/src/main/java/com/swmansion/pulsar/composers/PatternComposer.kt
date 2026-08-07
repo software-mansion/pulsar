@@ -45,12 +45,20 @@ class PatternComposer(
         parsePattern(hapticsData)
 
         soundPlayer?.release()
-        useCoupledHaptics = sound.hapticChannels && engine.supportsAudioCoupledHaptics()
+
+        val isNonOggFile = isKnownNonOggUri(sound.uri)
+        useCoupledHaptics = sound.hapticChannels && !isNonOggFile && engine.supportsAudioCoupledHaptics()
+
         soundPlayer = AudioHapticPlayer(
             context = engine.getContext(),
             sound = sound,
             hapticChannelsMuted = !useCoupledHaptics,
         ).also { it.load() }
+    }
+
+    private fun isKnownNonOggUri(uri: String): Boolean {
+        val extension = uri.substringAfterLast('.', "").lowercase()
+        return extension.isNotEmpty() && extension != "ogg"
     }
 
     fun play() {
