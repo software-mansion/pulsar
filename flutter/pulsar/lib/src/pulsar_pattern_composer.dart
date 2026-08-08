@@ -37,6 +37,16 @@ class PulsarPatternComposer {
     );
   }
 
+  /// Parse and store a pattern together with a synchronized [sound]. Call [play]
+  /// afterwards. See [Sound] for how to provide the audio file per platform.
+  Future<void> parsePatternWithSound(PatternData data, Sound sound) async {
+    _composerId = await PulsarPlatform.instance.patternParsePatternWithSound(
+      data,
+      sound,
+      composerId: _composerId,
+    );
+  }
+
   /// Parse and play a pattern in one step.
   Future<void> playPattern(PatternData data) async {
     _composerId = await PulsarPlatform.instance.patternPlayPattern(

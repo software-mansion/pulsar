@@ -4,6 +4,7 @@ import com.swmansion.pulsar.kmp.Pulsar
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import platform.CoreHaptics.CHHapticAdvancedPatternPlayerProtocol
+import platform.CoreHaptics.CHHapticAudioResourceID
 import platform.CoreHaptics.CHHapticEngine
 import platform.CoreHaptics.CHHapticEvent
 import platform.CoreHaptics.CHHapticEventParameter
@@ -13,6 +14,7 @@ import platform.CoreHaptics.CHHapticEventTypeHapticContinuous
 import platform.CoreHaptics.CHHapticPattern
 import platform.CoreHaptics.CHHapticPatternPlayerProtocol
 import platform.Foundation.NSLog
+import platform.Foundation.NSURL
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
 import platform.UIKit.UIApplication
@@ -73,6 +75,18 @@ internal class IOSHapticEngineWrapper {
         startEngine()
         val player = buildPatternPlayer(pattern) ?: return null
         return registerPlayer(player)
+    }
+
+    fun registerAudioResource(url: NSURL): CHHapticAudioResourceID? {
+        if (!canPlayHaptics()) return null
+        startEngine()
+        // CoreHaptics binds this NSURL parameter as the forward-declared
+        // `objcnames.classes.NSURL`; both are the same ObjC class at runtime.
+        @Suppress("UNCHECKED_CAST", "CAST_NEVER_SUCCEEDS")
+        val id = runCatching {
+            engine?.registerAudioResource(url as objcnames.classes.NSURL, mapOf<Any?, Any?>(), null)
+        }.onFailure { log("Error registering audio resource: ${it.message}") }.getOrNull()
+        return if (id == null || id.toLong() == 0L) null else id
     }
 
     fun getRealtimePlayer(): CHHapticAdvancedPatternPlayerProtocol? {

@@ -14,6 +14,7 @@ import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ContinuousPattern
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.types.RealtimeComposerStrategy
+import com.swmansion.pulsar.types.SoundData
 import com.swmansion.pulsar.types.ValuePoint
 
 /** PulsarPlugin */
@@ -237,6 +238,24 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(resolvedComposerId)
             }
 
+            "PatternComposer_parsePatternWithSound" -> {
+                val data = call.argument<Map<String, Any>>("data")
+                    ?: return result.error("INVALID_ARGS", "data required", null)
+                val patternData = parsePatternData(data)
+                    ?: return result.error("INVALID_ARGS", "invalid pattern data", null)
+                val soundMap = call.argument<Map<String, Any>>("sound")
+                    ?: return result.error("INVALID_ARGS", "sound required", null)
+                val sound = parseSoundData(soundMap)
+                    ?: return result.error("INVALID_ARGS", "invalid sound", null)
+                val composerId = call.argument<Int>("composerId")
+                val resolvedComposerId = composerId ?: nextPatternComposerId++
+                val composer = patternComposers[resolvedComposerId] ?: p.getPatternComposer().also {
+                    patternComposers[resolvedComposerId] = it
+                }
+                composer.parsePatternWithSound(patternData, sound)
+                result.success(resolvedComposerId)
+            }
+
             "PatternComposer_playPattern" -> {
                 val data = call.argument<Map<String, Any>>("data")
                     ?: return result.error("INVALID_ARGS", "data required", null)
@@ -312,5 +331,12 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             continuousPattern = ContinuousPattern(amplitude, frequency),
             discretePattern = discrete
         )
+    }
+
+    private fun parseSoundData(data: Map<String, Any>): SoundData? {
+        val uri = data["uri"] as? String ?: return null
+        val volume = (data["volume"] as? Number)?.toFloat() ?: 1f
+        val offset = (data["offset"] as? Number)?.toLong() ?: 0L
+        return SoundData(uri = uri, volume = volume, offset = offset)
     }
 }

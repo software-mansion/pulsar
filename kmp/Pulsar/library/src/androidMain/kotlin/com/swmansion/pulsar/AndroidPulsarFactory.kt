@@ -8,6 +8,7 @@ import com.swmansion.pulsar.types.PatternData as AndroidPatternData
 import com.swmansion.pulsar.types.ContinuousPattern as AndroidContinuousPattern
 import com.swmansion.pulsar.types.ConfigPoint as AndroidConfigPoint
 import com.swmansion.pulsar.types.ValuePoint as AndroidValuePoint
+import com.swmansion.pulsar.types.SoundData as AndroidSoundData
 import com.swmansion.pulsar.types.RealtimeComposable as AndroidRealtimeComposer
 import com.swmansion.pulsar.types.RealtimeComposerStrategy as AndroidRealtimeComposerStrategy
 import com.swmansion.pulsar.types.CompatibilityMode as AndroidCompatibilityMode
@@ -336,6 +337,10 @@ private class AndroidPatternComposerHandle(
         composer.parsePattern(pattern.toAndroidPatternData())
     }
 
+    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
+        composer.parsePatternWithSound(pattern.toAndroidPatternData(), sound.toAndroidSoundData())
+    }
+
     override fun playPattern(pattern: PatternData) {
         composer.parsePattern(pattern.toAndroidPatternData())
         composer.play()
@@ -364,6 +369,10 @@ private class AndroidRealtimeComposerHandle(
     }
 
     override fun isActive(): Boolean = composer.isActive()
+}
+
+private fun SoundData.toAndroidSoundData(): AndroidSoundData {
+    return AndroidSoundData(uri = uri, volume = volume, offset = offset)
 }
 
 private fun PatternData.toAndroidPatternData(): AndroidPatternData {

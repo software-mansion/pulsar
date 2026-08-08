@@ -102,6 +102,14 @@ abstract class PulsarPlatform extends PlatformInterface {
   Future<int> patternParsePattern(PatternData data, {int? composerId}) =>
       throw UnimplementedError('patternParsePattern() not implemented');
 
+  Future<int> patternParsePatternWithSound(
+    PatternData data,
+    Sound sound, {
+    int? composerId,
+  }) => throw UnimplementedError(
+    'patternParsePatternWithSound() not implemented',
+  );
+
   Future<int> patternPlayPattern(PatternData data, {int? composerId}) =>
       throw UnimplementedError('patternPlayPattern() not implemented');
 
