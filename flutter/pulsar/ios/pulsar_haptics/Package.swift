@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "pulsar_haptics", targets: ["pulsar_haptics"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.1.4"),
+        .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.3.0"),
     ],
     targets: [
         .target(
