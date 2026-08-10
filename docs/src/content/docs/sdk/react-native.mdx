@@ -417,6 +417,23 @@ function MyComponent() {
 }
 ```
 
+### Synchronized sound
+
+Add a `sound` field to the pattern to play a short audio file in sync with the haptics. On iOS the file is registered as a Core Haptics audio event on the pattern's timeline (sample-accurate); on Android an explicit `.ogg` with baked haptic channels drives the vibrator directly on supported devices, and any other file falls back to playing the audio while the pattern's haptics fire in parallel.
+
+```tsx
+const pattern = {
+  discretePattern: [{ time: 0, amplitude: 1, frequency: 0.5 }],
+  continuousPattern: { amplitude: [], frequency: [] },
+  sound: { uri: require('./beep.wav') },
+};
+
+const composer = usePatternComposer(pattern);
+composer.play();
+```
+
+`sound.uri` accepts a `require('./beep.wav')` (resolved automatically via `Image.resolveAssetSource`) or a string — a bundled resource name, an absolute path, or a `file://` uri. When no extension is given it defaults to `.wav`, so a bare `'beep'` resolves `beep.wav` on both platforms. Because a `require()` resolves to a **remote** Metro URL in dev but a local file in release, test `require()` sounds on a release build or device. See the [`Sound`](#sound) type for `volume` and `offset`.
+
 ---
 
 ## useRealtimeComposer
@@ -627,10 +644,25 @@ type Pattern = {
       value: number; // Frequency value (0-1)
     }>;
   };
+  sound?: Sound; // Optional audio played in sync with the haptics
 };
 ```
 
-Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time. Add an optional `sound` to play an audio file in sync — see [Synchronized sound](#synchronized-sound).
+
+### Sound
+
+A short sound played in sync with a haptic pattern.
+
+```ts
+type Sound = {
+  uri: number | string; // require('./beep.wav') or a resource name / path / file:// uri
+  volume?: number; // Playback volume (0-1), defaults to 1
+  offset?: number; // Audio delay relative to haptics, in ms, defaults to 0
+};
+```
+
+When `uri` has no extension it defaults to `.wav`, so a bare `'beep'` resolves `beep.wav` (iOS app bundle / Android `res/raw`). On Android, an explicit `.ogg` with baked haptic channels enables audio-coupled sync; every other format uses the audio + generated-haptics fallback.
 
 ### HapticSupport
 
