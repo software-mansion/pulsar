@@ -44,9 +44,9 @@ export function StudioSection({ className }: { className?: string }) {
     <div className={`${styles.section} ${className || ''}`}>
       <div className={styles.left}>
         <SectionHeader
-          title="Design your own with Pulsar Studio"
+          title="Design your own with\nPulsar Studio"
           subtitle="An all-in-one tool for designing, tweaking, and generating custom haptics - then exporting production-ready code. Currently in development."
-          align="left"
+          align="center"
         />
         <ul className={styles.highlights}>
           {highlights.map((h) => (
