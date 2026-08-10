@@ -17,6 +17,7 @@ struct APITestingView: View {
     @State private var stopHapticsStatus = ""
     @State private var shutdownStatus = ""
     @State private var patternParsedStatus = ""
+    @State private var patternSoundStatus = ""
     @State private var patternPlayingStatus = ""
     
     var body: some View {
@@ -159,7 +160,36 @@ struct APITestingView: View {
                                 }
                             }
                         )
-                        
+
+                        APIButtonRow(
+                            title: "Parse Pattern + Sound",
+                            statusMessage: patternSoundStatus,
+                            action: {
+                                let discretePattern: [DiscretePoint] = [
+                                    DiscretePoint(time: 0.0, amplitude: 1.0, frequency: 0.8),
+                                    DiscretePoint(time: 0.2, amplitude: 0.7, frequency: 0.5),
+                                ]
+                                let data = PatternData(
+                                    continuousPattern: ContinuousPattern(amplitude: [], frequency: []),
+                                    discretePattern: discretePattern
+                                )
+
+                                if patternComposer == nil {
+                                    patternComposer = pulsar.getPatternComposer()
+                                }
+                                // Play a short sound in sync with the haptics. A bare name
+                                // defaults to `.wav`, so add `beep.wav` to the app target's
+                                // Copy Bundle Resources; a missing file degrades to
+                                // haptics-only. Requires a real device (no Core Haptics
+                                // on the simulator). Call play() afterwards.
+                                patternComposer?.parsePatternWithSound(hapticsData: data, uri: "beep")
+                                patternSoundStatus = "Pattern + sound parsed"
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    patternSoundStatus = ""
+                                }
+                            }
+                        )
+
                         APIButtonRow(
                             title: "Play Pattern",
                             statusMessage: patternPlayingStatus,

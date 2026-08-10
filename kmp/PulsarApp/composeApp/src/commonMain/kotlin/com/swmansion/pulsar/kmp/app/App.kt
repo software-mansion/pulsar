@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.swmansion.pulsar.kmp.ConfigPoint
 import com.swmansion.pulsar.kmp.ContinuousPattern
 import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.SoundData
 import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.ValuePoint
 
@@ -104,6 +105,23 @@ fun App() {
                         enabled = pulsar != null,
                     ) {
                         Text("Play custom pattern")
+                    }
+                    Button(
+                        onClick = {
+                            // A short sound synchronized with the haptics. A bare name
+                            // defaults to `.wav`, so bundle `beep.wav` natively — iOS:
+                            // in the app bundle; Android: in `res/raw` (use an explicit
+                            // `beep.ogg` with baked haptic channels for coupled sync).
+                            // Missing files degrade gracefully to haptics-only.
+                            pulsar?.getPatternComposer()?.apply {
+                                parsePatternWithSound(demoPattern(), SoundData(uri = "beep"))
+                                play()
+                            }
+                            status = "Played a haptic pattern with a synchronized sound."
+                        },
+                        enabled = pulsar != null,
+                    ) {
+                        Text("Play pattern + sound")
                     }
                 }
             }

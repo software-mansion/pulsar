@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pulsar_haptics/pulsar_method_channel.dart';
+import 'package:pulsar_haptics/pulsar_types.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +33,28 @@ void main() {
     expect(loggedCalls, hasLength(1));
     expect(loggedCalls.single.method, 'Pulsar_play');
     expect(loggedCalls.single.arguments, {'name': 'BalloonPop'});
+  });
+
+  test('parsePatternWithSound sends the pattern and sound over the channel', () async {
+    final pattern = PatternData(
+      continuousPattern: const ContinuousPattern(amplitude: [], frequency: []),
+      discretePattern: const [
+        DiscretePoint(time: 0, amplitude: 1.0, frequency: 0.8),
+      ],
+    );
+
+    await platform.patternParsePatternWithSound(
+      pattern,
+      const Sound(uri: 'beep', volume: 0.5, offset: 20),
+    );
+
+    expect(loggedCalls, hasLength(1));
+    final call = loggedCalls.single;
+    expect(call.method, 'PatternComposer_parsePatternWithSound');
+    final args = call.arguments as Map;
+    expect(args['sound'], {'uri': 'beep', 'volume': 0.5, 'offset': 20});
+    expect(args['data'], isNotNull);
+    expect(args.containsKey('composerId'), isFalse);
   });
 
   test('preloadPresets normalizes each preset name', () async {

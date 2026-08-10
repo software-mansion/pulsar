@@ -187,7 +187,8 @@ class Sound {
   /// Creates a [Sound] source.
   const Sound({required this.uri, this.volume = 1.0, this.offset = 0});
 
-  /// Local file path, `file://` uri, or bundled resource name.
+  /// Local file path, `file://` uri, or bundled resource name (no extension needed
+  /// — defaults to `.wav`).
   final String uri;
 
   /// Playback volume, 0.0–1.0.
