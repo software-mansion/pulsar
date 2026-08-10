@@ -26,7 +26,7 @@ function StudioPreview() {
       <div className={styles.previewBody}>
         <video
           className={styles.video}
-          src={`${BASE_PATH}/assets/pulsar-demo.mp4`}
+          src="https://xhxogbcwlfdzhbojhtwe.supabase.co/storage/v1/object/public/pulsar_docs/Pulsar%20Studio.mp4"
           poster={`${BASE_PATH}/assets/pulsar-demo-poster.jpg`}
           controls
           autoPlay
