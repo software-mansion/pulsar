@@ -23,11 +23,11 @@
     }
   },
   "flutter": {
-    "version": "0.0.3",
+    "version": "0.1.0",
     "packageName": "pulsar_haptics",
     "pulsarCore": {
-      "iosPodVersion": "1.1.2",
-      "androidMavenVersion": "1.1.1"
+      "iosPodVersion": "1.3.0",
+      "androidMavenVersion": "1.3.0"
     }
   },
   "web": {
