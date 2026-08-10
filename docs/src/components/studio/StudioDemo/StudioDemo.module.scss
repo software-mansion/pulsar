@@ -1,0 +1,84 @@
+.section {
+  background-color: #ffffff;
+  padding: 80px 0 40px;
+
+  @media (max-width: 768px) {
+    padding: 56px 0 24px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 40px 0 20px;
+  }
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.subtitle {
+  margin: 16px 0 0;
+  max-width: 560px;
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  color: var(--color-primary);
+}
+
+// ── Window-framed demo video ─────────────────────────────────────────────────
+.window {
+  margin-top: 40px;
+  width: 100%;
+  max-width: 880px;
+  background-color: var(--color-blue-10);
+  border: 2px solid var(--color-blue-50);
+  border-radius: 8px;
+  box-shadow: -8px 8px 0 var(--color-blue-50);
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    margin-top: 28px;
+    box-shadow: -6px 6px 0 var(--color-blue-50);
+  }
+}
+
+.windowBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--color-blue-50);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-blue-50);
+}
+
+.windowTitle {
+  margin-left: 8px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+.windowBody {
+  background-color: #fbfeff;
+  line-height: 0;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
