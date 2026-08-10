@@ -4,6 +4,7 @@ import { TopBar } from '../components/landing/TopBar/TopBar';
 import { SwmSection } from '../components/landing/SwmSection/SwmSection';
 import { StudioHero } from '../components/studio/StudioHero/StudioHero';
 import { StudioFeatures } from '../components/studio/StudioFeatures/StudioFeatures';
+import { StudioDemo } from '../components/studio/StudioDemo/StudioDemo';
 import { StudioWaitlist } from '../components/studio/StudioWaitlist/StudioWaitlist';
 import { StudioWhyPulsar } from '../components/studio/StudioWhyPulsar/StudioWhyPulsar';
 import '../styles/index.css';
@@ -79,6 +80,7 @@ import starIcon from '../assets/landing-page/star.svg';
 
     <StudioHero client:load />
     <StudioFeatures client:visible />
+    <StudioDemo client:visible />
     <StudioWaitlist client:load />
     <StudioWhyPulsar />
     <SwmSection />
