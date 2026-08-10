@@ -28,6 +28,7 @@ function StudioPreview() {
           className={styles.video}
           src={`${BASE_PATH}/assets/pulsar-demo.mp4`}
           poster={`${BASE_PATH}/assets/pulsar-demo-poster.jpg`}
+          controls
           autoPlay
           loop
           muted
@@ -44,7 +45,7 @@ export function StudioSection({ className }: { className?: string }) {
     <div className={`${styles.section} ${className || ''}`}>
       <div className={styles.left}>
         <SectionHeader
-          title="Design your own with\nPulsar Studio"
+          title="Design your own with Pulsar&nbsp;Studio"
           subtitle="An all-in-one tool for designing, tweaking, and generating custom haptics - then exporting production-ready code. Currently in development."
           align="center"
         />
