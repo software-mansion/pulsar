@@ -13,6 +13,10 @@ class RealtimeEnvelopeWithDiscretePrimitivesComposer(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }
+        if (!engine.hasPrimitiveSupport()) {
+            super.playDiscrete(amplitude, frequency)
+            return
+        }
         val effect = createCompositionEffect(amplitude, frequency)
         engine.vibrate(effect)
     }

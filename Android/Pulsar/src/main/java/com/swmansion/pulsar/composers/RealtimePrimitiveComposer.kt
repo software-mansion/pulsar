@@ -3,6 +3,7 @@ package com.swmansion.pulsar.composers
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.os.VibrationEffect
 import androidx.annotation.RequiresApi
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
@@ -14,8 +15,8 @@ open class RealtimePrimitiveComposer(
     private val engine: HapticEngineWrapper,
     compatibilityMode: CompatibilityMode,
 ) : RealtimeComposable {
-    private var minIntervalMs = 10L
-    private var maxIntervalMs = 100L
+    protected var minIntervalMs = 10L
+    protected var maxIntervalMs = 100L
 
     private val pwmFallback: RealtimePwmComposer? =
         if (engine.hasPrimitiveSupport()) null else RealtimePwmComposer(engine)
@@ -31,6 +32,7 @@ open class RealtimePrimitiveComposer(
     @Volatile private var currentAmplitude = 0.0f
     @Volatile private var currentFrequency = 0.0f
     @Volatile private var currentIntervalMs: Long = 50L
+    @Volatile private var lastDiscreteAtMs: Long = 0L
 
     private val handler = Handler(Looper.getMainLooper())
     private val loopRunnable = Runnable { loop() }
@@ -53,7 +55,7 @@ open class RealtimePrimitiveComposer(
 
         currentAmplitude = amplitude.coerceIn(0f, 1f)
         currentFrequency = frequency.coerceIn(0f, 1f)
-        currentIntervalMs = (minIntervalMs + (1 - frequency) * (maxIntervalMs - minIntervalMs)).toLong()
+        currentIntervalMs = intervalForFrequency(frequency)
 
         if (!isPlaying.get()) {
             start(currentAmplitude, currentFrequency)
@@ -61,16 +63,33 @@ open class RealtimePrimitiveComposer(
     }
 
     override fun playDiscrete(amplitude: Float, frequency: Float) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
+        }
+
         if (pwmFallback != null) {
+            // PWM / timing-only actuators have no per-pulse width to separate taps, so a stream of
+            // playDiscrete calls (e.g. a long-press) blurs into a dense buzz. Gate on the same
+            // frequency-derived cadence the realtime loop uses: drop calls arriving sooner than the
+            // interval so a held press reads as distinct ticks, matching drag (set()). Devices with
+            // real primitive support keep firing every impulse immediately.
+            val now = SystemClock.uptimeMillis()
+            if (now - lastDiscreteAtMs < intervalForFrequency(frequency)) {
+                return
+            }
+            lastDiscreteAtMs = now
+
             pwmFallback.playDiscrete(amplitude, frequency)
             return
         }
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return
-        }
         val effect = createCompositionEffect(amplitude, frequency)
         engine.vibrate(effect)
+    }
+
+    private fun intervalForFrequency(frequency: Float): Long {
+        val clamped = frequency.coerceIn(0f, 1f)
+        return (minIntervalMs + (1 - clamped) * (maxIntervalMs - minIntervalMs)).toLong()
     }
 
     override fun stop() {
