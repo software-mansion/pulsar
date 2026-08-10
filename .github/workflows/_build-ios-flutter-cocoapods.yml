@@ -10,7 +10,7 @@ name: build-ios-flutter-cocoapods
 #
 # By default the native pod is consumed as a separate local pod
 # (USE_LOCAL_PULSAR_IOS=1), matching the rest of test-build-apps.yml — no trunk
-# round-trip. Pass use_local_pulsar_ios: false to build against the published
+# round-trip. Pass use_local_pulsar: false to build against the published
 # PulsarHaptics pod instead. Called from test-build-apps.yml.
 
 on:
@@ -58,17 +58,6 @@ jobs:
             exit 1
           fi
 
-      - name: Resolve local PulsarHaptics version
-        id: pod
-        shell: bash
-        run: |
-          VERSION="$(sed -n "s/.*s\\.version[[:space:]]*=[[:space:]]*'\\([^']*\\)'.*/\\1/p" iOS/Pulsar/PulsarHaptics.podspec | head -n 1)"
-          if [[ -z "$VERSION" ]]; then
-            echo "::error::Could not read s.version from iOS/Pulsar/PulsarHaptics.podspec." >&2
-            exit 1
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Flutter pub get
         working-directory: flutter/PulsarApp
         run: flutter pub get
@@ -78,7 +67,6 @@ jobs:
         shell: bash
         env:
           USE_LOCAL_PULSAR_IOS: ${{ inputs.use_local_pulsar && '1' || '0' }}
-          PULSAR_IOS_POD_VERSION: ${{ steps.pod.outputs.version }}
         run: |
           if [[ "${{ inputs.linkage }}" != "none" ]]; then
             export USE_FRAMEWORKS="${{ inputs.linkage }}"

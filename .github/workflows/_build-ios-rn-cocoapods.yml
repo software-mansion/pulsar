@@ -64,26 +64,11 @@ jobs:
         working-directory: react-native/PulsarApp
         run: npm ci
 
-      - name: Resolve local PulsarHaptics version
-        id: pod
-        shell: bash
-        run: |
-          VERSION="$(sed -n "s/.*s\\.version[[:space:]]*=[[:space:]]*'\\([^']*\\)'.*/\\1/p" iOS/Pulsar/PulsarHaptics.podspec | head -n 1)"
-          if [[ -z "$VERSION" ]]; then
-            echo "::error::Could not read s.version from iOS/Pulsar/PulsarHaptics.podspec." >&2
-            exit 1
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Local PulsarHaptics version: $VERSION"
-
       - name: Install pods (separate PulsarHaptics pod, local sources = ${{ inputs.use_local_pulsar }}, linkage=${{ inputs.linkage }})
         working-directory: react-native/PulsarApp/ios
         shell: bash
         env:
           USE_LOCAL_PULSAR_POD: ${{ inputs.use_local_pulsar && '1' || '0' }}
-          # Pin the bridge dependency to the local podspec's version so the build
-          # does not depend on the RN pin in sdk-versions.json being aligned.
-          PULSAR_IOS_POD_VERSION: ${{ steps.pod.outputs.version }}
         run: |
           if [[ "${{ inputs.linkage }}" != "none" ]]; then
             export USE_FRAMEWORKS="${{ inputs.linkage }}"
