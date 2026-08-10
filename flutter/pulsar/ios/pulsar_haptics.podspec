@@ -5,7 +5,7 @@
 # File name and `s.name` must stay equal to the pub package name — Flutter
 # derives both the podspec path it looks for and the module it imports from it.
 #
-pulsar_ios_pod_version = ENV['PULSAR_IOS_POD_VERSION'] || '1.3.0' # pulsar-sync:flutter-pulsar-ios
+pulsar_ios_pod_version = ENV['PULSAR_IOS_POD_VERSION'] || '1.1.2' # pulsar-sync:flutter-pulsar-ios
 
 Pod::Spec.new do |s|
   s.name             = 'pulsar_haptics'

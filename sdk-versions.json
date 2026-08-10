@@ -26,7 +26,7 @@
     "version": "0.0.3",
     "packageName": "pulsar_haptics",
     "pulsarCore": {
-      "iosPodVersion": "1.3.0",
+      "iosPodVersion": "1.1.2",
       "androidMavenVersion": "1.1.1"
     }
   },
