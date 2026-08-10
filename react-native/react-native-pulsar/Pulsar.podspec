@@ -2,9 +2,9 @@ require "json"
 require "fileutils"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
-pulsar_ios_pod_version = ENV["PULSAR_IOS_POD_VERSION"] || "1.1.4" # pulsar-sync:rn-pulsar-ios
+pulsar_ios_pod_version = ENV["PULSAR_IOS_POD_VERSION"] || "1.3.0" # pulsar-sync:rn-pulsar-ios
 
-# By default depend on the published `Pulsar-haptics` CocoaPod.
+# By default depend on the published `PulsarHaptics` CocoaPod.
 # Set USE_LOCAL_PULSAR_IOS=1 to build against the in-repo `iOS/Pulsar` sources instead.
 #
 # CocoaPods only compiles files that live inside the pod's own root — its PathList
@@ -24,7 +24,7 @@ if use_local_pulsar_ios
   FileUtils.cp_r(local_pulsar_ios_sources_dir, File.join(deps_dir, "Pulsar", "Sources"))
   Pod::UI.puts "Using local Pulsar iOS sources from #{local_pulsar_ios_sources_dir}".green
 else
-  Pod::UI.puts "Using published Pulsar-haptics pod #{pulsar_ios_pod_version}".green
+  Pod::UI.puts "Using published PulsarHaptics pod #{pulsar_ios_pod_version}".green
 end
 
 Pod::Spec.new do |s|
@@ -50,12 +50,12 @@ Pod::Spec.new do |s|
   if use_local_pulsar_ios
     s.frameworks = "AVFoundation", "CoreHaptics", "UIKit"
   else
-    s.dependency "Pulsar-haptics", pulsar_ios_pod_version
-    # The published `Pulsar-haptics` pod compiles its Swift into the `Pulsar_haptics`
-    # module, whose generated ObjC interface (`Pulsar_haptics-Swift.h`) is not on this
+    s.dependency "PulsarHaptics", pulsar_ios_pod_version
+    # The published `PulsarHaptics` pod compiles its Swift into the `PulsarHaptics`
+    # module, whose generated ObjC interface (`PulsarHaptics-Swift.h`) is not on this
     # pod's header search path by default. Expose it so the ObjC++ bridge can `#import`
     # it (C++ modules are disabled, so `@import` is not an option here).
-    pod_target_xcconfig["HEADER_SEARCH_PATHS"] = '"${PODS_CONFIGURATION_BUILD_DIR}/Pulsar-haptics/Swift Compatibility Header"'
+    pod_target_xcconfig["HEADER_SEARCH_PATHS"] = '"${PODS_CONFIGURATION_BUILD_DIR}/PulsarHaptics/Swift Compatibility Header"'
   end
 
   s.pod_target_xcconfig = pod_target_xcconfig

@@ -48,7 +48,7 @@ jobs:
         run: |
           EXPECTED_VERSION="${{ steps.release.outputs.version }}"
           SDK_VERSION="$(ruby -rjson -e 'puts JSON.parse(File.read("sdk-versions.json")).fetch("ios").fetch("version")')"
-          PODSPEC_VERSION="$(sed -n "s/.*s\\.version[[:space:]]*=[[:space:]]*'\\([^']*\\)'.*/\\1/p" iOS/Pulsar/Pulsar-haptics.podspec | head -n 1)"
+          PODSPEC_VERSION="$(sed -n "s/.*s\\.version[[:space:]]*=[[:space:]]*'\\([^']*\\)'.*/\\1/p" iOS/Pulsar/PulsarHaptics.podspec | head -n 1)"
 
           if [[ "$SDK_VERSION" != "$EXPECTED_VERSION" ]]; then
             echo "sdk-versions.json iOS version ($SDK_VERSION) does not match requested version ($EXPECTED_VERSION)." >&2
@@ -56,7 +56,7 @@ jobs:
           fi
 
           if [[ "$PODSPEC_VERSION" != "$EXPECTED_VERSION" ]]; then
-            echo "Pulsar-haptics.podspec version ($PODSPEC_VERSION) does not match requested version ($EXPECTED_VERSION)." >&2
+            echo "PulsarHaptics.podspec version ($PODSPEC_VERSION) does not match requested version ($EXPECTED_VERSION)." >&2
             exit 1
           fi
 

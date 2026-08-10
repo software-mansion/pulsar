@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PODSPEC_PATH="$ROOT_DIR/Pulsar-haptics.podspec"
+PODSPEC_PATH="$ROOT_DIR/PulsarHaptics.podspec"
 LINT_ONLY=false
 ALLOW_WARNINGS=true
 

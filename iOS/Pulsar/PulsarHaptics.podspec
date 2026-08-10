@@ -1,6 +1,5 @@
 Pod::Spec.new do |s|
-  s.name             = 'Pulsar-haptics'
-  s.module_name      = 'Pulsar'
+  s.name             = 'PulsarHaptics'
   s.version          = '1.3.0' # pulsar-sync:ios-version
   s.summary          = 'A haptic feedback SDK for iOS, written in Swift.'
   s.description      = <<-DESC

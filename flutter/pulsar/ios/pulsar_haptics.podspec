@@ -21,10 +21,10 @@ Dart-friendly API that bridges to native CoreHaptics on iOS.
   s.author           = { 'Software Mansion' => 'projects@swmansion.com' }
   s.source           = { :path => '.' }
   # Only the Flutter bridge lives here; the haptics implementation comes from the
-  # published Pulsar-haptics CocoaPod (or a local override, see the example Podfile).
+  # published PulsarHaptics CocoaPod (or a local override, see the example Podfile).
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'Pulsar-haptics', pulsar_ios_pod_version
+  s.dependency 'PulsarHaptics', pulsar_ios_pod_version
   s.platform = :ios, '13.0'
   s.frameworks = 'CoreHaptics', 'AudioToolbox', 'AVFoundation'
 
