@@ -22,7 +22,16 @@ target 'example' do
   # *separate* pod (the bridge stays in published mode), so the build exercises
   # the real published-pod path across linkage modes without a trunk round-trip.
   if ENV['USE_LOCAL_PULSAR_POD'] == '1'
-    Pod::UI.puts 'Using local PulsarHaptics pod from iOS/Pulsar'.green
+    # The bridge (published mode) depends on `PulsarHaptics = <iosPodVersion>`,
+    # which is decoupled from — and can lag — the iOS SDK release version the
+    # local `iOS/Pulsar` podspec advertises. Pin the local pod to the bridge's
+    # expected version so CocoaPods resolves them together; the local sources are
+    # what we actually want to compile. sdk-versions.json is the single source.
+    require 'json'
+    sdk_versions = JSON.parse(File.read(File.join(__dir__, '..', '..', '..', 'sdk-versions.json')))
+    pulsar_pod_version = sdk_versions['reactNative']['pulsarCore']['iosPodVersion']
+    ENV['PULSAR_HAPTICS_POD_VERSION'] = pulsar_pod_version
+    Pod::UI.puts "Using local PulsarHaptics pod from iOS/Pulsar (pinned to #{pulsar_pod_version})".green
     pod 'PulsarHaptics', :path => '../../../iOS/Pulsar'
   end
 
@@ -45,19 +54,30 @@ target 'example' do
     )
 
     # Xcode 26's clang enforces `consteval` more strictly and rejects fmt
-    # 11.0.2's compile-time format-string checks (FMT_STRING). RN pins
-    # `fmt (= 11.0.2)`, so instead of bumping the version we degrade fmt's
-    # `consteval` to `constexpr` by disabling FMT_USE_CONSTEVAL. This must be
-    # defined for fmt itself *and* every pod that includes its headers
-    # (RCT-Folly et al.), so apply it project-wide.
+    # 11.0.2's compile-time format-string checks (FMT_STRING), failing with
+    # "call to consteval function ... is not a constant expression". RN pins
+    # `fmt (= 11.0.2)`, so rather than bumping the version we select fmt's
+    # constexpr fallback path by forcing FMT_USE_CONSTEVAL=0. A preprocessor
+    # define does NOT work: fmt 11.0.2 hard-defines FMT_USE_CONSTEVAL in
+    # `base.h` with no `#ifndef` guard, so any `-D` is redefined away. Patch the
+    # header instead, short-circuiting its detection cascade to 0.
     # Removable once RN is bumped to >= 0.83.9 (fmt 12.1.0), which fixes this
     # upstream.
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
-        defs = [defs] unless defs.is_a?(Array)
-        defs << 'FMT_USE_CONSTEVAL=0'
-        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
+    fmt_base = File.join(__dir__, 'Pods', 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      contents = File.read(fmt_base)
+      marker = 'pulsar: force FMT_USE_CONSTEVAL=0 for Xcode 26'
+      unless contents.include?(marker)
+        patched = contents.sub(
+          /#if !defined\(__cpp_lib_is_constant_evaluated\)\n#  define FMT_USE_CONSTEVAL 0/,
+          "#if 1  // #{marker}\n#  define FMT_USE_CONSTEVAL 0"
+        )
+        if patched == contents
+          Pod::UI.warn 'Could not patch fmt base.h for the Xcode 26 consteval workaround; the detection block may have changed.'
+        else
+          File.write(fmt_base, patched)
+          Pod::UI.puts 'Patched fmt base.h to disable consteval (Xcode 26 workaround)'.green
+        end
       end
     end
 

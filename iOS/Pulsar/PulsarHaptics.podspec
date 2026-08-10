@@ -1,6 +1,12 @@
 Pod::Spec.new do |s|
   s.name             = 'PulsarHaptics'
-  s.version          = '1.4.0' # pulsar-sync:ios-version
+  # `s.version` is the iOS SDK release version. CI's separate-pod guard
+  # (react-native/PulsarApp) compiles these local sources as the published
+  # `PulsarHaptics` pod the RN bridge depends on, whose version tracks
+  # `reactNative.pulsarCore.iosPodVersion` and can lag this release version. That
+  # build sets PULSAR_HAPTICS_POD_VERSION so CocoaPods can resolve the local pod
+  # against the bridge's `= <iosPodVersion>` dependency.
+  s.version          = ENV['PULSAR_HAPTICS_POD_VERSION'] || '1.4.0' # pulsar-sync:ios-version
   s.summary          = 'A haptic feedback SDK for iOS, written in Swift.'
   s.description      = <<-DESC
 Pulsar provides ready-to-use haptic presets, a pattern composer for custom
