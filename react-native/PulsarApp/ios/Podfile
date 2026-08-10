@@ -22,16 +22,7 @@ target 'example' do
   # *separate* pod (the bridge stays in published mode), so the build exercises
   # the real published-pod path across linkage modes without a trunk round-trip.
   if ENV['USE_LOCAL_PULSAR_POD'] == '1'
-    # The bridge (published mode) depends on `PulsarHaptics = <iosPodVersion>`,
-    # which is decoupled from — and can lag — the iOS SDK release version the
-    # local `iOS/Pulsar` podspec advertises. Pin the local pod to the bridge's
-    # expected version so CocoaPods resolves them together; the local sources are
-    # what we actually want to compile. sdk-versions.json is the single source.
-    require 'json'
-    sdk_versions = JSON.parse(File.read(File.join(__dir__, '..', '..', '..', 'sdk-versions.json')))
-    pulsar_pod_version = sdk_versions['reactNative']['pulsarCore']['iosPodVersion']
-    ENV['PULSAR_HAPTICS_POD_VERSION'] = pulsar_pod_version
-    Pod::UI.puts "Using local PulsarHaptics pod from iOS/Pulsar (pinned to #{pulsar_pod_version})".green
+    Pod::UI.puts 'Using local PulsarHaptics pod from iOS/Pulsar'.green
     pod 'PulsarHaptics', :path => '../../../iOS/Pulsar'
   end
 
