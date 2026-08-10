@@ -168,6 +168,21 @@ jobs:
     with:
       build_type: ${{ matrix.build_type }}
 
+  # React Native against the separate published-style `PulsarHaptics` pod, across
+  # CocoaPods linkage modes (with and without use_frameworks!) — the path that
+  # regressed in #10 / #26 and that _build-ios-rn.yml (compiled-in) never covers.
+  ios-rn-cocoapods:
+    needs: setup
+    if: ${{ inputs.platform_ios && inputs.framework_rn }}
+    strategy:
+      fail-fast: false
+      matrix:
+        linkage: [none, static, dynamic]
+    uses: ./.github/workflows/_build-ios-rn-cocoapods.yml
+    with:
+      build_type: debug
+      linkage: ${{ matrix.linkage }}
+
   ios-kmp:
     needs: setup
     if: ${{ inputs.platform_ios && inputs.framework_kmp }}
@@ -189,3 +204,17 @@ jobs:
     uses: ./.github/workflows/_build-ios-flutter.yml
     with:
       build_type: ${{ matrix.build_type }}
+
+  # Flutter through CocoaPods (SPM disabled), across linkage modes (with and
+  # without use_frameworks!) — guards #140 and the #10 / #26 frameworks class.
+  ios-flutter-cocoapods:
+    needs: setup
+    if: ${{ inputs.platform_ios && inputs.framework_flutter }}
+    strategy:
+      fail-fast: false
+      matrix:
+        linkage: [none, static, dynamic]
+    uses: ./.github/workflows/_build-ios-flutter-cocoapods.yml
+    with:
+      build_type: debug
+      linkage: ${{ matrix.linkage }}
