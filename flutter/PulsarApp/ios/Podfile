@@ -28,7 +28,9 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  # No `use_frameworks!`: CocoaPods compares module names case-insensitively, so
+  # the `pulsar_haptics` pod collides with `Pulsar-haptics`'s `Pulsar_haptics`.
+  # Re-enable once the native pod declares `s.module_name = 'Pulsar'`.
 
   if ENV['USE_LOCAL_PULSAR_IOS'] == '1'
     Pod::UI.puts 'Using local Pulsar-haptics pod from iOS/Pulsar'.green

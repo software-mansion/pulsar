@@ -1,22 +1,29 @@
 PODS:
   - Flutter (1.0.0)
-  - pulsar (0.0.1):
+  - Pulsar-haptics (1.1.2)
+  - pulsar_haptics (0.0.3):
     - Flutter
+    - Pulsar-haptics (= 1.1.2)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - pulsar (from `.symlinks/plugins/pulsar/ios`)
+  - pulsar_haptics (from `.symlinks/plugins/pulsar_haptics/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Pulsar-haptics
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  pulsar:
-    :path: ".symlinks/plugins/pulsar/ios"
+  pulsar_haptics:
+    :path: ".symlinks/plugins/pulsar_haptics/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  pulsar: 9bed0645c2937650a3252df9ed531e52730f572f
+  Pulsar-haptics: 1adbf9d10edc35c68aa03c0871cc6b9f2217d121
+  pulsar_haptics: 254e582a25ef6b02586aa6df058892c000db3987
 
-PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+PODFILE CHECKSUM: 64ff3ed00f29d41c4253cb06bf23da3065a98024
 
 COCOAPODS: 1.16.2

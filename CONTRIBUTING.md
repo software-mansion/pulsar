@@ -29,7 +29,7 @@ pulsar/
 
 The iOS and Android SDKs are standalone native libraries. The React Native (Turbo Module) and Flutter (method-channel plugin) SDKs each ship a thin bridge and consume the published native artifacts rather than vendoring a copy of the native sources:
 
-- **iOS:** the bridge podspec (`react-native/react-native-pulsar/Pulsar.podspec`, `flutter/pulsar/ios/pulsar.podspec`) depends on the published `Pulsar-haptics` CocoaPod by default. For local development in the example app, set `USE_LOCAL_PULSAR_IOS=1` before `pod install` to use `iOS/Pulsar/` instead.
+- **iOS:** the bridge podspec (`react-native/react-native-pulsar/Pulsar.podspec`, `flutter/pulsar/ios/pulsar_haptics.podspec`) depends on the published `Pulsar-haptics` CocoaPod by default. For local development in the example app, set `USE_LOCAL_PULSAR_IOS=1` before `pod install` to use `iOS/Pulsar/` instead.
 - **Android:** the bridge Gradle module (`react-native/react-native-pulsar/android/build.gradle`, `flutter/pulsar/android/build.gradle.kts`) depends on the published `com.swmansion:pulsar` Maven artifact by default. For local development, set `USE_LOCAL_PULSAR_ANDROID=1` to compile against `Android/Pulsar/src/main/java/` instead.
 
 The Kotlin Multiplatform SDK (`kmp/Pulsar/library`) follows the same convention on Android:

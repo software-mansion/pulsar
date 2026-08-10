@@ -1,12 +1,15 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint pulsar.podspec` to validate before publishing.
+# Run `pod lib lint pulsar_haptics.podspec` to validate before publishing.
+#
+# File name and `s.name` must stay equal to the pub package name — Flutter
+# derives both the podspec path it looks for and the module it imports from it.
 #
 pulsar_ios_pod_version = ENV['PULSAR_IOS_POD_VERSION'] || '1.1.2' # pulsar-sync:flutter-pulsar-ios
 
 Pod::Spec.new do |s|
-  s.name             = 'pulsar'
-  s.version          = '0.0.1'
+  s.name             = 'pulsar_haptics'
+  s.version          = '0.0.3' # pulsar-sync:flutter-version
   s.summary          = 'Rich haptic feedback for Flutter with presets, pattern playback, and realtime control.'
   s.description      = <<-DESC
 Pulsar gives you 150+ ready-to-play haptic presets, a pattern composer for fully custom

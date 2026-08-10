@@ -38,7 +38,8 @@ const markedVersions = [
   { file: 'kmp/Pulsar/library/build.gradle.kts', key: 'kmp-version', version: versions.kmp.version },
   { file: 'kmp/Pulsar/library/build.gradle.kts', key: 'kmp-pulsar-android', version: versions.kmp.pulsarCore.androidMavenVersion },
   { file: 'flutter/pulsar/pubspec.yaml', key: 'flutter-version', version: versions.flutter.version },
-  { file: 'flutter/pulsar/ios/pulsar.podspec', key: 'flutter-pulsar-ios', version: versions.flutter.pulsarCore.iosPodVersion },
+  { file: 'flutter/pulsar/ios/pulsar_haptics.podspec', key: 'flutter-version', version: versions.flutter.version },
+  { file: 'flutter/pulsar/ios/pulsar_haptics.podspec', key: 'flutter-pulsar-ios', version: versions.flutter.pulsarCore.iosPodVersion },
   { file: 'flutter/pulsar/android/build.gradle.kts', key: 'flutter-pulsar-android', version: versions.flutter.pulsarCore.androidMavenVersion },
 ];
 
