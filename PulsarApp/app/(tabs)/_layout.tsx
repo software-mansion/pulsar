@@ -4,6 +4,7 @@ import { usePathname } from 'expo-router';
 
 import { HapticTab } from '@/components/haptic-tab';
 import SvgIcon from '@/components/SvgIcon';
+import FigmaLogo from '@/components/FigmaLogo';
 import { useStoreReview } from '@/contexts/StoreReviewContext';
 
 export default function TabLayout() {
@@ -54,7 +55,9 @@ export default function TabLayout() {
         name="figma"
         options={{
           title: 'Figma',
-          tabBarIcon: ({ focused }) => <SvgIcon iconName="figma" state={focused ? 'active' : 'default'} />,
+          // The Figma mark stays full-colour in both states — Figma's brand
+          // terms don't allow tinting it, so focus is conveyed by the label.
+          tabBarIcon: () => <FigmaLogo />,
         }}
       />
       {/* <Tabs.Screen

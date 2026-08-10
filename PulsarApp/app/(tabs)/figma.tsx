@@ -14,7 +14,7 @@ import { Icon } from '@/components/Icon';
 import BasicLayout from '@/components/BasicLayout';
 import Card from '@/components/Card';
 import Point from '@/components/Point';
-import SvgIcon from '@/components/SvgIcon';
+import FigmaLogo from '@/components/FigmaLogo';
 import ConnectionList from '@/components/home/ConnectionList';
 import NowPlayingToast from '@/components/NowPlayingToast';
 import { Margins } from '@/constants/theme';
@@ -209,7 +209,7 @@ function FigmaExplainer() {
         <BasicLayout>
           <View style={styles.titleContainer}>
             <ThemedText type="title">Figma Live Preview</ThemedText>
-            <SvgIcon iconName="figma" state="active" size={42} />
+            <FigmaLogo size={42} />
           </View>
 
           <ThemedText style={Margins.marginTop2X}>
