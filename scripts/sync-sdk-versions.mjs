@@ -31,7 +31,7 @@ const files = [
 // version on the marked line is replaced with the value from sdk-versions.json,
 // which keeps the sync robust without per-file regexes.
 const markedVersions = [
-  { file: 'iOS/Pulsar/Pulsar-haptics.podspec', key: 'ios-version', version: versions.ios.version },
+  { file: 'iOS/Pulsar/PulsarHaptics.podspec', key: 'ios-version', version: versions.ios.version },
   { file: 'Android/Pulsar/build.gradle.kts', key: 'android-version', version: versions.android.version },
   { file: 'react-native/react-native-pulsar/Pulsar.podspec', key: 'rn-pulsar-ios', version: versions.reactNative.pulsarCore.iosPodVersion },
   { file: 'react-native/react-native-pulsar/android/build.gradle', key: 'rn-pulsar-android', version: versions.reactNative.pulsarCore.androidMavenVersion },
@@ -113,7 +113,7 @@ dependencies: [
 
 function getIosCocoaPodsSnippet() {
   return `\`\`\`ruby
-pod 'Pulsar-haptics', '~> ${versions.ios.version}'
+pod 'PulsarHaptics', '~> ${versions.ios.version}'
 \`\`\``;
 }
 

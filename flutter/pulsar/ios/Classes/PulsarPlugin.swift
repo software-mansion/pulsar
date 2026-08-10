@@ -1,7 +1,7 @@
 import Flutter
 import UIKit
-#if canImport(Pulsar_haptics)
-import Pulsar_haptics
+#if canImport(PulsarHaptics)
+import PulsarHaptics
 #elseif canImport(Pulsar)
 import Pulsar
 #endif

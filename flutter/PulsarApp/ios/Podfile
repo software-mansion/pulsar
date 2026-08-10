@@ -31,10 +31,10 @@ target 'Runner' do
   use_frameworks!
 
   if ENV['USE_LOCAL_PULSAR_IOS'] == '1'
-    Pod::UI.puts 'Using local Pulsar-haptics pod from iOS/Pulsar'.green
-    pod 'Pulsar-haptics', :path => '../../../iOS/Pulsar'
+    Pod::UI.puts 'Using local PulsarHaptics pod from iOS/Pulsar'.green
+    pod 'PulsarHaptics', :path => '../../../iOS/Pulsar'
   else
-    Pod::UI.puts 'Using published Pulsar-haptics pod from CocoaPods'.green
+    Pod::UI.puts 'Using published PulsarHaptics pod from CocoaPods'.green
   end
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))

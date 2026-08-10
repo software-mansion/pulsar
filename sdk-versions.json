@@ -11,7 +11,7 @@
     "version": "1.6.1",
     "packageName": "react-native-pulsar",
     "pulsarCore": {
-      "iosPodVersion": "1.1.4",
+      "iosPodVersion": "1.3.0",
       "androidMavenVersion": "1.1.2"
     }
   },

@@ -1,17 +1,14 @@
 #import "Haptics.h"
 #import <UIKit/UIKit.h>
 #if __has_include(<Pulsar/Pulsar-Swift.h>)
-// Local sources mode (USE_LOCAL_PULSAR_IOS=1): Swift is compiled into the `Pulsar` module.
+// Local sources mode (USE_LOCAL_PULSAR_IOS=1): Swift compiled into this pod's `Pulsar` module.
 #import <Pulsar/Pulsar-Swift.h>
-#elif __has_include(<Pulsar_haptics/Pulsar_haptics-Swift.h>)
-// Published pod mode with frameworks: angle-bracket header is reachable.
-#import <Pulsar_haptics/Pulsar_haptics-Swift.h>
-#elif __has_include("Pulsar_haptics-Swift.h")
-// Published pod mode (default, static libs): the `Pulsar_haptics` Swift interface header
-// is reachable via the HEADER_SEARCH_PATHS added in Pulsar.podspec.
-#import "Pulsar_haptics-Swift.h"
+#elif __has_include(<PulsarHaptics/PulsarHaptics-Swift.h>)
+// Published pod with frameworks: framework-style angle-bracket header.
+#import <PulsarHaptics/PulsarHaptics-Swift.h>
 #else
-#import "Pulsar-Swift.h"
+// Published pod, static libs: reachable via the HEADER_SEARCH_PATHS in Pulsar.podspec.
+#import "PulsarHaptics-Swift.h"
 #endif
 
 @implementation RNPulsar {

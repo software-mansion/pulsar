@@ -48,7 +48,7 @@ Add Pulsar to your `Podfile`:
 
 <!-- GENERATED:IOS_COCOAPODS_INSTALL_SNIPPET_START -->
 ```ruby
-pod 'Pulsar-haptics', '~> 1.3.0'
+pod 'PulsarHaptics', '~> 1.3.0'
 ```
 <!-- GENERATED:IOS_COCOAPODS_INSTALL_SNIPPET_END -->
 
