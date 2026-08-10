@@ -44,6 +44,23 @@ target 'example' do
       File.join(__dir__, '..', 'node_modules', 'hermes-compiler', 'hermesc', 'osx-bin', 'hermesc')
     )
 
+    # Xcode 26's clang enforces `consteval` more strictly and rejects fmt
+    # 11.0.2's compile-time format-string checks (FMT_STRING). RN pins
+    # `fmt (= 11.0.2)`, so instead of bumping the version we degrade fmt's
+    # `consteval` to `constexpr` by disabling FMT_USE_CONSTEVAL. This must be
+    # defined for fmt itself *and* every pod that includes its headers
+    # (RCT-Folly et al.), so apply it project-wide.
+    # Removable once RN is bumped to >= 0.83.9 (fmt 12.1.0), which fixes this
+    # upstream.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+        defs = [defs] unless defs.is_a?(Array)
+        defs << 'FMT_USE_CONSTEVAL=0'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
+      end
+    end
+
     installer.aggregate_targets.each do |aggregate_target|
       aggregate_target.xcconfigs.each do |config_name, config_file|
         config_file.attributes['HERMES_CLI_PATH'] = hermes_cli_path
