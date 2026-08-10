@@ -68,11 +68,6 @@ open class RealtimePrimitiveComposer(
         }
 
         if (pwmFallback != null) {
-            // PWM / timing-only actuators have no per-pulse width to separate taps, so a stream of
-            // playDiscrete calls (e.g. a long-press) blurs into a dense buzz. Gate on the same
-            // frequency-derived cadence the realtime loop uses: drop calls arriving sooner than the
-            // interval so a held press reads as distinct ticks, matching drag (set()). Devices with
-            // real primitive support keep firing every impulse immediately.
             val now = SystemClock.uptimeMillis()
             if (now - lastDiscreteAtMs < intervalForFrequency(frequency)) {
                 return
