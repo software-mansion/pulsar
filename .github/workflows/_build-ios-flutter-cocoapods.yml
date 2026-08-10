@@ -8,9 +8,10 @@ name: build-ios-flutter-cocoapods
 #     when its name and module name disagreed (fixed by renaming the pod to
 #     `PulsarHaptics`, so name == module).
 #
-# The native pod is consumed as a separate local pod (USE_LOCAL_PULSAR_IOS=1),
-# matching the rest of test-build-apps.yml — no trunk round-trip. Called from
-# test-build-apps.yml.
+# By default the native pod is consumed as a separate local pod
+# (USE_LOCAL_PULSAR_IOS=1), matching the rest of test-build-apps.yml — no trunk
+# round-trip. Pass use_local_pulsar_ios: false to build against the published
+# PulsarHaptics pod instead. Called from test-build-apps.yml.
 
 on:
   workflow_call:
@@ -23,6 +24,11 @@ on:
         description: 'none | static | dynamic (CocoaPods linkage)'
         required: true
         type: string
+      use_local_pulsar:
+        description: 'Build against local iOS/Pulsar sources (true) or the published PulsarHaptics pod (false)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -71,7 +77,7 @@ jobs:
         working-directory: flutter/PulsarApp
         shell: bash
         env:
-          USE_LOCAL_PULSAR_IOS: '1'
+          USE_LOCAL_PULSAR_IOS: ${{ inputs.use_local_pulsar && '1' || '0' }}
           PULSAR_IOS_POD_VERSION: ${{ steps.pod.outputs.version }}
         run: |
           if [[ "${{ inputs.linkage }}" != "none" ]]; then

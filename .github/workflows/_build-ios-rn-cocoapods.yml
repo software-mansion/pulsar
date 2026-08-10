@@ -9,8 +9,9 @@ name: build-ios-rn-cocoapods
 # the native Swift *into* the bridge's `Pulsar` module and never exercises this
 # path, so this guard is complementary.
 #
-# Built against local iOS/Pulsar sources (no trunk round-trip). Called from
-# test-build-apps.yml.
+# By default built against local iOS/Pulsar sources (no trunk round-trip); pass
+# use_local_pulsar: false to consume the published PulsarHaptics pod from trunk
+# instead. Called from test-build-apps.yml.
 
 on:
   workflow_call:
@@ -23,6 +24,11 @@ on:
         description: 'none | static | dynamic (CocoaPods linkage)'
         required: true
         type: string
+      use_local_pulsar:
+        description: 'Consume the PulsarHaptics pod from local iOS/Pulsar sources (true) or from the published trunk pod (false)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -70,11 +76,11 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Local PulsarHaptics version: $VERSION"
 
-      - name: Install pods (separate local PulsarHaptics pod, linkage=${{ inputs.linkage }})
+      - name: Install pods (separate PulsarHaptics pod, local sources = ${{ inputs.use_local_pulsar }}, linkage=${{ inputs.linkage }})
         working-directory: react-native/PulsarApp/ios
         shell: bash
         env:
-          USE_LOCAL_PULSAR_POD: '1'
+          USE_LOCAL_PULSAR_POD: ${{ inputs.use_local_pulsar && '1' || '0' }}
           # Pin the bridge dependency to the local podspec's version so the build
           # does not depend on the RN pin in sdk-versions.json being aligned.
           PULSAR_IOS_POD_VERSION: ${{ steps.pod.outputs.version }}

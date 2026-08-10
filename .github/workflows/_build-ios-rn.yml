@@ -1,8 +1,10 @@
 name: build-ios-rn
 
-# Reusable: build the React Native PulsarApp on iOS Simulator against the
-# local Pulsar iOS sources (via USE_LOCAL_PULSAR_IOS, which flips the pod
-# install to the local podspec). Called from test-build-apps.yml.
+# Reusable: build the React Native PulsarApp on iOS Simulator. By default it
+# builds against the local Pulsar iOS sources (via USE_LOCAL_PULSAR_IOS, which
+# flips the pod install to the local podspec); pass use_local_pulsar_ios: false
+# to build against the published PulsarHaptics pod instead. Called from
+# test-build-apps.yml.
 
 on:
   workflow_call:
@@ -11,6 +13,11 @@ on:
         description: 'debug | release'
         required: true
         type: string
+      use_local_pulsar:
+        description: 'Build against local iOS/Pulsar sources (true) or the published PulsarHaptics pod (false)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -53,10 +60,10 @@ jobs:
             exit 1
           fi
 
-      - name: Install pods (using local Pulsar iOS sources)
+      - name: Install pods (local Pulsar iOS sources = ${{ inputs.use_local_pulsar }})
         working-directory: react-native/PulsarApp/ios
         env:
-          USE_LOCAL_PULSAR_IOS: '1'
+          USE_LOCAL_PULSAR_IOS: ${{ inputs.use_local_pulsar && '1' || '0' }}
         run: bundle exec pod install
 
       - name: Build React Native iOS example app
