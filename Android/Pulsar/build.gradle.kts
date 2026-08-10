@@ -62,7 +62,7 @@ dependencies {
 }
 
 group = "com.swmansion"
-version = "1.2.0" // pulsar-sync:android-version
+version = "1.3.0" // pulsar-sync:android-version
 
 afterEvaluate {
     publishing {
