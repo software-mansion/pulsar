@@ -189,3 +189,17 @@ jobs:
     uses: ./.github/workflows/_build-ios-flutter.yml
     with:
       build_type: ${{ matrix.build_type }}
+
+  # Same framework x platform, but through CocoaPods (Swift Package Manager
+  # disabled) — the integration path from #140 that _build-ios-flutter.yml
+  # (which goes through SPM) does not exercise.
+  ios-flutter-cocoapods:
+    needs: setup
+    if: ${{ inputs.platform_ios && inputs.framework_flutter }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: ${{ fromJSON(needs.setup.outputs.build_types) }}
+    uses: ./.github/workflows/_build-ios-flutter-cocoapods.yml
+    with:
+      build_type: ${{ matrix.build_type }}

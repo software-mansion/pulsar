@@ -1,0 +1,76 @@
+name: build-ios-flutter-cocoapods
+
+# Reusable: build the Flutter PulsarApp on iOS with Swift Package Manager
+# DISABLED, i.e. through CocoaPods. This is the configuration from #140, where
+# the plugin's podspec was misnamed and `flutter pub get` concluded the plugin
+# was SPM-only and failed outright — the CocoaPods path was previously untested.
+# It also guards the case-insensitive module-name collision fixed in #171: with
+# the local native pod (`s.module_name = 'Pulsar'`) and the example app's
+# `use_frameworks!`, `pod install` must not report conflicting framework names.
+#
+# Built against the local iOS/Pulsar sources (USE_LOCAL_PULSAR_IOS=1), matching
+# the rest of test-build-apps.yml, so it does not depend on a published pod.
+#
+# Called from test-build-apps.yml.
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: 'debug | release'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+      USE_LOCAL_PULSAR_IOS: '1'
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Disable Swift Package Manager
+        # The CocoaPods path is what #140 was about; force it on this runner
+        # regardless of the Flutter channel default.
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: Verify Pulsar invocation in app sources
+        run: |
+          if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
+            echo "::error::No pulsar_haptics import found in flutter/PulsarApp/lib." >&2
+            exit 1
+          fi
+
+      - name: Flutter pub get
+        # The #140 failure mode: with SPM off, a misnamed podspec makes this step
+        # end with "Plugin pulsar_haptics is only Swift Package Manager compatible".
+        working-directory: flutter/PulsarApp
+        run: flutter pub get
+
+      - name: Pod install
+        # Explicit so a module-name collision surfaces here with a clear message
+        # (e.g. "target has frameworks with conflicting names") rather than deep
+        # inside the Flutter build.
+        working-directory: flutter/PulsarApp/ios
+        run: pod install
+
+      - name: Build Flutter iOS PulsarApp via CocoaPods (no codesign)
+        working-directory: flutter/PulsarApp
+        run: |
+          if [[ "${{ inputs.build_type }}" == "release" ]]; then
+            flutter build ios --release --no-codesign
+          else
+            flutter build ios --debug --no-codesign --simulator
+          fi

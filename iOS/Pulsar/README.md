@@ -58,6 +58,11 @@ Then run:
 pod install
 ```
 
+> **Upgrading from 1.2.x via CocoaPods?** The pod now exposes its module as
+> `Pulsar` (matching Swift Package Manager). If you were importing the previously
+> derived module name, change `import Pulsar_haptics` to `import Pulsar`. See the
+> [CHANGELOG](./CHANGELOG.md).
+
 ### Preset example
 
 ```swift
