@@ -1,15 +1,13 @@
 #import "Haptics.h"
 #import <UIKit/UIKit.h>
+// The Pulsar Swift SDK is exposed as the `Pulsar` module in every mode:
+//  - USE_LOCAL_PULSAR_IOS=1: the sources are compiled straight into this pod's `Pulsar` module.
+//  - Published pod (Pulsar-haptics >= 1.3.0): the pod sets `s.module_name = 'Pulsar'`.
+// With frameworks the generated interface is reachable as <Pulsar/Pulsar-Swift.h>; with the
+// default static libs it is reachable as "Pulsar-Swift.h" via the HEADER_SEARCH_PATHS added
+// in Pulsar.podspec.
 #if __has_include(<Pulsar/Pulsar-Swift.h>)
-// Local sources mode (USE_LOCAL_PULSAR_IOS=1): Swift is compiled into the `Pulsar` module.
 #import <Pulsar/Pulsar-Swift.h>
-#elif __has_include(<Pulsar_haptics/Pulsar_haptics-Swift.h>)
-// Published pod mode with frameworks: angle-bracket header is reachable.
-#import <Pulsar_haptics/Pulsar_haptics-Swift.h>
-#elif __has_include("Pulsar_haptics-Swift.h")
-// Published pod mode (default, static libs): the `Pulsar_haptics` Swift interface header
-// is reachable via the HEADER_SEARCH_PATHS added in Pulsar.podspec.
-#import "Pulsar_haptics-Swift.h"
 #else
 #import "Pulsar-Swift.h"
 #endif
