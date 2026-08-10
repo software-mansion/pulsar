@@ -1,0 +1,84 @@
+name: build-ios-flutter-cocoapods
+
+# Reusable: build the Flutter PulsarApp on iOS through CocoaPods (Swift Package
+# Manager DISABLED) across a linkage mode. Covers two regressions at once:
+#   * #140 — a misnamed podspec made `flutter pub get` conclude the plugin was
+#     SPM-only and fail; the CocoaPods path had no coverage.
+#   * #10 / #26 class — the native pod failing to build under `use_frameworks!`
+#     when its name and module name disagreed (fixed by renaming the pod to
+#     `PulsarHaptics`, so name == module).
+#
+# The native pod is consumed as a separate local pod (USE_LOCAL_PULSAR_IOS=1),
+# matching the rest of test-build-apps.yml — no trunk round-trip. Called from
+# test-build-apps.yml.
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: 'debug | release'
+        required: true
+        type: string
+      linkage:
+        description: 'none | static | dynamic (CocoaPods linkage)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Disable Swift Package Manager
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: Verify Pulsar invocation in app sources
+        run: |
+          if ! grep -qrE "package:pulsar_haptics" flutter/PulsarApp/lib; then
+            echo "::error::No pulsar_haptics import found in flutter/PulsarApp/lib." >&2
+            exit 1
+          fi
+
+      - name: Resolve local PulsarHaptics version
+        id: pod
+        shell: bash
+        run: |
+          VERSION="$(sed -n "s/.*s\\.version[[:space:]]*=[[:space:]]*'\\([^']*\\)'.*/\\1/p" iOS/Pulsar/PulsarHaptics.podspec | head -n 1)"
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::Could not read s.version from iOS/Pulsar/PulsarHaptics.podspec." >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Flutter pub get
+        working-directory: flutter/PulsarApp
+        run: flutter pub get
+
+      - name: Build Flutter iOS PulsarApp via CocoaPods (linkage=${{ inputs.linkage }}, no codesign)
+        working-directory: flutter/PulsarApp
+        shell: bash
+        env:
+          USE_LOCAL_PULSAR_IOS: '1'
+          PULSAR_IOS_POD_VERSION: ${{ steps.pod.outputs.version }}
+        run: |
+          if [[ "${{ inputs.linkage }}" != "none" ]]; then
+            export USE_FRAMEWORKS="${{ inputs.linkage }}"
+          fi
+          if [[ "${{ inputs.build_type }}" == "release" ]]; then
+            flutter build ios --release --no-codesign
+          else
+            flutter build ios --debug --no-codesign --simulator
+          fi

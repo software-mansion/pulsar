@@ -18,6 +18,14 @@ end
 target 'example' do
   config = use_native_modules!
 
+  # CI guard: consume the native `PulsarHaptics` pod from local sources as a
+  # *separate* pod (the bridge stays in published mode), so the build exercises
+  # the real published-pod path across linkage modes without a trunk round-trip.
+  if ENV['USE_LOCAL_PULSAR_POD'] == '1'
+    Pod::UI.puts 'Using local PulsarHaptics pod from iOS/Pulsar'.green
+    pod 'PulsarHaptics', :path => '../../../iOS/Pulsar'
+  end
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
