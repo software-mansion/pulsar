@@ -1,6 +1,11 @@
 Pod::Spec.new do |s|
   s.name             = 'Pulsar-haptics'
-  s.version          = '1.2.0' # pulsar-sync:ios-version
+  # Expose the module as `Pulsar` — the same name the Swift Package already uses,
+  # and what the docs tell consumers to `import`. It also avoids a case-insensitive
+  # CocoaPods module-name clash with the Flutter plugin pod `pulsar_haptics` (which
+  # would otherwise derive `Pulsar_haptics`) when an app opts into `use_frameworks!`.
+  s.module_name      = 'Pulsar'
+  s.version          = '1.3.0' # pulsar-sync:ios-version
   s.summary          = 'A haptic feedback SDK for iOS, written in Swift.'
   s.description      = <<-DESC
 Pulsar provides ready-to-use haptic presets, a pattern composer for custom
