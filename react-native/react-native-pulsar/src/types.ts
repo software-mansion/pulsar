@@ -7,10 +7,10 @@
  *   so audio and haptics share the engine clock (sample-accurate). Remote URLs
  *   are not supported.
  * - Android: `uri` is a path, `file://` uri, or the name of a resource in
- *   `res/raw`. Provide an `.ogg` with baked haptic channels for perfect,
- *   audio-coupled sync on supported devices. Any other format (`.wav`/`.mp3`),
- *   or a device without coupled-haptics support, automatically falls back to
- *   playing the audio while the pattern's own haptics fire in parallel.
+ *   `res/raw`. An **explicit** `.ogg` with baked haptic channels gives perfect,
+ *   audio-coupled sync on supported devices. Anything else — `.wav`/`.mp3`, a
+ *   bare name (defaults to `.wav`), or a device without coupled-haptics support —
+ *   plays the audio while the pattern's own haptics fire in parallel.
  */
 export type Sound = {
   /**

@@ -15,6 +15,11 @@ class PatternComposer(
 ) {
     companion object {
         private const val TAG = "Pulsar"
+
+        internal fun isOggUri(uri: String): Boolean {
+            val extension = uri.substringAfterLast('/').substringAfterLast('.', "").lowercase()
+            return extension == "ogg"
+        }
     }
 
     private var vibrationEffect: VibrationEffect? = null
@@ -46,19 +51,13 @@ class PatternComposer(
 
         soundPlayer?.release()
 
-        val isNonOggFile = isKnownNonOggUri(sound.uri)
-        useCoupledHaptics = sound.hapticChannels && !isNonOggFile && engine.supportsAudioCoupledHaptics()
+        useCoupledHaptics = sound.hapticChannels && isOggUri(sound.uri) && engine.supportsAudioCoupledHaptics()
 
         soundPlayer = AudioHapticPlayer(
             context = engine.getContext(),
             sound = sound,
             hapticChannelsMuted = !useCoupledHaptics,
         ).also { it.load() }
-    }
-
-    private fun isKnownNonOggUri(uri: String): Boolean {
-        val extension = uri.substringAfterLast('.', "").lowercase()
-        return extension.isNotEmpty() && extension != "ogg"
     }
 
     fun play() {

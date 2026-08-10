@@ -128,12 +128,12 @@ public class PatternComposer: NSObject {
     if let id = discretePlayerId { engine.stopPlayer(id: id) }
   }
 
-  private static func resolveSoundURL(_ uri: String) -> URL? {
+  static func resolveSoundURL(_ uri: String) -> URL? {
     if uri.hasPrefix("file://") { return URL(string: uri) }
     if FileManager.default.fileExists(atPath: uri) { return URL(fileURLWithPath: uri) }
     let ns = uri as NSString
     let name = ns.deletingPathExtension
-    let ext = ns.pathExtension.isEmpty ? "caf" : ns.pathExtension
+    let ext = ns.pathExtension.isEmpty ? "wav" : ns.pathExtension
     return Bundle.main.url(forResource: name, withExtension: ext)
   }
 

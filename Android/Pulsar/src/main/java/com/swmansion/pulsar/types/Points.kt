@@ -39,13 +39,15 @@ data class ContinuousPattern(
 
 /**
  * @param uri absolute file path, `file://` uri, or the name of a resource in `res/raw`.
+ *   The format comes from the extension; when none is given the default is `.wav`,
+ *   so a bare name like `"beep"` loads `res/raw/beep.wav`.
  * @param volume playback volume from [0-1].
  * @param offset delay applied to audio start relative to haptics, in ms (fallback path only).
- * @param hapticChannels whether the file carries baked haptic channels (only `.ogg`
- *   can). When true (default) the coupled path is used on supported devices; when
- *   false the file is treated as plain audio and Pulsar's own haptics are always
- *   played alongside it. A uri with a known non-`.ogg` extension (e.g. `.wav`/`.mp3`)
- *   is auto-detected and forced onto the fallback regardless of this flag.
+ * @param hapticChannels whether the file carries baked haptic channels. When true
+ *   (default) the coupled path is used on supported devices, but only for an
+ *   **explicit** `.ogg` uri; when false the file is treated as plain audio and
+ *   Pulsar's own haptics are always played alongside it. Any non-`.ogg` uri —
+ *   including a bare name (which defaults to `.wav`) — uses the fallback regardless.
  */
 data class SoundData(
   val uri: String,

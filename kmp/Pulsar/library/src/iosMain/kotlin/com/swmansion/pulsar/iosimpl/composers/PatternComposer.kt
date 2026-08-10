@@ -125,7 +125,7 @@ internal class IOSPatternComposerHandle(
         if (NSFileManager.defaultManager.fileExistsAtPath(uri)) return NSURL.fileURLWithPath(uri)
         val dotIndex = uri.lastIndexOf('.')
         val name = if (dotIndex > 0) uri.substring(0, dotIndex) else uri
-        val ext = if (dotIndex > 0) uri.substring(dotIndex + 1) else "caf"
+        val ext = if (dotIndex > 0) uri.substring(dotIndex + 1) else "wav"
         return NSBundle.mainBundle.URLForResource(name, withExtension = ext)
     }
 
