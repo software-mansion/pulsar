@@ -1,13 +1,14 @@
 name: build-ios-flutter
 
-# Reusable: build the Flutter PulsarApp on iOS Simulator against the local
-# Pulsar Swift Package. Called from test-build-apps.yml.
+# Reusable: build the Flutter PulsarApp on iOS Simulator against the Pulsar
+# Swift Package. Called from test-build-apps.yml.
 #
 # The plugin's published Package.swift depends on Pulsar-ios by URL pinned
-# to `from: "1.1.4"`. We rewrite that to a path dep pointing at the local
-# iOS/Pulsar tree — routed through a uniquely-named symlink in
+# to `from: "1.1.4"`. By default we rewrite that to a path dep pointing at the
+# local iOS/Pulsar tree — routed through a uniquely-named symlink in
 # `$RUNNER_TEMP` to avoid an SPM identity collision (see the comment on
-# the patch step for the gory details).
+# the patch step for the gory details). Pass use_local_pulsar: false to skip
+# the patch and resolve the published remote package instead.
 
 on:
   workflow_call:
@@ -16,6 +17,11 @@ on:
         description: 'debug | release'
         required: true
         type: string
+      use_local_pulsar:
+        description: 'Patch the plugin SPM dep to local iOS/Pulsar sources (true) or resolve the published remote package (false)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -55,6 +61,7 @@ jobs:
       # mirror is `pulsar_haptics` now, so keep the symlink only as a
       # guard against the next name that collides.
       - name: Patch plugin SPM dep to local iOS/Pulsar sources
+        if: ${{ inputs.use_local_pulsar }}
         env:
           PULSAR_ABS_PATH: ${{ github.workspace }}/iOS/Pulsar
         run: |
