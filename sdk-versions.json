@@ -11,22 +11,22 @@
     "version": "1.6.1",
     "packageName": "react-native-pulsar",
     "pulsarCore": {
-      "iosPodVersion": "1.3.0",
-      "androidMavenVersion": "1.1.2"
+      "iosPodVersion": "1.4.0",
+      "androidMavenVersion": "1.3.0"
     }
   },
   "kmp": {
     "version": "0.0.3",
     "mavenCoordinate": "com.swmansion:pulsar-kmp",
     "pulsarCore": {
-      "androidMavenVersion": "1.1.1"
+      "androidMavenVersion": "1.3.0"
     }
   },
   "flutter": {
     "version": "0.1.0",
     "packageName": "pulsar_haptics",
     "pulsarCore": {
-      "iosPodVersion": "1.3.0",
+      "iosPodVersion": "1.4.0",
       "androidMavenVersion": "1.3.0"
     }
   },
