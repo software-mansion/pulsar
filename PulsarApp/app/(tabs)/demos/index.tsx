@@ -44,6 +44,10 @@ const demos = [
     slug: 'sensor-haptics-demo',
     title: 'Accelerometer',
   },
+  {
+    slug: 'audio-demo',
+    title: 'Audio Sync',
+  },
 ];
 
 export default function DemosScreen() {
