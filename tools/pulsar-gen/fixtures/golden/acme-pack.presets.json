@@ -1,0 +1,19 @@
+{
+  "id": "com.acme.haptics",
+  "contentHash": "sha256-355197402b5ff6460e2dbefcf9048bd6868234f102c3f8c13fbb932f653a9790",
+  "presets": {
+    "heartbeatV2": {
+      "name": "Heartbeat V2",
+      "audio": true,
+      "animation": true,
+      "duration": 1200
+    },
+    "explosion": {
+      "name": "Explosion",
+      "audio": true,
+      "animation": false,
+      "duration": 800
+    }
+  },
+  "revision": 7
+}
