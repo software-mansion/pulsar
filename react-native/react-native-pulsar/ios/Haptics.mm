@@ -22,6 +22,7 @@
   RealtimeComposer *realtimeComposer_;
   int nextId;
   NSMutableDictionary<NSNumber*, PatternComposer*> *patternComposersRegistry_;
+  NSMutableDictionary<NSString*, LoadedBundle*> *bundlesRegistry_;
 }
 
 static BOOL RNPulsarIsAppActive(void) {
@@ -60,6 +61,7 @@ RCT_EXPORT_MODULE()
     realtimeComposer_ = [pulsar_ getRealtimeComposer];
     nextId = 1;
     patternComposersRegistry_ = [NSMutableDictionary new];
+    bundlesRegistry_ = [NSMutableDictionary new];
   }
   return self;
 }
@@ -84,6 +86,45 @@ RCT_EXPORT_MODULE()
 
 - (void)Pulsar_preloadPresets:(nonnull NSArray *)presetNames {
   [pulsar_ preloadPresetsWithPresetNames:presetNames];
+}
+
+// Preset bundles ---------------------------------------------------------
+
+- (nonnull NSString *)Pulsar_loadBundle:(nonnull NSString *)base64 {
+  NSData *data = [[NSData alloc] initWithBase64EncodedString:base64
+                                                     options:NSDataBase64DecodingIgnoreUnknownCharacters];
+  if (!data) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundle: invalid base64");
+    return @"";
+  }
+  NSError *error = nil;
+  LoadedBundle *bundle = [pulsar_ loadBundleWithData:data error:&error];
+  if (!bundle) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundle failed: %@", error);
+    return @"";
+  }
+  bundlesRegistry_[bundle.id] = bundle;
+  return bundle.id;
+}
+
+- (void)Pulsar_playBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {
+  if (!RNPulsarIsAppActive()) {
+    return;
+  }
+  RNPulsarPerformSafely(@"Pulsar_playBundlePreset", ^{
+    [bundlesRegistry_[token] play:presetId];
+  });
+}
+
+- (void)Pulsar_stopBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {
+  RNPulsarPerformSafely(@"Pulsar_stopBundlePreset", ^{
+    [[bundlesRegistry_[token] handle:presetId] stop];
+  });
+}
+
+- (void)Pulsar_disposeBundle:(nonnull NSString *)token {
+  [bundlesRegistry_[token] dispose];
+  [bundlesRegistry_ removeObjectForKey:token];
 }
 
 - (void)Pulsar_enableHaptics:(BOOL)state {
