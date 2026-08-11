@@ -21,10 +21,6 @@ class AudioHapticPlayer(
         private const val LOAD_SUCCESS = 0
     }
 
-    // A trim window (start/duration) can't be expressed with SoundPool — it has no seek —
-    // so a windowed clip plays through MediaPlayer instead. Whole-file playback and
-    // coupled-haptics (.ogg) keep using SoundPool. A windowed clip is always a plain
-    // mp3/wav, i.e. non-coupled, so the two paths never overlap.
     private val windowed = sound.startMs > 0L || sound.durationMs > 0L
 
     private var soundPool: SoundPool? = null
@@ -88,8 +84,6 @@ class AudioHapticPlayer(
         if (windowed) startMediaPlayer() else startSoundPool()
     }
 
-    // ---- SoundPool: whole file / coupled-haptics ----
-
     private fun loadSoundPool() {
         val pool = SoundPool.Builder()
             .setMaxStreams(4)
@@ -133,8 +127,6 @@ class AudioHapticPlayer(
         return pool.load(path, 1)
     }
 
-    // ---- MediaPlayer: windowed (seek to start, stop after duration) ----
-
     private fun loadMediaPlayer() {
         val mp = MediaPlayer()
         try {
@@ -167,7 +159,6 @@ class AudioHapticPlayer(
             val name = uri.substringAfterLast('/').substringBeforeLast('.')
             val resId = context.resources.getIdentifier(name, "raw", context.packageName)
             if (resId != 0) {
-                // Held open until release — MediaPlayer reads from this descriptor.
                 val afd = context.resources.openRawResourceFd(resId)
                 openedFd = afd
                 mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
