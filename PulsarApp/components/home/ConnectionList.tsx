@@ -10,6 +10,7 @@ export default function ConnectionList({
   onRemove,
   onReconnect,
   onOpenPreview,
+  onOpenLibrary,
   onEdit,
   emptyLabel = 'No connections yet.',
 }: {
@@ -18,6 +19,8 @@ export default function ConnectionList({
   onReconnect: (id: string) => void;
   // Open the live preview for a connection that advertised a preview token.
   onOpenPreview: (token: string) => void;
+  // Open a Studio (browser) connection's media-haptics library.
+  onOpenLibrary?: (id: string) => void;
   // Long-press a row to edit its name / view details.
   onEdit?: (id: string) => void;
   emptyLabel?: string;
@@ -39,6 +42,7 @@ export default function ConnectionList({
           onRemove={() => onRemove(c.id)}
           onReconnect={() => onReconnect(c.id)}
           onOpenPreview={c.previewToken ? () => onOpenPreview(c.previewToken as string) : undefined}
+          onOpenLibrary={onOpenLibrary ? () => onOpenLibrary(c.id) : undefined}
           onEdit={onEdit ? () => onEdit(c.id) : undefined}
         />
       ))}
