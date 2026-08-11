@@ -8,6 +8,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import com.swmansion.pulsar.bundle.LoadedBundle
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.ConfigPoint
@@ -25,6 +26,7 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private var pulsar: Pulsar? = null
     private val patternComposers = mutableMapOf<Int, PatternComposer>()
     private var nextPatternComposerId = 1
+    private val bundles = mutableMapOf<String, LoadedBundle>()
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(binding.binaryMessenger, "pulsar")
@@ -69,6 +71,43 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val name = call.argument<String>("name")
                     ?: return result.error("INVALID_ARGS", "name required", null)
                 p.getPresets().getByName(name)?.play()
+                result.success(null)
+            }
+
+            "Pulsar_loadBundle" -> {
+                val bytes = call.argument<ByteArray>("bytes")
+                    ?: return result.error("INVALID_ARGS", "bytes required", null)
+                try {
+                    val bundle = p.loadBundle(bytes)
+                    bundles[bundle.id] = bundle
+                    result.success(bundle.id)
+                } catch (e: Exception) {
+                    result.error("LOAD_BUNDLE_FAILED", e.message, null)
+                }
+            }
+
+            "Pulsar_playBundlePreset" -> {
+                val token = call.argument<String>("token")
+                val presetId = call.argument<String>("presetId")
+                if (token == null || presetId == null) {
+                    return result.error("INVALID_ARGS", "token/presetId required", null)
+                }
+                bundles[token]?.handle(presetId)?.play()
+                result.success(null)
+            }
+
+            "Pulsar_stopBundlePreset" -> {
+                val token = call.argument<String>("token")
+                val presetId = call.argument<String>("presetId")
+                if (token == null || presetId == null) {
+                    return result.error("INVALID_ARGS", "token/presetId required", null)
+                }
+                bundles[token]?.handle(presetId)?.stop()
+                result.success(null)
+            }
+
+            "Pulsar_disposeBundle" -> {
+                call.argument<String>("token")?.let { bundles.remove(it)?.dispose() }
                 result.success(null)
             }
 
@@ -337,6 +376,8 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         val uri = data["uri"] as? String ?: return null
         val volume = (data["volume"] as? Number)?.toFloat() ?: 1f
         val offset = (data["offset"] as? Number)?.toLong() ?: 0L
-        return SoundData(uri = uri, volume = volume, offset = offset)
+        val startMs = (data["start"] as? Number)?.toLong() ?: 0L
+        val durationMs = (data["duration"] as? Number)?.toLong() ?: 0L
+        return SoundData(uri = uri, volume = volume, offset = offset, startMs = startMs, durationMs = durationMs)
     }
 }

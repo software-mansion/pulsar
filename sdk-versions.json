@@ -3,9 +3,17 @@
     "version": "1.4.0",
     "swiftPackageUrl": "https://github.com/software-mansion-labs/pulsar-ios"
   },
+  "iosLottie": {
+    "version": "0.1.0",
+    "swiftPackageUrl": "https://github.com/software-mansion-labs/pulsar-ios-lottie"
+  },
   "android": {
     "version": "1.3.0",
     "mavenCoordinate": "com.swmansion:pulsar"
+  },
+  "androidLottie": {
+    "version": "0.1.0",
+    "mavenCoordinate": "com.swmansion:pulsar-lottie"
   },
   "reactNative": {
     "version": "1.7.0",
@@ -14,6 +22,10 @@
       "iosPodVersion": "1.4.0",
       "androidMavenVersion": "1.3.0"
     }
+  },
+  "reactNativeLottie": {
+    "version": "0.1.0",
+    "packageName": "react-native-pulsar-lottie"
   },
   "kmp": {
     "version": "0.1.0",

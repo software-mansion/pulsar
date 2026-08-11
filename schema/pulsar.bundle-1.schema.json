@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pulsar.swmansion.com/schema/pulsar.bundle-1.schema.json",
+  "title": "Pulsar bundle manifest v1",
+  "type": "object",
+  "required": ["schema", "id", "name", "presets"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "pulsar.bundle/1" },
+    "generator": { "type": "string" },
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "hash": { "type": "string" },
+    "presets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/preset" }
+    }
+  },
+  "definitions": {
+    "preset": {
+      "type": "object",
+      "required": ["id", "name", "haptics"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$",
+          "description": "Code-safe identifier; becomes bundle.presets.<id>"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "duration": { "type": "number", "minimum": 0 },
+        "haptics": { "type": "string", "minLength": 1 },
+        "audio": {
+          "type": "object",
+          "required": ["src"],
+          "additionalProperties": false,
+          "properties": {
+            "src": { "type": "string", "minLength": 1 },
+            "volume": { "type": "number", "minimum": 0 },
+            "offset": { "type": "number" }
+          }
+        },
+        "animation": {
+          "type": "object",
+          "required": ["src"],
+          "additionalProperties": false,
+          "properties": {
+            "src": { "type": "string", "minLength": 1 },
+            "frameRate": { "type": "number", "minimum": 0 },
+            "totalFrames": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}
