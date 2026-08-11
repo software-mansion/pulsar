@@ -11,6 +11,7 @@ import com.swmansion.pulsar.types.RealtimeComposerStrategy
 import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ContinuousPattern
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.SoundData
 import com.swmansion.pulsar.types.ValuePoint
 
 @ReactModule(name = PulsarModule.NAME)
@@ -180,6 +181,36 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     return currentId.toDouble()
   }
 
+  override fun PatternComposer_parsePatternWithSound(
+    data: ReadableMap?,
+    uri: String?,
+    volume: Double,
+    offset: Double
+  ): Double {
+    val patternComposer = pulsar.getPatternComposer()
+
+    data?.let {
+      val patternData = patternDataFromJSPattern(it)
+      if (uri != null) {
+        patternComposer.parsePatternWithSound(
+          patternData,
+          SoundData(
+            uri = uri,
+            volume = volume.toFloat(),
+            offset = offset.toLong()
+          )
+        )
+      } else {
+        patternComposer.parsePattern(patternData)
+      }
+    }
+
+    val currentId = nextId
+    nextId++
+    patternComposersRegistry[currentId] = patternComposer
+    return currentId.toDouble()
+  }
+
   override fun PatternComposer_play(patternId: Double) {
     patternComposersRegistry[patternId.toInt()]?.play()
   }
@@ -189,7 +220,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
   }
 
   override fun PatternComposer_release(patternId: Double) {
-    patternComposersRegistry.remove(patternId.toInt())
+    patternComposersRegistry.remove(patternId.toInt())?.release()
   }
 
   // RealtimeComposer -----------------------------------------------------------------

@@ -127,6 +127,30 @@ export default function PublicApisScreen() {
     setLastAction(`Pattern parsed with ID: ${patternId}`);
   };
 
+  const handleParsePatternWithSound = () => {
+    const pattern: Pattern = {
+      discretePattern: [
+        { time: 0, amplitude: 1.0, frequency: 0.5 },
+        { time: 200, amplitude: 0.8, frequency: 0.7 },
+      ],
+      continuousPattern: { amplitude: [], frequency: [] },
+    };
+
+    // A short sound synchronized with the haptics. A bare name defaults to `.wav`,
+    // so bundle `beep.wav` natively — iOS: in the app target; Android: in `res/raw`.
+    // (Use an explicit `beep.ogg` with baked haptic channels for coupled sync on
+    // Android.) In a real app you can also pass `require('./beep.wav')` through the
+    // `usePatternComposer` hook. Missing files degrade gracefully to haptics-only.
+    const patternId = PulsarNative.PatternComposer_parsePatternWithSound(
+      pattern,
+      'beep',
+      1.0, // volume
+      0, // offset (ms)
+    );
+    setPatternIds([...patternIds, patternId]);
+    setLastAction(`Pattern + sound parsed with ID: ${patternId}`);
+  };
+
   const handlePlayPattern = () => {
     if (patternIds.length === 0) {
       setLastAction('No patterns available. Parse a pattern first.');
@@ -262,6 +286,12 @@ export default function PublicApisScreen() {
             subtitle="PatternComposer_parsePattern()"
             onPress={handleParsePattern}
             status={`${patternIds.length} pattern(s) parsed`}
+          />
+
+          <ApiButton
+            title="Parse Pattern + Sound"
+            subtitle="PatternComposer_parsePatternWithSound()"
+            onPress={handleParsePatternWithSound}
           />
 
           <ApiButton

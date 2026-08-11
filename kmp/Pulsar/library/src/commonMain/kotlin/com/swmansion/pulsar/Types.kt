@@ -36,6 +36,12 @@ data class ContinuousPattern(
     val frequency: List<ValuePoint>,
 )
 
+data class SoundData(
+    val uri: String,
+    val volume: Float = 1f,
+    val offset: Long = 0L,
+)
+
 data class PatternData(
     val continuousPattern: ContinuousPattern,
     val discretePattern: List<ConfigPoint>,

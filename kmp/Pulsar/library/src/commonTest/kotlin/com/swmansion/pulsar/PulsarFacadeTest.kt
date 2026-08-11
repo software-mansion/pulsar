@@ -43,6 +43,10 @@ class PulsarFacadeTest {
                 discretePattern = listOf(ConfigPoint(0, 1f, 0.4f)),
             ),
         )
+        composer.parsePatternWithSound(
+            PatternData(),
+            SoundData(uri = "beep.ogg", volume = 0.5f, offset = 20L),
+        )
         composer.play()
         composer.playPattern(PatternData())
         composer.playAudioOnly()
@@ -62,6 +66,7 @@ class PulsarFacadeTest {
         assertTrue(factory.handle.cacheCleared)
         assertTrue(factory.handle.hapticsStopped)
         assertTrue(factory.handle.patternParsed)
+        assertEquals(SoundData(uri = "beep.ogg", volume = 0.5f, offset = 20L), factory.handle.patternSound)
         assertTrue(factory.handle.patternPlayed)
         assertTrue(factory.handle.audioPlayed)
         assertTrue(factory.handle.patternStopped)
@@ -171,6 +176,7 @@ private class FakeHandle : PulsarPlatformHandle {
     }
 
     val patternParsed get() = patternHandle.parsed
+    val patternSound get() = patternHandle.soundParsed
     val patternPlayed get() = patternHandle.played
     val audioPlayed get() = patternHandle.audioOnlyPlayed
     val patternStopped get() = patternHandle.stopped
@@ -404,9 +410,15 @@ private class FakePatternHandle : PatternComposerHandle {
     var played = false
     var audioOnlyPlayed = false
     var stopped = false
+    var soundParsed: SoundData? = null
 
     override fun parsePattern(pattern: PatternData) {
         parsed = true
+    }
+
+    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
+        parsed = true
+        soundParsed = sound
     }
 
     override fun playPattern(pattern: PatternData) {

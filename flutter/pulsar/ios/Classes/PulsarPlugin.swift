@@ -178,6 +178,29 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       patternComposer.parsePattern(hapticsData: patternData)
       result(resolvedComposerId)
 
+    case "PatternComposer_parsePatternWithSound":
+      guard let data = args?["data"] as? [String: Any],
+            let patternData = parsePatternData(data),
+            let sound = args?["sound"] as? [String: Any],
+            let uri = sound["uri"] as? String else {
+        result(FlutterError(code: "INVALID_ARGS", message: "valid pattern data and sound required", details: nil))
+        return
+      }
+      let volume = (sound["volume"] as? NSNumber)?.floatValue ?? 1.0
+      let offset = (sound["offset"] as? NSNumber)?.doubleValue ?? 0.0
+      let composerId = args?["composerId"] as? Int
+      let resolvedComposerId = composerId ?? nextPatternComposerId
+      if composerId == nil {
+        nextPatternComposerId += 1
+      }
+      let patternComposer = patternComposers[resolvedComposerId] ?? {
+        let composer = pulsar.getPatternComposer()
+        patternComposers[resolvedComposerId] = composer
+        return composer
+      }()
+      patternComposer.parsePatternWithSound(hapticsData: patternData, uri: uri, volume: volume, offset: offset)
+      result(resolvedComposerId)
+
     case "PatternComposer_playPattern":
       guard let data = args?["data"] as? [String: Any],
             let patternData = parsePatternData(data) else {

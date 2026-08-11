@@ -114,6 +114,34 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
     }
   }
 
+  Future<void> _playPatternWithSound() async {
+    _setStatus('Playing pattern + sound…');
+    try {
+      final pattern = PatternData(
+        continuousPattern: const ContinuousPattern(amplitude: [], frequency: []),
+        discretePattern: const [
+          DiscretePoint(time: 0, amplitude: 1.0, frequency: 0.8),
+          DiscretePoint(time: 200, amplitude: 0.7, frequency: 0.5),
+        ],
+      );
+
+      // A short sound played in sync with the haptics. A bare name defaults to
+      // `.wav`, so bundle `beep.wav` natively — iOS: in the app bundle; Android:
+      // in `res/raw` (use an explicit `beep.ogg` with baked haptic channels for
+      // coupled sync). To ship it as a Flutter asset instead, copy it from
+      // `rootBundle` to a temp file first and pass that absolute path. Missing
+      // files degrade gracefully to haptics-only.
+      await _patternComposer.parsePatternWithSound(
+        pattern,
+        const Sound(uri: 'beep', volume: 1.0, offset: 0),
+      );
+      await _patternComposer.play();
+      _setStatus('Pattern + sound: playing');
+    } catch (e) {
+      _setStatus('Pattern + sound error: $e');
+    }
+  }
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -212,6 +240,15 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
                 label: const Text('Stop'),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _playPatternWithSound,
+              icon: const Icon(Icons.music_note),
+              label: const Text('Play Pattern + Sound'),
+            ),
           ),
           const SizedBox(height: 12),
 

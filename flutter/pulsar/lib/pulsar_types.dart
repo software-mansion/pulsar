@@ -181,3 +181,25 @@ class PatternData {
     'discretePattern': discretePattern.map((p) => p.toMap()).toList(),
   };
 }
+
+/// A short authored sound to play in sync with a haptic pattern.
+class Sound {
+  /// Creates a [Sound] source.
+  const Sound({required this.uri, this.volume = 1.0, this.offset = 0});
+
+  /// Local file path, `file://` uri, or bundled resource name (no extension needed
+  /// — defaults to `.wav`).
+  final String uri;
+
+  /// Playback volume, 0.0–1.0.
+  final double volume;
+
+  /// Shift of the audio relative to the haptics, in milliseconds.
+  final int offset;
+
+  Map<String, dynamic> toMap() => {
+    'uri': uri,
+    'volume': volume,
+    'offset': offset,
+  };
+}

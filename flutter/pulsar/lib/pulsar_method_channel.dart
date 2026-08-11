@@ -162,6 +162,23 @@ class MethodChannelPulsar extends PulsarPlatform {
   }
 
   @override
+  Future<int> patternParsePatternWithSound(
+    PatternData data,
+    Sound sound, {
+    int? composerId,
+  }) async {
+    final result = await methodChannel.invokeMethod<int>(
+      'PatternComposer_parsePatternWithSound',
+      {
+        'data': data.toMap(),
+        'sound': sound.toMap(),
+        if (composerId != null) 'composerId': composerId,
+      },
+    );
+    return result ?? composerId ?? 0;
+  }
+
+  @override
   Future<int> patternPlayPattern(PatternData data, {int? composerId}) async {
     final result = await methodChannel.invokeMethod<int>(
       'PatternComposer_playPattern',

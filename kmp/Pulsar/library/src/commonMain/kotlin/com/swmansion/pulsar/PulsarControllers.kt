@@ -829,6 +829,10 @@ class PatternComposer internal constructor(
         handle.parsePattern(pattern)
     }
 
+    fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
+        handle.parsePatternWithSound(pattern, sound)
+    }
+
     fun playPattern(pattern: PatternData) {
         handle.playPattern(pattern)
     }

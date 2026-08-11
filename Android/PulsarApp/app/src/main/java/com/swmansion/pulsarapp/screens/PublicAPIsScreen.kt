@@ -27,6 +27,7 @@ import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ContinuousPattern
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.SoundData
 import com.swmansion.pulsar.types.ValuePoint
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -197,6 +198,31 @@ fun PublicAPIsScreen(pulsar: Pulsar?) {
                             ),
                         )
                         composer?.parsePattern(pattern)
+                    }
+                )
+            }
+
+            item {
+                APITestRow(
+                    label = "PatternComposer.parsePatternWithSound()",
+                    state = "Ready",
+                    onButtonClick = {
+                        if (composer == null) {
+                            composer = pulsar?.getPatternComposer()
+                        }
+                        val pattern = PatternData(
+                            continuousPattern = ContinuousPattern(amplitude = emptyList(), frequency = emptyList()),
+                            discretePattern = listOf(
+                                ConfigPoint(time = 0L, amplitude = 1f, frequency = 0.8f),
+                                ConfigPoint(time = 200L, amplitude = 0.7f, frequency = 0.5f),
+                            ),
+                        )
+                        // Play a short sound in sync with the haptics. A bare name
+                        // defaults to `.wav`, so add `beep.wav` to `app/src/main/res/raw/`
+                        // (use an explicit `beep.ogg` with baked haptic channels for
+                        // coupled sync). Missing files degrade to haptics-only. Call
+                        // play() afterwards.
+                        composer?.parsePatternWithSound(pattern, SoundData(uri = "beep"))
                     }
                 )
             }

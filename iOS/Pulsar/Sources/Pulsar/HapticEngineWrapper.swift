@@ -66,6 +66,19 @@ public extension HapticEngineWrapper {
     return registerPlayer(player)
   }
 
+  func registerAudioResource(url: URL) -> CHHapticAudioResourceID? {
+    bootstrapAppLifecycleTrackingIfNeeded()
+    guard canPlayHaptics() else { return nil }
+
+    startEngine()
+    do {
+      return try engine?.registerAudioResource(url, options: [:])
+    } catch {
+      print("Error registering audio resource: \(error.localizedDescription)")
+      return nil
+    }
+  }
+
   func getRealtimePlayer() -> CHHapticAdvancedPatternPlayer? {
     bootstrapAppLifecycleTrackingIfNeeded()
     guard canPlayHaptics() else { return nil }
