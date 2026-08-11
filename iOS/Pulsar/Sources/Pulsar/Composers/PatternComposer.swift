@@ -34,7 +34,6 @@ public class PatternComposer: NSObject {
   }
 
   @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0) {
-    // A new parse replaces any previous windowed temp clip.
     removeTempAudio()
     let audioEvent = makeAudioEvent(uri: uri, volume: volume, offset: offset, start: start, duration: duration)
     parse(hapticsData: hapticsData, audioEvent: audioEvent)
@@ -108,9 +107,6 @@ public class PatternComposer: NSObject {
       print("Pulsar: could not resolve sound uri: \(uri)")
       return nil
     }
-    // Play the whole file, unless a window was requested — then slice it to a temp clip
-    // and register that, so the audio starts at `start` and lasts `duration`. There is no
-    // seek into a registered Core Haptics audio resource, so the trim happens here.
     var url = sourceURL
     if start > 0 || duration > 0 {
       if let windowed = PatternComposer.sliceAudioToTempFile(sourceURL, startMs: start, durationMs: duration) {
@@ -126,8 +122,6 @@ public class PatternComposer: NSObject {
     )
   }
 
-  /// Decode `sourceURL`, cut `[startMs, startMs+durationMs]` (durationMs<=0 ⇒ to the end),
-  /// and write that slice to a temp file, returning its URL — or nil if it can't be read.
   static func sliceAudioToTempFile(_ sourceURL: URL, startMs: Double, durationMs: Double) -> URL? {
     do {
       let file = try AVAudioFile(forReading: sourceURL)

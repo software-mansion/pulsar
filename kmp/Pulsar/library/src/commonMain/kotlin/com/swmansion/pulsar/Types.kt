@@ -40,9 +40,7 @@ data class SoundData(
     val uri: String,
     val volume: Float = 1f,
     val offset: Long = 0L,
-    /** Where in the source file playback begins, in ms (a seek). 0 plays from the top. */
     val startMs: Long = 0L,
-    /** How much to play from [startMs], in ms. 0 plays to the end of the file. */
     val durationMs: Long = 0L,
 )
 

@@ -125,9 +125,7 @@ internal class IOSPatternComposerHandle(
             log("could not resolve sound uri: ${sound.uri}")
             return null
         }
-        // Play the whole file, unless a window was requested — then slice it to a temp clip
-        // and register that (there is no seek into a registered Core Haptics audio resource,
-        // so the trim happens here). A failed slice falls back to the whole file.
+
         val url = if (sound.startMs > 0L || sound.durationMs > 0L) {
             sliceAudioToTempFile(sourceUrl, sound.startMs, sound.durationMs)?.also { tempAudioURL = it }
                 ?: sourceUrl
@@ -144,11 +142,6 @@ internal class IOSPatternComposerHandle(
         )
     }
 
-    /**
-     * Decode [sourceUrl], cut `[startMs, startMs+durationMs]` (durationMs<=0 ⇒ to the end),
-     * and write that slice to a temp file, returning its url — or null if it can't be read.
-     * Best-effort: any failure returns null and the caller plays the whole file.
-     */
     private fun sliceAudioToTempFile(sourceUrl: NSURL, startMs: Long, durationMs: Long): NSURL? {
         return runCatching {
             memScoped {
