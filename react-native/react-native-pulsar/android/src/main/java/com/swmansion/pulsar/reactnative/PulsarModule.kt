@@ -4,6 +4,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.module.annotations.ReactModule
+import com.swmansion.pulsar.bundle.LoadedBundle
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.types.CompatibilityMode
@@ -22,6 +23,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
   private var realtimeComposer: RealtimeComposer = pulsar.getRealtimeComposer()
   private var nextId: Int = 1
   private val patternComposersRegistry: MutableMap<Int, PatternComposer> = mutableMapOf()
+  private val bundlesRegistry: MutableMap<String, LoadedBundle> = mutableMapOf()
 
   // Pulsar -----------------------------------------------------------------
 
@@ -239,6 +241,35 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
   override fun RealtimeComposer_isActive(): Boolean {
     return realtimeComposer.isActive()
+  }
+
+  // Preset bundles -----------------------------------------------------------------
+
+  override fun Pulsar_loadBundle(base64: String?): String {
+    if (base64 == null) return ""
+    return try {
+      val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+      val bundle = pulsar.loadBundle(bytes)
+      bundlesRegistry[bundle.id] = bundle
+      bundle.id
+    } catch (e: Exception) {
+      android.util.Log.e(NAME, "Pulsar_loadBundle failed", e)
+      ""
+    }
+  }
+
+  override fun Pulsar_playBundlePreset(token: String?, presetId: String?) {
+    if (token == null || presetId == null) return
+    bundlesRegistry[token]?.play(presetId)
+  }
+
+  override fun Pulsar_stopBundlePreset(token: String?, presetId: String?) {
+    if (token == null || presetId == null) return
+    bundlesRegistry[token]?.handle(presetId)?.stop()
+  }
+
+  override fun Pulsar_disposeBundle(token: String?) {
+    token?.let { bundlesRegistry.remove(it)?.dispose() }
   }
 
   companion object {
