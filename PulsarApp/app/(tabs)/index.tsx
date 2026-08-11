@@ -15,11 +15,13 @@ import ConnectionList from '@/components/home/ConnectionList';
 import HapticsSupportBanner from '@/components/home/HapticsSupportBanner';
 import NowPlayingToast from '@/components/NowPlayingToast';
 import { useConnections } from '@/contexts/ConnectionsContext';
+import { useMediaSession } from '@/contexts/MediaSessionContext';
 
 const logo = require('@/assets/images/logo.png');
 
 export default function HomeScreen() {
   const { connections, addByCode, remove, reconnect } = useConnections();
+  const { openConnection } = useMediaSession();
   const router = useRouter();
 
   const [connectingCode, setConnectingCode] = useState('');
@@ -113,6 +115,7 @@ export default function HomeScreen() {
             onRemove={remove}
             onReconnect={reconnect}
             onOpenPreview={openPreview}
+            onOpenLibrary={openConnection}
             onEdit={editConnection}
           />
 

@@ -1,0 +1,25 @@
+{
+  "name": "@swmansion/pulsar-gen",
+  "version": "0.1.0",
+  "description": "Generate typed accessors (Swift/Kotlin/Dart) and RN sidecars for Pulsar .pulsar bundles.",
+  "type": "module",
+  "engines": { "node": ">=23.6" },
+  "bin": { "pulsar-gen": "src/cli.ts" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./read": "./src/read.ts",
+    "./zip": "./src/zip.ts"
+  },
+  "scripts": {
+    "build:fixture": "node fixtures/build-fixture.ts",
+    "test": "node --test",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": ["src", "README.md"],
+  "keywords": ["pulsar", "haptics", "codegen", "bundle"],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

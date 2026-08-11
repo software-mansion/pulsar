@@ -23,3 +23,5 @@ rootProject.name = "PulsarApp"
 include(":app")
 include(":Pulsar")
 project(":Pulsar").projectDir = file("../Pulsar")
+include(":PulsarLottie")
+project(":PulsarLottie").projectDir = file("../PulsarLottie")
