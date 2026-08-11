@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pulsar_haptics/pulsar.dart';
 
 void main() {
@@ -142,6 +145,80 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
     }
   }
 
+  // ── Audio-synced haptics ────────────────────────────────────────────────────
+
+  // A haptic pattern authored to sync with `assets/sample-3s.mp3`: the discrete
+  // beats land on the track's onsets, the continuous envelope traces its energy.
+  final _audioPattern = PatternData.fromArrays(
+    amplitude: [
+      [0, 1],
+      [209, 0.927],
+      [348, 0.843],
+      [580, 0.789],
+      [720, 0.791],
+      [859, 0.693],
+      [1022, 0.718],
+      [1161, 0.665],
+      [1324, 0.565],
+      [1463, 0.432],
+      [1649, 0.201],
+      [1788, 0.068],
+      [3181, 0.014],
+    ],
+    frequency: [
+      [0, 0.402],
+      [232, 0.061],
+      [604, 0.077],
+      [836, 0.23],
+      [1068, 0.293],
+      [1324, 0.346],
+      [1625, 0.437],
+      [1904, 0.513],
+      [2206, 0.63],
+      [2438, 0.822],
+      [2670, 0.975],
+      [2902, 0.947],
+      [3181, 0.861],
+    ],
+    discrete: [
+      [70, 0.299, 0.159],
+      [232, 0.401, 0.416],
+      [441, 0.627, 0.663],
+      [627, 0.31, 0.607],
+      [836, 0.792, 0.634],
+      [1022, 0.394, 0.379],
+      [1231, 0.806, 0.679],
+      [1440, 0.612, 0.525],
+      [1649, 0.232, 0.767],
+      [2020, 0.239, 0.625],
+      [2438, 0.385, 0.743],
+      [2624, 0.226, 0.468],
+      [2833, 0.446, 0.733],
+    ],
+  );
+
+  Future<void> _playAudioHaptics() async {
+    _setStatus('Playing audio-synced haptics…');
+    try {
+      // Flutter assets don't live in the native bundle where the SDK resolves
+      // sound uris, so copy the bundled clip to a temp file and pass its
+      // absolute path. (On Android you can instead ship an `.ogg` with baked
+      // haptic channels in `res/raw` for coupled sync.)
+      final bytes = await rootBundle.load('assets/sample-3s.mp3');
+      final file = File('${Directory.systemTemp.path}/pulsar-sample-3s.mp3');
+      await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+
+      await _patternComposer.parsePatternWithSound(
+        _audioPattern,
+        Sound(uri: file.path, volume: 1.0),
+      );
+      await _patternComposer.play();
+      _setStatus('Audio-synced haptics: playing');
+    } catch (e) {
+      _setStatus('Audio haptics error: $e');
+    }
+  }
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -248,6 +325,24 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
               onPressed: _playPatternWithSound,
               icon: const Icon(Icons.music_note),
               label: const Text('Play Pattern + Sound'),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Audio-synced haptics
+          _SectionHeader('Audio-synced Haptics'),
+          Text(
+            'A 3-second music clip played through the pattern composer, with '
+            'haptics authored to land on the beat. Best felt on a real device.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _playAudioHaptics,
+              icon: const Icon(Icons.multitrack_audio),
+              label: const Text('Play sample-3s.mp3 + Haptics'),
             ),
           ),
           const SizedBox(height: 12),
