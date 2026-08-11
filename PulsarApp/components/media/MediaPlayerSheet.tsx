@@ -102,10 +102,8 @@ export default function MediaPlayerSheet() {
         : `${formatMs(isPlaying ? positionMs : session.durationMs)} / ${formatMs(session.durationMs)}`
     : '';
 
-  // Nothing to show.
   if (!session && !openConnectionId) return null;
 
-  // Play/stop toggle used by both faces.
   const onTogglePlay = () => {
     if (isPlaying) stop();
     else repeat(); // replay the current record from the top

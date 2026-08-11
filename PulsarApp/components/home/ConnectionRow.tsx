@@ -76,7 +76,6 @@ export default function ConnectionRow({
   // be opened advertises that in its subtitle in stable states (connected or
   // offline); transient/problem states show the status instead.
   const canOpenFigma = isFigma && !!onOpenPreview;
-  // A Studio (browser) row opens its media-haptics library on tap.
   const canOpenLibrary = !isFigma && !!onOpenLibrary;
   const onPressBody = isFigma ? onOpenPreview : canOpenLibrary ? onOpenLibrary : undefined;
   const sublabel =
