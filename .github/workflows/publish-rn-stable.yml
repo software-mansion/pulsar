@@ -3,10 +3,6 @@ name: Publish React Native to npm
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to publish (x.y.z). Leave empty to infer from branch name.'
-        required: false
-        default: ''
       tag:
         description: 'npm tag to publish under'
         required: false
@@ -36,13 +32,27 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Resolve release version
+        id: release
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./sdk-versions.json').reactNative.version")"
+
+          if [[ -z "$VERSION" ]]; then
+            echo "Release version could not be determined from sdk-versions.json." >&2
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing version $VERSION (from sdk-versions.json)"
+
       - name: Publish stable
         uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
         with:
           package-name: react-native-pulsar
           package-json-path: react-native/react-native-pulsar/package.json
           release-type: stable
-          version: ${{ github.event.inputs.version || '' }}
+          version: ${{ steps.release.outputs.version }}
           tag: ${{ github.event.inputs.tag || 'latest' }}
           dry-run: ${{ github.event.inputs.dry-run || 'true' }}
           install-dependencies-command: npm ci
