@@ -1,5 +1,7 @@
 /playground
 /pulsar-private
+.bootstrap-out
+.bootstrap-PulsarApp/
 archive
 .DS_Store
 .claude

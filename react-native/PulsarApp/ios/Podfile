@@ -18,6 +18,14 @@ end
 target 'example' do
   config = use_native_modules!
 
+  # CI guard: consume the native `PulsarHaptics` pod from local sources as a
+  # *separate* pod (the bridge stays in published mode), so the build exercises
+  # the real published-pod path across linkage modes without a trunk round-trip.
+  if ENV['USE_LOCAL_PULSAR_POD'] == '1'
+    Pod::UI.puts 'Using local PulsarHaptics pod from iOS/Pulsar'.green
+    pod 'PulsarHaptics', :path => '../../../iOS/Pulsar'
+  end
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
@@ -35,6 +43,34 @@ target 'example' do
     hermes_cli_path = File.realpath(
       File.join(__dir__, '..', 'node_modules', 'hermes-compiler', 'hermesc', 'osx-bin', 'hermesc')
     )
+
+    # Xcode 26's clang enforces `consteval` more strictly and rejects fmt
+    # 11.0.2's compile-time format-string checks (FMT_STRING), failing with
+    # "call to consteval function ... is not a constant expression". RN pins
+    # `fmt (= 11.0.2)`, so rather than bumping the version we select fmt's
+    # constexpr fallback path by forcing FMT_USE_CONSTEVAL=0. A preprocessor
+    # define does NOT work: fmt 11.0.2 hard-defines FMT_USE_CONSTEVAL in
+    # `base.h` with no `#ifndef` guard, so any `-D` is redefined away. Patch the
+    # header instead, short-circuiting its detection cascade to 0.
+    # Removable once RN is bumped to >= 0.83.9 (fmt 12.1.0), which fixes this
+    # upstream.
+    fmt_base = File.join(__dir__, 'Pods', 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      contents = File.read(fmt_base)
+      marker = 'pulsar: force FMT_USE_CONSTEVAL=0 for Xcode 26'
+      unless contents.include?(marker)
+        patched = contents.sub(
+          /#if !defined\(__cpp_lib_is_constant_evaluated\)\n#  define FMT_USE_CONSTEVAL 0/,
+          "#if 1  // #{marker}\n#  define FMT_USE_CONSTEVAL 0"
+        )
+        if patched == contents
+          Pod::UI.warn 'Could not patch fmt base.h for the Xcode 26 consteval workaround; the detection block may have changed.'
+        else
+          File.write(fmt_base, patched)
+          Pod::UI.puts 'Patched fmt base.h to disable consteval (Xcode 26 workaround)'.green
+        end
+      end
+    end
 
     installer.aggregate_targets.each do |aggregate_target|
       aggregate_target.xcconfigs.each do |config_name, config_file|

@@ -75,6 +75,9 @@ export default {
     ],
     "expo-localization",
     "expo-image",
+    "expo-font",
+    "expo-status-bar",
+    "expo-web-browser",
     [
       "expo-camera",
       {

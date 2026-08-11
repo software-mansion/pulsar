@@ -1,9 +1,10 @@
 name: build-android-flutter
 
-# Reusable: build the Flutter PulsarApp APK against the local Pulsar
-# Android sources (via USE_LOCAL_PULSAR_ANDROID). Building the PulsarApp
-# APK transitively builds the flutter/pulsar plugin. Called from
-# test-build-apps.yml.
+# Reusable: build the Flutter PulsarApp APK. Building the PulsarApp APK
+# transitively builds the flutter/pulsar plugin. By default it builds against
+# the local Pulsar Android sources (via USE_LOCAL_PULSAR_ANDROID); pass
+# use_local_pulsar: false to build against the published com.swmansion:pulsar
+# artifact instead. Called from test-build-apps.yml.
 
 on:
   workflow_call:
@@ -12,6 +13,11 @@ on:
         description: 'debug | release'
         required: true
         type: string
+      use_local_pulsar:
+        description: 'Build against local Android/Pulsar sources (true) or the published com.swmansion:pulsar artifact (false)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -48,7 +54,7 @@ jobs:
       - name: Build Flutter Android PulsarApp
         working-directory: flutter/PulsarApp
         env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
+          USE_LOCAL_PULSAR_ANDROID: ${{ inputs.use_local_pulsar && '1' || '0' }}
         run: |
           if [[ "${{ inputs.build_type }}" == "release" ]]; then
             flutter build apk --release

@@ -52,6 +52,10 @@ on:
         description: 'Build type: Release'
         type: boolean
         default: false
+      use_local_pulsar:
+        description: 'Build the framework example apps against the local Pulsar sources (USE_LOCAL_PULSAR_ANDROID / USE_LOCAL_PULSAR_IOS). Uncheck to build against the published artifacts instead. Does not affect the native or KMP cells, which are always local.'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -121,6 +125,7 @@ jobs:
     uses: ./.github/workflows/_build-android-rn.yml
     with:
       build_type: ${{ matrix.build_type }}
+      use_local_pulsar: ${{ inputs.use_local_pulsar }}
 
   android-kmp:
     needs: setup
@@ -132,6 +137,7 @@ jobs:
     uses: ./.github/workflows/_build-android-kmp.yml
     with:
       build_type: ${{ matrix.build_type }}
+      use_local_pulsar: ${{ inputs.use_local_pulsar }}
 
   android-flutter:
     needs: setup
@@ -143,6 +149,7 @@ jobs:
     uses: ./.github/workflows/_build-android-flutter.yml
     with:
       build_type: ${{ matrix.build_type }}
+      use_local_pulsar: ${{ inputs.use_local_pulsar }}
 
   # --- iOS jobs ----------------------------------------------------------
 
@@ -167,6 +174,23 @@ jobs:
     uses: ./.github/workflows/_build-ios-rn.yml
     with:
       build_type: ${{ matrix.build_type }}
+      use_local_pulsar: ${{ inputs.use_local_pulsar }}
+
+  # React Native against the separate published-style `PulsarHaptics` pod, across
+  # CocoaPods linkage modes (with and without use_frameworks!) — the path that
+  # regressed in #10 / #26 and that _build-ios-rn.yml (compiled-in) never covers.
+  ios-rn-cocoapods:
+    needs: setup
+    if: ${{ inputs.platform_ios && inputs.framework_rn }}
+    strategy:
+      fail-fast: false
+      matrix:
+        linkage: [none, static, dynamic]
+    uses: ./.github/workflows/_build-ios-rn-cocoapods.yml
+    with:
+      build_type: debug
+      linkage: ${{ matrix.linkage }}
+      use_local_pulsar: ${{ inputs.use_local_pulsar }}
 
   ios-kmp:
     needs: setup
@@ -189,3 +213,19 @@ jobs:
     uses: ./.github/workflows/_build-ios-flutter.yml
     with:
       build_type: ${{ matrix.build_type }}
+      use_local_pulsar: ${{ inputs.use_local_pulsar }}
+
+  # Flutter through CocoaPods (SPM disabled), across linkage modes (with and
+  # without use_frameworks!) — guards #140 and the #10 / #26 frameworks class.
+  ios-flutter-cocoapods:
+    needs: setup
+    if: ${{ inputs.platform_ios && inputs.framework_flutter }}
+    strategy:
+      fail-fast: false
+      matrix:
+        linkage: [none, static, dynamic]
+    uses: ./.github/workflows/_build-ios-flutter-cocoapods.yml
+    with:
+      build_type: debug
+      linkage: ${{ matrix.linkage }}
+      use_local_pulsar: ${{ inputs.use_local_pulsar }}

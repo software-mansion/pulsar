@@ -1,10 +1,13 @@
 name: build-android-kmp
 
-# Reusable: build the KMP composeApp on Android against the local Pulsar
-# Android sources. The kmp/PulsarApp settings.gradle.kts uses
-# includeBuild("../Pulsar") with a dependency substitution, so assembling
-# the composeApp transitively builds the local KMP library — no separate
-# library-assemble step needed. Called from test-build-apps.yml.
+# Reusable: build the KMP composeApp on Android. The kmp/PulsarApp
+# settings.gradle.kts uses includeBuild("../Pulsar") with a dependency
+# substitution, so assembling the composeApp transitively builds the local KMP
+# library — no separate library-assemble step needed. The KMP library's own
+# Android dependency is what use_local_pulsar toggles: by default it compiles
+# the local Android/Pulsar sources (USE_LOCAL_PULSAR_ANDROID); pass
+# use_local_pulsar: false to depend on the published com.swmansion:pulsar
+# artifact instead. Called from test-build-apps.yml.
 
 on:
   workflow_call:
@@ -13,6 +16,11 @@ on:
         description: 'debug | release'
         required: true
         type: string
+      use_local_pulsar:
+        description: 'KMP library builds against local Android/Pulsar sources (true) or the published com.swmansion:pulsar artifact (false)'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -39,7 +47,7 @@ jobs:
       - name: Build KMP Android PulsarApp (composeApp)
         working-directory: kmp/PulsarApp
         env:
-          USE_LOCAL_PULSAR_ANDROID: '1'
+          USE_LOCAL_PULSAR_ANDROID: ${{ inputs.use_local_pulsar && '1' || '0' }}
         run: |
           if [[ "${{ inputs.build_type }}" == "release" ]]; then
             ./gradlew :composeApp:assembleRelease

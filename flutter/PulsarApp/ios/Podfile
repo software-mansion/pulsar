@@ -28,13 +28,19 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  # Linkage is env-driven so CI can build with and without frameworks
+  # (USE_FRAMEWORKS unset => static libs; 'static'/'dynamic' => use_frameworks!).
+  linkage = ENV['USE_FRAMEWORKS']
+  unless linkage.nil?
+    Pod::UI.puts "Configuring Pods with #{linkage}ally linked frameworks".green
+    use_frameworks! :linkage => linkage.to_sym
+  end
 
   if ENV['USE_LOCAL_PULSAR_IOS'] == '1'
-    Pod::UI.puts 'Using local Pulsar-haptics pod from iOS/Pulsar'.green
-    pod 'Pulsar-haptics', :path => '../../../iOS/Pulsar'
+    Pod::UI.puts 'Using local PulsarHaptics pod from iOS/Pulsar'.green
+    pod 'PulsarHaptics', :path => '../../../iOS/Pulsar'
   else
-    Pod::UI.puts 'Using published Pulsar-haptics pod from CocoaPods'.green
+    Pod::UI.puts 'Using published PulsarHaptics pod from CocoaPods'.green
   end
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))

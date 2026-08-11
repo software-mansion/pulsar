@@ -65,7 +65,7 @@ Presets.tap();
 ### iOS
 
 <!-- GENERATED:IOS_VERSION_START -->
-Latest available version: `1.2.0`
+Latest available version: `1.4.0`
 <!-- GENERATED:IOS_VERSION_END -->
 
 Add Pulsar as a Swift Package dependency in Xcode, or add it to your `Package.swift`:
@@ -73,7 +73,7 @@ Add Pulsar as a Swift Package dependency in Xcode, or add it to your `Package.sw
 <!-- GENERATED:IOS_INSTALL_SNIPPET_START -->
 ```swift
 dependencies: [
-  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.2.0")
+  .package(url: "https://github.com/software-mansion-labs/pulsar-ios", from: "1.4.0")
 ]
 ```
 <!-- GENERATED:IOS_INSTALL_SNIPPET_END -->
@@ -88,7 +88,7 @@ pulsar.getPresets().hammer()
 ### Android
 
 <!-- GENERATED:ANDROID_VERSION_START -->
-Latest available version: `1.2.0`
+Latest available version: `1.3.0`
 <!-- GENERATED:ANDROID_VERSION_END -->
 
 Add Pulsar as a Gradle dependency:
@@ -96,7 +96,7 @@ Add Pulsar as a Gradle dependency:
 <!-- GENERATED:ANDROID_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar:1.2.0")
+  implementation("com.swmansion:pulsar:1.3.0")
 }
 ```
 <!-- GENERATED:ANDROID_INSTALL_SNIPPET_END -->
@@ -111,7 +111,7 @@ pulsar.getPresets().hammer()
 ### Kotlin Multiplatform
 
 <!-- GENERATED:KMP_VERSION_START -->
-Latest available version: `0.0.3`
+Latest available version: `0.1.0`
 <!-- GENERATED:KMP_VERSION_END -->
 
 Add Pulsar KMP as a Gradle dependency in your shared module (works on Android and iOS targets):
@@ -119,7 +119,7 @@ Add Pulsar KMP as a Gradle dependency in your shared module (works on Android an
 <!-- GENERATED:KMP_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar-kmp:0.0.3")
+  implementation("com.swmansion:pulsar-kmp:0.1.0")
 }
 ```
 <!-- GENERATED:KMP_INSTALL_SNIPPET_END -->
@@ -136,7 +136,7 @@ pulsar.getPresets().play("Hammer")
 > **Note:** Published on pub.dev as **`pulsar_haptics`**, not `pulsar`. The shorter `pulsar` name was reserved by an unrelated author before this project was published and is not maintained by Software Mansion.
 
 <!-- GENERATED:FLUTTER_VERSION_START -->
-Latest available version: `0.0.3`
+Latest available version: `0.1.0`
 <!-- GENERATED:FLUTTER_VERSION_END -->
 
 Add Pulsar to your `pubspec.yaml`:
@@ -144,7 +144,7 @@ Add Pulsar to your `pubspec.yaml`:
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_START -->
 ```yaml
 dependencies:
-  pulsar_haptics: ^0.0.3
+  pulsar_haptics: ^0.1.0
 ```
 <!-- GENERATED:FLUTTER_INSTALL_SNIPPET_END -->
 

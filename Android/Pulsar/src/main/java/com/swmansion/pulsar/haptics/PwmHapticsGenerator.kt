@@ -140,9 +140,9 @@ data class PwmHapticsGenerator(
     }
 
     companion object {
-        const val DEFAULT_MAX_PULSE_MS = 160L
-        const val DEFAULT_MIN_PAUSE_MS = 25L
-        const val DEFAULT_MAX_PAUSE_MS = 160L
+        const val DEFAULT_MAX_PULSE_MS = 150L
+        const val DEFAULT_MIN_PAUSE_MS = 30L
+        const val DEFAULT_MAX_PAUSE_MS = 150L
 
         fun forActuator(minPulseMs: Long): PwmHapticsGenerator {
             val floor = max(1L, minPulseMs)

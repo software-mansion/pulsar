@@ -26,10 +26,13 @@ export function TopBar() {
           <span>Pulsar</span>
         </a>
         <div className={styles.menuItems}>
+          <a className={styles.studioLink} href={`${BASE_PATH}/studio/`}>
+            Studio
+            <span className={styles.newDot} aria-hidden="true" />
+          </a>
           <a href={`${BASE_PATH}/presets-playground/`}>Presets</a>
           <a href={`${BASE_PATH}/getting-started/`}>Getting started</a>
           <a href={`${BASE_PATH}/sdk/overview/`}>Docs</a>
-          <a href={`${BASE_PATH}/studio/`}>Studio</a>
         </div>
         <a href="https://github.com/software-mansion/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
@@ -56,6 +59,10 @@ export function TopBar() {
               />
             </div>
             <nav className={styles.mobileMenuItems}>
+              <a className={styles.studioLink} href={`${BASE_PATH}/studio/`} onClick={closeMenu}>
+                Studio
+                <span className={styles.newDot} aria-hidden="true" />
+              </a>
               <a href={`${BASE_PATH}/presets-playground/`} onClick={closeMenu}>
                 Presets
               </a>
@@ -64,9 +71,6 @@ export function TopBar() {
               </a>
               <a href={`${BASE_PATH}/sdk/overview/`} onClick={closeMenu}>
                 Docs
-              </a>
-              <a href={`${BASE_PATH}/studio/`} onClick={closeMenu}>
-                Studio
               </a>
             </nav>
             <div className={styles.mobileMenuFooter}>
