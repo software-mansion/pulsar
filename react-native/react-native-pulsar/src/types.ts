@@ -27,6 +27,18 @@ export type Sound = {
   volume?: number,
   /** Shift of the audio relative to the haptics, in ms. Defaults to 0. */
   offset?: number,
+  /**
+   * Where in the source file playback begins, in ms — a seek into the file, so the whole
+   * file can be shipped once and a trimmed window played from it. Defaults to 0 (the top).
+   * The native side slices the audio to this window before playing, so audio and haptics
+   * stay sample-accurate (there is no runtime seek on the audio itself).
+   */
+  start?: number,
+  /**
+   * How much of the file to play from `start`, in ms. Defaults to 0, which plays to the
+   * end of the file. Together with `start` this is the trim window.
+   */
+  duration?: number,
 }
 
 export type Pattern = {
