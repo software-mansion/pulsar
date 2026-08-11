@@ -12,18 +12,28 @@ const config = {
   projectRoot: __dirname,
   watchFolders: [
     path.resolve(__dirname, '../react-native/react-native-pulsar'),
+    path.resolve(__dirname, '../react-native/PulsarLottie'),
   ],
   resolver: {
     extraNodeModules: {
       'react-native': path.resolve(__dirname, './node_modules/react-native'),
       react: path.resolve(__dirname, './node_modules/react'),
       'react-native-worklets': path.resolve(__dirname, './node_modules/react-native-worklets'),
+      'react-native-reanimated': path.resolve(__dirname, './node_modules/react-native-reanimated'),
+      'lottie-react-native': path.resolve(__dirname, './node_modules/lottie-react-native'),
     },
     blockList: [
       // Prevent Metro from using react-native from library's node_modules
       /react-native\/react-native-pulsar\/node_modules\/react-native\/.*/,
       /react-native\/react-native-pulsar\/node_modules\/react\/.*/,
       /react-native\/react-native-pulsar\/node_modules\/react-native-worklets\/.*/,
+      // ...and the same for the Lottie wrapper package.
+      /react-native\/PulsarLottie\/node_modules\/react-native\/.*/,
+      /react-native\/PulsarLottie\/node_modules\/react\/.*/,
+      /react-native\/PulsarLottie\/node_modules\/react-native-worklets\/.*/,
+      /react-native\/PulsarLottie\/node_modules\/react-native-reanimated\/.*/,
+      /react-native\/PulsarLottie\/node_modules\/lottie-react-native\/.*/,
+      /react-native\/PulsarLottie\/node_modules\/react-native-pulsar\/.*/,
     ],
   },
 };

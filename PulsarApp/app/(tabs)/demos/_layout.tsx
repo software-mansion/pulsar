@@ -12,6 +12,7 @@ export default function DemosLayout() {
       <Stack.Screen name="notification-haptics-demo" options={{ headerShown: true, title: 'Notification Haptics' }} />
       <Stack.Screen name="sensor-haptics-demo" options={{ headerShown: true, title: 'Accelerometer Haptics' }} />
       <Stack.Screen name="audio-demo" options={{ headerShown: true, title: 'Audio Haptics' }} />
+      <Stack.Screen name="lottie-demo" options={{ headerShown: true, title: 'Lottie Haptics' }} />
     </Stack>
   );
 }
