@@ -42,10 +42,16 @@ export interface Spec extends TurboModule {
   RealtimeComposer_playDiscrete(amplitude: number, frequency: number): void;
 
   PatternComposer_parsePattern(data: Pattern): number;
-  PatternComposer_parsePatternWithSound(data: Pattern, uri: string, volume: number, offset: number): number;
+  PatternComposer_parsePatternWithSound(data: Pattern, uri: string, volume: number, offset: number, start: number, duration: number): number;
   PatternComposer_play(patternId: number): void;
   PatternComposer_stop(patternId: number): void;
   PatternComposer_release(patternId: number): void;
+
+  // Preset bundles: load a base64-encoded .pulsar, then play/stop presets by id.
+  Pulsar_loadBundle(base64: string): string;
+  Pulsar_playBundlePreset(token: string, presetId: string): void;
+  Pulsar_stopBundlePreset(token: string, presetId: string): void;
+  Pulsar_disposeBundle(token: string): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNPulsar');

@@ -1,0 +1,99 @@
+{
+  "name": "react-native-pulsar-lottie",
+  "version": "0.1.0",
+  "description": "Play Pulsar haptics in sync with a Lottie animation — a non-breaking superset of lottie-react-native's LottieView.",
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/src/index.d.ts",
+      "source": "./src/index.tsx",
+      "react-native": "./src/index.tsx",
+      "default": "./lib/module/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
+    "!**/.*"
+  ],
+  "scripts": {
+    "typecheck": "tsc",
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "build": "bob build",
+    "prepack": "bob build"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "haptics",
+    "lottie",
+    "pulsar",
+    "animation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/software-mansion/pulsar.git",
+    "directory": "react-native/PulsarLottie"
+  },
+  "author": "Krzysztof Piaskowy <krzysztof.piaskowy@swmansion.com> (https://github.com/piaskowyk)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/software-mansion/pulsar/issues"
+  },
+  "homepage": "https://github.com/software-mansion/pulsar#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "del-cli": "^6.0.0",
+    "lottie-react-native": "~7.3.8",
+    "prettier": "^3.6.2",
+    "react": "19.1.0",
+    "react-native": "0.81.1",
+    "react-native-builder-bob": "^0.40.13",
+    "react-native-pulsar": "^1.6.1",
+    "react-native-reanimated": "^4.0.0",
+    "react-native-worklets": "*",
+    "typescript": "^5.9.2"
+  },
+  "peerDependencies": {
+    "lottie-react-native": ">=7.0.0",
+    "react": "*",
+    "react-native": "*",
+    "react-native-pulsar": ">=1.6.0",
+    "react-native-reanimated": ">=4.0.0",
+    "react-native-worklets": "*"
+  },
+  "prettier": {
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "useTabs": false
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
+}

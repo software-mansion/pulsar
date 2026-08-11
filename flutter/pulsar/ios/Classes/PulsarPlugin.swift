@@ -11,6 +11,7 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
   private lazy var realtimeComposer = pulsar.getRealtimeComposer()
   private var patternComposers: [Int: PatternComposer] = [:]
   private var nextPatternComposerId = 1
+  private var bundles: [String: LoadedBundle] = [:]
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "pulsar", binaryMessenger: registrar.messenger())
@@ -29,6 +30,43 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         return
       }
       pulsar.getPresets().getByName(name)?.play()
+      result(nil)
+
+    // MARK: — Preset bundles
+    case "Pulsar_loadBundle":
+      guard let data = (args?["bytes"] as? FlutterStandardTypedData)?.data else {
+        result(FlutterError(code: "INVALID_ARGS", message: "bytes required", details: nil))
+        return
+      }
+      do {
+        let bundle = try pulsar.loadBundle(data: data)
+        bundles[bundle.id] = bundle
+        result(bundle.id)
+      } catch {
+        result(FlutterError(code: "LOAD_BUNDLE_FAILED", message: "\(error)", details: nil))
+      }
+
+    case "Pulsar_playBundlePreset":
+      guard let token = args?["token"] as? String, let presetId = args?["presetId"] as? String else {
+        result(FlutterError(code: "INVALID_ARGS", message: "token/presetId required", details: nil))
+        return
+      }
+      bundles[token]?.handle(presetId)?.play()
+      result(nil)
+
+    case "Pulsar_stopBundlePreset":
+      guard let token = args?["token"] as? String, let presetId = args?["presetId"] as? String else {
+        result(FlutterError(code: "INVALID_ARGS", message: "token/presetId required", details: nil))
+        return
+      }
+      bundles[token]?.handle(presetId)?.stop()
+      result(nil)
+
+    case "Pulsar_disposeBundle":
+      if let token = args?["token"] as? String {
+        bundles[token]?.dispose()
+        bundles.removeValue(forKey: token)
+      }
       result(nil)
 
     case "Pulsar_enableHaptics":
@@ -188,6 +226,8 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       }
       let volume = (sound["volume"] as? NSNumber)?.floatValue ?? 1.0
       let offset = (sound["offset"] as? NSNumber)?.doubleValue ?? 0.0
+      let start = (sound["start"] as? NSNumber)?.doubleValue ?? 0.0
+      let duration = (sound["duration"] as? NSNumber)?.doubleValue ?? 0.0
       let composerId = args?["composerId"] as? Int
       let resolvedComposerId = composerId ?? nextPatternComposerId
       if composerId == nil {
@@ -198,7 +238,7 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         patternComposers[resolvedComposerId] = composer
         return composer
       }()
-      patternComposer.parsePatternWithSound(hapticsData: patternData, uri: uri, volume: volume, offset: offset)
+      patternComposer.parsePatternWithSound(hapticsData: patternData, uri: uri, volume: volume, offset: offset, start: start, duration: duration)
       result(resolvedComposerId)
 
     case "PatternComposer_playPattern":
