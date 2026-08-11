@@ -185,7 +185,9 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     data: ReadableMap?,
     uri: String?,
     volume: Double,
-    offset: Double
+    offset: Double,
+    start: Double,
+    duration: Double
   ): Double {
     val patternComposer = pulsar.getPatternComposer()
 
@@ -197,7 +199,9 @@ class PulsarModule(reactContext: ReactApplicationContext) :
           SoundData(
             uri = uri,
             volume = volume.toFloat(),
-            offset = offset.toLong()
+            offset = offset.toLong(),
+            startMs = start.toLong(),
+            durationMs = duration.toLong()
           )
         )
       } else {
