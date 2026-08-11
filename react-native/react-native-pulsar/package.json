@@ -4,6 +4,9 @@
   "description": "Rich and ready-to-use haptics library",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
+  "bin": {
+    "pulsar-gen-rn": "./scripts/pulsar-gen-rn.mjs"
+  },
   "exports": {
     ".": {
       "types": "./lib/typescript/src/index.d.ts",
@@ -11,12 +14,17 @@
       "react-native": "./src/index.tsx",
       "default": "./lib/module/index.js"
     },
+    "./metro": "./metro.js",
+    "./app.plugin.js": "./app.plugin.js",
     "./jest-mock": "./jest-mock.js",
     "./package.json": "./package.json"
   },
   "files": [
     "src",
     "lib",
+    "scripts",
+    "metro.js",
+    "app.plugin.js",
     "jest-mock.js",
     "android",
     "ios",

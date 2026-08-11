@@ -3,12 +3,19 @@ package com.swmansion.pulsar
 import android.app.Activity
 import android.content.Context
 import com.swmansion.pulsar.audio.AudioSimulator
+import com.swmansion.pulsar.bundle.BundleDescriptor
+import com.swmansion.pulsar.bundle.BundleLoaderImpl
+import com.swmansion.pulsar.bundle.BundleResolver
+import com.swmansion.pulsar.bundle.LoadedBundle
+import com.swmansion.pulsar.bundle.PulsarBundle
+import com.swmansion.pulsar.bundle.PulsarBundleException
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.presets.PresetsWrapper
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.RealtimeComposerStrategy
+import java.io.File
 
 open class Pulsar(protected var context: Context) {
     protected val engine = HapticEngineWrapper(context)
@@ -87,4 +94,39 @@ open class Pulsar(protected var context: Context) {
     fun enableImpulseCompositionMode(state: Boolean) {
         engine.enableImpulseCompositionMode(state)
     }
+
+    // region: preset bundles
+
+    /** Load a `.pulsar` bundle from raw bytes (used by the React Native / Flutter bridges). */
+    fun loadBundle(bytes: ByteArray): LoadedBundle = BundleLoaderImpl.load(this, context, bytes)
+
+    /** Load a `.pulsar` bundle from a file path. */
+    fun loadBundle(path: String): LoadedBundle = loadBundle(File(path).readBytes())
+
+    /** Load a `.pulsar` bundle bundled under `src/main/assets/`. */
+    fun loadBundleFromAsset(assetName: String): LoadedBundle =
+        context.assets.open(assetName).use { loadBundle(it.readBytes()) }
+
+    /**
+     * Typed load for Kotlin consumers, using a `pulsar-gen`-generated descriptor.
+     *
+     *     val bundle = pulsar.loadBundle(AcmePack.descriptor)
+     *     bundle.presets.heartbeatV2.play()
+     */
+    fun <P> loadBundle(descriptor: BundleDescriptor<P>, strict: Boolean = false): PulsarBundle<P> {
+        val loaded = loadBundleFromAsset(descriptor.assetName)
+        if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {
+            throw PulsarBundleException(
+                "Bundle content hash mismatch: generated types expect ${descriptor.contentHash} " +
+                    "but the loaded bundle is ${loaded.contentHash}. Re-export the bundle or regenerate the types.",
+            )
+        }
+        val missing = descriptor.presetIds.filter { loaded.handle(it) == null }
+        if (missing.isNotEmpty()) {
+            throw PulsarBundleException("Bundle is missing preset(s) $missing — regenerate types with pulsar-gen")
+        }
+        return PulsarBundle(loaded, descriptor.build(BundleResolver(loaded)))
+    }
+
+    // endregion
 }
