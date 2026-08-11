@@ -42,7 +42,7 @@ export interface Spec extends TurboModule {
   RealtimeComposer_playDiscrete(amplitude: number, frequency: number): void;
 
   PatternComposer_parsePattern(data: Pattern): number;
-  PatternComposer_parsePatternWithSound(data: Pattern, uri: string, volume: number, offset: number): number;
+  PatternComposer_parsePatternWithSound(data: Pattern, uri: string, volume: number, offset: number, start: number, duration: number): number;
   PatternComposer_play(patternId: number): void;
   PatternComposer_stop(patternId: number): void;
   PatternComposer_release(patternId: number): void;

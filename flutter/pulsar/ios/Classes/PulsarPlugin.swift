@@ -226,6 +226,8 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       }
       let volume = (sound["volume"] as? NSNumber)?.floatValue ?? 1.0
       let offset = (sound["offset"] as? NSNumber)?.doubleValue ?? 0.0
+      let start = (sound["start"] as? NSNumber)?.doubleValue ?? 0.0
+      let duration = (sound["duration"] as? NSNumber)?.doubleValue ?? 0.0
       let composerId = args?["composerId"] as? Int
       let resolvedComposerId = composerId ?? nextPatternComposerId
       if composerId == nil {
@@ -236,7 +238,7 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         patternComposers[resolvedComposerId] = composer
         return composer
       }()
-      patternComposer.parsePatternWithSound(hapticsData: patternData, uri: uri, volume: volume, offset: offset)
+      patternComposer.parsePatternWithSound(hapticsData: patternData, uri: uri, volume: volume, offset: offset, start: start, duration: duration)
       result(resolvedComposerId)
 
     case "PatternComposer_playPattern":
