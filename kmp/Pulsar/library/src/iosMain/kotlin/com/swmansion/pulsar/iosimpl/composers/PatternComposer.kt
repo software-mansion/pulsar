@@ -10,6 +10,16 @@ import com.swmansion.pulsar.kmp.iosimpl.haptics.IOSDiscreteLine
 import com.swmansion.pulsar.kmp.iosimpl.haptics.IOSHapticEngineWrapper
 import com.swmansion.pulsar.kmp.iosimpl.haptics.log
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCObjectVar
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
+import platform.AVFAudio.AVAudioFile
+import platform.AVFAudio.AVAudioPCMBuffer
+import platform.Foundation.NSError
+import platform.Foundation.NSTemporaryDirectory
+import platform.Foundation.NSUUID
 import platform.CoreHaptics.CHHapticEvent
 import platform.CoreHaptics.CHHapticEventParameter
 import platform.CoreHaptics.CHHapticEventParameterIDAudioVolume
@@ -34,12 +44,17 @@ internal class IOSPatternComposerHandle(
     private var discretePattern: CHHapticPattern? = null
     private var audioBuffer: IOSAudioBuffer? = null
     private var hasSound = false
+    // A temp file holding the trimmed audio window, when start/duration were given (Core
+    // Haptics registers an audio resource by URL only, so a windowed clip is sliced to a
+    // file first). Removed on the next parse and on dispose.
+    private var tempAudioURL: NSURL? = null
 
     override fun parsePattern(pattern: PatternData) {
         parse(pattern, audioEvent = null)
     }
 
     override fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
+        removeTempAudio()
         parse(pattern, audioEvent = makeAudioEvent(sound))
     }
 
@@ -106,9 +121,18 @@ internal class IOSPatternComposerHandle(
     }
 
     private fun makeAudioEvent(sound: SoundData): CHHapticEvent? {
-        val url = resolveSoundURL(sound.uri) ?: run {
+        val sourceUrl = resolveSoundURL(sound.uri) ?: run {
             log("could not resolve sound uri: ${sound.uri}")
             return null
+        }
+        // Play the whole file, unless a window was requested — then slice it to a temp clip
+        // and register that (there is no seek into a registered Core Haptics audio resource,
+        // so the trim happens here). A failed slice falls back to the whole file.
+        val url = if (sound.startMs > 0L || sound.durationMs > 0L) {
+            sliceAudioToTempFile(sourceUrl, sound.startMs, sound.durationMs)?.also { tempAudioURL = it }
+                ?: sourceUrl
+        } else {
+            sourceUrl
         }
         val resourceId = engine.registerAudioResource(url) ?: return null
         return CHHapticEvent(
@@ -118,6 +142,50 @@ internal class IOSPatternComposerHandle(
             ),
             relativeTime = maxOf(0L, sound.offset).toDouble() / 1000.0,
         )
+    }
+
+    /**
+     * Decode [sourceUrl], cut `[startMs, startMs+durationMs]` (durationMs<=0 ⇒ to the end),
+     * and write that slice to a temp file, returning its url — or null if it can't be read.
+     * Best-effort: any failure returns null and the caller plays the whole file.
+     */
+    private fun sliceAudioToTempFile(sourceUrl: NSURL, startMs: Long, durationMs: Long): NSURL? {
+        return runCatching {
+            memScoped {
+                val readErr = alloc<ObjCObjectVar<NSError?>>()
+                val file = AVAudioFile(forReading = sourceUrl, error = readErr.ptr) ?: return@memScoped null
+                val format = file.processingFormat
+                val sampleRate = format.sampleRate
+                val totalFrames = file.length
+
+                val startFrame = maxOf(0L, minOf(totalFrames, (startMs.toDouble() / 1000.0 * sampleRate).toLong()))
+                val requested =
+                    if (durationMs > 0L) (durationMs.toDouble() / 1000.0 * sampleRate).toLong()
+                    else totalFrames - startFrame
+                val frameCount = maxOf(0L, minOf(requested, totalFrames - startFrame)).toUInt()
+                if (frameCount == 0u) return@memScoped null
+
+                val buffer = AVAudioPCMBuffer(pCMFormat = format, frameCapacity = frameCount)
+                    ?: return@memScoped null
+                file.framePosition = startFrame
+                if (!file.readIntoBuffer(buffer, frameCount, readErr.ptr)) return@memScoped null
+
+                val tempPath = NSTemporaryDirectory() + "pulsar-audio-" + NSUUID().UUIDString + ".caf"
+                val tempURL = NSURL.fileURLWithPath(tempPath)
+                val writeErr = alloc<ObjCObjectVar<NSError?>>()
+                val out = AVAudioFile(forWriting = tempURL, settings = format.settings, error = writeErr.ptr)
+                    ?: return@memScoped null
+                if (!out.writeFromBuffer(buffer, writeErr.ptr)) return@memScoped null
+                tempURL
+            }
+        }.onFailure { log("could not slice audio window: ${it.message}") }.getOrNull()
+    }
+
+    private fun removeTempAudio() {
+        tempAudioURL?.path?.let { path ->
+            runCatching { NSFileManager.defaultManager.removeItemAtPath(path, null) }
+        }
+        tempAudioURL = null
     }
 
     private fun resolveSoundURL(uri: String): NSURL? {
@@ -160,5 +228,6 @@ internal class IOSPatternComposerHandle(
         discretePattern = null
         audioBuffer = null
         hasSound = false
+        removeTempAudio()
     }
 }
