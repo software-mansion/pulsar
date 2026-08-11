@@ -23,6 +23,7 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
             export("com.swmansion:pulsar-kmp:1.0.0")
+            export("com.swmansion:pulsar-kmp-lottie:0.1.0")
         }
     }
     
@@ -33,6 +34,8 @@ kotlin {
         }
         commonMain.dependencies {
             api("com.swmansion:pulsar-kmp:1.0.0")
+            api("com.swmansion:pulsar-kmp-lottie:0.1.0")
+            implementation(libs.compottie)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

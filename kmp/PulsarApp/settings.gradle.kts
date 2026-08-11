@@ -33,5 +33,7 @@ includeBuild("../Pulsar") {
     dependencySubstitution {
         substitute(module("com.swmansion:pulsar-kmp"))
             .using(project(":library"))
+        substitute(module("com.swmansion:pulsar-kmp-lottie"))
+            .using(project(":PulsarLottie"))
     }
 }

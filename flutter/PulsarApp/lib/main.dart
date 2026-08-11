@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pulsar_haptics/pulsar.dart';
+import 'package:pulsar_haptics_lottie/pulsar_haptics_lottie.dart';
 
 void main() {
   runApp(const MyApp());
@@ -219,6 +220,35 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
     }
   }
 
+  // ── Lottie + haptics ────────────────────────────────────────────────────────
+
+  // A haptic pattern spanning the ~2.4s "verified" animation. In the default
+  // realtime mode the animation timeline is the master clock, so the haptics
+  // swell and resolve into a firm confirming tap as the checkmark snaps in.
+  final _verifiedPattern = PatternData.fromArrays(
+    amplitude: [
+      [0, 0],
+      [300, 0.25],
+      [900, 0.45],
+      [1500, 0.65],
+      [1850, 0.9],
+      [2000, 0.15],
+      [2436, 0],
+    ],
+    frequency: [
+      [0, 0.35],
+      [900, 0.5],
+      [1850, 0.9],
+      [2436, 0.55],
+    ],
+    discrete: [
+      [100, 0.35, 0.55],
+      [1500, 0.6, 0.7],
+      [1850, 1, 0.9],
+      [2050, 0.45, 0.6],
+    ],
+  );
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -343,6 +373,28 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
               onPressed: _playAudioHaptics,
               icon: const Icon(Icons.multitrack_audio),
               label: const Text('Play sample-3s.mp3 + Haptics'),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Lottie + haptics
+          _SectionHeader('Lottie + Haptics'),
+          Text(
+            'A checkmark animation with haptics locked to its timeline — the '
+            'animation drives the haptics (realtime mode).',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: SizedBox(
+              width: 160,
+              height: 160,
+              child: HapticLottie.asset(
+                'assets/verified.json',
+                haptics: _verifiedPattern,
+                autoPlay: true,
+                repeat: true,
+              ),
             ),
           ),
           const SizedBox(height: 12),

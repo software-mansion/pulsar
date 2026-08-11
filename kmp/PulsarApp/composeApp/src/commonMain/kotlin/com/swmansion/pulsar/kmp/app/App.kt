@@ -1,12 +1,15 @@
 package com.swmansion.pulsar.kmp.app
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +26,11 @@ import com.swmansion.pulsar.kmp.PatternData
 import com.swmansion.pulsar.kmp.SoundData
 import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.ValuePoint
+import com.swmansion.pulsar.lottie.HapticLottie
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
+import io.github.alexzhirkevich.compottie.rememberLottiePainter
 
 @Composable
 @Preview
@@ -163,6 +171,45 @@ fun App() {
                         enabled = pulsar != null,
                     ) {
                         Text("Stop")
+                    }
+                }
+            }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text("Lottie + Haptics", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "A checkmark animation with haptics locked to its timeline — " +
+                            "the animation drives the haptics (realtime mode).",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    val composition by rememberLottieComposition {
+                        LottieCompositionSpec.JsonString(VERIFIED_LOTTIE_JSON)
+                    }
+                    val progress by animateLottieCompositionAsState(
+                        composition,
+                        isPlaying = true,
+                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Image(
+                            painter = rememberLottiePainter(composition, progress = { progress }),
+                            contentDescription = "Verified",
+                            modifier = Modifier.size(160.dp),
+                        )
+                    }
+                    if (pulsar != null) {
+                        HapticLottie(
+                            progress = progress,
+                            durationMillis = composition?.durationMillis?.toLong() ?: 0L,
+                            isPlaying = true,
+                            haptics = remember { verifiedLottiePattern() },
+                            pulsar = pulsar,
+                        )
                     }
                 }
             }

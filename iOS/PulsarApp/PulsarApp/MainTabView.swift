@@ -18,6 +18,11 @@ struct MainTabView: View {
                     Label("Audio", systemImage: "speaker.wave.2.fill")
                 }
 
+            LottieHapticsView()
+                .tabItem {
+                    Label("Lottie", systemImage: "sparkles")
+                }
+
             APITestingView()
                 .tabItem {
                     Label("API Tests", systemImage: "hammer.fill")

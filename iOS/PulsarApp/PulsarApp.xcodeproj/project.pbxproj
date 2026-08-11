@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		F4771B342E8FC6FB0044EAC3 /* Pulsar in Frameworks */ = {isa = PBXBuildFile; productRef = F4771B332E8FC6FB0044EAC3 /* Pulsar */; };
+		A1B2C3D40000000000000003 /* PulsarLottie in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D40000000000000002 /* PulsarLottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4771B342E8FC6FB0044EAC3 /* Pulsar in Frameworks */,
+				A1B2C3D40000000000000003 /* PulsarLottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,6 +120,7 @@
 			name = PulsarApp;
 			packageProductDependencies = (
 				F4771B332E8FC6FB0044EAC3 /* Pulsar */,
+				A1B2C3D40000000000000002 /* PulsarLottie */,
 			);
 			productName = PulsarApp;
 			productReference = F4771B052E8FC6C50044EAC3 /* PulsarApp.app */;
@@ -203,6 +206,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F4771B322E8FC6FB0044EAC3 /* XCLocalSwiftPackageReference "../Pulsar" */,
+				A1B2C3D40000000000000001 /* XCLocalSwiftPackageReference "../PulsarLottie" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F4771B062E8FC6C50044EAC3 /* Products */;
@@ -573,12 +577,20 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Pulsar;
 		};
+		A1B2C3D40000000000000001 /* XCLocalSwiftPackageReference "../PulsarLottie" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../PulsarLottie;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		F4771B332E8FC6FB0044EAC3 /* Pulsar */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Pulsar;
+		};
+		A1B2C3D40000000000000002 /* PulsarLottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PulsarLottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
