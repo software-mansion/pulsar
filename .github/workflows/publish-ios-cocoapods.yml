@@ -2,11 +2,6 @@ name: Publish iOS package to CocoaPods
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to publish (e.g., 1.1.2)'
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -33,30 +28,24 @@ jobs:
         id: release
         shell: bash
         run: |
-          VERSION="${{ inputs.version }}"
+          VERSION="$(ruby -rjson -e 'puts JSON.parse(File.read("sdk-versions.json")).fetch("ios").fetch("version")')"
 
           if [[ -z "$VERSION" ]]; then
-            echo "Release version could not be determined." >&2
+            echo "Release version could not be determined from sdk-versions.json." >&2
             exit 1
           fi
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Publishing version $VERSION"
+          echo "Publishing version $VERSION (from sdk-versions.json)"
 
       - name: Verify iOS version metadata
         shell: bash
         run: |
           EXPECTED_VERSION="${{ steps.release.outputs.version }}"
-          SDK_VERSION="$(ruby -rjson -e 'puts JSON.parse(File.read("sdk-versions.json")).fetch("ios").fetch("version")')"
           PODSPEC_VERSION="$(sed -n "s/.*s\\.version[[:space:]]*=[[:space:]]*'\\([^']*\\)'.*/\\1/p" iOS/Pulsar/PulsarHaptics.podspec | head -n 1)"
 
-          if [[ "$SDK_VERSION" != "$EXPECTED_VERSION" ]]; then
-            echo "sdk-versions.json iOS version ($SDK_VERSION) does not match requested version ($EXPECTED_VERSION)." >&2
-            exit 1
-          fi
-
           if [[ "$PODSPEC_VERSION" != "$EXPECTED_VERSION" ]]; then
-            echo "PulsarHaptics.podspec version ($PODSPEC_VERSION) does not match requested version ($EXPECTED_VERSION)." >&2
+            echo "PulsarHaptics.podspec version ($PODSPEC_VERSION) does not match sdk-versions.json version ($EXPECTED_VERSION)." >&2
             exit 1
           fi
 
