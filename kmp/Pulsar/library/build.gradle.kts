@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.swmansion"
-version = "0.0.3" // pulsar-sync:kmp-version
+version = "0.1.0" // pulsar-sync:kmp-version
 
 fun stringPropertyOrEnv(name: String, defaultValue: String): String =
     (findProperty(name) as String?) ?: System.getenv(name) ?: defaultValue
