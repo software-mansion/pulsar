@@ -1,0 +1,32 @@
+name: pulsar_haptics_lottie
+description: Play Pulsar haptics in sync with a Lottie animation — a Flutter widget and controller built on pulsar_haptics and lottie.
+version: 0.1.0 # pulsar-sync:flutter-lottie-version
+homepage: https://github.com/software-mansion/pulsar
+repository: https://github.com/software-mansion/pulsar
+issue_tracker: https://github.com/software-mansion/pulsar/issues
+documentation: https://docs.swmansion.com/pulsar
+topics:
+  - haptics
+  - lottie
+  - animation
+  - vibration
+  - ios
+
+environment:
+  sdk: ^3.7.0
+  flutter: '>=3.29.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  pulsar_haptics: ^0.1.0
+  lottie: ^3.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+# Pure-Dart package (no `flutter.plugin` block, no native halves).
+flutter:
+  uses-material-design: true
