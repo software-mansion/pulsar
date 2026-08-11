@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { SOCKET_SERVER_URL } from '@/constants/Connection';
 
 import { localDeviceName } from './deviceName';
+import { localHapticsSupport } from './hapticsSupport';
 import type { ConnectionStatus } from './types';
 
 const PING_INTERVAL_MS = 25_000;
@@ -60,10 +61,16 @@ export function useLiveSockets({ onStatus, onMessage, onFailed }: Callbacks) {
         kind === 'new'
           ? `type=receiver&action=new_connection&code=${encodeURIComponent(value)}`
           : `type=receiver&action=reuse_connection&token=${encodeURIComponent(value)}`;
-      // Advertise this phone's model so the producer can label it. It MUST go on both
-      // paths: the relay reads identity off the socket at notification time, so a
-      // reconnect that omitted it would silently drop the name on every restore.
-      const identity = `&name=${encodeURIComponent(localDeviceName())}`;
+      // Advertise this phone's model (so the producer can label it) and the level of
+      // haptics its hardware can render (so the producer can show what it will feel). Both
+      // MUST go on both paths: the relay reads identity off the socket at notification
+      // time, so a reconnect that omitted them would silently drop them on every restore.
+      // hapticsSupport is optional — a failed probe advertises nothing, exactly like an
+      // older app build, which the producer handles.
+      const support = localHapticsSupport();
+      const identity =
+        `&name=${encodeURIComponent(localDeviceName())}` +
+        (support ? `&hapticsSupport=${support}` : '');
       const socket = new WebSocket(`${SOCKET_SERVER_URL}?${query}${identity}`);
       const entry: LiveSocket = { socket, ping: null, timeout: null };
       live.current.set(id, entry);
