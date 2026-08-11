@@ -372,7 +372,7 @@ private class AndroidRealtimeComposerHandle(
 }
 
 private fun SoundData.toAndroidSoundData(): AndroidSoundData {
-    return AndroidSoundData(uri = uri, volume = volume, offset = offset)
+    return AndroidSoundData(uri = uri, volume = volume, offset = offset, startMs = startMs, durationMs = durationMs)
 }
 
 private fun PatternData.toAndroidPatternData(): AndroidPatternData {

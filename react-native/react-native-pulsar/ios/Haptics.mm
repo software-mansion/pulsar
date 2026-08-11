@@ -212,14 +212,18 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
 - (nonnull NSNumber *)PatternComposer_parsePatternWithSound:(JS::NativeRNPulsar::Pattern &)data
                                                        uri:(nonnull NSString *)uri
                                                     volume:(double)volume
-                                                    offset:(double)offset {
+                                                    offset:(double)offset
+                                                     start:(double)start
+                                                  duration:(double)duration {
   auto patternComposer = [pulsar_ getPatternComposer];
 
   PatternData *patternData = PatternDataFromJSPattern(data);
   [patternComposer parsePatternWithSoundWithHapticsData:patternData
                                                     uri:uri
                                                  volume:(float)volume
-                                                 offset:offset];
+                                                 offset:offset
+                                                  start:start
+                                               duration:duration];
 
   int currentId = nextId;
   nextId++;
