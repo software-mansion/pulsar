@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'pulsar_method_channel.dart';
@@ -26,6 +28,20 @@ abstract class PulsarPlatform extends PlatformInterface {
 
   Future<void> play(String name) =>
       throw UnimplementedError('play() not implemented');
+
+  // ── Preset bundles ───────────────────────────────────────────────────────────
+
+  Future<String> loadBundle(Uint8List bytes) =>
+      throw UnimplementedError('loadBundle() not implemented');
+
+  Future<void> playBundlePreset(String token, String presetId) =>
+      throw UnimplementedError('playBundlePreset() not implemented');
+
+  Future<void> stopBundlePreset(String token, String presetId) =>
+      throw UnimplementedError('stopBundlePreset() not implemented');
+
+  Future<void> disposeBundle(String token) =>
+      throw UnimplementedError('disposeBundle() not implemented');
 
   Future<void> enableHaptics(bool state) =>
       throw UnimplementedError('enableHaptics() not implemented');

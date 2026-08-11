@@ -24,6 +24,32 @@ class MethodChannelPulsar extends PulsarPlatform {
   });
 
   @override
+  Future<String> loadBundle(Uint8List bytes) async {
+    final token = await methodChannel.invokeMethod<String>('Pulsar_loadBundle', {
+      'bytes': bytes,
+    });
+    return token ?? '';
+  }
+
+  @override
+  Future<void> playBundlePreset(String token, String presetId) =>
+      methodChannel.invokeMethod('Pulsar_playBundlePreset', {
+        'token': token,
+        'presetId': presetId,
+      });
+
+  @override
+  Future<void> stopBundlePreset(String token, String presetId) =>
+      methodChannel.invokeMethod('Pulsar_stopBundlePreset', {
+        'token': token,
+        'presetId': presetId,
+      });
+
+  @override
+  Future<void> disposeBundle(String token) =>
+      methodChannel.invokeMethod('Pulsar_disposeBundle', {'token': token});
+
+  @override
   Future<void> enableHaptics(bool state) =>
       methodChannel.invokeMethod('Pulsar_enableHaptics', {'state': state});
 
