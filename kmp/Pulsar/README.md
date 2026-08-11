@@ -1,13 +1,13 @@
 # Pulsar KMP
 
 <!-- GENERATED:KMP_VERSION_START -->
-Latest available version: `0.0.3`
+Latest available version: `0.1.0`
 <!-- GENERATED:KMP_VERSION_END -->
 
 <!-- GENERATED:KMP_INSTALL_SNIPPET_START -->
 ```kotlin
 dependencies {
-  implementation("com.swmansion:pulsar-kmp:0.0.3")
+  implementation("com.swmansion:pulsar-kmp:0.1.0")
 }
 ```
 <!-- GENERATED:KMP_INSTALL_SNIPPET_END -->
