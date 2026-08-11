@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Pulsar"
 include(":library")
+include(":PulsarLottie")
+project(":PulsarLottie").projectDir = file("../PulsarLottie")
