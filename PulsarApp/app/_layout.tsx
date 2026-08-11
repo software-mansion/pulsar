@@ -16,6 +16,8 @@ import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { PlaygroundProvider } from '@/contexts/PlaygroundContext';
 import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
 import { ConnectionsProvider } from '@/contexts/ConnectionsContext';
+import { MediaSessionProvider } from '@/contexts/MediaSessionContext';
+import MediaPlayerSheet from '@/components/media/MediaPlayerSheet';
 import { posthog } from '@/src/config/posthog';
 import { SENTRY_CONFIG } from '@/src/config/public';
 
@@ -79,6 +81,7 @@ function RootLayout() {
           maxElementsCaptured: 20,
         }}
       >
+        <MediaSessionProvider>
         <ConnectionsProvider>
           <StoreReviewProvider>
             <FilterProvider>
@@ -94,6 +97,7 @@ function RootLayout() {
                       <Stack.Screen name="playgroundSettingsModal" options={{ presentation: 'modal', title: 'Playground settings', headerShown: false }} />
                       <Stack.Screen name="editConnectionModal" options={{ presentation: 'modal', title: 'Connection', headerShown: false }} />
                     </Stack>
+                    <MediaPlayerSheet />
                     <StatusBar style="auto" />
                   </ThemeProvider>
                 </PlaygroundProvider>
@@ -102,6 +106,7 @@ function RootLayout() {
             </FilterProvider>
           </StoreReviewProvider>
         </ConnectionsProvider>
+        </MediaSessionProvider>
       </PostHogProvider>
     </GestureHandlerRootView>
   );
