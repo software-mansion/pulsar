@@ -50,12 +50,15 @@ export default function ConnectionRow({
   onRemove,
   onReconnect,
   onOpenPreview,
+  onOpenLibrary,
   onEdit,
 }: {
   connection: Connection;
   onRemove: () => void;
   onReconnect: () => void;
   onOpenPreview?: () => void;
+  // Tap handler for a Studio (browser) connection: opens its media-haptics library sheet.
+  onOpenLibrary?: () => void;
   // Long-press handler: opens the edit/details modal for this connection.
   onEdit?: () => void;
 }) {
@@ -73,22 +76,26 @@ export default function ConnectionRow({
   // be opened advertises that in its subtitle in stable states (connected or
   // offline); transient/problem states show the status instead.
   const canOpenFigma = isFigma && !!onOpenPreview;
+  const canOpenLibrary = !isFigma && !!onOpenLibrary;
+  const onPressBody = isFigma ? onOpenPreview : canOpenLibrary ? onOpenLibrary : undefined;
   const sublabel =
     canOpenFigma && (status === 'connected' || status === 'offline')
       ? 'Click to open figma preview'
-      : status !== 'connected'
-        ? statusLabel(status)
-        : null;
+      : canOpenLibrary && (status === 'connected' || status === 'offline')
+        ? 'Tap to view haptics'
+        : status !== 'connected'
+          ? statusLabel(status)
+          : null;
 
   return (
     <Card style={styles.connCard}>
       <View style={styles.connRow}>
         <TouchableOpacity
           style={styles.pressArea}
-          onPress={isFigma ? onOpenPreview : undefined}
+          onPress={onPressBody}
           onLongPress={onEdit}
           delayLongPress={350}
-          disabled={!onEdit && !(isFigma && onOpenPreview)}
+          disabled={!onEdit && !onPressBody}
           activeOpacity={0.6}
         >
           <View style={[styles.statusDot, { backgroundColor: statusColor(status) }]} />
