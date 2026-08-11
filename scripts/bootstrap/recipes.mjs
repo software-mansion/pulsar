@@ -11,13 +11,13 @@
 //   'xcodegen' — overlay CONTENT, write a declarative project spec, generate
 //   'template' — no scaffolder exists: re-materialize a frozen in-repo template
 //
-// Keep the maintained surface small: prefer letting the scaffolder/`expo install`
-// choose toolchain versions, and pin only the handful of extra libraries the
-// demo genuinely needs.
-
-// The one RN version knob. Bump this to re-scaffold the RN example on a newer
-// React Native — the whole point of the bootstrapper.
-const REACT_NATIVE_VERSION = '0.83.1';
+// Keep the maintained surface small: CLI frameworks always scaffold the LATEST
+// framework version (no version is pinned — the official generator decides), and
+// we pin only the handful of extra libraries the demo genuinely needs.
+//
+// Frameworks without a scaffolder (android, kmp) can't fetch "latest" — their
+// toolchain versions live centrally in scripts/bootstrap/toolchain.json and are
+// synced into each app's Gradle version catalog on bootstrap (see toolchainKey).
 
 /** @typedef {import('./lib.mjs')} Lib */
 
@@ -60,13 +60,12 @@ export const recipes = {
     sdkDir: 'react-native/react-native-pulsar',
     kind: 'cli',
     scaffold: {
+      // No --version: the community CLI scaffolds the latest React Native.
       cmd: 'npx',
       args: [
         '@react-native-community/cli@latest',
         'init',
         'example',
-        '--version',
-        REACT_NATIVE_VERSION,
         '--skip-install',
         '--skip-git-init',
       ],
@@ -106,9 +105,10 @@ export const recipes = {
       'cd ios && USE_LOCAL_PULSAR_IOS=1 bundle exec pod install   # iOS\n' +
       '# Android autolinks via react-native.config.js; pass USE_LOCAL_PULSAR_ANDROID=1 at gradle time',
     notes:
-      'JS + native shell regenerated at RN ' + REACT_NATIVE_VERSION + '. metro/babel/react-native.config ' +
-      'and screens are overlaid verbatim; deps merged onto the fresh scaffold. The custom ios/Podfile ' +
-      '(local pod block + fmt/Xcode-26 patch) is preserved, not regenerated.',
+      'JS + native shell regenerated at the latest React Native (no version pin). metro/babel/' +
+      'react-native.config and screens are overlaid verbatim; deps merged onto the fresh scaffold. The ' +
+      'custom ios/Podfile (local pod block + fmt/Xcode-26 patch) is preserved, not regenerated. Pinned ' +
+      'reanimated/worklets must stay a compatible pair as RN advances.',
   },
 
   // ─────────────────────────────────────────────────────── flutter ──
@@ -176,13 +176,16 @@ export const recipes = {
     // No Android app scaffolder exists (gradle init only makes JVM apps). The
     // in-repo shell IS the template; the engine re-materializes tracked files.
     localProperties: true,
+    // Sync the toolchain (AGP/Kotlin/Compose BOM + Gradle wrapper) from the
+    // central scripts/bootstrap/toolchain.json — the one place to bump versions.
+    toolchainKey: 'android',
     verify: ['./gradlew', ':app:assembleDebug'],
     notes:
       'No official CLI scaffolds an Android app, so the tracked tree is a frozen template + overlay. ' +
       'Always-local: depends on the SDK via `project(":Pulsar")` (no USE_LOCAL toggle for native). ' +
-      'AGP/Gradle/Kotlin bumps stay manual edits to gradle/libs.versions.toml. libs.versions.toml must keep ' +
-      'the library-only entries (nmcp, kotlinx-serialization-json, appcompat, material) — Android/Pulsar ' +
-      'borrows this catalog.',
+      'AGP/Gradle/Kotlin/Compose-BOM versions are synced from scripts/bootstrap/toolchain.json (the one ' +
+      'place to bump). Incidental library versions and the library-only entries (nmcp, ' +
+      'kotlinx-serialization-json, appcompat, material) that Android/Pulsar borrows are left untouched.',
   },
 
   // ───────────────────────────────────────────────────────── kmp ──
@@ -193,12 +196,16 @@ export const recipes = {
     sdkDir: 'kmp/Pulsar',
     kind: 'template',
     localProperties: true,
+    // Sync the toolchain (AGP/Kotlin/Compose Multiplatform + Gradle wrapper +
+    // Android SDK levels) from scripts/bootstrap/toolchain.json.
+    toolchainKey: 'kmp',
     verify: ['./gradlew', ':composeApp:assembleDebug'],
     notes:
       'The JetBrains web wizard is interactive-only and its default layout diverged (May 2026) from this ' +
       "app's composeApp+iosApp shape, so the tracked tree is a frozen template + overlay. The sole content " +
       'file is composeApp/src/commonMain/kotlin/.../App.kt. SDK wired via a composite build with dependency ' +
-      'substitution in settings.gradle.kts. iOS uses the vendored Kotlin/Native impl (no USE_LOCAL toggle); ' +
+      'substitution in settings.gradle.kts. AGP/Gradle/Kotlin/Compose-Multiplatform/SDK-levels are synced ' +
+      'from scripts/bootstrap/toolchain.json. iOS uses the vendored Kotlin/Native impl (no USE_LOCAL toggle); ' +
       'the Xcode build phase hard-codes a Homebrew openjdk@17 JAVA_HOME.',
   },
 };

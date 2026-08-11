@@ -24,7 +24,7 @@ import os from 'node:os';
 import {
   repoRoot, color, step, info, warn, ok, run, capture, hasCommand,
   exists, rimraf, ensureDir, readJson, copyTracked, mergeDirInto,
-  patchPackageJson, writeFile, removePaths,
+  patchPackageJson, writeFile, removePaths, syncVersionCatalog, syncGradleWrapper,
 } from './bootstrap/lib.mjs';
 import { resolveRecipe, recipes, frameworkOrder } from './bootstrap/recipes.mjs';
 
@@ -194,8 +194,26 @@ async function applyWiring(recipe, outDir, ctx) {
       warn('Install with `brew install xcodegen`, then run `xcodegen generate` in the output dir.');
     }
   }
+  if (recipe.toolchainKey) {
+    await syncToolchain(recipe, outDir);
+  }
   if (recipe.localProperties) {
     await writeLocalProperties(outDir);
+  }
+}
+
+// Frameworks with no scaffolder can't fetch "latest" — sync their toolchain
+// (Gradle wrapper + version-catalog entries) from the central manifest instead.
+async function syncToolchain(recipe, outDir) {
+  const toolchain = await readJson(path.join(repoRoot, 'scripts/bootstrap/toolchain.json'));
+  const block = toolchain[recipe.toolchainKey];
+  if (!block) return warn(`no toolchain entry for '${recipe.toolchainKey}'`);
+  step('Syncing toolchain from toolchain.json');
+  if (block.versions) {
+    await syncVersionCatalog(path.join(outDir, 'gradle/libs.versions.toml'), block.versions);
+  }
+  if (block.gradle) {
+    await syncGradleWrapper(path.join(outDir, 'gradle/wrapper/gradle-wrapper.properties'), block.gradle);
   }
 }
 
@@ -245,6 +263,7 @@ function printPlan(recipe, ctx, outDir) {
   if (recipe.packageJson) line('deps+', Object.keys(recipe.packageJson.dependencies || {}).join(', ') || '(none)');
   if (recipe.expoInstall) line('expo+', recipe.expoInstall.join(', '));
   if (recipe.pubspecDependency) line('pubspec+', `${recipe.pubspecDependency.name}: path ${recipe.pubspecDependency.path}`);
+  if (recipe.toolchainKey) line('toolchain', `sync from toolchain.json[${recipe.toolchainKey}] → libs.versions.toml + gradle wrapper`);
   if (recipe.install) line('install', recipe.install.join(' '));
   if (recipe.verify) line('verify', recipe.verify.join(' '));
   line('output', path.relative(repoRoot, outDir) || '.');

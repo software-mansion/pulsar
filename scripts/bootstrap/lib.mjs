@@ -180,6 +180,40 @@ export async function writeFile(filePath, content, { dryRun } = {}) {
   await fs.writeFile(filePath, content);
 }
 
+const reEscape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Rewrite `key = "…"` entries in a Gradle version catalog ([versions] table).
+// Only the given keys are touched; everything else (incidental library versions)
+// is left exactly as-is. Warns on any key that isn't present.
+export async function syncVersionCatalog(catalogPath, versions, { dryRun } = {}) {
+  let text = await fs.readFile(catalogPath, 'utf8');
+  const changed = [];
+  for (const [key, value] of Object.entries(versions)) {
+    const re = new RegExp(`(^\\s*${reEscape(key)}\\s*=\\s*")[^"]*(")`, 'm');
+    if (!re.test(text)) {
+      warn(`version-catalog key not found: ${key} (skipped)`);
+      continue;
+    }
+    text = text.replace(re, `$1${value}$2`);
+    changed.push(`${key}=${value}`);
+  }
+  info(`sync libs.versions.toml (${changed.join(', ')})`);
+  if (!dryRun) await fs.writeFile(catalogPath, text);
+}
+
+// Rewrite the Gradle version in a gradle-wrapper.properties distributionUrl.
+export async function syncGradleWrapper(propsPath, gradleVersion, { dryRun } = {}) {
+  let text = await fs.readFile(propsPath, 'utf8');
+  const re = /gradle-\d+(?:\.\d+){1,2}(?:-(?:bin|all))?\.zip/;
+  if (!re.test(text)) {
+    warn('could not find gradle distribution in wrapper properties (skipped)');
+    return;
+  }
+  text = text.replace(re, (m) => m.replace(/\d+(?:\.\d+){1,2}/, gradleVersion));
+  info(`sync gradle wrapper → ${gradleVersion}`);
+  if (!dryRun) await fs.writeFile(propsPath, text);
+}
+
 export async function removePaths(baseDir, globs, { dryRun } = {}) {
   for (const g of globs) {
     const p = path.join(baseDir, g);

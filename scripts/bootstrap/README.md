@@ -36,9 +36,9 @@ Not every framework has a real scaffolder. Recipes come in three kinds:
 
 | Kind | Frameworks | How the shell is produced |
 | --- | --- | --- |
-| **`cli`** | web, react-native, flutter | run the official generator (`npm create vite`, RN community CLI, `flutter create`) — the shell is fully regenerated at a pinned version |
+| **`cli`** | web, react-native, flutter | run the official generator (`npm create vite`, RN community CLI, `flutter create`) — the shell is regenerated at the **latest** framework version (nothing is pinned; the generator decides) |
 | **`xcodegen`** | ios | there is no CLI that emits an `.xcodeproj`; a checked-in declarative `project.yml` generates it via [XcodeGen](https://xcodegen.com). This *does* eliminate hand-maintaining the merge-hostile `project.pbxproj` |
-| **`template`** | android, kmp | **no scaffolder exists** (Gradle `init` only makes JVM apps; the KMP wizard is interactive and its layout has drifted). The tracked tree is a frozen template + overlay; toolchain bumps stay manual edits to `gradle/libs.versions.toml` |
+| **`template`** | android, kmp | **no scaffolder exists** (Gradle `init` only makes JVM apps; the KMP wizard is interactive and its layout has drifted), so there is no "latest" to fetch. The tracked tree is a frozen template + overlay, and the toolchain (AGP/Kotlin/Gradle/Compose) is synced from a central [`toolchain.json`](#toolchain-versions-android--kmp) |
 
 ## Per-framework summary
 
@@ -82,11 +82,34 @@ diff -rq react-native/PulsarApp react-native/.bootstrap-PulsarApp   # inspect
 node scripts/bootstrap-app.mjs rn --apply
 ```
 
+## Toolchain versions (android / kmp)
+
+The `cli` frameworks always scaffold the **latest** framework version — nothing is
+pinned. But android and kmp have no scaffolder, so there is no "latest" to fetch;
+their toolchain must be stated explicitly. It lives in one place —
+[`scripts/bootstrap/toolchain.json`](toolchain.json) — and is synced into each
+app's Gradle version catalog (`gradle/libs.versions.toml`) and wrapper on bootstrap:
+
+```jsonc
+{
+  "android": { "gradle": "8.13",   "versions": { "agp": "…", "kotlin": "…", "composeBom": "…" } },
+  "kmp":     { "gradle": "8.14.3", "versions": { "agp": "…", "kotlin": "…", "composeMultiplatform": "…", … } }
+}
+```
+
+Keys under `versions` map to the `[versions]` aliases in that app's catalog; only
+those keys are rewritten — incidental library versions and the library-only
+entries `Android/Pulsar` borrows (`nmcp`, `kotlinx-serialization-json`,
+`appcompat`, `material`) are never touched. **Bump the toolchain here, then
+re-bootstrap** — that's the one place. (Auto-resolving "latest" for these isn't
+offered because AGP/Kotlin/Compose-Multiplatform are version-coupled and
+"latest everything" routinely breaks; explicit pins keep the builds reproducible.)
+
 ## What still needs a human
 
-- **Toolchain versions** live in the recipe (`REACT_NATIVE_VERSION`,
-  `EXPO_TEMPLATE`) and, for android/kmp, in `gradle/libs.versions.toml`. Those
-  are the intentional knobs — bump them, then re-bootstrap.
+- **The extra RN libraries** (`react-native-reanimated` + `react-native-worklets`
+  and friends) are pinned in the recipe and must stay a compatible pair as RN
+  advances — reanimated 4.5+ needs worklets 0.10.x.
 - **Adopting the iOS `xcodegen` flow** is opt-in and not yet wired into the repo:
   it means git-ignoring `iOS/PulsarApp/PulsarApp.xcodeproj` and adding
   `brew install xcodegen && xcodegen generate` to `.github/workflows/_build-ios-native.yml`.
