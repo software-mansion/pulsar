@@ -11,6 +11,7 @@ import React, {
 import { Presets, usePatternComposer, type Pattern } from 'react-native-pulsar';
 
 import { handleServerMessage, type ServerMessageHandlers } from '@/src/connections/serverMessages';
+import { useMediaSession } from '@/contexts/MediaSessionContext';
 import { loadPersistedConnections, persistConnections } from '@/src/connections/storage';
 import { useDeepLinkPairing } from '@/src/connections/useDeepLinkPairing';
 import { useForegroundReconnect } from '@/src/connections/useForegroundReconnect';
@@ -78,6 +79,12 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   const composerRef = useRef(composer);
   composerRef.current = composer;
 
+  // Media-backed haptics (audio / Lottie) are downloaded and played by the media session,
+  // read through a ref for the same reason as the composer.
+  const media = useMediaSession();
+  const mediaRef = useRef(media);
+  mediaRef.current = media;
+
   const newId = useCallback(() => `conn-${Date.now().toString(36)}-${idCounter.current++}`, []);
 
   const patchConnection = useCallback((id: string, patch: Partial<Connection>) => {
@@ -101,6 +108,8 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
         return false;
       }
     },
+    startAudioHaptics: (id, message) => mediaRef.current.startAudioHaptics(id, message),
+    startAnimationHaptics: (id, message) => mediaRef.current.startAnimationHaptics(id, message),
     emitPreviewUpdate: (id, update) => {
       // Match on the producer-supplied previewToken, falling back to the one
       // this connection advertised at pairing time.
@@ -157,6 +166,8 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
     (id: string) => {
       sockets.teardown(id);
       setConnections((prev) => prev.filter((c) => c.id !== id));
+      // Its cached media clips live only as long as the connection does.
+      mediaRef.current.handleConnectionRemoved(id);
       Presets.powerDown();
       track('device_disconnected');
     },

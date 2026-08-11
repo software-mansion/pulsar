@@ -14,10 +14,59 @@ interface ServerMessage {
   figmaProjectName?: string;
 }
 
+// A media clip a phone downloads to play in sync with the haptics. Mirrors Studio's
+// `MediaRef` (device/toPattern.ts): `clipId` addresses the delivered bytes (the phone's
+// cache/dedupe key), `downloadUrl` is where it fetches them.
+export interface BroadcastMediaRef {
+  clipId: string;
+  downloadUrl: string;
+  contentType: string;
+  size: number;
+}
+
+// A preset scored to an AUDIO file, pushed from Studio (see device/toPattern.ts). The
+// clip is already trimmed, so the pattern and the audio both play from t=0.
+export interface AudioHapticsBroadcast {
+  kind: 'audio-haptics';
+  resourceId: string;
+  version: string;
+  name: string;
+  durationMs: number;
+  pattern: Pattern;
+  audio: BroadcastMediaRef;
+  volume?: number;
+  offsetMs?: number;
+  // The trim window into the audio file (absent = whole file). The SDK plays only this
+  // window via `Pattern.sound` start/duration, so the whole file is downloaded once and a
+  // trim change never re-downloads.
+  window?: { startMs: number; durationMs: number };
+}
+
+// A preset scored to a Lottie ANIMATION, pushed from Studio. The animation is downloaded
+// and rendered in lockstep with the haptics off a shared clock.
+export interface AnimationHapticsBroadcast {
+  kind: 'animation-haptics';
+  resourceId: string;
+  version: string;
+  name: string;
+  durationMs: number;
+  pattern: Pattern;
+  animation: BroadcastMediaRef & {
+    totalFrames: number;
+    frameRate: number;
+    width: number;
+    height: number;
+  };
+}
+
 export interface ServerMessageHandlers {
   patchConnection: (id: string, patch: Partial<Connection>) => void;
   notify: (found: boolean, name: string) => void;
   playPreset: (pattern: Pattern) => boolean;
+  // A media-backed haptic (audio / Lottie) — downloaded, then played in sync on the
+  // per-connection player sheet. `id` is the connection it arrived on.
+  startAudioHaptics: (id: string, message: AudioHapticsBroadcast) => void;
+  startAnimationHaptics: (id: string, message: AnimationHapticsBroadcast) => void;
   emitPreviewUpdate: (id: string, update: Omit<PreviewUpdate, 'nonce'>) => void;
   track: Track;
 }
@@ -53,6 +102,18 @@ function handleBroadcast(id: string, message: unknown, handlers: ServerMessageHa
     // ignore it: the backward-compat seam.
     const preset = message as { kind: string; name?: string; pattern: Pattern };
     handlers.notify(handlers.playPreset(preset.pattern), preset.name ?? 'Haptic preset');
+    return;
+  }
+
+  // A media-backed haptic from Studio: an audio clip or a Lottie animation the phone
+  // downloads and plays in sync (see MediaSessionContext). Older app builds don't match
+  // these kinds and harmlessly ignore them — the same backward-compat seam.
+  if (kind === 'audio-haptics' && (message as { audio?: unknown }).audio) {
+    handlers.startAudioHaptics(id, message as AudioHapticsBroadcast);
+    return;
+  }
+  if (kind === 'animation-haptics' && (message as { animation?: unknown }).animation) {
+    handlers.startAnimationHaptics(id, message as AnimationHapticsBroadcast);
     return;
   }
 
