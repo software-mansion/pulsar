@@ -14,6 +14,10 @@ public class PatternComposer: NSObject {
   private var audioBuffer: AVAudioPCMBuffer?
   private var audioSimulator: AudioSimulator!
   private var hasSound = false
+  // A temp file holding the trimmed audio window, when `start`/`duration` were given
+  // (Core Haptics registers an audio resource by URL only, so a windowed clip has to be
+  // sliced to a file first). Removed on the next parse and on dispose.
+  private var tempAudioURL: URL?
 
   public convenience init(engine: HapticEngineWrapper, audioSimulator: AudioSimulator) {
     self.init()
@@ -29,8 +33,10 @@ public class PatternComposer: NSObject {
     parse(hapticsData: hapticsData, audioEvent: nil)
   }
 
-  @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0) {
-    let audioEvent = makeAudioEvent(uri: uri, volume: volume, offset: offset)
+  @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0) {
+    // A new parse replaces any previous windowed temp clip.
+    removeTempAudio()
+    let audioEvent = makeAudioEvent(uri: uri, volume: volume, offset: offset, start: start, duration: duration)
     parse(hapticsData: hapticsData, audioEvent: audioEvent)
   }
 
@@ -97,10 +103,20 @@ public class PatternComposer: NSObject {
     self.play()
   }
 
-  private func makeAudioEvent(uri: String, volume: Float, offset: Double) -> CHHapticEvent? {
-    guard let url = PatternComposer.resolveSoundURL(uri) else {
+  private func makeAudioEvent(uri: String, volume: Float, offset: Double, start: Double = 0, duration: Double = 0) -> CHHapticEvent? {
+    guard let sourceURL = PatternComposer.resolveSoundURL(uri) else {
       print("Pulsar: could not resolve sound uri: \(uri)")
       return nil
+    }
+    // Play the whole file, unless a window was requested — then slice it to a temp clip
+    // and register that, so the audio starts at `start` and lasts `duration`. There is no
+    // seek into a registered Core Haptics audio resource, so the trim happens here.
+    var url = sourceURL
+    if start > 0 || duration > 0 {
+      if let windowed = PatternComposer.sliceAudioToTempFile(sourceURL, startMs: start, durationMs: duration) {
+        tempAudioURL = windowed
+        url = windowed
+      }
     }
     guard let resourceID = engine.registerAudioResource(url: url) else { return nil }
     return CHHapticEvent(
@@ -108,6 +124,42 @@ public class PatternComposer: NSObject {
       parameters: [CHHapticEventParameter(parameterID: .audioVolume, value: volume)],
       relativeTime: max(0, offset) / 1000.0
     )
+  }
+
+  /// Decode `sourceURL`, cut `[startMs, startMs+durationMs]` (durationMs<=0 ⇒ to the end),
+  /// and write that slice to a temp file, returning its URL — or nil if it can't be read.
+  static func sliceAudioToTempFile(_ sourceURL: URL, startMs: Double, durationMs: Double) -> URL? {
+    do {
+      let file = try AVAudioFile(forReading: sourceURL)
+      let format = file.processingFormat
+      let sampleRate = format.sampleRate
+      let totalFrames = file.length
+
+      let startFrame = max(0, min(totalFrames, AVAudioFramePosition((startMs / 1000.0) * sampleRate)))
+      let requested = durationMs > 0 ? AVAudioFramePosition((durationMs / 1000.0) * sampleRate) : totalFrames - startFrame
+      let frameCount = AVAudioFrameCount(max(0, min(requested, totalFrames - startFrame)))
+      if frameCount == 0 { return nil }
+
+      guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return nil }
+      file.framePosition = startFrame
+      try file.read(into: buffer, frameCount: frameCount)
+
+      let tempURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent("pulsar-audio-\(UUID().uuidString).caf")
+      let out = try AVAudioFile(forWriting: tempURL, settings: format.settings)
+      try out.write(from: buffer)
+      return tempURL
+    } catch {
+      print("Pulsar: could not slice audio window: \(error.localizedDescription)")
+      return nil
+    }
+  }
+
+  private func removeTempAudio() {
+    if let url = tempAudioURL {
+      try? FileManager.default.removeItem(at: url)
+      tempAudioURL = nil
+    }
   }
 
   @objc public func play() {
@@ -147,5 +199,6 @@ public class PatternComposer: NSObject {
     discretePattern = nil
     audioBuffer = nil
     hasSound = false
+    removeTempAudio()
   }
 }
