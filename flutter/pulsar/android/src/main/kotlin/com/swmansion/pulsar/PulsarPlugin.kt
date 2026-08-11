@@ -337,6 +337,8 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         val uri = data["uri"] as? String ?: return null
         val volume = (data["volume"] as? Number)?.toFloat() ?: 1f
         val offset = (data["offset"] as? Number)?.toLong() ?: 0L
-        return SoundData(uri = uri, volume = volume, offset = offset)
+        val startMs = (data["start"] as? Number)?.toLong() ?: 0L
+        val durationMs = (data["duration"] as? Number)?.toLong() ?: 0L
+        return SoundData(uri = uri, volume = volume, offset = offset, startMs = startMs, durationMs = durationMs)
     }
 }

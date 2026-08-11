@@ -54,6 +54,8 @@ data class SoundData(
   val volume: Float = 1f,
   val offset: Long = 0L,
   val hapticChannels: Boolean = true,
+  val startMs: Long = 0L,
+  val durationMs: Long = 0L,
 )
 
 data class PatternData(

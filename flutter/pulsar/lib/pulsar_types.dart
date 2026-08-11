@@ -185,7 +185,13 @@ class PatternData {
 /// A short authored sound to play in sync with a haptic pattern.
 class Sound {
   /// Creates a [Sound] source.
-  const Sound({required this.uri, this.volume = 1.0, this.offset = 0});
+  const Sound({
+    required this.uri,
+    this.volume = 1.0,
+    this.offset = 0,
+    this.start = 0,
+    this.duration = 0,
+  });
 
   /// Local file path, `file://` uri, or bundled resource name (no extension needed
   /// — defaults to `.wav`).
@@ -197,9 +203,20 @@ class Sound {
   /// Shift of the audio relative to the haptics, in milliseconds.
   final int offset;
 
+  /// Where in the source file playback begins, in ms — a seek into the file, so the
+  /// whole file can be shipped once and a trimmed window played from it. Defaults to 0
+  /// (the top). The native side slices the audio to this window before playing.
+  final int start;
+
+  /// How much of the file to play from [start], in ms. Defaults to 0, which plays to
+  /// the end of the file. Together with [start] this is the trim window.
+  final int duration;
+
   Map<String, dynamic> toMap() => {
     'uri': uri,
     'volume': volume,
     'offset': offset,
+    'start': start,
+    'duration': duration,
   };
 }
