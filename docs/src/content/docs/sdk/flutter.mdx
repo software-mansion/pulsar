@@ -431,6 +431,16 @@ Parses a `PatternData` object and prepares it for playback.
 Future<void> parsePattern(PatternData data);
 ```
 
+#### `parsePatternWithSound(pattern, sound)`
+
+Parses a pattern together with a short sound played in sync with the haptics.
+
+```dart
+Future<void> parsePatternWithSound(PatternData data, Sound sound);
+```
+
+Provide the sound via a [`Sound`](#sound). On Android an explicit `.ogg` with baked haptic channels enables audio-coupled sync on supported devices; any other format — or a bare name, which defaults to `.wav` — plays the audio while the pattern's own haptics fire in parallel. On iOS the sound is registered as a Core Haptics audio event on the pattern's timeline. A Flutter asset is not a native file path — bundle the file natively (iOS app bundle / Android `res/raw`) and pass its name, or copy it from `rootBundle` to a temp file and pass that absolute path.
+
 #### `playPattern(pattern)`
 
 Convenience method that parses and immediately plays a pattern.
@@ -731,6 +741,22 @@ class PatternData {
 ```
 
 The `PatternData.fromArrays` factory accepts the raw triplet form (`List<List<double>>`) for parity with serialized pattern definitions.
+
+### Sound
+
+A short sound to play in sync with a haptic pattern via [`parsePatternWithSound`](#parsepatternwithsoundpattern-sound).
+
+```dart
+class Sound {
+  const Sound({required this.uri, this.volume = 1.0, this.offset = 0});
+
+  final String uri;      // File path, file:// uri, or bundled resource name
+  final double volume;   // Playback volume (0-1)
+  final int offset;      // Audio delay relative to haptics, in ms
+}
+```
+
+The format comes from `uri`'s extension; when none is given the default is `.wav`, so a bare name like `'beep'` resolves `beep.wav` on both platforms (iOS app bundle / Android `res/raw`).
 
 ### ContinuousPattern
 
