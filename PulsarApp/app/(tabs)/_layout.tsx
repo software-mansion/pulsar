@@ -54,7 +54,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="figma"
         options={{
-          title: 'Figma',
+          title: 'Preview',
           // The Figma mark stays full-colour in both states — Figma's brand
           // terms don't allow tinting it, so focus is conveyed by the label.
           tabBarIcon: () => <FigmaLogo />,
