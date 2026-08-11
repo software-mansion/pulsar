@@ -13,6 +13,10 @@ let package = Package(
             name: "Pulsar",
             targets: ["Pulsar"],
             ),
+        .plugin(
+            name: "PulsarGenPlugin",
+            targets: ["PulsarGenPlugin"]
+        ),
     ],
     targets: [
         .target(
@@ -21,6 +25,15 @@ let package = Package(
         .testTarget(
             name: "PulsarTests",
             dependencies: ["Pulsar"]
+        ),
+        // Host tool + build-tool plugin that generate typed accessors for .pulsar bundles.
+        .executableTarget(
+            name: "pulsar-gen-swift"
+        ),
+        .plugin(
+            name: "PulsarGenPlugin",
+            capability: .buildTool(),
+            dependencies: ["pulsar-gen-swift"]
         ),
     ],
     swiftLanguageModes: [.v6]
