@@ -1,0 +1,23 @@
+{
+  "//": "Central toolchain versions for the frameworks that have NO scaffolder to fetch 'latest' (android, kmp). `bootstrap <fw>` syncs these into each app's Gradle version catalog + wrapper. This is the one place to bump them. Keys under `versions` map to the [versions] aliases in that app's gradle/libs.versions.toml; incidental library versions (junit, coreKtx, appcompat, …) are intentionally left out and never touched.",
+  "android": {
+    "gradle": "8.13",
+    "versions": {
+      "agp": "8.13.0",
+      "kotlin": "2.0.21",
+      "composeBom": "2024.09.00"
+    }
+  },
+  "kmp": {
+    "gradle": "8.14.3",
+    "versions": {
+      "agp": "8.11.2",
+      "kotlin": "2.3.20",
+      "composeMultiplatform": "1.10.3",
+      "material3": "1.10.0-alpha05",
+      "android-compileSdk": "36",
+      "android-minSdk": "24",
+      "android-targetSdk": "36"
+    }
+  }
+}
