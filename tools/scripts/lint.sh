@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FAILED=0
 
 run() {
@@ -11,7 +11,7 @@ run() {
   echo "======================================"
   echo "  $name"
   echo "======================================"
-  if ! "$ROOT/scripts/$script"; then
+  if ! "$ROOT/tools/scripts/$script"; then
     FAILED=1
     echo "[FAIL] $name"
   fi

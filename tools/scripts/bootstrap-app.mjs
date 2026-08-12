@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Bootstrap a framework example app from scratch, reusing the checked-in demo
-// source and SDK wiring. See scripts/bootstrap/README.md for the full model.
+// source and SDK wiring. See tools/scripts/bootstrap/README.md for the full model.
 //
-//   node scripts/bootstrap-app.mjs <framework> [options]
+//   node tools/scripts/bootstrap-app.mjs <framework> [options]
 //
 // frameworks: web | react-native (rn) | expo | flutter | ios | android | kmp
 //
@@ -219,7 +219,7 @@ async function applyWiring(recipe, outDir, ctx) {
 // Frameworks with no scaffolder can't fetch "latest" — sync their toolchain
 // (Gradle wrapper + version-catalog entries) from the central manifest instead.
 async function syncToolchain(recipe, outDir) {
-  const toolchain = await readJson(path.join(repoRoot, 'scripts/bootstrap/toolchain.json'));
+  const toolchain = await readJson(path.join(repoRoot, 'tools/scripts/bootstrap/toolchain.json'));
   const block = toolchain[recipe.toolchainKey];
   if (!block) return warn(`no toolchain entry for '${recipe.toolchainKey}'`);
   step('Syncing toolchain from toolchain.json');
@@ -335,7 +335,7 @@ function printHelp() {
   console.log(`
 ${color.bold('Bootstrap a Pulsar example app from scratch')}
 
-  node scripts/bootstrap-app.mjs <framework> [options]
+  node tools/scripts/bootstrap-app.mjs <framework> [options]
   npm run bootstrap -- <framework> [options]
 
 ${color.bold('frameworks')}   web · react-native (rn) · expo · flutter · ios · android · kmp

@@ -1,7 +1,7 @@
 // Shared helpers for the example-app bootstrapper.
 //
 // Deliberately dependency-free (Node built-ins only) to match the repo's other
-// root scripts (see scripts/sync-sdk-versions.mjs). File enumeration goes
+// root scripts (see tools/scripts/sync-sdk-versions.mjs). File enumeration goes
 // through `git ls-files` so we only ever copy source-of-truth tracked files and
 // never node_modules / build output / Pods.
 
@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 export const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
+  '..',
   '..',
   '..'
 );

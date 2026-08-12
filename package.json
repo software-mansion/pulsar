@@ -3,12 +3,12 @@
   "private": true,
   "description": "Root orchestrator for Pulsar — no runtime deps, dev scripts only.",
   "scripts": {
-    "install:all": "scripts/install.sh",
-    "sync:versions": "node scripts/sync-sdk-versions.mjs",
-    "bootstrap": "node scripts/bootstrap-app.mjs",
-    "lint": "scripts/lint.sh",
-    "lint:js": "scripts/lint-js.sh",
-    "lint:kotlin": "scripts/lint-kotlin.sh",
-    "lint:swift": "scripts/lint-swift.sh"
+    "install:all": "tools/scripts/install.sh",
+    "sync:versions": "node tools/scripts/sync-sdk-versions.mjs",
+    "bootstrap": "node tools/scripts/bootstrap-app.mjs",
+    "lint": "tools/scripts/lint.sh",
+    "lint:js": "tools/scripts/lint-js.sh",
+    "lint:kotlin": "tools/scripts/lint-kotlin.sh",
+    "lint:swift": "tools/scripts/lint-swift.sh"
   }
 }
