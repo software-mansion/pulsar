@@ -1,5 +1,5 @@
 // Canonical Pulsar bundle manifest types (portable — no Node APIs).
-// Mirrors schema/pulsar.bundle-1.schema.json and docs/bundle-format.md.
+// Mirrors tools/schema/pulsar.bundle-1.schema.json and docs/bundle-format.md.
 
 export const SCHEMA_ID = 'pulsar.bundle/1';
 

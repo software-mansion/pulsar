@@ -1,6 +1,6 @@
 # Example-app bootstrapper
 
-`scripts/bootstrap-app.mjs` re-creates a framework example app **from scratch**
+`tools/scripts/bootstrap-app.mjs` re-creates a framework example app **from scratch**
 using the official scaffolding tool for that framework, then overlays only the
 reusable demo source and the small amount of SDK wiring. The goal: **stop
 hand-maintaining generated config and dependencies in the example apps** — bump
@@ -8,7 +8,7 @@ a version, re-bootstrap, done.
 
 ```bash
 npm run bootstrap -- <framework> [options]
-# or: node scripts/bootstrap-app.mjs <framework> [options]
+# or: node tools/scripts/bootstrap-app.mjs <framework> [options]
 ```
 
 Frameworks: `web` · `react-native` (`rn`) · `flutter` · `ios` · `android` · `kmp`
@@ -51,7 +51,7 @@ Not every framework has a real scaffolder. Recipes come in three kinds:
 | **android** | copy tracked template | (whole tree) | `project(":Pulsar")` include; `VIBRATE` permission; version catalog keeps library-only entries |
 | **kmp** | copy tracked template | `composeApp/…/App.kt` | composite build + dependency substitution in `settings.gradle.kts`; `api()`/`export()` in `composeApp/build.gradle.kts` |
 
-Run `node scripts/bootstrap-app.mjs <fw> --dry-run` to see the exact plan for any framework.
+Run `node tools/scripts/bootstrap-app.mjs <fw> --dry-run` to see the exact plan for any framework.
 
 ## Options
 
@@ -74,12 +74,12 @@ without `--apply`. Review the staged app, then re-run with `--apply`.
 ## Typical workflow (e.g. bumping React Native)
 
 ```bash
-# 1. edit the pinned version in scripts/bootstrap/recipes.mjs (REACT_NATIVE_VERSION)
+# 1. edit the pinned version in tools/scripts/bootstrap/recipes.mjs (REACT_NATIVE_VERSION)
 # 2. regenerate into staging and eyeball the diff
-node scripts/bootstrap-app.mjs rn
+node tools/scripts/bootstrap-app.mjs rn
 diff -rq react-native/PulsarApp react-native/.bootstrap-PulsarApp   # inspect
 # 3. apply
-node scripts/bootstrap-app.mjs rn --apply
+node tools/scripts/bootstrap-app.mjs rn --apply
 ```
 
 ## Toolchain versions (android / kmp)
@@ -87,7 +87,7 @@ node scripts/bootstrap-app.mjs rn --apply
 The `cli` frameworks always scaffold the **latest** framework version — nothing is
 pinned. But android and kmp have no scaffolder, so there is no "latest" to fetch;
 their toolchain must be stated explicitly. It lives in one place —
-[`scripts/bootstrap/toolchain.json`](toolchain.json) — and is synced into each
+[`tools/scripts/bootstrap/toolchain.json`](toolchain.json) — and is synced into each
 app's Gradle version catalog (`gradle/libs.versions.toml`) and wrapper on bootstrap:
 
 ```jsonc
@@ -119,7 +119,7 @@ offered because AGP/Kotlin/Compose-Multiplatform are version-coupled and
 
 ## Design notes
 
-- Dependency-free Node ESM, matching `scripts/sync-sdk-versions.mjs`. File
+- Dependency-free Node ESM, matching `tools/scripts/sync-sdk-versions.mjs`. File
   enumeration uses `git ls-files`, so only tracked source is ever copied
   (`node_modules`, `build/`, `Pods/` are never touched).
 - Each app is built in an isolated temp dir and only *placed* at the end, so the
