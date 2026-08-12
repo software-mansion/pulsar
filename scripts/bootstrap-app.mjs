@@ -185,6 +185,10 @@ async function applyWiring(recipe, outDir, ctx) {
     step('Wiring pubspec.yaml (local plugin path dep)');
     await injectPubspecDependency(path.join(outDir, 'pubspec.yaml'), recipe.pubspecDependency);
   }
+  if (recipe.pubspecAssets) {
+    step('Wiring pubspec.yaml (bundled assets)');
+    await injectPubspecAssets(path.join(outDir, 'pubspec.yaml'), recipe.pubspecAssets);
+  }
   if (recipe.kind === 'xcodegen') {
     if (hasCommand('xcodegen')) {
       step('Generating PulsarApp.xcodeproj (xcodegen)');
@@ -230,6 +234,25 @@ async function injectPubspecDependency(pubspecPath, { name, path: depPath }) {
   }
   await fs.writeFile(pubspecPath, patched);
   info('added pulsar_haptics path dependency');
+}
+
+// `flutter create` writes a pubspec with no `assets:` list; add one under the
+// `flutter:` section so bundled demo media (audio, Lottie JSON) survives a
+// regenerate. Inserted right after the generated `uses-material-design: true`.
+async function injectPubspecAssets(pubspecPath, assets) {
+  let text = await fs.readFile(pubspecPath, 'utf8');
+  if (/\n\s+assets:\n/.test(text)) return info('pubspec already declares an assets section');
+  const block = '\n  assets:\n' + assets.map((a) => `    - ${a}`).join('\n') + '\n';
+  const patched = text.replace(
+    /(\n\s+uses-material-design: true\n)/,
+    `$1${block}`
+  );
+  if (patched === text) {
+    warn('Could not locate `uses-material-design: true` in pubspec.yaml — add the assets section manually.');
+    return;
+  }
+  await fs.writeFile(pubspecPath, patched);
+  info(`declared ${assets.length} asset(s) in pubspec.yaml`);
 }
 
 async function writeLocalProperties(outDir) {

@@ -12,7 +12,12 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Composer", systemImage: "waveform.circle.fill")
                 }
-            
+
+            AudioHapticsView()
+                .tabItem {
+                    Label("Audio", systemImage: "speaker.wave.2.fill")
+                }
+
             APITestingView()
                 .tabItem {
                     Label("API Tests", systemImage: "hammer.fill")

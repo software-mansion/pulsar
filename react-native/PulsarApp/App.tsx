@@ -4,8 +4,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PresetsScreen from './src/screens/PresetsScreen';
 import RealtimeComposerScreen from './src/screens/RealtimeComposerScreen';
 import PublicApisScreen from './src/screens/PublicApisScreen';
+import AudioHapticsScreen from './src/screens/AudioHapticsScreen';
 
-type TabName = 'presets' | 'realtime' | 'apis';
+type TabName = 'presets' | 'realtime' | 'audio' | 'apis';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabName>('presets');
@@ -17,6 +18,7 @@ export default function App() {
         <View style={styles.content}>
           {activeTab === 'presets' && <PresetsScreen />}
           {activeTab === 'realtime' && <RealtimeComposerScreen />}
+          {activeTab === 'audio' && <AudioHapticsScreen />}
           {activeTab === 'apis' && <PublicApisScreen />}
         </View>
 
@@ -33,6 +35,12 @@ export default function App() {
             icon="🎮"
             active={activeTab === 'realtime'}
             onPress={() => setActiveTab('realtime')}
+          />
+          <TabButton
+            title="Audio"
+            icon="🔊"
+            active={activeTab === 'audio'}
+            onPress={() => setActiveTab('audio')}
           />
           <TabButton
             title="APIs"

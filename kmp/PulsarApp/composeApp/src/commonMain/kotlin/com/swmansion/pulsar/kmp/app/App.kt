@@ -130,6 +130,47 @@ fun App() {
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    Text("Audio-synced Haptics", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "A 3-second music clip (sample_3s.mp3) played through the pattern " +
+                            "composer, with haptics authored to land on the beat.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Button(
+                        onClick = {
+                            // The bundled clip is a plain `.mp3` (iOS app bundle /
+                            // Android res/raw), so the audio plays while Pulsar
+                            // generates the haptics alongside it. Ship an explicit
+                            // `.ogg` with baked haptic channels for coupled sync.
+                            pulsar?.getPatternComposer()?.apply {
+                                parsePatternWithSound(
+                                    audioSyncPattern(),
+                                    SoundData(uri = "sample_3s.mp3", volume = 1f),
+                                )
+                                play()
+                            }
+                            status = "Playing sample_3s.mp3 with synced haptics."
+                        },
+                        enabled = pulsar != null,
+                    ) {
+                        Text("Play with haptics")
+                    }
+                    Button(
+                        onClick = {
+                            pulsar?.getPatternComposer()?.stop()
+                            status = "Stopped audio-synced haptics."
+                        },
+                        enabled = pulsar != null,
+                    ) {
+                        Text("Stop")
+                    }
+                }
+            }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     Text("Realtime Composer", style = MaterialTheme.typography.titleMedium)
                     Text("Amplitude ${amplitude.asLabel()}")
                     Slider(
@@ -173,6 +214,61 @@ fun App() {
             Text(status, style = MaterialTheme.typography.bodyMedium)
         }
     }
+}
+
+// Pattern authored to sync with `sample_3s.mp3` (music onset analysis): the
+// discrete beats land on the track's onsets, the continuous envelope traces its
+// energy.
+private fun audioSyncPattern(): PatternData {
+    return PatternData(
+        continuousPattern = ContinuousPattern(
+            amplitude = listOf(
+                ValuePoint(time = 0, value = 1.0f),
+                ValuePoint(time = 209, value = 0.927f),
+                ValuePoint(time = 348, value = 0.843f),
+                ValuePoint(time = 580, value = 0.789f),
+                ValuePoint(time = 720, value = 0.791f),
+                ValuePoint(time = 859, value = 0.693f),
+                ValuePoint(time = 1022, value = 0.718f),
+                ValuePoint(time = 1161, value = 0.665f),
+                ValuePoint(time = 1324, value = 0.565f),
+                ValuePoint(time = 1463, value = 0.432f),
+                ValuePoint(time = 1649, value = 0.201f),
+                ValuePoint(time = 1788, value = 0.068f),
+                ValuePoint(time = 3181, value = 0.014f),
+            ),
+            frequency = listOf(
+                ValuePoint(time = 0, value = 0.402f),
+                ValuePoint(time = 232, value = 0.061f),
+                ValuePoint(time = 604, value = 0.077f),
+                ValuePoint(time = 836, value = 0.23f),
+                ValuePoint(time = 1068, value = 0.293f),
+                ValuePoint(time = 1324, value = 0.346f),
+                ValuePoint(time = 1625, value = 0.437f),
+                ValuePoint(time = 1904, value = 0.513f),
+                ValuePoint(time = 2206, value = 0.63f),
+                ValuePoint(time = 2438, value = 0.822f),
+                ValuePoint(time = 2670, value = 0.975f),
+                ValuePoint(time = 2902, value = 0.947f),
+                ValuePoint(time = 3181, value = 0.861f),
+            ),
+        ),
+        discretePattern = listOf(
+            ConfigPoint(time = 70, amplitude = 0.299f, frequency = 0.159f),
+            ConfigPoint(time = 232, amplitude = 0.401f, frequency = 0.416f),
+            ConfigPoint(time = 441, amplitude = 0.627f, frequency = 0.663f),
+            ConfigPoint(time = 627, amplitude = 0.31f, frequency = 0.607f),
+            ConfigPoint(time = 836, amplitude = 0.792f, frequency = 0.634f),
+            ConfigPoint(time = 1022, amplitude = 0.394f, frequency = 0.379f),
+            ConfigPoint(time = 1231, amplitude = 0.806f, frequency = 0.679f),
+            ConfigPoint(time = 1440, amplitude = 0.612f, frequency = 0.525f),
+            ConfigPoint(time = 1649, amplitude = 0.232f, frequency = 0.767f),
+            ConfigPoint(time = 2020, amplitude = 0.239f, frequency = 0.625f),
+            ConfigPoint(time = 2438, amplitude = 0.385f, frequency = 0.743f),
+            ConfigPoint(time = 2624, amplitude = 0.226f, frequency = 0.468f),
+            ConfigPoint(time = 2833, amplitude = 0.446f, frequency = 0.733f),
+        ),
+    )
 }
 
 private fun demoPattern(): PatternData {
