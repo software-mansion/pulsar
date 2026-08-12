@@ -185,6 +185,16 @@ async function applyWiring(recipe, outDir, ctx) {
     step('Wiring pubspec.yaml (local plugin path dep)');
     await injectPubspecDependency(path.join(outDir, 'pubspec.yaml'), recipe.pubspecDependency);
   }
+  if (recipe.pubspecDependencies) {
+    step('Wiring pubspec.yaml (extra local path deps)');
+    for (const dep of recipe.pubspecDependencies) {
+      await injectPubspecDependency(path.join(outDir, 'pubspec.yaml'), dep);
+    }
+  }
+  if (recipe.pubspecOverrides) {
+    step('Wiring pubspec.yaml (dependency_overrides)');
+    await injectPubspecOverrides(path.join(outDir, 'pubspec.yaml'), recipe.pubspecOverrides);
+  }
   if (recipe.pubspecAssets) {
     step('Wiring pubspec.yaml (bundled assets)');
     await injectPubspecAssets(path.join(outDir, 'pubspec.yaml'), recipe.pubspecAssets);
@@ -233,7 +243,25 @@ async function injectPubspecDependency(pubspecPath, { name, path: depPath }) {
     return;
   }
   await fs.writeFile(pubspecPath, patched);
-  info('added pulsar_haptics path dependency');
+  info(`added ${name} path dependency`);
+}
+
+// Append a `dependency_overrides:` block (before dev_dependencies) so a package
+// pulled from path can satisfy another package's *hosted* dependency on it.
+async function injectPubspecOverrides(pubspecPath, overrides) {
+  let text = await fs.readFile(pubspecPath, 'utf8');
+  if (text.includes('dependency_overrides:')) return info('pubspec already has dependency_overrides');
+  const block =
+    'dependency_overrides:\n' +
+    overrides.map((o) => `  ${o.name}:\n    path: ${o.path}`).join('\n') +
+    '\n\n';
+  const patched = text.replace(/(\ndev_dependencies:\n)/, `\n${block}$1`);
+  if (patched === text) {
+    warn('Could not locate dev_dependencies in pubspec.yaml — add dependency_overrides manually.');
+    return;
+  }
+  await fs.writeFile(pubspecPath, patched);
+  info(`added ${overrides.length} dependency override(s)`);
 }
 
 // `flutter create` writes a pubspec with no `assets:` list; add one under the

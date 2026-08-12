@@ -36,6 +36,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   pulsar_haptics:
     path: ../pulsar
+  pulsar_haptics_lottie:
+    path: ../PulsarLottie
+
+# pulsar_haptics_lottie declares a hosted `pulsar_haptics` dependency; force it
+# onto the local path package so both resolve to the same in-repo source.
+dependency_overrides:
+  pulsar_haptics:
+    path: ../pulsar
 
 dev_dependencies:
   flutter_test:
@@ -59,9 +67,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Audio clip played in sync with haptics by the Audio-synced Haptics demo.
+  # Media played in sync with haptics by the Audio-synced and Lottie demos.
   assets:
     - assets/sample-3s.mp3
+    - assets/verified.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

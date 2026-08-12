@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsarapp.screens.AudioHapticsScreen
+import com.swmansion.pulsarapp.screens.LottieHapticsScreen
 import com.swmansion.pulsarapp.screens.PresetsScreen
 import com.swmansion.pulsarapp.screens.PublicAPIsScreen
 import com.swmansion.pulsarapp.screens.RealtimeComposerScreen
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
               BottomTab.Presets -> PresetsScreen(pulsar)
               BottomTab.Composer -> RealtimeComposerScreen()
               BottomTab.Audio -> AudioHapticsScreen(pulsar)
+              BottomTab.Lottie -> LottieHapticsScreen(pulsar)
               BottomTab.APIs -> PublicAPIsScreen(pulsar)
             }
           }
@@ -95,6 +98,12 @@ class MainActivity : ComponentActivity() {
               onClick = { selectedTab = BottomTab.Audio }
             )
             NavigationBarItem(
+              icon = { Icon(Icons.Filled.Star, contentDescription = "Lottie") },
+              label = { Text("Lottie") },
+              selected = selectedTab == BottomTab.Lottie,
+              onClick = { selectedTab = BottomTab.Lottie }
+            )
+            NavigationBarItem(
               icon = { Icon(Icons.Filled.Build, contentDescription = "APIs") },
               label = { Text("APIs") },
               selected = selectedTab == BottomTab.APIs,
@@ -111,5 +120,6 @@ enum class BottomTab {
   Presets,
   Composer,
   Audio,
+  Lottie,
   APIs
 }
