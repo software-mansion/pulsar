@@ -1,14 +1,12 @@
-export const API_SERVER_URL = 'https://pulsar-server.swmansion.com';
-// export const API_SERVER_URL = 'http://localhost:8080';
+// Backend hosts for the current tier (local | staging | production). The tier is
+// resolved once in constants/env.ts — set `EXPO_PUBLIC_PULSAR_ENV` in `.env` to
+// override, otherwise a dev build targets local and a release build targets
+// production. See constants/env.ts for the full host map and resolution rules.
 
-export const SOCKET_SERVER_URL = 'wss://pulsar-server.swmansion.com';
-// export const SOCKET_SERVER_URL = 'ws://localhost:8080';
+import { PULSAR_HOSTS } from '@/constants/env';
 
-export const FIGMA_PREVIEW_URL = 'https://docs.swmansion.com/pulsar/figma-preview/';
-// Local override for testing live haptics-config updates against a
-// listener-equipped preview before docs is redeployed: run
-// `cd pulsar-private/figma/preview && npm run dev` (serves :5173) and swap the line above for
-// the one below. iOS simulator reaches the host via localhost; a physical
-// device needs the machine's LAN IP instead.
-// export const FIGMA_PREVIEW_URL = 'http://localhost:5173/';
+export const API_SERVER_URL = PULSAR_HOSTS.api;
 
+export const SOCKET_SERVER_URL = PULSAR_HOSTS.socket;
+
+export const FIGMA_PREVIEW_URL = PULSAR_HOSTS.preview;
