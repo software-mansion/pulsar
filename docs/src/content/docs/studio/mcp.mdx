@@ -1,0 +1,113 @@
+---
+title: Studio MCP
+description: Connect an AI coding agent to Pulsar Studio over MCP and design haptics in your live editor — reading state, editing presets, generating from audio, and playing on a paired phone.
+---
+
+Pulsar Studio ships an **MCP server** that lets an AI agent (Claude Code, Codex, or
+anything that speaks MCP) drive your **live** Studio editor. The agent reads the
+current state, edits presets, generates haptics from audio, and plays patterns on a
+paired phone — and you watch every change happen in the browser tab you have open.
+
+The MCP endpoint is remote HTTP hosted alongside Studio, so there is nothing to
+install or run locally. Commands the agent sends are forwarded to your open Studio
+tab, which executes them against the live editor — the canvas updates instantly and
+the change autosaves.
+
+## Prerequisites
+
+- A **Pulsar Studio account**, signed in.
+- **Studio open in a browser tab.** The tab is what executes commands and runs the
+  audio/animation analysis, so keep it open while the agent works. If no tab is
+  open, read/write of preset data still works, but playback, audio analysis, and
+  generation return a clear "open Studio" error.
+
+## 1. Install the Pulsar skill (recommended)
+
+The skill gives your agent the connection details and a map of what the Studio MCP
+can do, so a plain-language request like *"connect to Studio and design a
+double-tap"* just works. It lives in the
+[software-mansion-labs/skills](https://github.com/software-mansion-labs/skills)
+repository.
+
+**As a Claude Code plugin:**
+
+```text
+/plugin marketplace add software-mansion-labs/skills
+/plugin install skills@swmansion
+/reload-plugins
+```
+
+**Via `npx`:**
+
+```bash
+npx skills add software-mansion-labs/skills
+```
+
+## 2. Add the MCP server
+
+Point your agent at the hosted endpoint. There is no package to install.
+
+**Claude Code:**
+
+```bash
+claude mcp add --transport http -s user pulsar https://pulsar-server.swmansion.com/mcp
+```
+
+**Codex** (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.pulsar]
+transport = "http"
+url = "https://pulsar-server.swmansion.com/mcp"
+```
+
+## 3. Connect the agent to your Studio account
+
+In a session, ask the agent to **connect to Studio**. Under the hood it calls the
+`connect_studio` tool, which returns a one-time link:
+
+1. The agent gives you a link to open in the browser where you're signed into
+   Studio.
+2. Opening it **auto-approves** the connection — no button, no OAuth — because
+   you're already signed in. It binds your account to this agent session.
+3. The agent calls `connection_status` to confirm. Your Studio tab shows an
+   **"Agent connected"** banner with a **Disconnect** control.
+
+Then just describe what you want:
+
+> *"Connect to Studio, then design a crisp double-tap and play it on my phone."*
+
+## What you can do with it
+
+Once connected, the agent has one tool per editor operation. The MCP server
+describes every tool to the agent automatically, so you never have to list command
+names yourself. The capabilities, by group:
+
+- **Read state** — inspect the editor, list projects and presets, read a preset or
+  the current selection.
+- **Manage presets** — create, duplicate, rename, delete, open a preset, open a
+  project, and export a preset to the device pattern format.
+- **Edit patterns** — add / update / delete points on intensity, frequency, and
+  discrete layers; replace or merge whole envelopes and patterns; select, clear,
+  undo, and redo.
+- **Play & preview** — set the playhead and play range, play an audible preview
+  locally, and stop.
+- **Work with media** — list uploaded audio / animations, attach or detach them to
+  a preset, and set the audio trim.
+- **Generate from audio** — list the audio → haptics strategies, generate a pattern
+  from an attached clip, and read audio or animation analysis (duration, energy
+  envelope, onset peaks, frame data).
+- **Send to a device** — list paired devices and send a pattern to your phone.
+
+Every command targets the **active preset** — the one you're looking at — unless the
+agent names another. Times are milliseconds; intensities and frequencies are
+normalized `0..1`.
+
+## Privacy & control
+
+- **Account isolation** — a command can only ever reach tabs signed into the account
+  that authorized the link. The agent never sees other users' work.
+- **Always visible** — the "Agent connected" banner stays up the whole time an agent
+  is linked.
+- **Kill switch** — click **Disconnect** in the banner to drop the agent's access at
+  any time.
