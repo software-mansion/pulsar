@@ -17,6 +17,7 @@ import Point from '@/components/Point';
 import FigmaLogo from '@/components/FigmaLogo';
 import ConnectionList from '@/components/home/ConnectionList';
 import NowPlayingToast from '@/components/NowPlayingToast';
+import { useKeepAwakeWhileFocused } from '@/hooks/useKeepAwakeWhileFocused';
 import { Margins } from '@/constants/theme';
 
 const defaultEdges = {
@@ -82,6 +83,11 @@ function FigmaPreviewWebView({ token }: { token: string }) {
 
   const webRef = useRef<WebView>(null);
   const playFromHost = usePlayPatternFromHost();
+
+  // Scoped to this component rather than FigmaScreen, so the lock is only held
+  // while a preview is actually open - not on the explainer with no token.
+  useKeepAwakeWhileFocused('figma-preview');
+
   const navigation = useNavigation();
   const router = useRouter();
   const { lastPreviewUpdate } = useConnections();
