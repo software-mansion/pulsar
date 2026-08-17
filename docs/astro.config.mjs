@@ -76,6 +76,10 @@ export default defineConfig({
           label: 'Pulsar Studio',
           link: 'https://docs.swmansion.com/pulsar/studio/',
         },
+        {
+          label: 'Studio',
+          items: [{ label: 'MCP', slug: 'studio/mcp' }],
+        },
         // {
         //   label: 'Figma → code',
         //   slug: 'figma',
