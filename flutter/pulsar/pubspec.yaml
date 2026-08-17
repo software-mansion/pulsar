@@ -44,7 +44,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.swmansion.pulsar
+        package: com.swmansion.pulsar.flutter
         pluginClass: PulsarPlugin
       ios:
         pluginClass: PulsarPlugin
