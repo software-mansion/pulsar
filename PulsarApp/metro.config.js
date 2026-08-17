@@ -21,6 +21,7 @@ const config = {
       'react-native-worklets': path.resolve(__dirname, './node_modules/react-native-worklets'),
       'react-native-reanimated': path.resolve(__dirname, './node_modules/react-native-reanimated'),
       'lottie-react-native': path.resolve(__dirname, './node_modules/lottie-react-native'),
+      'react-native-pulsar': path.resolve(__dirname, './node_modules/react-native-pulsar'),
     },
     blockList: [
       // Prevent Metro from using react-native from library's node_modules
