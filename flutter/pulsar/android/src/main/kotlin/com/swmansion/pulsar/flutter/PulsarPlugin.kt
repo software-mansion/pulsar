@@ -1,4 +1,4 @@
-package com.swmansion.pulsar
+package com.swmansion.pulsar.flutter
 
 import android.app.Activity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -8,6 +8,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.ConfigPoint
