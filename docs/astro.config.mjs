@@ -12,6 +12,11 @@ export default defineConfig({
   // GitHub Pages 301-redirects directory URLs to their trailing-slash form, so
   // emit and link to that canonical form everywhere to avoid redirect hops.
   trailingSlash: 'always',
+  redirects: {
+    // The Studio page used to live under /pulsar-studio/ as a docs entry; it is
+    // now the standalone /studio/ landing page. Keep the old URL working.
+    '/pulsar-studio': '/pulsar/studio/',
+  },
   vite: {
     css: {
       modules: {
