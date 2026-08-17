@@ -16,6 +16,7 @@ import HapticsSupportBanner from '@/components/home/HapticsSupportBanner';
 import NowPlayingToast from '@/components/NowPlayingToast';
 import { useConnections } from '@/contexts/ConnectionsContext';
 import { useMediaSession } from '@/contexts/MediaSessionContext';
+import { useKeepAwakeWhileFocused } from '@/hooks/useKeepAwakeWhileFocused';
 
 const logo = require('@/assets/images/logo.png');
 
@@ -23,6 +24,10 @@ export default function HomeScreen() {
   const { connections, addByCode, remove, reconnect } = useConnections();
   const { openConnection } = useMediaSession();
   const router = useRouter();
+
+  // Patterns are usually played from a paired Studio/plugin while the phone
+  // sits untouched on the desk - don't let it lock mid-session.
+  useKeepAwakeWhileFocused('home');
 
   const [connectingCode, setConnectingCode] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
