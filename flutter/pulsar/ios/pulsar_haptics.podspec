@@ -9,7 +9,7 @@ pulsar_ios_pod_version = '1.4.0' # pulsar-sync:flutter-pulsar-ios
 
 Pod::Spec.new do |s|
   s.name             = 'pulsar_haptics'
-  s.version          = '0.1.0' # pulsar-sync:flutter-version
+  s.version          = '0.1.1' # pulsar-sync:flutter-version
   s.summary          = 'Rich haptic feedback for Flutter with presets, pattern playback, and realtime control.'
   s.description      = <<-DESC
 Pulsar gives you 150+ ready-to-play haptic presets, a pattern composer for fully custom

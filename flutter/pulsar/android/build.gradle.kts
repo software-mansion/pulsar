@@ -49,7 +49,7 @@ if (useLocalPulsarAndroid) {
 }
 
 android {
-    namespace = "com.swmansion.pulsar"
+    namespace = "com.swmansion.pulsar.flutter"
 
     compileSdk = 36
 
@@ -71,6 +71,7 @@ android {
             java.srcDirs("src/main/kotlin")
             if (useLocalPulsarAndroid) {
                 java.srcDir(localPulsarAndroidSourceDir)
+                java.srcDir("src/localPulsar/java")
             }
         }
         getByName("test") {
