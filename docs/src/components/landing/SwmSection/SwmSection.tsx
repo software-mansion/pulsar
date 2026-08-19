@@ -1,5 +1,4 @@
 import styles from './SwmSection.module.scss';
-import commonStyle from '../common.module.scss';
 import { BasicLayout } from '../Layouts/BasicLayout';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { Button } from '../Button/Button';
@@ -8,6 +7,8 @@ import swm_logo from '../../../assets/swm-logo.svg';
 import arrow from '../../../assets/landing-page/footer_arrow.svg';
 
 export function SwmSection({ className }: { className?: string }) {
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className={`${styles.section} ${className || ''}`}>
       <img className={styles.logo} src={swm_logo.src} />
@@ -30,6 +31,21 @@ export function SwmSection({ className }: { className?: string }) {
             <Button label="Learn more about us" url="https://swmansion.com/" />
           </div>
         </Card>
+      </BasicLayout>
+      <BasicLayout>
+        <div className={styles.footer}>
+          <p className={styles.footerText}>
+            &copy; {currentYear}{' '}
+            <a href="https://swmansion.com/" target="_blank" rel="noopener">
+              Software Mansion
+            </a>
+            . Read about our{' '}
+            <a href="https://swmansion.com/privacy/policy/ " target="_blank" rel="noopener">
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </div>
       </BasicLayout>
     </div>
   );

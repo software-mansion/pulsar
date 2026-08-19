@@ -7,7 +7,7 @@
   background-size: 85%;
   text-align: center;
   padding-top: 75px;
-  padding-bottom: 125px;
+  padding-bottom: 100px;
   width: 100%;
   box-sizing: border-box;
 
@@ -80,6 +80,43 @@
         max-width: 100%;
       }
     }
+  }
+
+  .footer {
+    margin-top: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--color-blue-100);
+
+    @media (max-width: 768px) {
+      flex-wrap: wrap;
+      text-align: center;
+      gap: 8px;
+    }
+  }
+
+  .footerLogo {
+    width: auto;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .footerText {
+    margin: 0;
+  }
+
+  .footerText a {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .footerText a:hover {
+    opacity: 0.8;
   }
 }
 

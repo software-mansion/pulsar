@@ -1,6 +1,7 @@
 ---
 import Default from '@astrojs/starlight/components/PageFrame.astro';
 import GTMBody from './gtm-body.astro';
+const currentYear = new Date().getFullYear();
 ---
 
 <GTMBody />
@@ -9,3 +10,35 @@ import GTMBody from './gtm-body.astro';
   <slot name="sidebar" slot="sidebar" />
   <slot />
 </Default>
+
+<footer class="docs-footer">
+  <p>
+    &copy; {currentYear}
+    <a href="https://swmansion.com/" target="_blank" rel="noopener">Software Mansion</a>.
+    Read about our
+    <a href="https://swmansion.com/privacy/policy/" target="_blank" rel="noopener"
+      >Privacy Policy</a
+    >.
+  </p>
+</footer>
+
+<style>
+  .docs-footer {
+    border-top: 1px solid var(--sl-color-gray-5);
+    padding: 1.25rem 1rem 2rem;
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-2);
+  }
+
+  .docs-footer p {
+    margin: 0 auto;
+    max-width: 48rem;
+  }
+
+  .docs-footer a {
+    color: inherit;
+    text-underline-offset: 2px;
+  }
+ </style>
