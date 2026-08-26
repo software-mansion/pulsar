@@ -1,0 +1,684 @@
+/*
+ * Design tokens mirror PulsarApp's `constants/theme.ts` and its card/button
+ * styles: white surfaces on a pale blue field, a 2px #38ACDD border and the
+ * signature offset hard shadow.
+ */
+:root {
+  --ink: #001a72;
+  --ink-muted: #2b85ab;
+  --field: #e1f3fa;
+  --surface: #ffffff;
+  --accent: #38acdd;
+  --accent-soft: #b5e1f1;
+  --accent-deep: #5bb9e0;
+  --danger: #ff6259;
+  --shadow: -3px 3px 0px var(--accent);
+  --radius: 4px;
+  --shell-width: 460px;
+  --tabbar-height: 64px;
+  --font: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--field);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- shell -- */
+
+/*
+ * A real `height` (not `min-height`) is load-bearing: it is what bounds the
+ * flex column so `.screen` can scroll inside it and the tab bar stays pinned to
+ * the bottom. With `min-height` the shell grows to its content instead, the
+ * inner scroller never overflows, and the tab bar ends up thousands of pixels
+ * down the page.
+ */
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--shell-width);
+  height: 100vh; /* fallback for browsers without dynamic viewport units */
+  height: 100dvh;
+  margin: 0 auto;
+  background: var(--field);
+  overflow: hidden;
+}
+
+/* On a roomy screen the app reads as a device sitting on the page. */
+@media (min-width: 900px) {
+  body {
+    background: radial-gradient(circle at 50% 0%, #f4fbfe 0%, var(--field) 45%, #cfe9f6 100%) fixed;
+  }
+
+  .shell {
+    height: min(880px, calc(100dvh - 48px));
+    margin: 24px auto;
+    border: 2px solid var(--accent);
+    border-radius: 24px;
+    box-shadow: -6px 8px 0 rgba(56, 172, 221, 0.45);
+  }
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 15px calc(28px + env(safe-area-inset-bottom));
+  scroll-behavior: smooth;
+}
+
+.screen--flush {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+/* ------------------------------------------------------------ typography -- */
+
+.title {
+  margin: 20px 0 0;
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.lead {
+  margin: 10px 0 0;
+  font-size: 16px;
+}
+
+.muted {
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.hint {
+  color: var(--ink-muted);
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+/* ----------------------------------------------------------------- card -- */
+
+.card {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 15px;
+}
+
+.row-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 18px 15px;
+  text-align: left;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.row-card:active {
+  transform: translate(-2px, 2px);
+  box-shadow: -1px 1px 0 var(--accent);
+}
+
+.row-card__label {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* --------------------------------------------------------------- button -- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 12px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-size: 16px;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(-2px, 2px);
+  box-shadow: -1px 1px 0 var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn--square {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  flex: none;
+}
+
+.btn--grow {
+  flex: 1;
+}
+
+.btn--record {
+  border-color: var(--danger);
+  box-shadow: -3px 3px 0px var(--danger);
+}
+
+.btn--record:active:not(:disabled) {
+  box-shadow: -1px 1px 0 var(--danger);
+}
+
+.btn--ghost {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 6px;
+}
+
+/* ----------------------------------------------------------------- tags -- */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: none;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.tag--selectable {
+  cursor: pointer;
+  background: transparent;
+  border: 1.5px solid var(--accent);
+}
+
+.tag--selected {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+/* -------------------------------------------------------------- tab bar -- */
+
+.tabbar {
+  display: flex;
+  flex: none;
+  border-top: 1px solid rgba(56, 172, 221, 0.4);
+  background: #eff8fc;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: var(--tabbar-height);
+  padding: 0;
+  background: none;
+  border: none;
+  color: #86c6e3;
+  font-size: 12px;
+}
+
+.tabbar__item--active {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------- header -- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 4px;
+}
+
+.topbar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 4px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------- search -- */
+
+.search {
+  display: flex;
+  align-items: center;
+  margin: 0 0 12px;
+  background: var(--surface);
+  border: 2px solid var(--accent-deep);
+  border-radius: var(--radius);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.search input::placeholder {
+  color: #9dc6da;
+}
+
+/* -------------------------------------------------------------- presets -- */
+
+.presets-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 0 12px;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 15px;
+}
+
+.preset__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.preset__title {
+  margin-top: 4px;
+}
+
+.preset__description {
+  margin: 0;
+  font-size: 14px;
+}
+
+.preset__chart {
+  position: relative;
+  margin: 8px 0;
+  border-top: 1px solid var(--field);
+  border-bottom: 1px solid var(--field);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* Natural size: the playhead maths depends on the 1px-per-canvas-px scale. */
+.preset__chart img {
+  display: block;
+  height: 100px;
+  width: auto;
+  max-width: none;
+}
+
+.preset__playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--ink);
+  box-shadow: 0 0 4px var(--accent-deep);
+  pointer-events: none;
+}
+
+.heart {
+  flex: none;
+  background: none;
+  border: none;
+  padding: 2px;
+  line-height: 0;
+}
+
+/* ----------------------------------------------------------- playground -- */
+
+.pad {
+  position: relative;
+  flex: 1;
+  min-height: 220px;
+  margin: 12px 0;
+  border: 1px solid rgba(56, 172, 221, 0.35);
+  border-radius: var(--radius);
+  background-color: #f7fcfe;
+  background-image:
+    linear-gradient(to right, rgba(56, 172, 221, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 172, 221, 0.18) 1px, transparent 1px);
+  background-size: 16.66% 10%;
+  touch-action: none;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.pad__hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.pad__dot {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  background: rgba(0, 26, 114, 0.18);
+  border: 2px solid var(--ink);
+  pointer-events: none;
+}
+
+.pad__readout {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ink-muted);
+  pointer-events: none;
+}
+
+.playground-controls {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+}
+
+.timeline {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin-top: 10px;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+/* ---------------------------------------------------------------- demos -- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.slider-card {
+  padding: 16px 12px;
+}
+
+.slider-card__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+input[type='range'] {
+  width: 100%;
+  height: 32px;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 32px;
+  padding: 28px 15px;
+}
+
+.timer__value {
+  font-size: 72px;
+  line-height: 1.1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer__value--warning {
+  color: #ff3b30;
+}
+
+.dots {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  height: 90px;
+  margin-top: 28px;
+}
+
+.dots__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: dot-wave 1500ms ease-in-out infinite;
+}
+
+@keyframes dot-wave {
+  0% {
+    transform: translateY(0);
+  }
+  14% {
+    transform: translateY(-30px);
+  }
+  28% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots__dot {
+    animation: none;
+  }
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 15px;
+  animation: toast-in 260ms ease;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.toast__badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.toast__title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.toast__message {
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+/* Reserved so the list below does not jump as toasts come and go. */
+.toast-slot {
+  display: flex;
+  align-items: center;
+  min-height: 92px;
+  margin-top: 20px;
+}
+
+/* --------------------------------------------------------------- banner -- */
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.banner__body {
+  flex: 1;
+}
+
+.switch {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.empty {
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- games -- */
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.placeholder__emoji {
+  font-size: 44px;
+  line-height: 1;
+}
+
+/* ----------------------------------------------------------------- misc -- */
+
+.footer-link {
+  display: block;
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.scroll-top {
+  position: absolute;
+  right: 18px;
+  bottom: calc(var(--tabbar-height) + 18px);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--radius);
+}
