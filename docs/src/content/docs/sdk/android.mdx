@@ -718,6 +718,72 @@ realtime.stop()
 
 ---
 
+## Preset bundles
+
+A `.pulsar` bundle exported from Pulsar Studio holds your own presets — each a haptic pattern with
+optional synced audio and animation. `pulsar-gen` turns a bundle into a typed accessor, so every
+preset is a real member: a renamed preset becomes a compile error rather than a silent runtime
+miss.
+
+### Generate and package
+
+Apply the Gradle plugin and drop bundles into `src/pulsarBundles/`. On every build it generates the
+typed accessor and packages the bundle into the APK assets — no manual codegen step:
+
+```kotlin
+// settings.gradle.kts — the plugin resolves from Maven Central
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+```
+
+```kotlin
+// app/build.gradle.kts
+plugins {
+    id("com.swmansion.pulsar.gen") version "0.1.0" // pulsar-sync:pulsar-gen-gradle-version
+}
+
+pulsarBundles {
+    packageName.set("com.example.app.bundles")
+}
+```
+
+### Load and play
+
+```kotlin
+val pulsar = Pulsar(context)
+val bundle = pulsar.loadBundle(AcmePack.descriptor, strict = true)
+
+bundle.heartbeatV2.play()
+bundle.explosion.stop()
+```
+
+`strict = true` checks the packaged bundle against the generated types, so a stale APK asset fails
+loudly instead of quietly missing a preset. Omit it and the check is skipped.
+
+Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
+and timing for your own animation view. Pulsar carries and time-aligns the animation; the app
+renders it:
+
+```kotlin
+bundle.heartbeatV2.animation?.let {
+    myLottieView.setAnimation(it.data.inputStream(), null)
+}
+```
+
+Audio authored into a preset plays natively alongside the haptics — nothing extra to wire.
+
+For an id only known at runtime, `bundle.get(id)` returns a handle or `null`. Call `bundle.dispose()`
+to release the native patterns when you are done with a bundle.
+
+See [`Android/PulsarApp`](https://github.com/software-mansion/pulsar/tree/main/Android/PulsarApp) for
+a working screen.
+
+---
+
 ## Settings
 
 Configuration methods available directly on the `Pulsar` instance.

@@ -40,15 +40,44 @@ function Success() {
 
 Anything you can do with `LottieView` still works — `source`, `loop`, `autoPlay`, `style`, `resizeMode`, the imperative `ref` (`play` / `pause` / `resume` / `reset`), and so on. You only **add** haptics.
 
+## From a bundle preset
+
+A preset in a `.pulsar` bundle already pairs an animation with a pattern the author aligned to it.
+Pass the preset and the view takes both — no `source`, no `haptics`:
+
+```tsx
+import { createBundle } from 'react-native-pulsar';
+import { HapticLottieView } from 'react-native-pulsar-lottie';
+import pack from './assets/my-pack.bundle.json';
+
+const Pack = createBundle(pack);
+
+function Celebration() {
+  return <HapticLottieView preset={Pack.celebration} autoPlay style={{ width: 200, height: 200 }} />;
+}
+```
+
+The preset fills in three things, each still overridable on its own: `source` from its Lottie,
+`haptics` from its pattern, and `durationMs` from its authored length.
+
+The animation only travels in JS on the **inline** path (`createBundle`) and only for JSON Lotties.
+A preset from `loadBundle`, or one authored as a dotLottie, reports `hasAnimation: true` but carries
+no `animation` — pass `source` yourself there. If neither is available the view renders nothing and
+warns once, rather than crashing.
+
+For the hook API, a preset works today without any extra option:
+`useHapticLottie({ haptics: preset.pattern })`.
+
 ## Haptic props
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `preset` | `PresetHandle` | – | A bundle preset supplying `source` + `haptics` + `durationMs` at once. |
 | `haptics` | `Pattern \| () => void` | – | Pattern to sync, or a preset trigger fn (`pattern` mode only). |
 | `hapticMode` | `'realtime' \| 'pattern'` | `'realtime'` | Engine mode — see below. |
 | `hapticOffset` | `number` (ms) | `0` | Shift haptics ± relative to the animation (device tuning). |
 | `hapticsEnabled` | `boolean` | `true` | Turn haptics off without touching the animation. |
-| `durationMs` | `number` | derived | `realtime` clock length. Derived from the Lottie JSON (`fr`/`ip`/`op`) or the pattern; set it when neither is available. |
+| `durationMs` | `number` | derived | `realtime` clock length. Derived from the preset's duration, else the Lottie JSON (`fr`/`ip`/`op`), else the pattern. |
 
 ## Engine modes
 

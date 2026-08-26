@@ -6,7 +6,7 @@ import com.swmansion.pulsar.kmp.PatternData
 import com.swmansion.pulsar.kmp.ValuePoint
 import kotlinx.serialization.Serializable
 
-// Codable mirror of manifest.json — see docs/bundle-format.md.
+// Codable mirror of manifest.json.
 
 @Serializable
 internal data class BundleManifest(

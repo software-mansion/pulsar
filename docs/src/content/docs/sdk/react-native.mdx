@@ -348,6 +348,97 @@ Presets.System.Android.primitiveLowTick();
 
 ---
 
+## Preset bundles
+
+A `.pulsar` bundle exported from Pulsar Studio holds your own presets — each a haptic pattern with
+optional synced audio and animation. Run the generator once and every preset becomes a typed member
+you can call anywhere:
+
+```bash
+npx pulsar-gen-rn assets
+```
+
+That scans `./assets` for `*.pulsar` files and writes a `*.bundle.json` next to each — that
+generated file is what your app imports. On Expo, add the config plugin instead and it regenerates
+on every prebuild:
+
+```json
+{ "expo": { "plugins": [["react-native-pulsar", { "bundleDirs": ["assets"] }]] } }
+```
+
+```ts
+import { createBundle } from 'react-native-pulsar';
+import myPack from '@/assets/my-pack.bundle.json';
+
+export const Haptics = createBundle(myPack);
+```
+
+```ts
+Haptics.fanfare.play();
+Haptics.fanfare.stop();
+```
+
+Presets are direct members of the bundle, alongside its own `id`, `contentHash`, `get` and
+`dispose`. A preset can never collide with those — the generator rejects a bundle that reuses one
+of those names — and only the presets are enumerable, so `Object.keys(Haptics)` lists the pack.
+
+Each preset exposes `play()`, `stop()`, its `id`, `name`, `duration`, the raw `pattern`, and flags
+describing how it was authored:
+
+```ts
+Haptics.fanfare.hasAudio       // true if the preset has a synced sound
+Haptics.fanfare.hasAnimation   // true if it has a Lottie animation
+Haptics.fanfare.animation      // the Lottie itself, when the bundle carries it in JS
+```
+
+### Playing a preset's animation
+
+A preset authored with an animation can drive `react-native-pulsar-lottie` on its own — the view
+takes the animation and the haptics from the preset, with no `source` or `haptics` prop:
+
+```tsx
+import { HapticLottieView } from 'react-native-pulsar-lottie';
+
+<HapticLottieView preset={Haptics.celebration} autoPlay />
+```
+
+`createBundle` is synchronous and needs no Metro configuration. Preset names autocomplete and a
+typo is a compile error — the types come from the generated file itself, so renaming a preset in
+Studio and re-generating turns every stale reference red.
+
+Use `Haptics.get(id)` when the preset id is only known at runtime; it returns `undefined` for an
+unknown id rather than throwing.
+
+### Presets that need the .pulsar file
+
+Two kinds of preset cannot be served by the generated file alone: one with **synced audio**, and one
+whose animation was exported as a **dotLottie** (`.lottie`) rather than JSON. The generator warns
+about both, and `hasAudio` / `hasAnimation` identify them at runtime — such a preset still plays,
+but only its haptics.
+
+To get the sound or the dotLottie, ship the `.pulsar` alongside. Register the extension with Metro:
+
+```js
+// metro.config.js
+const { withPulsar } = require('react-native-pulsar/metro');
+module.exports = withPulsar(getDefaultConfig(__dirname));
+```
+
+...then bind the same generated file to it and load:
+
+```ts
+import { createBundleFromAsset, loadBundle } from 'react-native-pulsar';
+
+const descriptor = createBundleFromAsset(myPack, require('@/assets/my-pack.pulsar'));
+const bundle = await loadBundle(descriptor);
+
+bundle.celebration.play();   // haptics + audio
+```
+
+The generated file drives both paths, so the types are identical either way.
+
+---
+
 ## usePatternComposer
 
 A React hook for composing and playing a custom `Pattern`. The pattern is parsed on mount and whenever it changes. Resources are released automatically on unmount.

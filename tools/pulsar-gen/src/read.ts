@@ -41,7 +41,7 @@ export function stableStringify(value: unknown): string {
 
 /**
  * Deterministic content hash over a bundle's entries. The `hash` field of manifest.json is
- * excluded (it is what we are computing). Documented in docs/bundle-format.md so Studio and the
+ * excluded (it is what we are computing). Specified internally (pulsar-private docs/bundle-format.md) so Studio and the
  * SDKs can reproduce it. Returns e.g. "sha256-ab12…".
  */
 export function computeContentHash(entries: ZipEntries): string {

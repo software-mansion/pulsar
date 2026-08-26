@@ -618,6 +618,58 @@ haptics.play()
 
 ---
 
+## Preset bundles
+
+A `.pulsar` bundle exported from Pulsar Studio holds your own presets — each a haptic pattern with
+optional synced audio and animation. `pulsar-gen` turns a bundle into a typed accessor, so every
+preset is a real member: a renamed preset becomes a compile error rather than a silent runtime
+miss.
+
+### Generate the accessor
+
+KMP ships the bundle API under `com.swmansion.pulsar.kmp.bundle`, so point the generator at that
+runtime package:
+
+```bash
+npx @swmansion/pulsar-gen acme-pack.pulsar --target kotlin \
+  --package com.example.app.bundles \
+  --runtime-package com.swmansion.pulsar.kmp.bundle \
+  --out composeApp/src/commonMain/kotlin/com/example/app/bundles/
+```
+
+### Load and play
+
+KMP has no shared asset API, so the app supplies the bytes. With Compose Resources, put the bundle
+in `commonMain/composeResources/files/` and read it in a `LaunchedEffect`:
+
+```kotlin
+val pulsar = Pulsar.create()
+var bundle by remember { mutableStateOf<AcmePack.Presets?>(null) }
+
+LaunchedEffect(Unit) {
+    val bytes = Res.readBytes("files/acme-pack.pulsar")
+    bundle = pulsar.loadBundle(AcmePack.descriptor, bytes, strict = true)
+}
+
+bundle?.heartbeatV2?.play()
+```
+
+`strict = true` checks the loaded bundle against the generated types.
+
+Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
+and timing for your own animation view.
+
+:::caution
+KMP v1 plays a preset's haptics and carries its animation bytes, but **synced bundle audio is not
+wired yet** (it needs platform temp-file extraction). Use the native iOS or Android SDK for packs
+whose presets carry sound.
+:::
+
+See [`kmp/PulsarApp`](https://github.com/software-mansion/pulsar/tree/main/kmp/PulsarApp) for a
+working screen.
+
+---
+
 ## Settings
 
 Configuration methods available directly on the `Pulsar` instance.

@@ -671,6 +671,55 @@ await haptics.play();
 
 ---
 
+## Preset bundles
+
+A `.pulsar` bundle exported from Pulsar Studio holds your own presets — each a haptic pattern with
+optional synced audio and animation. `pulsar-gen` turns a bundle into a typed accessor, so every
+preset is a real member: a renamed preset becomes a compile error rather than a silent runtime
+miss.
+
+### Add the bundle and generate
+
+Declare the directory once — new bundles then need no extra entry:
+
+```yaml
+# pubspec.yaml
+flutter:
+  assets:
+    - assets/pulsar/
+```
+
+```bash
+npx @swmansion/pulsar-gen assets/pulsar/acme-pack.pulsar --target dart --out lib/bundles/
+```
+
+### Load and play
+
+```dart
+import 'package:pulsar_haptics/pulsar_haptics.dart';
+import 'bundles/acme_pack.bundle.dart';
+
+final pulsar = Pulsar();
+final bundle = await pulsar.loadBundle(acmePack, strict: true);
+
+bundle.heartbeatV2.play();
+bundle.explosion.stop();
+```
+
+The generated descriptor already knows the asset path, so `loadBundle` finds and loads it.
+`strict: true` checks the shipped bundle against the generated types.
+
+Audio authored into a preset plays through the native iOS/Android path alongside the haptics, and
+animation bytes are carried for your own Lottie view.
+
+For an id only known at runtime, `bundle.get(id)` returns a handle or `null`. Call `bundle.dispose()`
+when you are done with a bundle.
+
+See [`flutter/PulsarApp`](https://github.com/software-mansion/pulsar/tree/main/flutter/PulsarApp)
+for a working screen.
+
+---
+
 ## Settings
 
 Configuration methods available directly on the `Pulsar` instance. All return a `Future`.

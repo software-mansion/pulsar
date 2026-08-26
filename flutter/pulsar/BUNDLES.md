@@ -1,7 +1,7 @@
 # Preset bundles (Flutter)
 
 Load a `.pulsar` bundle authored in Pulsar Studio at runtime and play its presets with full
-autocomplete. See [`docs/bundle-format.md`](../../docs/bundle-format.md).
+autocomplete.
 
 ## Setup
 
@@ -30,8 +30,8 @@ import 'bundles/acme_pack.bundle.dart';
 
 final pulsar = Pulsar();
 final bundle = await pulsar.loadBundle(acmePack); // acmePack is generated
-bundle.presets.heartbeatV2.play();                 // ← autocompletes
-bundle.presets.explosion.stop();
+bundle.heartbeatV2.play();                 // ← autocompletes
+bundle.explosion.stop();
 ```
 
 Pass `strict: true` to assert the loaded bundle's content hash matches the generated types. The app

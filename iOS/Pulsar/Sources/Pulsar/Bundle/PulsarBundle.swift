@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Manifest (Codable mirror of manifest.json — see docs/bundle-format.md)
+// MARK: - Manifest (Codable mirror of manifest.json)
 
 struct BundleManifest: Codable {
   let schema: String
