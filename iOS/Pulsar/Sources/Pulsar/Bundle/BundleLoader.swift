@@ -61,7 +61,7 @@ extension Pulsar {
   /// Resolves `<assetName>.pulsar` from the app's main bundle.
   ///
   ///     let bundle = try pulsar.loadBundle(AcmePack.descriptor)
-  ///     bundle.presets.heartbeatV2.play()
+  ///     bundle.heartbeatV2.play()
   public func loadBundle<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = false) throws -> PulsarBundle<P> {
     guard let url = Foundation.Bundle.main.url(forResource: descriptor.assetName, withExtension: "pulsar") else {
       throw PulsarBundleError.resourceNotFound(descriptor.assetName)

@@ -41,6 +41,7 @@ const markedVersions = [
   { file: 'flutter/pulsar/ios/pulsar_haptics.podspec', key: 'flutter-version', version: versions.flutter.version },
   { file: 'flutter/pulsar/ios/pulsar_haptics.podspec', key: 'flutter-pulsar-ios', version: versions.flutter.pulsarCore.iosPodVersion },
   { file: 'flutter/pulsar/android/build.gradle.kts', key: 'flutter-pulsar-android', version: versions.flutter.pulsarCore.androidMavenVersion },
+  { file: 'tools/pulsar-gen-gradle/build.gradle.kts', key: 'pulsar-gen-gradle-version', version: versions.pulsarGenGradle.version },
 ];
 
 // package.json files cannot carry marker comments, so their top-level `version`

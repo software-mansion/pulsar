@@ -2,13 +2,26 @@
 // Bundle: com.acme.haptics (2 presets)
 import 'package:pulsar_haptics/pulsar_haptics.dart';
 
+/// The loaded bundle. Presets are direct members — bundle.heartbeatV2.play() — and the
+/// bundle's own members sit alongside them; pulsar-gen rejects a preset named after one.
 class AcmePackPresets {
   AcmePackPresets(BundleResolver r)
-      : heartbeatV2 = r['heartbeatV2'],
+      : _r = r,
+        heartbeatV2 = r['heartbeatV2'],
         explosion = r['explosion'];
 
+  final BundleResolver _r;
   final PresetHandle heartbeatV2;
   final PresetHandle explosion;
+
+  String get id => _r.bundleId;
+  String get contentHash => _r.contentHash;
+
+  /// Look a preset up by an id only known at runtime.
+  PresetHandle? get(String id) => _r.handle(id);
+
+  /// Release the native patterns this bundle parsed.
+  void dispose() => _r.dispose();
 }
 
 final acmePack = BundleDescriptor<AcmePackPresets>(

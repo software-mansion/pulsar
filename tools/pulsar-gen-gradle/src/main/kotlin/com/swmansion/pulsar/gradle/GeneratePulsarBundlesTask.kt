@@ -34,8 +34,12 @@ abstract class GeneratePulsarBundlesTask : DefaultTask() {
     @TaskAction
     fun generate() {
         val dir = bundlesDir.orNull?.asFile
-        val srcOut = generatedSrcDir.get().asFile.also { it.mkdirs() }
-        val assetsOut = generatedAssetsDir.get().asFile.resolve("pulsar").also { it.mkdirs() }
+        // Wipe first: Gradle does not prune an output directory for us, so a renamed or deleted
+        // bundle would otherwise leave a stale accessor compiling and a stale copy shipping in the
+        // APK's assets.
+        val srcOut = generatedSrcDir.get().asFile.also { it.deleteRecursively(); it.mkdirs() }
+        val assetsOut = generatedAssetsDir.get().asFile.resolve("pulsar")
+            .also { it.deleteRecursively(); it.mkdirs() }
         if (dir == null || !dir.exists()) return
 
         dir.listFiles { f -> f.isFile && f.extension == "pulsar" }?.sortedBy { it.name }?.forEach { file ->
@@ -100,8 +104,18 @@ internal fun emitKotlin(manifest: Map<String, Any?>, assetName: String, packageN
         appendLine("    const val bundleId = \"$bundleId\"")
         appendLine("    const val contentHash = \"$hash\"")
         appendLine()
-        appendLine("    class Presets(r: BundleResolver) {")
+        // Presets sit at the top level of the loaded bundle, so this class carries the
+        // bundle-level members too. Mirrors tools/pulsar-gen/src/emit/kotlin.ts.
+        appendLine("    class Presets(private val r: BundleResolver) {")
         appendLine(fields)
+        appendLine()
+        appendLine("        val id: String get() = r.bundleId")
+        appendLine("        val revision: Int get() = r.revision")
+        appendLine("        val contentHash: String get() = r.contentHash")
+        appendLine()
+        appendLine("        fun get(id: String): PresetHandle? = r.handle(id)")
+        appendLine()
+        appendLine("        fun dispose() = r.dispose()")
         appendLine("    }")
         appendLine()
         appendLine("    val descriptor = BundleDescriptor(")

@@ -30,8 +30,22 @@ object ${typeName} {
     const val bundleId = "${manifest.id}"
     const val contentHash = "${contentHash(manifest)}"
 
-    class Presets(r: BundleResolver) {
+    /**
+     * The loaded bundle. Presets are direct members — bundle.${ids[0] ?? 'presetId'}.play() — and the
+     * bundle's own members sit alongside them; pulsar-gen rejects a preset named after one.
+     */
+    class Presets(private val r: BundleResolver) {
 ${presetFields}
+
+        val id: String get() = r.bundleId
+        val revision: Int get() = r.revision
+        val contentHash: String get() = r.contentHash
+
+        /** Look a preset up by an id only known at runtime. */
+        fun get(id: String): PresetHandle? = r.handle(id)
+
+        /** Release the native patterns this bundle parsed. */
+        fun dispose() = r.dispose()
     }
 
     val descriptor = BundleDescriptor(

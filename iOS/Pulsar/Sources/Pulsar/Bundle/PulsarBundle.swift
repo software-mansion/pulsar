@@ -159,8 +159,16 @@ public struct BundleDescriptor<Presets> {
 
 /// The typed bundle returned by `pulsar.loadBundle(SomeBundle.descriptor)`.
 /// (Named `PulsarBundle` to avoid colliding with `Foundation.Bundle`.)
+/// A loaded bundle. Presets are reachable directly — `bundle.heartbeatV2.play()` — via
+/// `@dynamicMemberLookup` over the generated `Presets` type, so they read the same way as on the
+/// other SDKs. `presets` stays available for code that wants the struct itself.
+@dynamicMemberLookup
 public final class PulsarBundle<Presets> {
   public let presets: Presets
+
+  public subscript<T>(dynamicMember keyPath: KeyPath<Presets, T>) -> T {
+    presets[keyPath: keyPath]
+  }
   public let id: String
   public let revision: Int
   public let contentHash: String

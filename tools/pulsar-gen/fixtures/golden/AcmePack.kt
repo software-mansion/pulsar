@@ -11,9 +11,23 @@ object AcmePack {
     const val bundleId = "com.acme.haptics"
     const val contentHash = "sha256-43ac6da47d3711e9cec972e35f3e520b40589a2db7e10d783d3adf3a6522d98e"
 
-    class Presets(r: BundleResolver) {
+    /**
+     * The loaded bundle. Presets are direct members — bundle.heartbeatV2.play() — and the
+     * bundle's own members sit alongside them; pulsar-gen rejects a preset named after one.
+     */
+    class Presets(private val r: BundleResolver) {
         val heartbeatV2: PresetHandle = r["heartbeatV2"]
         val explosion: PresetHandle = r["explosion"]
+
+        val id: String get() = r.bundleId
+        val revision: Int get() = r.revision
+        val contentHash: String get() = r.contentHash
+
+        /** Look a preset up by an id only known at runtime. */
+        fun get(id: String): PresetHandle? = r.handle(id)
+
+        /** Release the native patterns this bundle parsed. */
+        fun dispose() = r.dispose()
     }
 
     val descriptor = BundleDescriptor(

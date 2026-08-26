@@ -12,12 +12,29 @@ class PresetHandle {
 }
 
 /// Looks up preset handles by id when a generated descriptor builds its typed presets view.
+/// Backs a generated presets class: resolves each preset by id, and carries the bundle-level
+/// members the generated class re-exposes so presets can sit at the top level
+/// (`bundle.heartbeatV2`). Dart cannot forward arbitrary typed members through a wrapper.
 class BundleResolver {
-  BundleResolver(this._token);
+  BundleResolver(this._token, this.bundleId, this.contentHash);
 
   final String _token;
 
+  /// Reverse-DNS identity of the loaded bundle.
+  final String bundleId;
+  final String contentHash;
+
   PresetHandle operator [](String id) => PresetHandle(_token, id);
+
+  /// Look a preset up by an id only known at runtime.
+  PresetHandle? handle(String id) => _presetIds.contains(id) ? PresetHandle(_token, id) : null;
+
+  /// Release the native patterns this bundle parsed.
+  void dispose() => unawaited(PulsarPlatform.instance.disposeBundle(_token));
+
+  Set<String> _presetIds = const {};
+  // ignore: use_setters_to_change_properties
+  void bindPresetIds(Set<String> ids) => _presetIds = ids;
 }
 
 /// Emitted by pulsar-gen: binds a bundle asset + hash to a typed presets builder.
@@ -40,21 +57,8 @@ class BundleDescriptor<P> {
 }
 
 /// The typed bundle returned by [Pulsar.loadBundle].
-class Bundle<P> {
-  Bundle._({
-    required String token,
-    required this.presets,
-    required this.id,
-    required this.contentHash,
-  }) : _token = token;
-
-  final String _token;
-  final P presets;
-  final String id;
-  final String contentHash;
-
-  void dispose() => unawaited(PulsarPlatform.instance.disposeBundle(_token));
-}
+// `pulsar.loadBundle(descriptor)` returns the generated presets class itself, which carries both
+// the presets and the bundle-level members (`id`, `contentHash`, `get`, `dispose`).
 
 /// Bundle loading for [Pulsar].
 extension PulsarBundleLoader on Pulsar {
@@ -62,9 +66,9 @@ extension PulsarBundleLoader on Pulsar {
   ///
   /// ```dart
   /// final bundle = await pulsar.loadBundle(acmePack); // acmePack is generated
-  /// bundle.presets.heartbeatV2.play();
+  /// bundle.heartbeatV2.play();
   /// ```
-  Future<Bundle<P>> loadBundle<P>(
+  Future<P> loadBundle<P>(
     BundleDescriptor<P> descriptor, {
     bool strict = false,
   }) async {
@@ -78,11 +82,8 @@ extension PulsarBundleLoader on Pulsar {
     if (token.isEmpty) {
       throw StateError('Pulsar: failed to load bundle "${descriptor.bundleId}"');
     }
-    return Bundle<P>._(
-      token: token,
-      presets: descriptor.build(BundleResolver(token)),
-      id: descriptor.bundleId,
-      contentHash: descriptor.contentHash,
-    );
+    final resolver = BundleResolver(token, descriptor.bundleId, descriptor.contentHash)
+      ..bindPresetIds(descriptor.presetIds.toSet());
+    return descriptor.build(resolver);
   }
 }
