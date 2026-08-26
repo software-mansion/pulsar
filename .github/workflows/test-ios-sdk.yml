@@ -49,11 +49,15 @@ jobs:
 
       # Main suites — real behavior on the simulator. Excludes the CoreHaptics mock suite,
       # which swizzles CoreHaptics process-wide and must not race the real-behavior assertions.
+      # `Pulsar-Package`, not `Pulsar`: once the package gained plugin/executable products, SPM
+      # started emitting a scheme per product, and only the package-level scheme carries the test
+      # action. `-scheme Pulsar` is the library product and fails with "not currently configured
+      # for the test action".
       - name: Run Pulsar package tests
         working-directory: iOS/Pulsar
         run: |
           xcodebuild test \
-            -scheme Pulsar \
+            -scheme Pulsar-Package \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             -skipPackagePluginValidation \
             -skip-testing:PulsarTests/CoreHapticsMockTests \
@@ -65,7 +69,7 @@ jobs:
         working-directory: iOS/Pulsar
         run: |
           xcodebuild test \
-            -scheme Pulsar \
+            -scheme Pulsar-Package \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             -skipPackagePluginValidation \
             -only-testing:PulsarTests/CoreHapticsMockTests \
