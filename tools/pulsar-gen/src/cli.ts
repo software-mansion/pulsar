@@ -9,13 +9,14 @@ import { parseArgs } from 'node:util';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { readBundleFile } from './read.ts';
+import { extractPatterns, extractAnimations } from './patterns.ts';
 import { generate, TARGETS } from './generate.ts';
 import type { Target, GenerateOptions } from './types.ts';
 
 function usage(): never {
   process.stderr.write(
     'Usage: pulsar-gen <bundle.pulsar> --target <swift,kotlin,dart,rn> [--out DIR] ' +
-      '[--package PKG] [--asset NAME] [--stdout]\n',
+      '[--package PKG] [--runtime-package PKG] [--asset NAME] [--stdout]\n',
   );
   process.exit(2);
 }
@@ -30,6 +31,7 @@ function main(argv: string[]): void {
         target: { type: 'string', multiple: true, short: 't' },
         out: { type: 'string', short: 'o' },
         package: { type: 'string', short: 'p' },
+        'runtime-package': { type: 'string' },
         asset: { type: 'string' },
         stdout: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
@@ -56,10 +58,13 @@ function main(argv: string[]): void {
     }
   }
 
-  const { manifest } = readBundleFile(bundlePath);
+  const { manifest, entries } = readBundleFile(bundlePath);
   const opts: GenerateOptions = {
     assetName: parsed.values.asset ?? basename(bundlePath).replace(/\.pulsar$/i, ''),
     packageName: parsed.values.package,
+    runtimePackage: parsed.values['runtime-package'],
+    patterns: extractPatterns(manifest, entries),
+    animations: extractAnimations(manifest, entries).animations,
   };
 
   const outDir = parsed.values.out ?? '.';
@@ -73,6 +78,9 @@ function main(argv: string[]): void {
       const dest = join(outDir, file.filename);
       writeFileSync(dest, file.content);
       process.stderr.write(`pulsar-gen: wrote ${dest}\n`);
+    }
+    for (const warning of file.warnings ?? []) {
+      process.stderr.write(`pulsar-gen: warning (${target}): ${warning}\n`);
     }
   }
 }

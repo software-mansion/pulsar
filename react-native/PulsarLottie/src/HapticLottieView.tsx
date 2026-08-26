@@ -15,6 +15,7 @@ import Animated, {
 import { usePatternComposer, useRealtimeComposer } from 'react-native-pulsar';
 import type { Pattern } from 'react-native-pulsar';
 import type { HapticLottieProps, HapticLottieRef } from './types';
+import { resolvePreset, type ResolvedProps } from './internal/resolvePreset';
 import {
   clamp,
   lottieDurationMs,
@@ -30,10 +31,11 @@ const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
  * thread (no re-renders), and samples the pattern into `RealtimeComposer`
  * events. Honours pause / seek / loop coherently.
  */
-const RealtimeHapticLottie = forwardRef<HapticLottieRef, HapticLottieProps>(
+const RealtimeHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
   function RealtimeHapticLottie(props, ref) {
     const {
       haptics,
+      preset: _preset,
       hapticMode: _hapticMode,
       hapticOffset = 0,
       hapticsEnabled = true,
@@ -192,10 +194,11 @@ const RealtimeHapticLottie = forwardRef<HapticLottieRef, HapticLottieProps>(
  * and a pre-parsed pattern (or preset) is fired once, aligned to the start.
  * Best native fidelity; seek/pause on the haptic side are best-effort.
  */
-const PatternHapticLottie = forwardRef<HapticLottieRef, HapticLottieProps>(
+const PatternHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
   function PatternHapticLottie(props, ref) {
     const {
       haptics,
+      preset: _preset,
       hapticMode: _hapticMode,
       hapticOffset: _hapticOffset,
       hapticsEnabled = true,
@@ -286,14 +289,23 @@ const PatternHapticLottie = forwardRef<HapticLottieRef, HapticLottieProps>(
  * props you already use; add `haptics` (and optionally `hapticMode`,
  * `hapticOffset`, `hapticsEnabled`) to play Pulsar haptics in sync. With
  * `haptics` omitted it behaves exactly like `LottieView`.
+ *
+ * Pass a bundle `preset` to supply the animation and the haptics together:
+ *
+ *     <HapticLottieView preset={Pack.celebration} autoPlay />
  */
 export const HapticLottieView = forwardRef<HapticLottieRef, HapticLottieProps>(
   function HapticLottieView(props, ref) {
-    const mode = props.hapticMode ?? 'realtime';
-    const isPattern = typeof props.haptics === 'object' && props.haptics !== null;
-    if (mode !== 'pattern' && isPattern) {
-      return <RealtimeHapticLottie ref={ref} {...props} />;
+    const resolved = resolvePreset(props);
+    if (!resolved) {
+      // A preset with no animation and no explicit source — nothing to render.
+      return null;
     }
-    return <PatternHapticLottie ref={ref} {...props} />;
+    const mode = resolved.hapticMode ?? 'realtime';
+    const isPattern = typeof resolved.haptics === 'object' && resolved.haptics !== null;
+    if (mode !== 'pattern' && isPattern) {
+      return <RealtimeHapticLottie ref={ref} {...resolved} />;
+    }
+    return <PatternHapticLottie ref={ref} {...resolved} />;
   }
 );

@@ -29,13 +29,17 @@ class PulsarGenPlugin : Plugin<Project> {
         val genSrc: Provider<Directory> = project.layout.buildDirectory.dir("generated/source/pulsar/main")
         val genAssets: Provider<Directory> = project.layout.buildDirectory.dir("generated/assets/pulsar")
 
-        val task = project.tasks.register("generatePulsarBundles", GeneratePulsarBundlesTask::class.java) { t ->
-            t.bundlesDir.convention(
+        val task = project.tasks.register(
+            "generatePulsarBundles",
+            GeneratePulsarBundlesTask::class.java,
+        )
+        task.configure {
+            bundlesDir.convention(
                 ext.bundlesDir.orElse(project.layout.projectDirectory.dir("src/pulsarBundles")),
             )
-            t.generatedSrcDir.set(genSrc)
-            t.generatedAssetsDir.set(genAssets)
-            t.packageName.convention(ext.packageName.orElse("com.swmansion.pulsar.bundles"))
+            generatedSrcDir.set(genSrc)
+            generatedAssetsDir.set(genAssets)
+            packageName.convention(ext.packageName.orElse("com.swmansion.pulsar.bundles"))
         }
 
         project.plugins.withId("com.android.application") { wireAndroid(project, task, genSrc, genAssets) }
@@ -51,6 +55,6 @@ class PulsarGenPlugin : Plugin<Project> {
         val android = project.extensions.findByType(BaseExtension::class.java) ?: return
         android.sourceSets.getByName("main").java.srcDir(genSrc)
         android.sourceSets.getByName("main").assets.srcDir(genAssets)
-        project.tasks.named("preBuild").configure { it.dependsOn(task) }
+        project.tasks.named("preBuild").configure { dependsOn(task) }
     }
 }

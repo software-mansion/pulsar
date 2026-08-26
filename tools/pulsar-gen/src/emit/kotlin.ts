@@ -8,6 +8,8 @@ export function emitKotlin(manifest: BundleManifest, opts: GenerateOptions = {})
   const typeName = pascalCase(manifest.name);
   const asset = `${resolveAssetName(manifest, opts)}.pulsar`;
   const pkg = opts.packageName ?? 'com.swmansion.pulsar.bundles';
+  // Android's SDK and KMP's ship the same bundle API under different packages.
+  const runtime = opts.runtimePackage ?? 'com.swmansion.pulsar.bundle';
   const ids = manifest.presets.map((p) => p.id);
 
   const presetFields = ids
@@ -19,9 +21,9 @@ export function emitKotlin(manifest: BundleManifest, opts: GenerateOptions = {})
 // Bundle: ${manifest.id} (${manifest.presets.length} preset${manifest.presets.length === 1 ? '' : 's'})
 package ${pkg}
 
-import com.swmansion.pulsar.bundle.BundleDescriptor
-import com.swmansion.pulsar.bundle.BundleResolver
-import com.swmansion.pulsar.bundle.PresetHandle
+import ${runtime}.BundleDescriptor
+import ${runtime}.BundleResolver
+import ${runtime}.PresetHandle
 
 object ${typeName} {
     const val assetName = "${asset}"

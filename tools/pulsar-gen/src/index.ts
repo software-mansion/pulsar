@@ -7,8 +7,10 @@ export { generate, TARGETS } from './generate.ts';
 export { emitSwift } from './emit/swift.ts';
 export { emitKotlin } from './emit/kotlin.ts';
 export { emitDart } from './emit/dart.ts';
-export { emitRn, buildSidecar } from './emit/rn.ts';
+export { emitRn, buildSidecar, SIDECAR_SCHEMA } from './emit/rn.ts';
 export type { BundleSidecar, PresetSidecarEntry } from './emit/rn.ts';
+export { extractPatterns, extractAnimations } from './patterns.ts';
+export type { EntryMap } from './patterns.ts';
 export {
   isValidPresetId,
   assertValidPresetId,

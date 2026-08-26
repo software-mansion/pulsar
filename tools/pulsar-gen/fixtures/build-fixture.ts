@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { buildFixtureBundle } from './fixture.ts';
 import { readBundleBytes } from '../src/read.ts';
+import { extractPatterns, extractAnimations } from '../src/patterns.ts';
 import { generate, TARGETS } from '../src/generate.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -15,9 +16,11 @@ mkdirSync(goldenDir, { recursive: true });
 const bytes = buildFixtureBundle();
 writeFileSync(join(here, 'acme-pack.pulsar'), bytes);
 
-const { manifest } = readBundleBytes(bytes);
+const { manifest, entries } = readBundleBytes(bytes);
+const patterns = extractPatterns(manifest, entries);
+const { animations } = extractAnimations(manifest, entries);
 for (const target of TARGETS) {
-  const file = generate(manifest, target, { assetName: 'acme-pack' });
+  const file = generate(manifest, target, { assetName: 'acme-pack', patterns, animations });
   writeFileSync(join(goldenDir, file.filename), file.content);
   process.stderr.write(`built golden ${target}: ${file.filename}\n`);
 }

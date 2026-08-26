@@ -5,7 +5,7 @@ import Pulsar
 public enum AcmePack {
     public static let assetName = "acme-pack"
     public static let bundleId = "com.acme.haptics"
-    public static let contentHash = "sha256-355197402b5ff6460e2dbefcf9048bd6868234f102c3f8c13fbb932f653a9790"
+    public static let contentHash = "sha256-43ac6da47d3711e9cec972e35f3e520b40589a2db7e10d783d3adf3a6522d98e"
 
     public struct Presets {
         public let heartbeatV2: PresetHandle

@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -8,7 +10,8 @@ import { readZip, writeZip } from '../src/zip.ts';
 import { readBundleBytes, computeContentHash } from '../src/read.ts';
 import { validateManifest } from '../src/validate.ts';
 import { generate } from '../src/generate.ts';
-import { buildSidecar } from '../src/emit/rn.ts';
+import { extractPatterns, extractAnimations } from '../src/patterns.ts';
+import { buildSidecar, SIDECAR_SCHEMA } from '../src/emit/rn.ts';
 import { buildFixtureBundle } from '../fixtures/fixture.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -82,11 +85,16 @@ test('validateManifest rejects malformed manifests', () => {
 });
 
 test('emitters match committed goldens', () => {
-  const { manifest } = readBundleBytes(buildFixtureBundle());
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const patterns = extractPatterns(manifest, entries);
+  const { animations } = extractAnimations(manifest, entries);
   assert.equal(generate(manifest, 'swift', { assetName: 'acme-pack' }).content, golden('AcmePack.swift'));
   assert.equal(generate(manifest, 'kotlin', { assetName: 'acme-pack' }).content, golden('AcmePack.kt'));
   assert.equal(generate(manifest, 'dart', { assetName: 'acme-pack' }).content, golden('acme_pack.bundle.dart'));
-  assert.equal(generate(manifest, 'rn', { assetName: 'acme-pack' }).content, golden('acme-pack.presets.json'));
+  assert.equal(
+    generate(manifest, 'rn', { assetName: 'acme-pack', patterns, animations }).content,
+    golden('acme-pack.bundle.json'),
+  );
 });
 
 test('swift/kotlin/dart typed views expose both preset ids', () => {
@@ -100,9 +108,93 @@ test('swift/kotlin/dart typed views expose both preset ids', () => {
 });
 
 test('rn sidecar keys are the preset ids (source of keyof inference)', () => {
-  const { manifest } = readBundleBytes(buildFixtureBundle());
-  const sidecar = buildSidecar(manifest);
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const sidecar = buildSidecar(manifest, extractPatterns(manifest, entries));
+  assert.equal(sidecar.schema, SIDECAR_SCHEMA);
   assert.deepEqual(Object.keys(sidecar.presets), ['heartbeatV2', 'explosion']);
-  assert.equal(sidecar.presets.heartbeatV2.animation, true);
-  assert.equal(sidecar.presets.explosion.animation, false);
+  assert.equal(sidecar.presets.heartbeatV2.name, 'Heartbeat V2');
+  assert.equal(sidecar.presets.heartbeatV2.duration, 1200);
+});
+
+test('rn sidecar inlines the device patterns verbatim', () => {
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const patterns = extractPatterns(manifest, entries);
+  const sidecar = buildSidecar(manifest, patterns);
+
+  // The inlined payload is byte-for-byte what the .pulsar carries — the app hands it straight
+  // to the native pattern composer, so any drift here is a silently wrong haptic.
+  const onDisk = JSON.parse(new TextDecoder().decode(entries['haptics/heartbeatV2.json']!));
+  assert.deepEqual(sidecar.presets.heartbeatV2.pattern, onDisk);
+  assert.equal(sidecar.presets.explosion.pattern.discretePattern[0]?.amplitude, 1);
+});
+
+test('rn sidecar inlines a JSON Lottie and skips a binary dotLottie', () => {
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const { animations, skipped } = extractAnimations(manifest, entries);
+
+  // heartbeatV2 -> animation/pulse.json (inlinable); explosion -> .lottie (a zip, so not).
+  assert.deepEqual(Object.keys(animations), ['heartbeatV2']);
+  assert.deepEqual(skipped, ['explosion']);
+  assert.equal(animations.heartbeatV2?.frameRate, 60);
+  assert.equal(animations.heartbeatV2?.totalFrames, 72);
+  assert.equal((animations.heartbeatV2?.source as { fr: number }).fr, 60);
+
+  const sidecar = buildSidecar(manifest, extractPatterns(manifest, entries), animations);
+  assert.ok(sidecar.presets.heartbeatV2.lottie, 'JSON animation should be carried in JS');
+  assert.equal(sidecar.presets.explosion.lottie, undefined);
+  // Both are still flagged as *authored* with an animation — the flag and the payload differ.
+  assert.equal(sidecar.presets.explosion.animation, true);
+});
+
+test('rn emitter warns separately about audio and about an un-inlinable animation', () => {
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const file = generate(manifest, 'rn', {
+    patterns: extractPatterns(manifest, entries),
+    animations: extractAnimations(manifest, entries).animations,
+  });
+  const warnings = file.warnings ?? [];
+
+  assert.equal(warnings.length, 2);
+  assert.match(warnings[0]!, /carry audio/);
+  assert.match(warnings[1]!, /explosion.*could not be inlined/s);
+  // heartbeatV2's animation WAS inlined, so it must not be reported as dropped.
+  assert.doesNotMatch(warnings[1]!, /heartbeatV2/);
+});
+
+test('extractAnimations fails loudly when a manifest points at a missing animation', () => {
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const without = { ...entries };
+  delete without['animation/pulse.json'];
+  assert.throws(() => extractAnimations(manifest, without), /missing "animation\/pulse\.json"/);
+});
+
+test('rn emitter refuses to emit a sidecar with no patterns', () => {
+  const { manifest } = readBundleBytes(buildFixtureBundle());
+  assert.throws(() => generate(manifest, 'rn', { assetName: 'acme-pack' }), /requires `patterns`/);
+});
+
+// react-native-pulsar ships a standalone copy of this emitter (zero-dependency, so apps can run it
+// without installing pulsar-gen). A drift between the two is silent, so pin them together.
+test('the standalone react-native-pulsar generator emits the identical sidecar', (t) => {
+  const script = join(
+    here, '..', '..', '..',
+    'react-native', 'react-native-pulsar', 'scripts', 'pulsar-gen-rn.mjs',
+  );
+  if (!existsSync(script)) return t.skip('react-native-pulsar not checked out alongside');
+
+  const dir = mkdtempSync(join(tmpdir(), 'pulsar-gen-'));
+  writeFileSync(join(dir, 'acme-pack.pulsar'), buildFixtureBundle());
+  execFileSync(process.execPath, [script, dir], { stdio: 'pipe' });
+
+  assert.equal(readFileSync(join(dir, 'acme-pack.bundle.json'), 'utf8'), golden('acme-pack.bundle.json'));
+});
+
+test('extractPatterns rejects a bundle whose haptics payload is missing or malformed', () => {
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const without = { ...entries };
+  delete without['haptics/explosion.json'];
+  assert.throws(() => extractPatterns(manifest, without), /missing "haptics\/explosion\.json"/);
+
+  const malformed = { ...entries, 'haptics/explosion.json': new TextEncoder().encode('{"a":1}') };
+  assert.throws(() => extractPatterns(manifest, malformed), /discretePattern/);
 });
