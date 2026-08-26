@@ -103,6 +103,10 @@ export default defineConfig({
           items: [
             { label: 'SDK', slug: 'sdk/web' },
             { label: 'Preset playground', slug: 'web-presets-playground' },
+            // Standalone Vite bundle built by `npm run build:web-app` into
+            // public/web-app/ — nothing of it loads until this link is opened.
+            // Starlight prepends `base`, so this stays base-relative.
+            { label: 'Pulsar Web App', link: '/web-app/' },
           ],
         },
         {

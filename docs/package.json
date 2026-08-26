@@ -3,10 +3,13 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "dev": "npm run build:web-app && astro dev",
+    "start": "npm run dev",
+    "build:web-app": "vite build --config vite.web-app.config.ts",
+    "dev:web-app": "vite --config vite.web-app.config.ts",
+    "typecheck:web-app": "tsc -p web-app/tsconfig.json --noEmit",
     "sync:preview": "node scripts/build-figma-preview.mjs",
-    "build": "astro build",
+    "build": "npm run build:web-app && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "format": "prettier --write .",
@@ -28,8 +31,10 @@
     "sharp": "^0.34.2"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.0",
     "prettier": "^3.8.1",
     "sass-embedded": "^1.97.3",
-    "typed-css-modules": "^0.9.1"
+    "typed-css-modules": "^0.9.1",
+    "vite": "^6.4.1"
   }
 }
