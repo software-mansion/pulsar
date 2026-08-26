@@ -1,4 +1,7 @@
 pluginManagement {
+    // The bundle codegen plugin lives in this repo; a consumer app would resolve it from a
+    // repository instead.
+    includeBuild("../../tools/pulsar-gen-gradle")
     repositories {
         google {
             content {

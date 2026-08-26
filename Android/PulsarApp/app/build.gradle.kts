@@ -2,6 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // Generates a typed accessor for every .pulsar in src/pulsarBundles/ and packages the
+    // bundles into the APK assets. No manual codegen step.
+    id("com.swmansion.pulsar.gen")
+}
+
+pulsarBundles {
+    packageName.set("com.swmansion.pulsarapp.bundles")
 }
 
 android {

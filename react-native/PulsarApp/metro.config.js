@@ -1,4 +1,5 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { withPulsar } = require('react-native-pulsar/metro');
 const path = require('path');
 
 /**
@@ -36,4 +37,6 @@ const config = {
   },
 };
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+// `withPulsar` adds `.pulsar` to assetExts, so `require('./assets/test.pulsar')` resolves. Only
+// the binary path (bundle audio) needs it — the inline sidecar is a plain JSON import.
+module.exports = withPulsar(mergeConfig(getDefaultConfig(__dirname), config));

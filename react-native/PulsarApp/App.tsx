@@ -6,8 +6,9 @@ import RealtimeComposerScreen from './src/screens/RealtimeComposerScreen';
 import PublicApisScreen from './src/screens/PublicApisScreen';
 import AudioHapticsScreen from './src/screens/AudioHapticsScreen';
 import LottieHapticsScreen from './src/screens/LottieHapticsScreen';
+import BundlesScreen from './src/screens/BundlesScreen';
 
-type TabName = 'presets' | 'realtime' | 'audio' | 'lottie' | 'apis';
+type TabName = 'presets' | 'realtime' | 'audio' | 'lottie' | 'bundles' | 'apis';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabName>('presets');
@@ -21,6 +22,7 @@ export default function App() {
           {activeTab === 'realtime' && <RealtimeComposerScreen />}
           {activeTab === 'audio' && <AudioHapticsScreen />}
           {activeTab === 'lottie' && <LottieHapticsScreen />}
+          {activeTab === 'bundles' && <BundlesScreen />}
           {activeTab === 'apis' && <PublicApisScreen />}
         </View>
 
@@ -49,6 +51,12 @@ export default function App() {
             icon="✨"
             active={activeTab === 'lottie'}
             onPress={() => setActiveTab('lottie')}
+          />
+          <TabButton
+            title="Bundles"
+            icon="📦"
+            active={activeTab === 'bundles'}
+            onPress={() => setActiveTab('bundles')}
           />
           <TabButton
             title="APIs"
