@@ -106,6 +106,7 @@ export default defineConfig({
           label: 'Articles',
           items: [
             { label: 'Overview', slug: 'articles' },
+            { label: 'Good to read', slug: 'articles/good-to-read' },
             ...articles.map((article) => ({
               label: article.shortTitle,
               link: article.url,

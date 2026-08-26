@@ -10,6 +10,15 @@ export type Article = {
 
 export const articles: Article[] = [
   {
+    title: 'Haptic Feedback on the Web: Why the Web Deliberately Refuses to Be as Tactile as Native Apps?',
+    shortTitle: 'Haptic Feedback on the Web',
+    url: 'https://swmansion.com/blog/haptic-feedback-on-the-web-why-the-web-deliberately-refuses-to-be-as-tactile-as-native-apps/',
+    source: 'Software Mansion Blog',
+    publishedAt: 'Aug 18, 2026',
+    imageUrl: 'https://strapi-production-5f3f.up.railway.app/uploads/BLOGPOST_Web_Haptics_5b56b0e1bf.png',
+    imageAlt: 'Banner for the article Haptic Feedback on the Web',
+  },
+  {
     title: 'What Is the Difference Between iOS and Android Haptics',
     shortTitle: 'iOS vs Android Haptics',
     url: 'https://swmansion.com/blog/what-is-the-difference-between-i-os-and-android-haptics/',

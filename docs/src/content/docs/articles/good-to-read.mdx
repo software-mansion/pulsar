@@ -1,0 +1,34 @@
+---
+title: Good to read
+description: A curated list of talks, platform guidelines, and other external resources that explain haptics well.
+pagination: false
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Haptics is a small field with a lot of scattered knowledge. These are external
+resources we keep coming back to — worth your time if you want to understand how
+haptics work and how each platform expects you to use them.
+
+## Talks
+
+<LinkCard
+  title="Haptics: Untapped Potential — Kacper Kapuściak, Chain React 2026"
+  href="https://www.youtube.com/watch?v=GYQ85O7H_PQ"
+  description="A tour of how haptics work under the hood and what it takes to make an ordinary mobile interaction something users can actually feel."
+/>
+
+## Platform guidelines
+
+<CardGrid>
+  <LinkCard
+    title="Playing haptics — Apple Human Interface Guidelines"
+    href="https://developer.apple.com/design/human-interface-guidelines/playing-haptics"
+    description="Apple's design guidance on when haptics help, the standard iOS feedback patterns, and how to keep custom haptics consistent with the system."
+  />
+  <LinkCard
+    title="Implement haptics on Android — Android Developers"
+    href="https://developer.android.com/develop/ui/views/haptics"
+    description="How Android's vibration actuators, primitives, and constants work, plus how to design rich feedback that degrades gracefully across devices."
+  />
+</CardGrid>
