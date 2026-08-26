@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import swmGeo, { structuredData } from './swm-geo.mjs';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
@@ -29,6 +30,7 @@ export default defineConfig({
     },
   },
   integrations: [
+    swmGeo({ name: 'Pulsar', description: 'Haptic feedback library for Swift, Kotlin and React Native', repository: 'pulsar' }),
     starlight({
       title: 'Pulsar',
       customCss: [
@@ -42,6 +44,7 @@ export default defineConfig({
       // declarations and are then ignored by the browser (falling back to a
       // system font). A head <link> is order-independent and always applies.
       head: [
+        { tag: 'script', attrs: { type: 'application/ld+json' }, content: JSON.stringify(structuredData({ name: 'Pulsar', description: 'Haptic feedback library for Swift, Kotlin and React Native', repository: 'pulsar' })) },
         { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
         {
           tag: 'link',
