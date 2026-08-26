@@ -7,6 +7,7 @@ import { PlaygroundScreen } from './screens/PlaygroundScreen';
 import { DemosScreen } from './screens/DemosScreen';
 import { GamesScreen } from './screens/GamesScreen';
 import { DemoScreen, isDemoSlug } from './screens/demos';
+import { GameScreen, isGameSlug } from './screens/games';
 
 const TAB_IDS: TabId[] = ['presets', 'playground', 'demos', 'games'];
 
@@ -29,7 +30,13 @@ export function App() {
 
   function renderScreen() {
     if (tab === 'playground') return <PlaygroundScreen />;
-    if (tab === 'games') return <GamesScreen />;
+    if (tab === 'games') {
+      return isGameSlug(sub) ? (
+        <GameScreen slug={sub} onBack={() => navigate('games')} />
+      ) : (
+        <GamesScreen onOpen={(slug) => navigate(`games/${slug}`)} />
+      );
+    }
     if (tab === 'demos') {
       return isDemoSlug(sub) ? (
         <DemoScreen slug={sub} onBack={() => navigate('demos')} />

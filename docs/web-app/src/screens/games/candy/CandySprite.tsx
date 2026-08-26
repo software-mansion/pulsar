@@ -1,0 +1,91 @@
+import { CANDIES, type CandyShape } from './palette';
+import type { SpecialKind } from './engine';
+
+/**
+ * One candy, drawn as SVG.
+ *
+ * Shape carries the same information as colour so the board stays playable
+ * without colour vision, and specials are drawn as overlays on top of the base
+ * silhouette — a striped lemon is still recognisably a lemon.
+ */
+
+const SHAPES: Record<CandyShape, string> = {
+  circle: 'M50 10a40 40 0 1 0 0 80a40 40 0 1 0 0-80Z',
+  square:
+    'M30 12h40a18 18 0 0 1 18 18v40a18 18 0 0 1-18 18H30a18 18 0 0 1-18-18V30a18 18 0 0 1 18-18Z',
+  diamond: 'M50 6 94 50 50 94 6 50Z',
+  hex: 'M50 7 89 28.5v43L50 93 11 71.5v-43Z',
+  drop: 'M50 7c22 21 38 37 38 52a38 38 0 0 1-76 0c0-15 16-31 38-52Z',
+  star: 'M50 6 61.2 34.6 91.9 36.4 68.1 55.9 75.9 85.6 50 69 24.1 85.6 31.9 55.9 8.1 36.4 38.8 34.6Z',
+};
+
+type Props = {
+  color: number;
+  special: SpecialKind;
+};
+
+export function CandySprite({ color, special }: Props) {
+  const candy = CANDIES[color] ?? CANDIES[0];
+  const bomb = special === 'bomb';
+
+  return (
+    <svg className="candy__art" viewBox="0 0 100 100" aria-hidden="true">
+      {bomb ? (
+        // A colour bomb belongs to no colour: a dark sphere speckled with every
+        // candy hue, so it reads as "all of them at once".
+        <>
+          <circle cx="50" cy="50" r="40" fill="#1b1b3a" />
+          {CANDIES.map((entry, index) => {
+            const angle = (index / CANDIES.length) * Math.PI * 2 - Math.PI / 2;
+            return (
+              <circle
+                key={entry.name}
+                cx={50 + Math.cos(angle) * 22}
+                cy={50 + Math.sin(angle) * 22}
+                r="8.5"
+                fill={entry.color}
+              />
+            );
+          })}
+          <circle cx="38" cy="34" r="7" fill="#ffffff" opacity="0.5" />
+        </>
+      ) : (
+        <>
+          <path d={SHAPES[candy.shape]} fill={candy.color} />
+          <path d={SHAPES[candy.shape]} fill="none" stroke="rgba(0,26,114,0.22)" strokeWidth="3" />
+          <ellipse cx="38" cy="31" rx="13" ry="9" fill={candy.sheen} opacity="0.75" />
+
+          {(special === 'stripedH' || special === 'stripedV') && (
+            <g opacity="0.92" transform={special === 'stripedV' ? 'rotate(90 50 50)' : undefined}>
+              {[-14, 0, 14].map((offset) => (
+                <rect
+                  key={offset}
+                  x="12"
+                  y={46 + offset}
+                  width="76"
+                  height="7"
+                  rx="3.5"
+                  fill="#ffffff"
+                />
+              ))}
+            </g>
+          )}
+
+          {special === 'wrapped' && (
+            <>
+              <path
+                d={SHAPES[candy.shape]}
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="7"
+                opacity="0.9"
+                transform="scale(0.62) translate(31 31)"
+              />
+              <path d="M8 50h84M50 8v84" stroke="#ffffff" strokeWidth="6" opacity="0.75" />
+            </>
+          )}
+        </>
+      )}
+    </svg>
+  );
+}

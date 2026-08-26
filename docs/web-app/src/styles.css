@@ -72,6 +72,47 @@ a {
   overflow: hidden;
 }
 
+/*
+ * Super-combo screen kick. Amplitude comes in as `--shake` so one keyframe
+ * serves every intensity, and the whole shell moves — board, HUD and tab bar —
+ * because a wipeout should read as an impact on the app rather than a panel
+ * wobbling inside it.
+ */
+.shell--shaking {
+  animation: screen-shake 520ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes screen-shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  12% {
+    transform: translate3d(calc(var(--shake, 8px) * -1), calc(var(--shake, 8px) * 0.45), 0)
+      rotate(-0.5deg);
+  }
+  26% {
+    transform: translate3d(calc(var(--shake, 8px) * 0.82), calc(var(--shake, 8px) * -0.5), 0)
+      rotate(0.45deg);
+  }
+  40% {
+    transform: translate3d(calc(var(--shake, 8px) * -0.6), calc(var(--shake, 8px) * -0.28), 0)
+      rotate(-0.32deg);
+  }
+  56% {
+    transform: translate3d(calc(var(--shake, 8px) * 0.44), calc(var(--shake, 8px) * 0.34), 0)
+      rotate(0.24deg);
+  }
+  72% {
+    transform: translate3d(calc(var(--shake, 8px) * -0.26), calc(var(--shake, 8px) * -0.18), 0)
+      rotate(-0.14deg);
+  }
+  88% {
+    transform: translate3d(calc(var(--shake, 8px) * 0.12), calc(var(--shake, 8px) * 0.09), 0)
+      rotate(0.06deg);
+  }
+}
+
 /* On a roomy screen the app reads as a device sitting on the page. */
 @media (min-width: 900px) {
   body {
@@ -681,4 +722,843 @@ input[type='range'] {
   place-items: center;
   padding: 0;
   border-radius: var(--radius);
+}
+
+/* ----------------------------------------------------------- candy game -- */
+
+.candy-hud {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 12px;
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.counter--right {
+  align-items: flex-end;
+}
+
+.counter__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/*
+ * The delta chip is absolutely positioned against this, so the counter can
+ * throw a "+240" without the HUD reflowing and shoving the board down.
+ */
+.counter__slot {
+  position: relative;
+  display: block;
+}
+
+.counter__value {
+  display: inline-block;
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* digits stop jittering mid-count */
+  animation: counter-pop 420ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  transform-origin: center bottom;
+}
+
+.counter--right .counter__value {
+  transform-origin: right bottom;
+}
+
+.counter__value--warn {
+  color: var(--danger);
+}
+
+/*
+ * The pop. It also flashes the number's colour and lights a glow behind it, so
+ * a score bump reads at the edge of vision while the player is watching the
+ * board rather than the HUD.
+ */
+@keyframes counter-pop {
+  0% {
+    transform: scale(1);
+  }
+  28% {
+    transform: scale(1.3);
+    color: var(--accent);
+    text-shadow: 0 0 14px rgba(56, 172, 221, 0.85);
+  }
+  55% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: none;
+  }
+}
+
+.counter--moves .counter__value {
+  animation-name: counter-pop-moves;
+}
+
+/* Moves only ever go down, so its flash is a warning tone, not a reward. */
+@keyframes counter-pop-moves {
+  0% {
+    transform: scale(1);
+  }
+  28% {
+    transform: scale(1.22);
+    color: var(--danger);
+    text-shadow: 0 0 12px rgba(255, 98, 89, 0.75);
+  }
+  55% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: none;
+  }
+}
+
+.counter__delta {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: counter-delta 900ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+.counter--right .counter__delta {
+  left: auto;
+  right: 0;
+}
+
+.counter--moves .counter__delta {
+  background: var(--danger);
+}
+
+@keyframes counter-delta {
+  0% {
+    transform: translateY(6px) scale(0.7);
+    opacity: 0;
+  }
+  22% {
+    transform: translateY(-2px) scale(1.06);
+    opacity: 1;
+  }
+  38% {
+    transform: translateY(-4px) scale(1);
+  }
+  100% {
+    transform: translateY(-26px) scale(0.94);
+    opacity: 0;
+  }
+}
+
+/*
+ * The board is the positioning context for everything: candies are absolutely
+ * placed and moved with percentage translations, so one `aspect-ratio` box
+ * drives the layout at every screen size without a single pixel measurement.
+ */
+.candy-board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(213, 238, 249, 0.9)), var(--surface);
+  overflow: hidden;
+  touch-action: none; /* the board owns dragging; the page must not scroll */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.candy {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12.5%; /* 100% / COLS */
+  height: 12.5%; /* 100% / ROWS */
+  will-change: transform;
+  transition: transform 265ms cubic-bezier(0.35, 1.35, 0.55, 1);
+  /*
+   * Freshly spawned candies mount at their final grid position, so the drop-in
+   * has to come from `translate`, which composes with (rather than overwrites)
+   * the `transform` that places them.
+   *
+   * This runs once, when the element is created — but only for as long as
+   * `animation` is never overridden anywhere else. Setting `animation: none` in
+   * an interaction class (and thereby restoring it when the class comes off)
+   * changes `animation-name`, which RESTARTS the drop-in: the candy jumps 2.2
+   * cells above the board and falls back through its neighbours. Do not reach
+   * for `animation: none` on `.candy`; use a transition instead.
+   */
+  animation: candy-drop-in 265ms cubic-bezier(0.35, 1.35, 0.55, 1);
+}
+
+/*
+ * While a candy is being pushed it must track the finger, so the settling
+ * transition is cut right down rather than removed — keeping a transition
+ * (instead of `none`) is what lets it spring back smoothly when the class comes
+ * off on release.
+ */
+.candy--grabbed,
+.candy--displaced {
+  transition: transform 60ms linear;
+}
+
+/*
+ * The illegal-move spring. The bounce is staged in JS rather than baked into an
+ * overshooting curve here: the stages are fractions of how far the player
+ * actually pushed, so the recoil stays inside the candy's own cell no matter
+ * how hard the swap was attempted. A curve like the grid's would scale its
+ * overshoot with the distance and throw the candy into its neighbours.
+ */
+.candy--rejecting {
+  transition: transform var(--settle-ms, 140ms) cubic-bezier(0.22, 0.85, 0.3, 1);
+}
+
+/* Only the candy under the finger lifts — the neighbour just gets shoved. */
+.candy--grabbed {
+  z-index: 2;
+}
+
+.candy--grabbed .candy__art {
+  transform: scale(1.14);
+  filter: drop-shadow(0 0 8px var(--accent)) drop-shadow(0 4px 3px rgba(0, 26, 114, 0.28));
+}
+
+@keyframes candy-drop-in {
+  from {
+    translate: 0 -220%;
+    opacity: 0;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+
+/*
+ * Sized with width/height rather than padding on `.candy`: a percentage padding
+ * would resolve against the *board's* width, not the cell's, and shrink every
+ * candy to a third of its square.
+ */
+.candy__art {
+  /*
+   * The board handles pointers by coordinate, so the artwork takes no hits.
+   * Leaving it interactive lets the browser treat an SVG as a draggable image
+   * and start its own ghost-drag on top of the gesture.
+   */
+  pointer-events: none;
+  width: 86%;
+  height: 86%;
+  margin: 7%;
+  display: block;
+  filter: drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+
+.candy--special .candy__art {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95)) drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
+}
+
+.candy--selected .candy__art {
+  transform: scale(1.16);
+  filter: drop-shadow(0 0 7px var(--accent)) drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
+}
+
+/*
+ * The nudge shown after a few idle seconds. It pulses rather than flashing once
+ * so it stays findable in peripheral vision without demanding attention, and it
+ * sits under the drag classes so grabbing the candy cancels it cleanly.
+ */
+.candy--hint .candy__art {
+  animation: candy-hint 1350ms ease-in-out infinite;
+}
+
+@keyframes candy-hint {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
+  }
+  50% {
+    transform: scale(1.13);
+    filter: drop-shadow(0 0 9px var(--accent)) drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
+  }
+}
+
+.candy--clearing {
+  /* Pointer-inert while it pops, so a fast player cannot grab a dying candy. */
+  pointer-events: none;
+}
+
+.candy--clearing .candy__art {
+  animation: candy-pop 285ms ease-in forwards;
+}
+
+@keyframes candy-pop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  35% {
+    transform: scale(1.32);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.1);
+    opacity: 0;
+  }
+}
+
+/*
+ * Spans the whole shell, not the board. The board has to clip its children
+ * (candies drop in from above it), so a canvas inside it would slice every
+ * spark off at the blue border. Up here a blast can throw confetti across the
+ * HUD and past the tab bar, and the shell's own `overflow: hidden` keeps it
+ * inside the app frame.
+ */
+.candy-particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/*
+ * `@property` is what makes the ring's angle animatable — a plain custom
+ * property is a string to the animation engine and would just snap. Where it is
+ * unsupported the fallback below keeps the gradient valid, so the ring renders
+ * as a static rainbow instead of disappearing.
+ */
+@property --banner-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ------------------------------------------------------ combo counter -- */
+
+/*
+ * The live chain counter. `--heat` runs 0 to 1 as the chain deepens and is the
+ * only thing that changes: it climbs the hue from the app's cyan through purple
+ * to red, and widens the glow. One number driving colour, glow and
+ * scale keeps a deep chain unmistakable at a glance without a second style.
+ *
+ * `top` matches `COMBO_TOP` in effects.ts, which is where its sparks are aimed.
+ */
+.candy-combo {
+  --heat: 0;
+  /*
+   * Climbs the wheel rather than descending it: cyan to blue to purple to red.
+   * Going the other way passes through green and yellow, which read as cooling
+   * off just as the chain is getting serious.
+   */
+  --combo-hue: calc(195 + var(--heat) * 165);
+
+  position: absolute;
+  left: 50%;
+  top: 13%;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 7px 18px;
+  border-radius: 999px;
+  background: hsl(var(--combo-hue) 85% 32% / 0.62);
+  -webkit-backdrop-filter: blur(10px) saturate(1.6);
+  backdrop-filter: blur(10px) saturate(1.6);
+  border: 2px solid hsl(var(--combo-hue) 95% 62%);
+  box-shadow:
+    0 0 calc(10px + var(--heat) * 26px) hsl(var(--combo-hue) 95% 60% / 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #fff;
+  pointer-events: none;
+  white-space: nowrap;
+  /*
+   * The centring has to live here, not only in the keyframes. `combo-pop` is
+   * not a `forwards` animation, so the moment it ends the element falls back to
+   * this rule — and if that rule has no transform, the counter snaps half its
+   * own width to the right and sits off-centre until the next tick.
+   */
+  transform: translate(-50%, 0);
+  animation: combo-pop 430ms cubic-bezier(0.25, 1.7, 0.4, 1);
+}
+
+.candy-combo__value {
+  font-size: calc(24px + var(--heat) * 12px);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 calc(8px + var(--heat) * 18px) hsl(var(--combo-hue) 100% 70%);
+}
+
+.candy-combo__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* Each tick lands with a slam and a shake — the shake grows with the heat. */
+@keyframes combo-pop {
+  0% {
+    transform: translate(-50%, 0) scale(1.75);
+    opacity: 0;
+  }
+  22% {
+    transform: translate(-50%, 0) scale(0.9);
+    opacity: 1;
+  }
+  42% {
+    transform: translate(-50%, 0) scale(1.08) rotate(calc(var(--heat) * 2.5deg));
+  }
+  62% {
+    transform: translate(-50%, 0) scale(0.98) rotate(calc(var(--heat) * -2deg));
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1) rotate(0deg);
+  }
+}
+
+/* Chain over: it swells and fades rather than blinking out. */
+.candy-combo--out {
+  animation: combo-out 400ms cubic-bezier(0.3, 0, 0.6, 1) forwards;
+}
+
+@keyframes combo-out {
+  0% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -18px) scale(1.45);
+    opacity: 0;
+  }
+}
+
+/*
+ * Banners share a shell — translucent pill, blurred backdrop, gradient rim —
+ * and then each kind overrides the parts that carry meaning: its colour, how
+ * fast the rim turns, how big the text is, and above all how it enters and
+ * leaves. A bonus tip should not arrive like a wipeout.
+ *
+ * `--banner-top` must match `BANNER_TOP` in effects.ts, which is where the
+ * banner's own sparks are thrown.
+ */
+.candy-banner {
+  --banner-angle: 0deg; /* fallback for engines without @property */
+  --banner-top: 38%;
+  --banner-ring-speed: 2200ms;
+  --banner-tint: rgba(0, 26, 114, 0.58);
+  --banner-ring: conic-gradient(
+    from var(--banner-angle),
+    #38acdd,
+    #ffc93c,
+    #ff5a5f,
+    #a06be8,
+    #3dd68c,
+    #38acdd
+  );
+
+  position: absolute;
+  left: 50%;
+  top: var(--banner-top);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  /*
+   * Translucent on purpose: the celebration should sit *over* the cascade that
+   * earned it, not hide it. The blur keeps the text legible against whatever
+   * colours happen to be churning underneath.
+   */
+  background: var(--banner-tint);
+  -webkit-backdrop-filter: blur(14px) saturate(1.7);
+  backdrop-filter: blur(14px) saturate(1.7);
+  box-shadow:
+    0 12px 32px rgba(0, 26, 114, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  isolation: isolate;
+  /* Resting position, so the pill is never centred by an animation alone. */
+  transform: translate(-50%, 0);
+}
+
+/* Sheen: a highlight that sweeps across once as the banner arrives. Sits in
+ * ::before so it passes under the text rather than washing over it. */
+.candy-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(130% 150% at 50% 0%, rgba(255, 255, 255, 0.3), transparent 62%),
+    linear-gradient(100deg, transparent 22%, rgba(255, 255, 255, 0.4) 46%, transparent 68%);
+  background-size:
+    100% 100%,
+    240% 100%;
+  background-repeat: no-repeat;
+  animation: banner-sheen 1400ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+@keyframes banner-sheen {
+  from {
+    background-position:
+      0 0,
+      -130% 0;
+  }
+  to {
+    background-position:
+      0 0,
+      130% 0;
+  }
+}
+
+/*
+ * The rim. A gradient masked down to a 2px ring — `exclude` knocks the middle
+ * out so only the border of the pill is painted.
+ */
+.candy-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: var(--banner-ring);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: banner-ring var(--banner-ring-speed) linear infinite;
+}
+
+@keyframes banner-ring {
+  to {
+    --banner-angle: 360deg;
+  }
+}
+
+.candy-banner__title {
+  position: relative;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-shadow: 0 0 18px rgba(56, 172, 221, 0.75);
+}
+
+.candy-banner__detail {
+  position: relative;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* ------------------------------------------------------- banner kinds -- */
+
+/* A tip, not a trophy: cool, calm, and it rises gently into place. */
+.candy-banner--bonus {
+  --banner-tint: rgba(11, 92, 128, 0.6);
+  --banner-ring: linear-gradient(120deg, var(--accent), #b5e1f1, var(--accent));
+  animation: banner-bonus 1700ms cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
+}
+
+.candy-banner--bonus .candy-banner__title {
+  font-size: 21px;
+  text-shadow: 0 0 14px rgba(56, 172, 221, 0.9);
+}
+
+/* The rim does not spin here — a static sweep keeps it quiet. */
+.candy-banner--bonus::after {
+  animation: none;
+}
+
+@keyframes banner-bonus {
+  0% {
+    transform: translate(-50%, 30px) scale(0.9);
+    opacity: 0;
+  }
+  12% {
+    transform: translate(-50%, 0) scale(1.03);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -16px) scale(0.97);
+    opacity: 0;
+  }
+}
+
+/* Chain reactions run hot: gold, tilted in, floating away like a score pop. */
+.candy-banner--cascade {
+  --banner-tint: rgba(104, 62, 6, 0.58);
+  --banner-ring: conic-gradient(from var(--banner-angle), #ffc93c, #ff9f45, #ff5a5f, #ffc93c);
+  --banner-ring-speed: 3200ms;
+  animation: banner-cascade 1300ms cubic-bezier(0.3, 1.2, 0.4, 1) forwards;
+}
+
+.candy-banner--cascade .candy-banner__title {
+  text-shadow: 0 0 18px rgba(255, 201, 60, 0.85);
+}
+
+@keyframes banner-cascade {
+  0% {
+    transform: translate(-50%, 14px) scale(0.6) rotate(-7deg);
+    opacity: 0;
+  }
+  14% {
+    transform: translate(-50%, 0) scale(1.16) rotate(3deg);
+    opacity: 1;
+  }
+  26% {
+    transform: translate(-50%, 0) scale(1) rotate(0deg);
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -44px) scale(0.9) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* A special combo slams down from above, then bursts outward on the way out. */
+.candy-banner--combo {
+  animation: banner-combo 1500ms cubic-bezier(0.25, 1, 0.35, 1) forwards;
+}
+
+@keyframes banner-combo {
+  0% {
+    transform: translate(-50%, -46px) scale(1.3);
+    opacity: 0;
+  }
+  10% {
+    transform: translate(-50%, 7px) scale(0.93);
+    opacity: 1;
+  }
+  19% {
+    transform: translate(-50%, 0) scale(1.06);
+  }
+  28% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* The loudest one: near-black, a fast rim, and it detonates on both ends. */
+.candy-banner--super {
+  --banner-tint: rgba(9, 8, 34, 0.66);
+  --banner-ring-speed: 1100ms;
+  padding: 16px 32px;
+  box-shadow:
+    0 16px 44px rgba(0, 26, 114, 0.5),
+    0 0 30px rgba(160, 107, 232, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: banner-super 1900ms cubic-bezier(0.2, 1.1, 0.3, 1) forwards;
+}
+
+.candy-banner--super .candy-banner__title {
+  font-size: 33px;
+  letter-spacing: -0.01em;
+  text-shadow:
+    0 0 22px rgba(255, 255, 255, 0.9),
+    0 0 44px rgba(160, 107, 232, 0.8);
+}
+
+@keyframes banner-super {
+  0% {
+    transform: translate(-50%, 0) scale(0.15);
+    opacity: 0;
+  }
+  8% {
+    transform: translate(-50%, 0) scale(1.34);
+    opacity: 1;
+  }
+  17% {
+    transform: translate(-50%, 0) scale(0.94);
+  }
+  25% {
+    transform: translate(-50%, 0) scale(1.07);
+  }
+  33% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -12px) scale(1.55);
+    opacity: 0;
+  }
+}
+
+/*
+ * Shockwave. A ring that expands out of the pill and fades, drawn as its own
+ * element because ::before and ::after are already the sheen and the rim.
+ */
+.candy-banner__wave {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  animation: banner-wave 760ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes banner-wave {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Housekeeping. No rim, no fanfare — it just says what happened. */
+.candy-banner--info {
+  --banner-tint: rgba(43, 133, 171, 0.6);
+  animation: banner-info 1500ms ease-out forwards;
+}
+
+.candy-banner--info .candy-banner__title {
+  font-size: 21px;
+  text-shadow: none;
+}
+
+.candy-banner--info::after {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  animation: none;
+}
+
+@keyframes banner-info {
+  0% {
+    transform: translate(-50%, 0) scale(0.96);
+    opacity: 0;
+  }
+  10% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+  86% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -12px) scale(1);
+    opacity: 0;
+  }
+}
+
+.candy-over {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(225, 243, 250, 0.94);
+  backdrop-filter: blur(2px);
+}
+
+.candy-over__title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.candy-over__score {
+  font-size: 18px;
+  color: var(--ink-muted);
+}
+
+.candy-footnote {
+  margin-top: 12px;
+}
+
+/*
+ * Players who ask for less motion still get the game, just without the
+ * springing, popping and drop-in. Haptics and audio are untouched — they are
+ * the point of the demo, and neither is vestibular.
+ */
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * `.candy` covers the interaction classes too, and listing them separately
+   * would only invite someone to reintroduce an `animation` override that
+   * toggles. Here it is static, so nothing ever restarts.
+   */
+  .candy,
+  .candy__art,
+  .candy--hint .candy__art {
+    animation: none;
+    transition: none;
+  }
+
+  /* The hint still has to be findable without its pulse. */
+  .candy--hint .candy__art {
+    filter: drop-shadow(0 0 9px var(--accent));
+  }
+
+  .candy-combo,
+  .candy-combo--out,
+  .candy-banner,
+  .candy-banner::before,
+  .candy-banner::after,
+  .candy-banner__wave,
+  .shell--shaking,
+  .counter__value,
+  .counter__delta {
+    animation: none;
+  }
+
+  /* Without its animation the chip would sit there forever; hide it instead. */
+  .counter__delta {
+    display: none;
+  }
 }
