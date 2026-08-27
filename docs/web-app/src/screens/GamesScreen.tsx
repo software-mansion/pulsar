@@ -1,18 +1,34 @@
-import { GamepadIcon } from '../components/Icons';
+import { ChevronRightIcon } from '../components/Icons';
+import { GAMES, type GameSlug } from './games';
 
-export function GamesScreen() {
+type Props = {
+  onOpen: (slug: GameSlug) => void;
+};
+
+export function GamesScreen({ onOpen }: Props) {
   return (
     <div className="screen">
       <h1 className="title">Games</h1>
-      <p className="lead">Haptics make games feel physical. This is where they will live.</p>
+      <p className="lead">
+        Haptics make games feel physical. Every hit, drop and combo below is a Pulsar pattern.
+      </p>
 
-      <div className="card placeholder">
-        <GamepadIcon size={44} />
-        <h2 className="subtitle">Coming soon</h2>
-        <p className="lead" style={{ marginTop: 0 }}>
-          We are building a set of small games that lean on haptics for feedback — hits, misses,
-          near-misses and the rest. Nothing to play just yet.
-        </p>
+      <div className="stack">
+        {GAMES.map((game) => (
+          <button
+            key={game.slug}
+            type="button"
+            className="row-card"
+            onClick={() => onOpen(game.slug)}
+          >
+            <span>
+              <span className="row-card__label">{game.title}</span>
+              <br />
+              <span className="muted">{game.tagline}</span>
+            </span>
+            <ChevronRightIcon size={20} />
+          </button>
+        ))}
       </div>
 
       <a className="footer-link" href="../">

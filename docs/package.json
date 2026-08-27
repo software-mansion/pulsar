@@ -28,13 +28,16 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "sharp": "^0.34.2"
+    "sharp": "^0.34.2",
+    "typegpu": "^0.12.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.0",
+    "@webgpu/types": "^0.1.72",
     "prettier": "^3.8.1",
     "sass-embedded": "^1.97.3",
     "typed-css-modules": "^0.9.1",
+    "unplugin-typegpu": "^0.12.2",
     "vite": "^6.4.1"
   }
 }
