@@ -5,8 +5,10 @@ import {
   BurstKind,
   LOOP_STALE_MS,
   MAX_BURSTS,
+  MAX_LIFETIME_MS,
   MAX_PARTICLES,
   type Burst,
+  type FieldOptions,
   type ParticleField,
 } from './types';
 
@@ -87,7 +89,10 @@ const inRange = (value: number, lo: number, hi: number) => {
   return std.step(lo, value) * (1 - std.step(hi, value));
 };
 
-export async function createGpuParticles(canvas: HTMLCanvasElement): Promise<ParticleField> {
+export async function createGpuParticles(
+  canvas: HTMLCanvasElement,
+  options: FieldOptions = {},
+): Promise<ParticleField> {
   // Device and shaders are brought up *before* the canvas context is claimed.
   // `getContext('webgpu')` is irreversible — once it succeeds the same element
   // can never hand out a 2D context — so anything that might fail (no adapter,
@@ -312,9 +317,24 @@ export async function createGpuParticles(canvas: HTMLCanvasElement): Promise<Par
   let height = 0;
   let cursor = 0;
   let elapsed = 0;
+  /** Inert: stops accepting and drawing. Set by a loss as well as a teardown. */
   let destroyed = false;
+  /** Torn down: the GPU resources have been handed back. Only `destroy()` sets it. */
+  let released = false;
   /** Seeded so bursts emitted before the very first frame are still accepted. */
   let lastFrameAt = performance.now();
+  /**
+   * When the pool is guaranteed empty again.
+   *
+   * The game is idle most of the time — a player thinking about their next swap
+   * is several seconds of nothing to draw. Dispatching a 6144-thread compute
+   * pass and a full-screen render pass at 60fps through all of that keeps a
+   * phone's GPU at load for no picture at all, which is what heats a device up
+   * and, on a memory-tight one, is what eventually costs us the device
+   * altogether. Bursts are the only thing that create work, so `emit` pushes
+   * this out and `frame` skips both passes once it has gone by.
+   */
+  let busyUntil = 0;
   let originX = 0;
   let originY = 0;
   const pending: Burst[] = [];
@@ -350,12 +370,19 @@ export async function createGpuParticles(canvas: HTMLCanvasElement): Promise<Par
       // Shifted here rather than at the call site: effects are written in board
       // coordinates and should stay that way.
       pending.push({ ...burst, x: burst.x + originX, y: burst.y + originY });
+      busyUntil = performance.now() + MAX_LIFETIME_MS;
     },
 
     frame(dt) {
       if (destroyed) return;
       lastFrameAt = performance.now();
       elapsed += dt;
+
+      // Nothing alive and nothing queued: the last drawn frame was already
+      // empty, so leave it on screen rather than clearing it again. See
+      // `busyUntil`.
+      if (pending.length === 0 && lastFrameAt > busyUntil) return;
+
       frameBuffer.write({ resolution: d.vec2f(width, height), dt, time: elapsed });
 
       if (pending.length > 0) {
@@ -398,18 +425,61 @@ export async function createGpuParticles(canvas: HTMLCanvasElement): Promise<Par
     },
 
     clear() {
+      if (destroyed) return;
       pending.length = 0;
       cursor = 0;
       particleBuffer.clear();
     },
 
     destroy() {
-      if (destroyed) return;
+      if (released) return;
+      released = true;
       destroyed = true;
       pending.length = 0;
       root.destroy();
     },
   };
+
+  /**
+   * Losing the GPU out from under the game.
+   *
+   * A phone takes its device away for reasons the page never sees: memory
+   * pressure, the browser going to the background, a driver reset. What is left
+   * behind is the worst possible thing to leave behind — this canvas is
+   * stretched over the entire app shell at `z-index: 20`, so a context that has
+   * stopped presenting is a sheet of nothing covering the board, the HUD and
+   * the tab bar, while `pointer-events: none` lets every touch through to a
+   * game that is still running perfectly well underneath it. That is the white
+   * screen you can still play blind.
+   *
+   * So a loss is reported rather than swallowed: the field goes inert and the
+   * caller throws this canvas away and stands a fresh one up on Canvas 2D.
+   */
+  const reportLost = (reason: string) => {
+    // `released` rather than `destroyed`: a field that has gone inert on its
+    // own still owns its buffers, and the caller's teardown has to be able to
+    // hand them back.
+    if (released || destroyed) return;
+    destroyed = true;
+    pending.length = 0;
+    options.onLost?.(reason);
+  };
+
+  // Tearing the root down ourselves resolves this promise too, which `released`
+  // is what distinguishes from a device that went away on its own.
+  void root.device.lost.then((info) => reportLost(info.message || 'GPU device lost'));
+
+  // Out of memory is fatal in the same way but arrives on a different channel,
+  // and is the likeliest of the two on a phone. Validation errors are the
+  // game's own bugs and must stay loud rather than silently downgrading it.
+  root.device.addEventListener('uncapturederror', (event) => {
+    const error = (event as GPUUncapturedErrorEvent).error;
+    if (typeof GPUOutOfMemoryError !== 'undefined' && error instanceof GPUOutOfMemoryError) {
+      reportLost(`GPU out of memory: ${error.message}`);
+      return;
+    }
+    console.error('[shape] WebGPU error:', error);
+  });
 
   field.resize(canvas.clientWidth || 1, canvas.clientHeight || 1);
   particleBuffer.clear();

@@ -93,7 +93,14 @@ export function Counter({ value, label, tone, align = 'left', warn = false }: Pr
 
       <span className="counter__slot">
         <span
-          key={popId}
+          /*
+           * Namespaced because the delta chips are siblings in this same slot
+           * and their ids advance in lockstep with `popId` — both counters are
+           * bumped by the very same change. Bare numbers collided on every
+           * bump, and React resolves a duplicate key by dropping one of the
+           * two children, which is the value itself as often as the chip.
+           */
+          key={`value-${popId}`}
           className={`counter__value${warn ? ' counter__value--warn' : ''}`}
           // Announce the settled value, not every frame of the tween.
           aria-label={`${label}: ${value}`}
@@ -102,7 +109,7 @@ export function Counter({ value, label, tone, align = 'left', warn = false }: Pr
         </span>
 
         {deltas.map((delta) => (
-          <span key={delta.id} className="counter__delta" aria-hidden="true">
+          <span key={`delta-${delta.id}`} className="counter__delta" aria-hidden="true">
             {delta.text}
           </span>
         ))}
