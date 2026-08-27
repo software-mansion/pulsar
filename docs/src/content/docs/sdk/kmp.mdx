@@ -420,6 +420,20 @@ Parses a `PatternData` object and prepares it for playback.
 fun parsePattern(pattern: PatternData)
 ```
 
+#### `parsePatternWithSound(pattern, sound)`
+
+:::caution[Unreleased API]
+Synchronized sound is not part of the latest release (`0.1.0`). It is available on [`main`](https://github.com/software-mansion/pulsar) and will ship in a future release — until then, depend on the repository directly to use it.
+:::
+
+Parses a pattern together with a short sound played in sync with the haptics.
+
+```kotlin
+fun parsePatternWithSound(pattern: PatternData, sound: SoundData)
+```
+
+On Android, an explicit `.ogg` with baked haptic channels enables audio-coupled sync on supported devices; any other file — or a bare name, which defaults to `.wav` — plays the audio while the pattern's own haptics fire in parallel. On iOS the sound is registered as a Core Haptics audio event on the pattern's timeline. See [`SoundData`](#sounddata).
+
 #### `playPattern(pattern)`
 
 Convenience method that parses and immediately plays a pattern.
@@ -724,6 +738,28 @@ data class PatternData(
 ```
 
 A secondary constructor accepts the raw triplet form (`List<List<List<Float>>>` for continuous, `List<List<Float>>` for discrete) for parity with serialized pattern definitions.
+
+### SoundData
+
+:::caution[Unreleased API]
+Not part of the latest release (`0.1.0`) — available on [`main`](https://github.com/software-mansion/pulsar) only.
+:::
+
+A short sound to play in sync with a haptic pattern via [`parsePatternWithSound`](#parsepatternwithsoundpattern-sound).
+
+```kotlin
+data class SoundData(
+  val uri: String,          // File path, file:// uri, or bundled resource name
+  val volume: Float = 1f,   // Playback volume (0-1)
+  val offset: Long = 0L,    // Audio delay relative to haptics, in ms
+  val startMs: Long = 0L,   // Where playback begins in the source file, in ms
+  val durationMs: Long = 0L // How much to play from startMs, in ms (0 = to the end)
+)
+```
+
+The format comes from `uri`'s extension; when none is given the default is `.wav`, so a bare name like `"beep"` resolves `beep.wav` on both platforms (iOS app bundle / Android `res/raw`).
+
+`startMs` and `durationMs` trim the clip: `startMs` is where playback begins in the source file and `durationMs` is how much of it to play (`0` plays to the end). The audio is sliced to that window before playing rather than seeked at runtime, so one bundled file can back several trimmed sounds without losing sync.
 
 ### ContinuousPattern
 

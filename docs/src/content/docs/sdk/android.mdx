@@ -598,6 +598,20 @@ Parses a `PatternData` object and prepares it for playback.
 fun parsePattern(hapticsData: PatternData)
 ```
 
+#### `parsePatternWithSound(hapticsData, sound)`
+
+:::caution[Unreleased API]
+Synchronized sound is not part of the latest release (`1.3.0`). It is available on [`main`](https://github.com/software-mansion/pulsar) and will ship in a future release — until then, depend on the repository directly to use it.
+:::
+
+Parses a pattern together with a short sound played in sync with the haptics.
+
+```kotlin
+fun parsePatternWithSound(hapticsData: PatternData, sound: SoundData)
+```
+
+On devices that support audio-coupled haptics, provide an **`.ogg`** whose baked haptic channels drive the vibrator for perfect, single-stream sync. Any other file — `.wav`/`.mp3`, or a bare name (which defaults to `.wav`) — plays the audio while the pattern's own generated `VibrationEffect` fires in parallel. See [`SoundData`](#sounddata) for `uri`, `volume`, `offset`, `hapticChannels`, and the `startMs`/`durationMs` trim window.
+
 #### `play()`
 
 Plays the previously parsed pattern.
@@ -833,6 +847,29 @@ data class PatternData(
   val discretePattern: List<ConfigPoint>
 )
 ```
+
+### SoundData
+
+:::caution[Unreleased API]
+Not part of the latest release (`1.3.0`) — available on [`main`](https://github.com/software-mansion/pulsar) only.
+:::
+
+A short sound to play in sync with a haptic pattern via [`parsePatternWithSound`](#parsepatternwithsoundhapticsdata-sound).
+
+```kotlin
+data class SoundData(
+  val uri: String,             // File path, file:// uri, or res/raw resource name
+  val volume: Float = 1f,      // Playback volume (0-1)
+  val offset: Long = 0L,       // Audio delay relative to haptics, in ms (fallback path)
+  val hapticChannels: Boolean = true,
+  val startMs: Long = 0L,      // Where playback begins in the source file, in ms
+  val durationMs: Long = 0L    // How much to play from startMs, in ms (0 = to the end)
+)
+```
+
+The format comes from `uri`'s extension; when none is given the default is `.wav`, so a bare name like `"beep"` loads `res/raw/beep.wav`. Only an explicit `.ogg` with baked haptic channels uses the audio-coupled path (on supported devices); everything else plays the audio while the pattern's own haptics fire in parallel. Set `hapticChannels = false` to force that fallback for an `.ogg` that does not carry haptic channels.
+
+`startMs` and `durationMs` trim the clip: `startMs` is where playback begins in the source file and `durationMs` is how much of it to play (`0` plays to the end). The audio is sliced to that window before playing rather than seeked at runtime, so one bundled file can back several trimmed sounds without losing sync.
 
 ### ContinuousPattern
 

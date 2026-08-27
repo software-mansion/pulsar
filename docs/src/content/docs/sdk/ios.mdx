@@ -496,6 +496,29 @@ Parses a `PatternData` object and prepares it for playback.
 func parsePattern(hapticsData: PatternData)
 ```
 
+#### `parsePatternWithSound(hapticsData:uri:volume:offset:start:duration:)`
+
+:::caution[Unreleased API]
+Synchronized sound is not part of the latest release (`1.4.0`). It is available on [`main`](https://github.com/software-mansion/pulsar) and will ship in a future release — until then, point your SPM or CocoaPods dependency at the repository to use it.
+:::
+
+Parses a pattern together with a short sound played in sync with the haptics. The sound is registered as a Core Haptics audio event on the **same timeline** as the pattern, so audio and haptics stay sample-accurate. `volume` (0–1) and `offset` (milliseconds, shifting the audio relative to the haptics) are optional.
+
+```swift
+func parsePatternWithSound(
+  hapticsData: PatternData,
+  uri: String,
+  volume: Float = 1,
+  offset: Double = 0,
+  start: Double = 0,
+  duration: Double = 0
+)
+```
+
+`uri` must resolve to a **local** file — an absolute path, a `file://` URL, or the name of a resource bundled in the app. When no extension is given it defaults to `.wav`, so a bare name like `"beep"` resolves `beep.wav` from the app bundle (add the file to your target's **Copy Bundle Resources**). Requires a real device — Core Haptics is unavailable on the simulator — and a missing or unregisterable file degrades gracefully to haptics-only.
+
+`start` and `duration` (both in milliseconds) trim the clip: `start` is where playback begins in the source file, `duration` is how much of it to play (`0` plays to the end). Core Haptics registers an audio resource by URL only, so when either is set the file is sliced to a temporary `.caf` first — the temp file is cleaned up on the next parse and on dispose.
+
 #### `playPattern(hapticsData:)`
 
 Parses and immediately plays a pattern. Equivalent to calling `parsePattern` followed by `play`.
