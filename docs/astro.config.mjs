@@ -187,8 +187,9 @@ export default defineConfig({
     }),
     react(),
     sitemap({
-      // figma-preview is a headless embed surface (noindex) — keep it out of
-      // the sitemap so we don't invite Google to index it.
+      // figma-preview is now only a redirect stub pointing at the Studio
+      // deployment that actually serves the preview — keep it out of the
+      // sitemap so we don't invite Google to index a bounce page.
       filter: (page) => !page.includes('/figma-preview'),
     }),
   ],
