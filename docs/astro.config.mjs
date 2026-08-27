@@ -115,10 +115,13 @@ export default defineConfig({
           label: 'Presets playground',
           slug: 'presets-playground',
         },
-        // {
-        //   label: 'AI Skills',
-        //   slug: 'skills',
-        // },
+        {
+          label: 'AI Skills',
+          items: [
+            { label: 'Overview', slug: 'skills' },
+            { label: 'Figma MCP', slug: 'skills/figma-mcp' },
+          ],
+        },
         {
           label: 'Pulsar Studio',
           link: 'https://docs.swmansion.com/pulsar/studio/',
