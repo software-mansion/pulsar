@@ -13,7 +13,9 @@ import {
   invitePattern,
   landingPattern,
   matchPattern,
+  POKE_LANDS_MS,
   playHaptic,
+  pokePattern,
   rejectPattern,
   selectPattern,
   stripeSweepPattern,
@@ -119,6 +121,16 @@ export function swapEffect() {
 export function rejectEffect() {
   playHaptic(rejectPattern, Priority.move);
   gameAudio.reject();
+}
+
+/**
+ * The mascot, poked. The hop is the panda's own business — this is the part the
+ * game owns: the haptic, and a landing thud timed to the frame it touches down
+ * on, so what you feel, hear and see are one event.
+ */
+export function pokeEffect() {
+  playHaptic(pokePattern, Priority.move);
+  window.setTimeout(() => gameAudio.land(1, 1), POKE_LANDS_MS);
 }
 
 /** A colour match clearing. `points` are the screen positions of the tiles. */
