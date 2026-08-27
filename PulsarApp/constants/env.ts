@@ -37,14 +37,15 @@ const HOSTS: Record<PulsarEnv, PulsarHosts> = {
   staging: {
     api: 'https://pulsar-server.swmtest.xyz',
     socket: 'wss://pulsar-server.swmtest.xyz',
-    preview: 'https://pulsar.swmtest.xyz/studio/figma-preview/',
+    preview: 'https://pulsar.swmtest.xyz/figma-preview/',
   },
   production: {
     api: 'https://pulsar-server.swmansion.com',
     socket: 'wss://pulsar-server.swmansion.com',
-    // The live preview ships as a subpage of Studio (same origin), not on the docs
-    // site — mirrors the Figma plugin's `preview` host.
-    preview: 'https://pulsar.swmansion.com/studio/figma-preview/',
+    // The live preview is served by the Studio deployment, at the APEX — NOT
+    // under the /studio prefix (that path falls through to the Studio SPA's
+    // index.html). Mirrors the Figma plugin's `preview` host.
+    preview: 'https://pulsar.swmansion.com/figma-preview/',
   },
 };
 
