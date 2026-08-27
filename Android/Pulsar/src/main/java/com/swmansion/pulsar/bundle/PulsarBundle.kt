@@ -64,11 +64,17 @@ class LoadedBundle internal constructor(
 }
 
 /**
- * Looks up preset handles by id when a generated descriptor builds its typed presets view.
- * `loadBundle` guarantees every id in the descriptor exists before this is used.
+ * Backs a generated presets class. `loadBundle` guarantees every descriptor id exists first.
  */
 class BundleResolver internal constructor(private val loaded: LoadedBundle) {
     operator fun get(id: String): PresetHandle = loaded.handle(id)!!
+
+    val bundleId: String get() = loaded.id
+    val revision: Int get() = loaded.revision
+    val contentHash: String get() = loaded.contentHash
+
+    fun handle(id: String): PresetHandle? = loaded.handle(id)
+    fun dispose() = loaded.dispose()
 }
 
 /** Emitted by pulsar-gen: binds a bundle asset + hash to a typed presets builder. */
@@ -80,16 +86,7 @@ class BundleDescriptor<P>(
     val build: (BundleResolver) -> P,
 )
 
-/** The typed bundle returned by `pulsar.loadBundle(SomeBundle.descriptor)`. */
-class PulsarBundle<P> internal constructor(
-    private val loaded: LoadedBundle,
-    val presets: P,
-) {
-    val id: String get() = loaded.id
-    val revision: Int get() = loaded.revision
-    val contentHash: String get() = loaded.contentHash
-    fun get(id: String): PresetHandle? = loaded.handle(id)
-    fun dispose() = loaded.dispose()
-}
+// `loadBundle` returns the generated presets class itself: Kotlin cannot forward typed members
+// through a wrapper, so the generator emits the bundle-level members onto it.
 
 class PulsarBundleException(message: String) : Exception(message)

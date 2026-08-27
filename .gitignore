@@ -24,3 +24,7 @@ kmp/**/captures/
 .mcp.json
 config.toml
 .codex
+
+# Gradle codegen plugin build artifacts
+tools/pulsar-gen-gradle/build/
+tools/pulsar-gen-gradle/.gradle/

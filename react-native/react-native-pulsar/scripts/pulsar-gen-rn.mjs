@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-// Generates a `<name>.presets.json` sidecar next to every `.pulsar` in a directory.
-// The sidecar is what gives `bundle.presets.<id>` its autocomplete (keyof inference).
+// Generates a `<name>.bundle.json` sidecar next to every `.pulsar` in a directory.
 //
 //   node scripts/pulsar-gen-rn.mjs <dir> [<dir> ...]     (default: ./assets)
 //
 // Self-contained (node:zlib only) so it needs no extra dependency in the app.
+// Mirrors tools/pulsar-gen/src/emit/rn.ts — keep the two in sync.
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
 
-function readManifest(bundlePath) {
+const SIDECAR_SCHEMA = 'pulsar.sidecar/1';
+
+function readEntries(bundlePath) {
   const buf = readFileSync(bundlePath);
   // Locate End Of Central Directory.
   let eocd = -1;
@@ -20,6 +22,7 @@ function readManifest(bundlePath) {
   if (eocd < 0) throw new Error(`${bundlePath}: not a zip`);
   let ptr = buf.readUInt32LE(eocd + 16);
   const count = buf.readUInt16LE(eocd + 10);
+  const entries = {};
   for (let n = 0; n < count; n++) {
     const method = buf.readUInt16LE(ptr + 10);
     const compSize = buf.readUInt32LE(ptr + 20);
@@ -28,28 +31,60 @@ function readManifest(bundlePath) {
     const commentLen = buf.readUInt16LE(ptr + 32);
     const localOff = buf.readUInt32LE(ptr + 42);
     const name = buf.toString('utf8', ptr + 46, ptr + 46 + nameLen);
-    if (name === 'manifest.json') {
-      const lNameLen = buf.readUInt16LE(localOff + 26);
-      const lExtraLen = buf.readUInt16LE(localOff + 28);
-      const start = localOff + 30 + lNameLen + lExtraLen;
-      const raw = buf.subarray(start, start + compSize);
-      const bytes = method === 0 ? raw : inflateRawSync(raw);
-      return JSON.parse(bytes.toString('utf8'));
-    }
+    const lNameLen = buf.readUInt16LE(localOff + 26);
+    const lExtraLen = buf.readUInt16LE(localOff + 28);
+    const start = localOff + 30 + lNameLen + lExtraLen;
+    const raw = buf.subarray(start, start + compSize);
+    entries[name] = method === 0 ? raw : inflateRawSync(raw);
     ptr += 46 + nameLen + extraLen + commentLen;
   }
-  throw new Error(`${bundlePath}: missing manifest.json`);
+  return entries;
 }
 
-function buildSidecar(manifest) {
-  const presets = {};
-  for (const p of manifest.presets) {
-    presets[p.id] = { name: p.name, audio: !!p.audio, animation: !!p.animation };
-    if (p.duration !== undefined) presets[p.id].duration = p.duration;
+function readJson(entries, path, where) {
+  const bytes = entries[path];
+  if (!bytes) throw new Error(`${where}: missing "${path}"`);
+  try {
+    return JSON.parse(bytes.toString('utf8'));
+  } catch (e) {
+    throw new Error(`${where}: "${path}" is invalid JSON — ${e.message}`);
   }
-  const sidecar = { id: manifest.id, contentHash: manifest.hash ?? '', presets };
+}
+
+function buildSidecar(entries, where) {
+  const manifest = readJson(entries, 'manifest.json', where);
+  const presets = {};
+  const droppedAnimation = [];
+  for (const p of manifest.presets) {
+    const pattern = readJson(entries, p.haptics, where);
+    if (!Array.isArray(pattern.discretePattern) || !pattern.continuousPattern) {
+      throw new Error(`${where}: "${p.haptics}" is not a device pattern`);
+    }
+    presets[p.id] = { name: p.name, pattern, audio: !!p.audio, animation: !!p.animation };
+    if (p.duration !== undefined) presets[p.id].duration = p.duration;
+
+    // Only a JSON Lottie can be inlined; a dotLottie (.lottie) is a binary zip.
+    if (p.animation) {
+      if (/\.json$/i.test(p.animation.src)) {
+        const lottie = { source: readJson(entries, p.animation.src, where) };
+        if (p.animation.frameRate !== undefined) lottie.frameRate = p.animation.frameRate;
+        if (p.animation.totalFrames !== undefined) lottie.totalFrames = p.animation.totalFrames;
+        presets[p.id].lottie = lottie;
+      } else {
+        droppedAnimation.push(p.id);
+      }
+    }
+  }
+  const sidecar = {
+    schema: SIDECAR_SCHEMA,
+    id: manifest.id,
+    contentHash: manifest.hash ?? '',
+    presets,
+  };
   if (manifest.revision !== undefined) sidecar.revision = manifest.revision;
-  return sidecar;
+
+  const withAudio = manifest.presets.filter((p) => p.audio).map((p) => p.id);
+  return { sidecar, withAudio, droppedAnimation };
 }
 
 const dirs = process.argv.slice(2);
@@ -58,9 +93,38 @@ if (dirs.length === 0) dirs.push('assets');
 for (const dir of dirs) {
   for (const file of readdirSync(dir)) {
     if (!file.endsWith('.pulsar')) continue;
-    const manifest = readManifest(join(dir, file));
-    const out = join(dir, `${basename(file, '.pulsar')}.presets.json`);
-    writeFileSync(out, JSON.stringify(buildSidecar(manifest), null, 2) + '\n');
+    const name = basename(file, '.pulsar');
+    const bundlePath = join(dir, file);
+    const { sidecar, withAudio, droppedAnimation } = buildSidecar(
+      readEntries(bundlePath),
+      bundlePath
+    );
+
+    // Minified on purpose: this file ships inside the app's JS bundle.
+    const out = join(dir, `${name}.bundle.json`);
+    writeFileSync(out, JSON.stringify(sidecar) + '\n');
     process.stderr.write(`pulsar-gen-rn: wrote ${out}\n`);
+
+    if (withAudio.length > 0) {
+      process.stderr.write(
+        `pulsar-gen-rn: warning: presets ${withAudio.join(', ')} carry audio, which is played ` +
+          'natively and cannot be inlined — they play haptics only. Use loadBundle() with the ' +
+          '.pulsar binary if you need the sound.\n'
+      );
+    }
+    if (droppedAnimation.length > 0) {
+      process.stderr.write(
+        `pulsar-gen-rn: warning: presets ${droppedAnimation.join(', ')} have an animation that ` +
+          'could not be inlined (dotLottie `.lottie` is binary — re-export it as .json, or use ' +
+          'the .pulsar binary).\n'
+      );
+    }
+    const stale = join(dir, `${name}.presets.json`);
+    if (existsSync(stale)) {
+      process.stderr.write(
+        `pulsar-gen-rn: warning: ${stale} is from the old sidecar format and is no longer read; ` +
+          'delete it and import the .bundle.json instead.\n'
+      );
+    }
   }
 }

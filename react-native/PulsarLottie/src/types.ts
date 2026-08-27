@@ -1,5 +1,5 @@
 import type { LottieViewProps } from 'lottie-react-native';
-import type { Pattern } from 'react-native-pulsar';
+import type { Pattern, PresetHandle } from 'react-native-pulsar';
 
 /**
  * How the haptics are produced while the animation plays.
@@ -24,6 +24,11 @@ export type HapticSource = Pattern | (() => void);
 
 /** Haptic-only additions layered on top of the native `LottieView` props. */
 export interface HapticConfig {
+  /**
+   * Supplies `source`, `haptics` and `durationMs` at once; each is still overridable on its own.
+   * A preset whose `animation` is undefined needs an explicit `source`.
+   */
+  preset?: PresetHandle;
   /** Haptic content to sync with the animation. Omit for a plain `LottieView`. */
   haptics?: HapticSource;
   /** Engine mode. Defaults to `realtime`. */
@@ -34,8 +39,8 @@ export interface HapticConfig {
   hapticsEnabled?: boolean;
   /**
    * Total animation length in ms (`realtime` mode). Optional — derived from the
-   * Lottie JSON source (`fr`/`ip`/`op`) when the source is an object, else from
-   * the pattern's last event. Provide it when neither is available.
+   * preset's authored duration, else the Lottie JSON source (`fr`/`ip`/`op`) when
+   * the source is an object, else the pattern's last event.
    */
   durationMs?: number;
 }
@@ -44,8 +49,15 @@ export interface HapticConfig {
  * Props for {@link HapticLottieView}: a strict superset of the native
  * `LottieView` props plus {@link HapticConfig}. With `haptics` omitted the
  * component behaves exactly like `LottieView`.
+ *
+ * `source` is required as usual, unless a {@link HapticConfig.preset} supplies it.
  */
-export type HapticLottieProps = LottieViewProps & HapticConfig;
+export type HapticLottieProps = Omit<LottieViewProps, 'source'> &
+  HapticConfig &
+  (
+    | { source: LottieViewProps['source']; preset?: PresetHandle }
+    | { source?: LottieViewProps['source']; preset: PresetHandle }
+  );
 
 /**
  * Imperative handle. Mirrors `LottieView`'s transport (`play`/`pause`/

@@ -4,7 +4,6 @@ import com.swmansion.pulsar.kmp.bundle.BundleDescriptor
 import com.swmansion.pulsar.kmp.bundle.BundleLoaderImpl
 import com.swmansion.pulsar.kmp.bundle.BundleResolver
 import com.swmansion.pulsar.kmp.bundle.LoadedBundle
-import com.swmansion.pulsar.kmp.bundle.PulsarBundle
 import com.swmansion.pulsar.kmp.bundle.PulsarBundleException
 
 class Pulsar private constructor(
@@ -84,9 +83,9 @@ class Pulsar private constructor(
      * Typed load using a `pulsar-gen`-generated descriptor:
      *
      *     val bundle = pulsar.loadBundle(AcmePack.descriptor, bytes)
-     *     bundle.presets.heartbeatV2.play()
+     *     bundle.heartbeatV2.play()
      */
-    fun <P> loadBundle(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): PulsarBundle<P> {
+    fun <P> loadBundle(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): P {
         val loaded = loadBundle(bytes)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {
             throw PulsarBundleException(
@@ -98,7 +97,7 @@ class Pulsar private constructor(
         if (missing.isNotEmpty()) {
             throw PulsarBundleException("Bundle is missing preset(s) $missing — regenerate types with pulsar-gen")
         }
-        return PulsarBundle(loaded, descriptor.build(BundleResolver(loaded)))
+        return descriptor.build(BundleResolver(loaded))
     }
 
     fun createAdaptiveHaptics(preset: AdaptivePreset): AdaptiveHaptics {

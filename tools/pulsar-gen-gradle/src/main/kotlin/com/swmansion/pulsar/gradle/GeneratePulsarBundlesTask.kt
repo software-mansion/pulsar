@@ -34,8 +34,11 @@ abstract class GeneratePulsarBundlesTask : DefaultTask() {
     @TaskAction
     fun generate() {
         val dir = bundlesDir.orNull?.asFile
-        val srcOut = generatedSrcDir.get().asFile.also { it.mkdirs() }
-        val assetsOut = generatedAssetsDir.get().asFile.resolve("pulsar").also { it.mkdirs() }
+        // Gradle does not prune output dirs, so a renamed bundle would leave a stale accessor
+        // compiling and a stale copy shipping in the APK.
+        val srcOut = generatedSrcDir.get().asFile.also { it.deleteRecursively(); it.mkdirs() }
+        val assetsOut = generatedAssetsDir.get().asFile.resolve("pulsar")
+            .also { it.deleteRecursively(); it.mkdirs() }
         if (dir == null || !dir.exists()) return
 
         dir.listFiles { f -> f.isFile && f.extension == "pulsar" }?.sortedBy { it.name }?.forEach { file ->
@@ -100,8 +103,17 @@ internal fun emitKotlin(manifest: Map<String, Any?>, assetName: String, packageN
         appendLine("    const val bundleId = \"$bundleId\"")
         appendLine("    const val contentHash = \"$hash\"")
         appendLine()
-        appendLine("    class Presets(r: BundleResolver) {")
+        // Mirrors tools/pulsar-gen/src/emit/kotlin.ts.
+        appendLine("    class Presets(private val r: BundleResolver) {")
         appendLine(fields)
+        appendLine()
+        appendLine("        val id: String get() = r.bundleId")
+        appendLine("        val revision: Int get() = r.revision")
+        appendLine("        val contentHash: String get() = r.contentHash")
+        appendLine()
+        appendLine("        fun get(id: String): PresetHandle? = r.handle(id)")
+        appendLine()
+        appendLine("        fun dispose() = r.dispose()")
         appendLine("    }")
         appendLine()
         appendLine("    val descriptor = BundleDescriptor(")

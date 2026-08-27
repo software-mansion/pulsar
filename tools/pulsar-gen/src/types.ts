@@ -50,6 +50,13 @@ export interface DevicePattern {
   discretePattern: Array<{ time: number; amplitude: number; frequency: number }>;
 }
 
+/** A Lottie carried inside a generated view, for targets that render it in JS. */
+export interface InlineLottie {
+  source: unknown;
+  frameRate?: number;
+  totalFrames?: number;
+}
+
 export type Target = 'swift' | 'kotlin' | 'dart' | 'rn';
 
 export interface GenerateOptions {
@@ -57,9 +64,17 @@ export interface GenerateOptions {
   assetName?: string;
   /** Kotlin package / Dart notice; ignored by other targets. */
   packageName?: string;
+  /** Kotlin only. KMP must set `com.swmansion.pulsar.kmp.bundle`; Android uses the default. */
+  runtimePackage?: string;
+  /** From `extractPatterns`. Required by `rn`, ignored by the others. */
+  patterns?: Record<string, DevicePattern>;
+  /** From `extractAnimations`. Inlined by `rn`, ignored by the others. */
+  animations?: Record<string, InlineLottie>;
 }
 
 export interface GeneratedFile {
   filename: string;
   content: string;
+  /** Non-fatal notes for the caller to surface. */
+  warnings?: string[];
 }

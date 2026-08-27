@@ -1,73 +1,182 @@
 import { Image } from 'react-native';
 import Pulsar from './NativeRNPulsar';
+import type { Pattern } from './types';
 
-/** A single playable preset from a loaded bundle. */
+// workaround for RN prototype caching issue
+Pulsar.PatternComposer_play;
+
+const SIDECAR_SCHEMA = 'pulsar.sidecar/1';
+
+export type PresetAnimation = {
+  readonly source: object;
+  readonly frameRate?: number;
+  readonly totalFrames?: number;
+};
+
+/**
+ * A playable preset. `hasAudio` / `hasAnimation` describe how it was *authored*; `pattern` and
+ * `animation` hold the payloads, and are populated only by `createBundle` — on the `loadBundle`
+ * path both live natively.
+ */
 export type PresetHandle = {
   readonly id: string;
+  readonly name: string;
+  readonly duration?: number;
+  readonly pattern?: Pattern;
+  readonly animation?: PresetAnimation;
+  readonly hasAudio: boolean;
+  readonly hasAnimation: boolean;
   play: () => void;
   stop: () => void;
 };
 
-/** The typed bundle returned by `loadBundle`. */
-export type Bundle<P> = {
-  readonly presets: P;
+export type BundleMeta = {
   readonly id: string;
   readonly contentHash: string;
   get: (id: string) => PresetHandle | undefined;
   dispose: () => void;
 };
 
+export type Bundle<P> = P & BundleMeta;
+
 type SidecarPreset = {
   name: string;
   duration?: number;
+  pattern: Pattern;
   audio: boolean;
   animation: boolean;
+  lottie?: { source: object; frameRate?: number; totalFrames?: number };
 };
 
-/** Shape of the generated `*.presets.json` sidecar (emitted by pulsar-gen --target rn). */
+/** Shape of the generated `*.bundle.json`. */
 export type BundleSidecar = {
+  schema: string;
   id: string;
   contentHash: string;
   revision?: number;
   presets: Record<string, SidecarPreset>;
 };
 
-/** Binds a sidecar (types) to a required `.pulsar` asset (runtime). */
+type PresetsOf<M extends BundleSidecar> = {
+  [K in keyof M['presets']]: PresetHandle;
+};
+
+function assertSidecar(sidecar: BundleSidecar | undefined): void {
+  if (sidecar?.schema !== SIDECAR_SCHEMA) {
+    throw new Error(
+      `Pulsar: expected a "${SIDECAR_SCHEMA}" sidecar but got "${sidecar?.schema ?? 'undefined'}". ` +
+        'Regenerate it with `npx pulsar-gen-rn` — sidecars written before the inline format ' +
+        '(`*.presets.json`) carry no patterns.'
+    );
+  }
+}
+
+function withNonEnumerableMeta<P extends object>(presets: P, meta: BundleMeta): Bundle<P> {
+  const descriptors = Object.fromEntries(
+    Object.entries(meta).map(([key, value]) => [key, { value, enumerable: false }])
+  );
+  return Object.defineProperties(presets, descriptors) as Bundle<P>;
+}
+
+/**
+ *     const AcmePack = createBundle(sidecar);
+ *     AcmePack.heartbeatV2.play();
+ *
+ * Presets with audio play their haptics only here; `loadBundle` is the path that carries it.
+ */
+export function createBundle<M extends BundleSidecar>(
+  sidecar: M
+): Bundle<PresetsOf<M>> {
+  assertSidecar(sidecar);
+
+  const parsedIds = new Map<string, number>();
+  const presets: Record<string, PresetHandle> = {};
+
+  for (const [id, preset] of Object.entries(sidecar.presets)) {
+    const parseOnce = () => {
+      const alreadyParsed = parsedIds.get(id);
+      if (alreadyParsed !== undefined) return alreadyParsed;
+
+      const parsedId = Pulsar.PatternComposer_parsePattern(preset.pattern);
+      parsedIds.set(id, parsedId);
+      return parsedId;
+    };
+
+    presets[id] = {
+      id,
+      name: preset.name,
+      duration: preset.duration,
+      pattern: preset.pattern,
+      animation: preset.lottie,
+      hasAudio: preset.audio,
+      hasAnimation: preset.animation,
+      play: () => Pulsar.PatternComposer_play(parseOnce()),
+      stop: () => {
+        const parsedId = parsedIds.get(id);
+        if (parsedId !== undefined) Pulsar.PatternComposer_stop(parsedId);
+      },
+    };
+  }
+
+  return withNonEnumerableMeta(presets as PresetsOf<M>, {
+    id: sidecar.id,
+    contentHash: sidecar.contentHash,
+    get: (id: string) => presets[id],
+    dispose: () => {
+      for (const parsedId of parsedIds.values()) {
+        Pulsar.PatternComposer_release(parsedId);
+      }
+      parsedIds.clear();
+    },
+  });
+}
+
+export type PresetMedia = {
+  name: string;
+  duration?: number;
+  audio: boolean;
+  animation: boolean;
+};
+
 export type BundleDescriptor<P> = {
   readonly asset: number;
   readonly bundleId: string;
   readonly contentHash: string;
   readonly presetIds: string[];
-  /** Phantom type carrying the preset keys — never read at runtime. */
+  readonly media: Record<string, PresetMedia>;
+  /** Phantom: carries the preset keys through to `loadBundle`. Never read at runtime. */
   readonly __presets?: P;
 };
 
 /**
- * Create a typed bundle descriptor. Types come from `keyof` over the imported sidecar (the
- * nano-icons approach) — no code generation of `.d.ts`.
- *
- *     import sidecar from './assets/acme-pack.presets.json';
- *     export const AcmePack = createBundle(sidecar, require('./assets/acme-pack.pulsar'));
+ * Binds a sidecar to its `.pulsar` binary. Needs `withPulsar` in metro.config.js so the
+ * `require` resolves.
  */
-export function createBundle<M extends BundleSidecar>(
+export function createBundleFromAsset<M extends BundleSidecar>(
   sidecar: M,
   asset: number
-): BundleDescriptor<{ [K in keyof M['presets']]: PresetHandle }> {
+): BundleDescriptor<PresetsOf<M>> {
+  assertSidecar(sidecar);
+  const media: Record<string, PresetMedia> = {};
+  for (const [id, preset] of Object.entries(sidecar.presets)) {
+    media[id] = {
+      name: preset.name,
+      duration: preset.duration,
+      audio: preset.audio,
+      animation: preset.animation,
+    };
+  }
   return {
     asset,
     bundleId: sidecar.id,
     contentHash: sidecar.contentHash,
     presetIds: Object.keys(sidecar.presets),
+    media,
   };
 }
 
-/**
- * Load a bundle at runtime and return its typed presets view.
- *
- *     const bundle = await loadBundle(AcmePack);
- *     bundle.presets.heartbeatV2.play();   // ← autocompletes
- */
-export async function loadBundle<P>(
+/** Loads the `.pulsar` binary, so authored audio plays alongside the haptics. */
+export async function loadBundle<P extends object>(
   descriptor: BundleDescriptor<P>
 ): Promise<Bundle<P>> {
   const base64 = await assetToBase64(descriptor.asset);
@@ -78,26 +187,32 @@ export async function loadBundle<P>(
 
   const presets: Record<string, PresetHandle> = {};
   for (const id of descriptor.presetIds) {
+    const media = descriptor.media[id];
     presets[id] = {
       id,
+      name: media?.name ?? id,
+      duration: media?.duration,
+      hasAudio: media?.audio ?? false,
+      hasAnimation: media?.animation ?? false,
       play: () => Pulsar.Pulsar_playBundlePreset(token, id),
       stop: () => Pulsar.Pulsar_stopBundlePreset(token, id),
     };
   }
 
-  return {
-    presets: presets as P,
-    id: token,
+  return withNonEnumerableMeta(presets as P, {
+    id: descriptor.bundleId,
     contentHash: descriptor.contentHash,
     get: (id: string) => presets[id],
     dispose: () => Pulsar.Pulsar_disposeBundle(token),
-  };
+  });
 }
 
 async function assetToBase64(moduleId: number): Promise<string> {
   const source = Image.resolveAssetSource(moduleId);
   if (!source?.uri) {
-    throw new Error('Pulsar: could not resolve .pulsar asset — is it required() and in metro assetExts?');
+    throw new Error(
+      'Pulsar: could not resolve .pulsar asset — is it required() and in metro assetExts?'
+    );
   }
   const response = await fetch(source.uri);
   const blob = await response.blob();
