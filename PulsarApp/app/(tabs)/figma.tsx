@@ -3,6 +3,7 @@ import { StyleSheet, View, ActivityIndicator, ScrollView, TouchableOpacity } fro
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
+import * as Sentry from '@sentry/react-native';
 
 import type { Pattern } from 'react-native-pulsar';
 
@@ -33,6 +34,11 @@ const fullscreenEdges = {
   bottom: 'off',
   right: 'off',
 };
+
+// A killed renderer paints plain white forever, so the only cure is a fresh
+// WebView. Bounded, so a WebView that dies on every load stops remounting.
+const MAX_RENDERER_RESTARTS = 3;
+const RENDERER_RESTART_WINDOW_MS = 60_000;
 
 // Build a script that delivers a live haptics-config update into the preview.
 // The preview runs either at the top level (local dev) or inside an <iframe
@@ -100,6 +106,42 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   // success and failure), and the overlay is pointerEvents="none" so it can
   // never trap a tap even if it lingers.
   const [loading, setLoading] = useState(true);
+
+  const [webViewGeneration, setWebViewGeneration] = useState(0);
+  const [gaveUpRestarting, setGaveUpRestarting] = useState(false);
+  const restartTimesRef = useRef<number[]>([]);
+
+  const remountWebView = useCallback(() => {
+    setGaveUpRestarting(false);
+    setLoading(true);
+    // The replacement page starts with its nav-bar toggle off.
+    setTabBarHidden(false);
+    setWebViewGeneration((generation) => generation + 1);
+  }, []);
+
+  const restartAfterGivingUp = useCallback(() => {
+    restartTimesRef.current = [];
+    remountWebView();
+  }, [remountWebView]);
+
+  const onRendererGone = useCallback(() => {
+    const now = Date.now();
+    restartTimesRef.current = [
+      ...restartTimesRef.current.filter((at) => now - at < RENDERER_RESTART_WINDOW_MS),
+      now,
+    ];
+    // The JS inside the dead renderer is gone, so the preview cannot report this itself.
+    Sentry.captureMessage('figma-preview: webview renderer terminated', {
+      level: 'warning',
+      extra: { restartsInWindow: restartTimesRef.current.length },
+    });
+    if (restartTimesRef.current.length > MAX_RENDERER_RESTARTS) {
+      setLoading(false);
+      setGaveUpRestarting(true);
+      return;
+    }
+    remountWebView();
+  }, [remountWebView]);
 
   // Leave the active preview and return to the Figma list/explainer by clearing
   // the route's token (FigmaScreen renders the explainer when it's empty).
@@ -172,19 +214,47 @@ function FigmaPreviewWebView({ token }: { token: string }) {
               Close preview
             </ThemedText>
           </TouchableOpacity>
+          {/* Figma's embed can report itself loaded and still paint nothing,
+              which the page cannot detect across origins. */}
+          <TouchableOpacity
+            onPress={remountWebView}
+            style={styles.closeBtn}
+            hitSlop={8}
+            accessibilityLabel="Reload preview"
+          >
+            <Icon name="refresh-cw" size={18} color="#001A72" />
+          </TouchableOpacity>
         </View>
       )}
       <View style={styles.webContainer}>
-        <WebView
-          ref={webRef}
-          source={{ uri: previewUrl }}
-          originWhitelist={['*']}
-          javaScriptEnabled
-          domStorageEnabled
-          onMessage={onMessage}
-          onLoadEnd={() => setLoading(false)}
-          style={styles.webview}
-        />
+        {gaveUpRestarting ? (
+          <View style={styles.errorBox}>
+            <ThemedText type="defaultSemiBold">The preview keeps crashing</ThemedText>
+            <ThemedText style={styles.errorText}>
+              Try again, or reopen the preview from the Figma plugin.
+            </ThemedText>
+            <TouchableOpacity onPress={restartAfterGivingUp} style={styles.retryBtn} hitSlop={8}>
+              <Icon name="refresh-cw" size={18} color="#001A72" />
+              <ThemedText type="defaultSemiBold" style={styles.closeLabel}>
+                Try again
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <WebView
+            key={webViewGeneration}
+            ref={webRef}
+            source={{ uri: previewUrl }}
+            originWhitelist={['*']}
+            javaScriptEnabled
+            domStorageEnabled
+            onMessage={onMessage}
+            onLoadEnd={() => setLoading(false)}
+            onContentProcessDidTerminate={onRendererGone}
+            onRenderProcessGone={onRendererGone}
+            style={styles.webview}
+          />
+        )}
         {loading && (
           <View style={styles.loader} pointerEvents="none">
             <ActivityIndicator />
@@ -279,9 +349,26 @@ const styles = StyleSheet.create({
   },
   webContainer: { flex: 1, backgroundColor: '#fff' },
   webview: { flex: 1 },
+  errorBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 24,
+  },
+  errorText: { textAlign: 'center' },
+  retryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
   previewBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderBottomWidth: 1,
