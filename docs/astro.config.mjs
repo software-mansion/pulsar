@@ -7,6 +7,35 @@ import sitemap from '@astrojs/sitemap';
 import { BASE_PATH } from './config.ts';
 import { articles } from './src/data/articles.ts';
 
+/**
+ * Serves `public/web-app/index.html` for a bare `/web-app/` request in `astro dev`.
+ *
+ * The dev server hands out files from `public/` verbatim and does not resolve a
+ * directory to its index, so `/pulsar/web-app/` 404s there while
+ * `/pulsar/web-app/index.html` works. Static hosts do resolve it, so the built
+ * site has always been fine — this only stops the dev server disagreeing with
+ * production about a URL people actually type.
+ */
+function webAppDevIndex() {
+  return {
+    name: 'pulsar-web-app-dev-index',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const [path, query] = (req.url ?? '').split('?');
+        // Vite strips the base before this point, but not in every arrangement,
+        // so match either form and put back exactly the prefix that was there —
+        // rewriting to the other one lands on a path nothing serves.
+        const match = new RegExp(`^(${BASE_PATH})?/web-app/?$`).exec(path);
+        if (match) {
+          req.url = `${match[1] ?? ''}/web-app/index.html${query ? `?${query}` : ''}`;
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
   site: 'https://docs.swmansion.com/',
   base: BASE_PATH,
@@ -28,9 +57,14 @@ export default defineConfig({
     ssr: {
       external: ['react', 'react-dom'],
     },
+    plugins: [webAppDevIndex()],
   },
   integrations: [
-    swmGeo({ name: 'Pulsar', description: 'Haptic feedback library for Swift, Kotlin and React Native', repository: 'pulsar' }),
+    swmGeo({
+      name: 'Pulsar',
+      description: 'Haptic feedback library for Swift, Kotlin and React Native',
+      repository: 'pulsar',
+    }),
     starlight({
       title: 'Pulsar',
       customCss: [
@@ -44,7 +78,17 @@ export default defineConfig({
       // declarations and are then ignored by the browser (falling back to a
       // system font). A head <link> is order-independent and always applies.
       head: [
-        { tag: 'script', attrs: { type: 'application/ld+json' }, content: JSON.stringify(structuredData({ name: 'Pulsar', description: 'Haptic feedback library for Swift, Kotlin and React Native', repository: 'pulsar' })) },
+        {
+          tag: 'script',
+          attrs: { type: 'application/ld+json' },
+          content: JSON.stringify(
+            structuredData({
+              name: 'Pulsar',
+              description: 'Haptic feedback library for Swift, Kotlin and React Native',
+              repository: 'pulsar',
+            }),
+          ),
+        },
         { tag: 'link', attrs: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
         {
           tag: 'link',
