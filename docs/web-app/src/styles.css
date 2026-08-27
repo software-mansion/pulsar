@@ -893,7 +893,6 @@ input[type='range'] {
   left: 0;
   width: 12.5%; /* 100% / COLS */
   height: 12.5%; /* 100% / ROWS */
-  will-change: transform;
   transition: transform 265ms cubic-bezier(0.35, 1.35, 0.55, 1);
   /*
    * Freshly spawned shapes mount at their final grid position, so the drop-in
@@ -919,6 +918,18 @@ input[type='range'] {
 .shape--grabbed,
 .shape--displaced {
   transition: transform 60ms linear;
+  /*
+   * The only tiles that ask to be kept on their own layer.
+   *
+   * `will-change` used to sit on `.shape` itself, which promoted all
+   * sixty-four of them permanently — sixty-four backing stores at the device's
+   * pixel ratio, held for the whole session, for a board that is perfectly
+   * still most of the time. Everything else here animates `transform` through
+   * a transition, which promotes on its own for the duration and hands the
+   * layer back afterwards. These two are different: they track a finger, so
+   * they are re-transformed every pointer event and want the layer up front.
+   */
+  will-change: transform;
 }
 
 /*
@@ -939,6 +950,12 @@ input[type='range'] {
 
 .shape--grabbed .shape__art {
   transform: scale(1.14);
+  /*
+   * The second shadow is the *lift* — offset further and blurred, so the tile
+   * under the finger reads as picked up off the board. It is not the base
+   * shadow (which the artwork now draws itself) and has to stay here: only one
+   * tile is ever grabbed, so this filter costs nothing.
+   */
   filter: drop-shadow(0 0 8px var(--accent)) drop-shadow(0 4px 3px rgba(0, 26, 114, 0.28));
 }
 
@@ -969,19 +986,18 @@ input[type='range'] {
   height: 86%;
   margin: 7%;
   display: block;
-  filter: drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
   transition:
     transform 150ms ease,
     opacity 150ms ease;
 }
 
 .shape--special .shape__art {
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95)) drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95));
 }
 
 .shape--selected .shape__art {
   transform: scale(1.16);
-  filter: drop-shadow(0 0 7px var(--accent)) drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
+  filter: drop-shadow(0 0 7px var(--accent));
 }
 
 /*
@@ -990,6 +1006,14 @@ input[type='range'] {
  * sits under the drag classes so grabbing the shape cancels it cleanly.
  */
 .shape--hint .shape__art {
+  /*
+   * Transform only. This used to animate `filter` between a plain shadow and a
+   * glow, and an animated filter is a repaint of the element on every frame —
+   * forever, since the hint loops for as long as the player is thinking. The
+   * glow is now constant and the scale carries the pulse, which is what the eye
+   * was following anyway.
+   */
+  filter: drop-shadow(0 0 9px var(--accent));
   animation: shape-hint 1350ms ease-in-out infinite;
 }
 
@@ -997,11 +1021,9 @@ input[type='range'] {
   0%,
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
   }
   50% {
     transform: scale(1.13);
-    filter: drop-shadow(0 0 9px var(--accent)) drop-shadow(0 2px 0 rgba(0, 26, 114, 0.16));
   }
 }
 
@@ -1086,9 +1108,12 @@ input[type='range'] {
   gap: 1px;
   padding: 7px 18px;
   border-radius: 999px;
-  background: hsl(var(--combo-hue) 85% 32% / 0.62);
-  -webkit-backdrop-filter: blur(10px) saturate(1.6);
-  backdrop-filter: blur(10px) saturate(1.6);
+  /*
+   * Tinted rather than blurred, for the reason given on `.shape-banner`. This
+   * one mattered more: the chain counter is up for the whole cascade, which is
+   * the one moment the board is already asking for everything it has.
+   */
+  background: hsl(var(--combo-hue) 85% 30% / 0.82);
   border: 2px solid hsl(var(--combo-hue) 95% 62%);
   box-shadow:
     0 0 calc(10px + var(--heat) * 26px) hsl(var(--combo-hue) 95% 60% / 0.75),
@@ -1172,7 +1197,7 @@ input[type='range'] {
   --banner-angle: 0deg; /* fallback for engines without @property */
   --banner-top: 38%;
   --banner-ring-speed: 2200ms;
-  --banner-tint: rgba(0, 26, 114, 0.58);
+  --banner-tint: rgba(0, 26, 114, 0.76);
   --banner-ring: conic-gradient(
     from var(--banner-angle),
     #38acdd,
@@ -1195,12 +1220,16 @@ input[type='range'] {
   border-radius: 999px;
   /*
    * Translucent on purpose: the celebration should sit *over* the cascade that
-   * earned it, not hide it. The blur keeps the text legible against whatever
-   * colours happen to be churning underneath.
+   * earned it, not hide it. The tint is what keeps the text legible against
+   * whatever colours happen to be churning underneath.
+   *
+   * It used to be a thinner tint over `backdrop-filter: blur(14px)`. A backdrop
+   * blur is one of the most expensive things a page can ask for, and this one
+   * asked for it on the busiest part of the busiest moment — and then re-asked
+   * every frame, because the rim above animates and keeps invalidating the
+   * pill. A slightly heavier tint reads the same and costs a single fill.
    */
   background: var(--banner-tint);
-  -webkit-backdrop-filter: blur(14px) saturate(1.7);
-  backdrop-filter: blur(14px) saturate(1.7);
   box-shadow:
     0 12px 32px rgba(0, 26, 114, 0.38),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
@@ -1291,7 +1320,7 @@ input[type='range'] {
 
 /* A tip, not a trophy: cool, calm, and it rises gently into place. */
 .shape-banner--bonus {
-  --banner-tint: rgba(11, 92, 128, 0.6);
+  --banner-tint: rgba(11, 92, 128, 0.78);
   --banner-ring: linear-gradient(120deg, var(--accent), #b5e1f1, var(--accent));
   animation: banner-bonus 1700ms cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
 }
@@ -1329,7 +1358,7 @@ input[type='range'] {
 
 /* Chain reactions run hot: gold, tilted in, floating away like a score pop. */
 .shape-banner--cascade {
-  --banner-tint: rgba(104, 62, 6, 0.58);
+  --banner-tint: rgba(104, 62, 6, 0.76);
   --banner-ring: conic-gradient(from var(--banner-angle), #ffc93c, #ff9f45, #ff5a5f, #ffc93c);
   --banner-ring-speed: 3200ms;
   animation: banner-cascade 1300ms cubic-bezier(0.3, 1.2, 0.4, 1) forwards;
@@ -1391,7 +1420,7 @@ input[type='range'] {
 
 /* The loudest one: near-black, a fast rim, and it detonates on both ends. */
 .shape-banner--super {
-  --banner-tint: rgba(9, 8, 34, 0.66);
+  --banner-tint: rgba(9, 8, 34, 0.82);
   --banner-ring-speed: 1100ms;
   padding: 16px 32px;
   box-shadow:
@@ -1462,7 +1491,7 @@ input[type='range'] {
 
 /* Housekeeping. No rim, no fanfare — it just says what happened. */
 .shape-banner--info {
-  --banner-tint: rgba(43, 133, 171, 0.6);
+  --banner-tint: rgba(43, 133, 171, 0.78);
   animation: banner-info 1500ms ease-out forwards;
 }
 

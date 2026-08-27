@@ -241,7 +241,19 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
 
       width = w;
       height = h;
-      dpr = Math.min(2, window.devicePixelRatio || 1);
+      /*
+       * Deliberately below the device's own ratio, and below what the WebGPU
+       * backend uses.
+       *
+       * Everything this backend draws is soft: radial glows with no edge, and
+       * confetti cards a few pixels across that are spinning. There is no
+       * detail in any of it to lose, and its entire cost is fill rate — which
+       * goes with the square of this number, so 2 to 1.5 is a 44% cut for a
+       * picture nobody can tell apart. It matters because this is the path a
+       * browser without WebGPU takes, and those are the machines with the least
+       * to spare.
+       */
+      dpr = Math.min(1.5, window.devicePixelRatio || 1);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
     },
@@ -270,6 +282,7 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
+      let lastAlpha = -1;
 
       for (const p of pool) {
         if (p.life <= 0) continue;
@@ -294,17 +307,32 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
         const grow = Math.min(1, age / 0.12) * (1 - Math.max(0, (age - 0.55) / 0.45) * 0.75);
         const size = p.size * (0.35 + grow);
 
-        ctx.globalAlpha = Math.max(0, Math.min(1, fade));
+        const alpha = Math.max(0, Math.min(1, fade));
+        // Below this it is not on screen in any meaningful sense, and the last
+        // slice of a particle's life is where most of the pool sits.
+        if (alpha < 0.02) continue;
+        // Only write the state when it actually changes: a canvas state write
+        // flushes batched drawing, and this loop runs over a thousand times a
+        // frame.
+        if (alpha !== lastAlpha) {
+          ctx.globalAlpha = alpha;
+          lastAlpha = alpha;
+        }
 
         if (p.kind === BurstKind.confetti) {
           // Confetti is a solid card on the GPU too — its glow term is masked
           // out there — so it stays a flat fill here.
+          //
+          // Rotated with `setTransform` rather than save/translate/rotate/
+          // restore: the pair costs a full state push and pop per card, and the
+          // matrix here is a plain rotation about the particle, which is
+          // cheaper to write out than to build up.
           ctx.fillStyle = p.color;
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.angle);
+          const cos = Math.cos(p.angle) * dpr;
+          const sin = Math.sin(p.angle) * dpr;
+          ctx.setTransform(cos, sin, -sin, cos, p.x * dpr, p.y * dpr);
           ctx.fillRect(-size, -size * 0.42, size * 2, size * 0.84);
-          ctx.restore();
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         } else if (p.sprite) {
           // Diameter `size * 2`, matching the GPU's quad of ±size per corner.
           ctx.drawImage(p.sprite, p.x - size, p.y - size, size * 2, size * 2);
