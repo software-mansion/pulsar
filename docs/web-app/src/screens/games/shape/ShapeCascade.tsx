@@ -328,6 +328,17 @@ export function ShapeCascade() {
    * the frame.
    */
   const [shell, setShell] = useState<HTMLElement | null>(null);
+  /**
+   * Bumped to throw the particle canvas away and mount a fresh one — see
+   * `onLost` below. It keys the element, so React replaces it rather than
+   * reusing it, which matters because a canvas that has handed out a `webgpu`
+   * context can never hand out a `2d` one.
+   */
+  const [fieldGeneration, setFieldGeneration] = useState(0);
+  /** Set once the GPU has failed here, so the rebuild does not try it again. */
+  const gpuLostRef = useRef(false);
+  /** Both backends have now failed; the game plays on without sparks. */
+  const [particlesOff, setParticlesOff] = useState(false);
   const effectsRef = useRef<Effects>({ field: null });
   const sizeRef = useRef({ width: 1, height: 1 });
   const [nudge, setNudge] = useState<Nudge | null>(null);
@@ -376,37 +387,90 @@ export function ShapeCascade() {
     let last = performance.now();
     let cancelled = false;
 
-    void createParticleField(canvas).then((created) => {
-      if (cancelled) {
-        created.destroy();
+    /**
+     * The backend died mid-game. Replacing the canvas is not optional tidying:
+     * this one is stretched over the whole shell above everything else, so a
+     * context that has stopped presenting hides the entire app while the game
+     * keeps running and answering touches underneath it. Dropping the element
+     * uncovers the board even if the rebuild then fails outright.
+     */
+    const onLost = (reason: string) => {
+      if (cancelled) return;
+      effectsRef.current.field = null;
+
+      // Canvas 2D is the last resort, so if that is what just died there is
+      // nothing left to fall back to and the canvas comes off the page for
+      // good. Every effect is written to no-op without a field, so the game
+      // loses its sparks and nothing else.
+      if (gpuLostRef.current) {
+        console.warn('[shape] particles disabled, no backend left:', reason);
+        setParticlesOff(true);
         return;
       }
-      field = created;
-      effectsRef.current.field = created;
 
-      const loop = (now: number) => {
-        // Clamped so a backgrounded tab does not resume with a huge timestep
-        // that teleports every particle off screen.
-        const dt = Math.min(0.05, (now - last) / 1000);
-        last = now;
+      console.warn('[shape] particle backend lost, rebuilding on Canvas 2D:', reason);
+      gpuLostRef.current = true;
+      setFieldGeneration((generation) => generation + 1);
+    };
 
-        // Re-read each frame so the origin survives scrolling and resizing
-        // without needing listeners for either; two rect reads are far cheaper
-        // than getting this subtly wrong.
-        const boardElement = boardRef.current;
-        const shellElement = canvas.parentElement;
-        if (boardElement && shellElement) {
-          const boardRect = boardElement.getBoundingClientRect();
-          const shellRect = shellElement.getBoundingClientRect();
-          created.resize(shellRect.width, shellRect.height);
-          created.setOrigin(boardRect.left - shellRect.left, boardRect.top - shellRect.top);
+    void createParticleField(canvas, { forceCanvas: gpuLostRef.current, onLost }).then(
+      (created) => {
+        if (cancelled) {
+          created.destroy();
+          return;
         }
+        field = created;
+        effectsRef.current.field = created;
 
-        created.frame(dt);
+        const loop = (now: number) => {
+          // Clamped so a backgrounded tab does not resume with a huge timestep
+          // that teleports every particle off screen.
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+
+          // Re-read each frame so the origin survives scrolling and resizing
+          // without needing listeners for either; two rect reads are far cheaper
+          // than getting this subtly wrong.
+          const boardElement = boardRef.current;
+          const shellElement = canvas.parentElement;
+          if (boardElement && shellElement) {
+            const boardRect = boardElement.getBoundingClientRect();
+            const shellRect = shellElement.getBoundingClientRect();
+            /*
+             * Size comes from the layout box, not the rect.
+             *
+             * A super combo shakes the shell, and that shake rotates it — which
+             * means its *bounding* rect swells and shrinks on every frame of the
+             * animation. Sized from that, one 520ms shake reallocates the
+             * canvas's backing store 37 times — measured — wiping the very
+             * sparks it is meant to be showing and, on the GPU path, churning a
+             * full-screen texture the whole time. `clientWidth`/`clientHeight`
+             * are the layout box and so are immune to transforms, and
+             * they measure the padding box, which is exactly the area
+             * `inset: 0` stretches the canvas over.
+             */
+            created.resize(shellElement.clientWidth, shellElement.clientHeight);
+            created.setOrigin(
+              boardRect.left - shellRect.left - shellElement.clientLeft,
+              boardRect.top - shellRect.top - shellElement.clientTop,
+            );
+          }
+
+          // A backend can fail in the middle of a frame — the throw must not be
+          // allowed to end the loop, or the particles never come back even once
+          // a replacement is standing.
+          try {
+            created.frame(dt);
+          } catch (error) {
+            created.destroy();
+            onLost(String(error));
+            return;
+          }
+          raf = requestAnimationFrame(loop);
+        };
         raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
-    });
+      },
+    );
 
     return () => {
       cancelled = true;
@@ -414,7 +478,7 @@ export function ShapeCascade() {
       effectsRef.current.field = null;
       field?.destroy();
     };
-  }, [shell]);
+  }, [shell, fieldGeneration, particlesOff]);
 
   // Keep the particle canvas locked to the board's pixel size.
   useLayoutEffect(() => {
@@ -981,7 +1045,12 @@ export function ShapeCascade() {
 
           return (
             <Tile
-              key={tile.id}
+              // Namespaced: the combo pill and the banner are siblings of every
+              // tile inside the board, and all three counters are small
+              // integers that collide constantly. React answers a duplicate key
+              // by dropping one of the two children — a shape silently missing
+              // from the grid, or a banner that never appears.
+              key={`tile-${tile.id}`}
               tile={tile}
               index={index}
               clearing={clearing.has(tile.id)}
@@ -1000,7 +1069,7 @@ export function ShapeCascade() {
         {combo && combo.level >= 2 && (
           <div
             // Keyed on the level so each tick remounts and replays the pop.
-            key={combo.level}
+            key={`combo-${combo.level}`}
             className={`shape-combo${combo.exiting ? ' shape-combo--out' : ''}`}
             style={{ '--heat': `${Math.min(1, (combo.level - 2) / 6)}` } as CSSProperties}
             aria-live="polite"
@@ -1011,7 +1080,7 @@ export function ShapeCascade() {
         )}
 
         {banner && (
-          <div className={`shape-banner shape-banner--${banner.kind}`} key={banner.id}>
+          <div className={`shape-banner shape-banner--${banner.kind}`} key={`banner-${banner.id}`}>
             {banner.kind === 'super' && <span className="shape-banner__wave" aria-hidden="true" />}
             <span className="shape-banner__title">{banner.title}</span>
             <span className="shape-banner__detail">{banner.detail}</span>
@@ -1033,7 +1102,12 @@ export function ShapeCascade() {
         <Panda mood={pandaMood} onPoke={pokeEffect} />
       </Suspense>
 
-      {shell && createPortal(<canvas ref={canvasRef} className="shape-particles" />, shell)}
+      {shell &&
+        !particlesOff &&
+        createPortal(
+          <canvas key={fieldGeneration} ref={canvasRef} className="shape-particles" />,
+          shell,
+        )}
 
       {/*
         Kept only where it explains something the player would otherwise find

@@ -129,12 +129,19 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
   let lastFrameAt = performance.now();
   let originX = 0;
   let originY = 0;
+  /**
+   * How many pool slots are alive. Kept as a running count so an idle frame
+   * costs one comparison rather than a walk of 1200 particles — see the note on
+   * idling in `gpu.ts`, which this mirrors.
+   */
+  let alive = 0;
 
   function spawn(burst: Burst) {
     const count = Math.min(burst.count, POOL);
     for (let i = 0; i < count; i++) {
       const p = pool[cursor];
       cursor = (cursor + 1) % POOL;
+      if (p.life <= 0) alive++;
 
       const angle = Math.random() * Math.PI * 2;
       const spread = (Math.random() - 0.5) * 0.55;
@@ -257,6 +264,10 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
       lastFrameAt = performance.now();
       elapsed += dt;
 
+      // The pool is empty and the canvas was cleared on the frame the last
+      // particle died, so there is nothing to clear and nothing to draw.
+      if (alive === 0) return;
+
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
@@ -273,7 +284,10 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
         p.y += p.vy * dt;
         p.life -= dt;
         p.angle += p.spin * dt * 5;
-        if (p.life <= 0) continue;
+        if (p.life <= 0) {
+          alive--;
+          continue;
+        }
 
         const age = 1 - p.life / p.maxLife;
         const fade = 1 - Math.max(0, (age - 0.45) / 0.55);
@@ -307,6 +321,7 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
 
     clear() {
       for (const p of pool) p.life = 0;
+      alive = 0;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
     },
