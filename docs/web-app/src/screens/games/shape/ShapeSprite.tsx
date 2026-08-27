@@ -19,6 +19,24 @@ const SILHOUETTES: Record<SilhouetteKind, string> = {
   star: 'M50 6 61.2 34.6 91.9 36.4 68.1 55.9 75.9 85.6 50 69 24.1 85.6 31.9 55.9 8.1 36.4 38.8 34.6Z',
 };
 
+/**
+ * The drop shadow, in the artwork's own coordinates.
+ *
+ * This used to be `filter: drop-shadow(0 2px 0 …)` in CSS, which put a filter
+ * on all sixty-four tiles at once. A drop-shadow with zero blur is only an
+ * offset copy of the silhouette, so drawing that copy here is the same picture
+ * for none of the cost — and it matters most on WebKit, where a filtered
+ * element takes a separate rendering path rather than compositing like its
+ * neighbours.
+ *
+ * The offset has to be a constant in user units where the filter's was 2 CSS
+ * pixels, so it cannot track the tile's size exactly. 100 user units render as
+ * 42–49 CSS px across every board width the game supports, which puts this
+ * between 1.85 and 2.15 px — indistinguishable at 16% alpha.
+ */
+const SHADOW_DY = 4.4;
+const SHADOW_FILL = 'rgba(0, 26, 114, 0.16)';
+
 type Props = {
   color: number;
   special: SpecialKind;
@@ -34,6 +52,7 @@ export function ShapeSprite({ color, special }: Props) {
         // A colour bomb belongs to no colour: a dark sphere speckled with every
         // shape hue, so it reads as "all of them at once".
         <>
+          <circle cx="50" cy={50 + SHADOW_DY} r="40" fill={SHADOW_FILL} />
           <circle cx="50" cy="50" r="40" fill="#1b1b3a" />
           {SHAPES.map((entry, index) => {
             const angle = (index / SHAPES.length) * Math.PI * 2 - Math.PI / 2;
@@ -51,6 +70,11 @@ export function ShapeSprite({ color, special }: Props) {
         </>
       ) : (
         <>
+          <path
+            d={SILHOUETTES[shape.silhouette]}
+            fill={SHADOW_FILL}
+            transform={`translate(0 ${SHADOW_DY})`}
+          />
           <path d={SILHOUETTES[shape.silhouette]} fill={shape.color} />
           <path
             d={SILHOUETTES[shape.silhouette]}
