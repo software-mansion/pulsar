@@ -431,6 +431,20 @@ Parses a `PatternData` object and prepares it for playback.
 Future<void> parsePattern(PatternData data);
 ```
 
+#### `parsePatternWithSound(pattern, sound)`
+
+:::caution[Unreleased API]
+Synchronized sound is not part of the latest release (`0.1.0`). It is available on [`main`](https://github.com/software-mansion/pulsar) and will ship in a future release — until then, use a `git` dependency on the repository to try it.
+:::
+
+Parses a pattern together with a short sound played in sync with the haptics.
+
+```dart
+Future<void> parsePatternWithSound(PatternData data, Sound sound);
+```
+
+Provide the sound via a [`Sound`](#sound). On Android an explicit `.ogg` with baked haptic channels enables audio-coupled sync on supported devices; any other format — or a bare name, which defaults to `.wav` — plays the audio while the pattern's own haptics fire in parallel. On iOS the sound is registered as a Core Haptics audio event on the pattern's timeline. A Flutter asset is not a native file path — bundle the file natively (iOS app bundle / Android `res/raw`) and pass its name, or copy it from `rootBundle` to a temp file and pass that absolute path.
+
 #### `playPattern(pattern)`
 
 Convenience method that parses and immediately plays a pattern.
@@ -780,6 +794,36 @@ class PatternData {
 ```
 
 The `PatternData.fromArrays` factory accepts the raw triplet form (`List<List<double>>`) for parity with serialized pattern definitions.
+
+### Sound
+
+:::caution[Unreleased API]
+Not part of the latest release (`0.1.0`) — available on [`main`](https://github.com/software-mansion/pulsar) only.
+:::
+
+A short sound to play in sync with a haptic pattern via [`parsePatternWithSound`](#parsepatternwithsoundpattern-sound).
+
+```dart
+class Sound {
+  const Sound({
+    required this.uri,
+    this.volume = 1.0,
+    this.offset = 0,
+    this.start = 0,
+    this.duration = 0,
+  });
+
+  final String uri;      // File path, file:// uri, or bundled resource name
+  final double volume;   // Playback volume (0-1)
+  final int offset;      // Audio delay relative to haptics, in ms
+  final int start;       // Where playback begins in the source file, in ms
+  final int duration;    // How much to play from start, in ms (0 = to the end)
+}
+```
+
+The format comes from `uri`'s extension; when none is given the default is `.wav`, so a bare name like `'beep'` resolves `beep.wav` on both platforms (iOS app bundle / Android `res/raw`).
+
+`start` and `duration` trim the clip: `start` is where playback begins in the source file and `duration` is how much of it to play (`0` plays to the end). The native side slices the audio to that window before playing rather than seeking at runtime, so one bundled file can back several trimmed sounds without losing sync.
 
 ### ContinuousPattern
 

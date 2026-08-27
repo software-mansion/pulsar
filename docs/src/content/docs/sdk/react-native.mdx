@@ -508,6 +508,27 @@ function MyComponent() {
 }
 ```
 
+### Synchronized sound
+
+:::caution[Unreleased API]
+Synchronized sound is not part of the latest release (`1.7.0`). It is available on [`main`](https://github.com/software-mansion/pulsar) and will ship in a future release — until then, depend on the repository directly to use it.
+:::
+
+Add a `sound` field to the pattern to play a short audio file in sync with the haptics. On iOS the file is registered as a Core Haptics audio event on the pattern's timeline (sample-accurate); on Android an explicit `.ogg` with baked haptic channels drives the vibrator directly on supported devices, and any other file falls back to playing the audio while the pattern's haptics fire in parallel.
+
+```tsx
+const pattern = {
+  discretePattern: [{ time: 0, amplitude: 1, frequency: 0.5 }],
+  continuousPattern: { amplitude: [], frequency: [] },
+  sound: { uri: require('./beep.wav') },
+};
+
+const composer = usePatternComposer(pattern);
+composer.play();
+```
+
+`sound.uri` accepts a `require('./beep.wav')` (resolved automatically via `Image.resolveAssetSource`) or a string — a bundled resource name, an absolute path, or a `file://` uri. When no extension is given it defaults to `.wav`, so a bare `'beep'` resolves `beep.wav` on both platforms. Because a `require()` resolves to a **remote** Metro URL in dev but a local file in release, test `require()` sounds on a release build or device. See the [`Sound`](#sound) type for `volume`, `offset`, and the `start`/`duration` trim window.
+
 ---
 
 ## useRealtimeComposer
@@ -718,10 +739,33 @@ type Pattern = {
       value: number; // Frequency value (0-1)
     }>;
   };
+  sound?: Sound; // Optional audio played in sync with the haptics
 };
 ```
 
-Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time. Add an optional `sound` to play an audio file in sync — see [Synchronized sound](#synchronized-sound).
+
+### Sound
+
+:::caution[Unreleased API]
+Not part of the latest release (`1.7.0`) — available on [`main`](https://github.com/software-mansion/pulsar) only.
+:::
+
+A short sound played in sync with a haptic pattern.
+
+```ts
+type Sound = {
+  uri: number | string; // require('./beep.wav') or a resource name / path / file:// uri
+  volume?: number; // Playback volume (0-1), defaults to 1
+  offset?: number; // Audio delay relative to haptics, in ms, defaults to 0
+  start?: number; // Where playback begins in the source file, in ms, defaults to 0
+  duration?: number; // How much to play from `start`, in ms, defaults to 0 (to the end)
+};
+```
+
+When `uri` has no extension it defaults to `.wav`, so a bare `'beep'` resolves `beep.wav` (iOS app bundle / Android `res/raw`). On Android, an explicit `.ogg` with baked haptic channels enables audio-coupled sync; every other format uses the audio + generated-haptics fallback.
+
+`start` and `duration` trim the clip: `start` is where playback begins in the source file and `duration` is how much of it to play (0 plays to the end). The native side slices the audio to that window before playing rather than seeking at runtime, so a single bundled file can back several trimmed sounds without losing sample-accurate sync.
 
 ### HapticSupport
 
