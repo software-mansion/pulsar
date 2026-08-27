@@ -1,18 +1,18 @@
 # Pulsar bundles (Android)
 
 Load a `.pulsar` bundle authored in Pulsar Studio at runtime and play its presets with full
-autocomplete. See [`docs/bundle-format.md`](../../../../../../../docs/bundle-format.md) for the format.
+autocomplete.
 
 ## Kotlin usage
 
 ```kotlin
 val pulsar = Pulsar(context)
 val bundle = pulsar.loadBundle(AcmePack.descriptor)   // AcmePack is generated
-bundle.presets.heartbeatV2.play()                      // ← autocompletes
-bundle.presets.explosion.stop()
+bundle.heartbeatV2.play()                      // ← autocompletes
+bundle.explosion.stop()
 
 // Animation bytes for the app's own Lottie view (Pulsar times, the app renders):
-bundle.presets.heartbeatV2.animation?.let { myLottieView.setAnimation(it.data.inputStream(), null) }
+bundle.heartbeatV2.animation?.let { myLottieView.setAnimation(it.data.inputStream(), null) }
 ```
 
 `loadBundle(descriptor, strict = true)` asserts the loaded bundle's content hash matches the

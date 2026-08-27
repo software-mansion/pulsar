@@ -1,7 +1,7 @@
 # Pulsar bundles (iOS)
 
 Load a `.pulsar` bundle authored in Pulsar Studio at runtime and play its presets with full
-autocomplete. See [`docs/bundle-format.md`](../../../../../docs/bundle-format.md) for the format.
+autocomplete.
 
 ## Native Swift usage
 
@@ -13,11 +13,11 @@ autocomplete. See [`docs/bundle-format.md`](../../../../../docs/bundle-format.md
 ```swift
 let pulsar = Pulsar()
 let bundle = try pulsar.loadBundle(AcmePack.descriptor)   // AcmePack is generated
-bundle.presets.heartbeatV2.play()                          // ← autocompletes
-bundle.presets.explosion.stop()
+bundle.heartbeatV2.play()                          // ← autocompletes
+bundle.explosion.stop()
 
 // Animation bytes for the app's own Lottie view (Pulsar times, the app renders):
-if let anim = bundle.presets.heartbeatV2.animation {
+if let anim = bundle.heartbeatV2.animation {
     myLottieView.load(data: anim.data)
 }
 ```

@@ -612,6 +612,65 @@ realtime.stop()
 
 ---
 
+## Preset bundles
+
+A `.pulsar` bundle exported from Pulsar Studio holds your own presets — each a haptic pattern with
+optional synced audio and animation. `pulsar-gen` turns a bundle into a typed accessor, so every
+preset is a real member: a renamed preset becomes a compile error rather than a silent runtime
+miss.
+
+### Generate the accessor
+
+Add the `.pulsar` to your app target (Copy Bundle Resources), then either apply the SwiftPM build
+plugin so the accessor regenerates on every build:
+
+```swift
+.target(
+    name: "MyApp",
+    plugins: [.plugin(name: "PulsarGenPlugin", package: "Pulsar")]
+)
+```
+
+...or run the CLI once and commit the result — the practical option for an Xcode app target:
+
+```bash
+npx @swmansion/pulsar-gen acme-pack.pulsar --target swift --out Sources/MyApp/
+```
+
+### Load and play
+
+```swift
+let pulsar = Pulsar()
+let bundle = try pulsar.loadBundle(AcmePack.descriptor, strict: true)
+
+bundle.heartbeatV2.play()
+bundle.explosion.stop()
+```
+
+The descriptor finds the `.pulsar` in the app's main bundle. `strict: true` checks the shipped
+bundle against the generated types, failing loudly on a stale copy.
+
+Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
+and timing for your own animation view. Pulsar carries and time-aligns the animation; the app
+renders it:
+
+```swift
+if let animation = bundle.heartbeatV2.animation {
+    myLottieView.load(data: animation.data)
+}
+```
+
+Audio authored into a preset is registered as a Core Haptics audio event, so it shares the engine
+clock with the haptics.
+
+For an id only known at runtime, `bundle.get(id)` returns a handle or `nil`. Call `bundle.dispose()`
+to release the native patterns when you are done.
+
+See [`iOS/PulsarApp`](https://github.com/software-mansion/pulsar/tree/main/iOS/PulsarApp) for a
+working screen.
+
+---
+
 ## Settings
 
 Configuration methods available directly on the `Pulsar` instance.

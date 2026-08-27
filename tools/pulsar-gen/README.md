@@ -1,7 +1,7 @@
 # pulsar-gen
 
-Generates the **typed view** of a Pulsar `.pulsar` bundle so `bundle.presets.<id>` autocompletes in
-your IDE. See [`docs/bundle-format.md`](../../docs/bundle-format.md) for the bundle format itself.
+Generates the **typed view** of a Pulsar `.pulsar` bundle so `bundle.<id>` autocompletes in
+your IDE. The `.pulsar` format itself is specified internally (pulsar-private, `docs/bundle-format.md`).
 
 Requires Node ≥ 23.6 (runs TypeScript sources directly via type-stripping — no build step).
 
@@ -19,8 +19,17 @@ node src/cli.ts acme-pack.pulsar --target kotlin --package com.acme.haptics --st
 ```
 
 Targets: `swift` (`enum` + `BundleDescriptor`), `kotlin` (`object` + `BundleDescriptor`),
-`dart` (`*.bundle.dart`), `rn` (`.presets.json` sidecar — types arise from `keyof` inference over
+`dart` (`*.bundle.dart`), `rn` (`.bundle.json` sidecar — types arise from `keyof` inference over
 the imported JSON, à la nano-icons; no `.d.ts` is generated).
+
+The `rn` sidecar **inlines each preset's device pattern** (minified — it ships inside the app's JS
+bundle), so the app needs no `.pulsar` asset at runtime. That makes `patterns` a required option for
+that target. JSON Lottie animations are inlined too when you pass `animations`, since they are
+rendered in JS.
+
+`react-native-pulsar` ships a zero-dependency copy of this emitter as `npx pulsar-gen-rn`, so apps
+can regenerate sidecars without installing pulsar-gen. The test suite pins the two to byte-identical
+output — change one and update the other.
 
 ## Programmatic API (portable — importable from Studio's browser bundle)
 
@@ -28,6 +37,12 @@ the imported JSON, à la nano-icons; no `.d.ts` is generated).
 import { validateManifest, generate, buildSidecar } from '@swmansion/pulsar-gen';
 // Node-only helpers (disk + zip):
 import { readBundleFile, computeContentHash } from '@swmansion/pulsar-gen/read';
+
+const { manifest, entries } = readBundleFile('acme-pack.pulsar');
+generate(manifest, 'rn', {
+  patterns: extractPatterns(manifest, entries),
+  animations: extractAnimations(manifest, entries).animations,
+});
 ```
 
 The emitters (`src/emit/*`), `generate`, and `validateManifest` use no Node APIs, so Studio reuses
