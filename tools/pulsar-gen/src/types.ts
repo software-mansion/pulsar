@@ -50,9 +50,8 @@ export interface DevicePattern {
   discretePattern: Array<{ time: number; amplitude: number; frequency: number }>;
 }
 
-/** A Lottie animation carried inside a generated view (the `rn` target renders it in JS). */
+/** A Lottie carried inside a generated view, for targets that render it in JS. */
 export interface InlineLottie {
-  /** The parsed Lottie JSON — handed straight to `lottie-react-native`'s `source`. */
   source: unknown;
   frameRate?: number;
   totalFrames?: number;
@@ -65,26 +64,17 @@ export interface GenerateOptions {
   assetName?: string;
   /** Kotlin package / Dart notice; ignored by other targets. */
   packageName?: string;
-  /**
-   * Kotlin only: the package the Pulsar bundle runtime lives in. The Android SDK uses the default;
-   * the KMP SDK is `com.swmansion.pulsar.kmp.bundle`, so a KMP consumer must set this.
-   */
+  /** Kotlin only. KMP must set `com.swmansion.pulsar.kmp.bundle`; Android uses the default. */
   runtimePackage?: string;
-  /**
-   * Preset id → device pattern, from `extractPatterns`. **Required by the `rn` target**, which
-   * inlines the patterns into its sidecar so the app needs no binary asset; ignored by the others.
-   */
+  /** From `extractPatterns`. Required by `rn`, ignored by the others. */
   patterns?: Record<string, DevicePattern>;
-  /**
-   * Preset id → Lottie animation, from `extractAnimations`. Optional; the `rn` target inlines
-   * these so the app can render them without shipping the `.pulsar`. Ignored by other targets.
-   */
+  /** From `extractAnimations`. Inlined by `rn`, ignored by the others. */
   animations?: Record<string, InlineLottie>;
 }
 
 export interface GeneratedFile {
   filename: string;
   content: string;
-  /** Non-fatal notes for the caller to surface (e.g. media a target cannot carry). */
+  /** Non-fatal notes for the caller to surface. */
   warnings?: string[];
 }

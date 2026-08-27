@@ -1,7 +1,5 @@
-// React Native emitter — a self-contained JSON sidecar. It carries the device patterns inline, so
-// the app imports one JSON and needs no `.pulsar` binary asset (and therefore no Metro assetExts
-// entry and no async load). Types arise from `keyof` inference over the imported file (the
-// nano-icons approach), so there is NO .d.ts / code generation here. Portable (no Node APIs).
+// React Native emitter — a JSON sidecar carrying the patterns inline, so the app needs no
+// `.pulsar` asset. Types arise from `keyof` inference over the import, so no .d.ts is generated.
 
 import type {
   BundleManifest,
@@ -12,22 +10,16 @@ import type {
 } from '../types.ts';
 import { resolveAssetName } from './shared.ts';
 
-/** Sidecar format tag, so a stale file fails loudly in `createBundle` instead of silently. */
+/** Lets `createBundle` reject a stale file instead of silently playing nothing. */
 export const SIDECAR_SCHEMA = 'pulsar.sidecar/1';
 
 export interface PresetSidecarEntry {
   name: string;
   duration?: number;
-  /** The device wire pattern, inlined — what the app hands to the native pattern composer. */
   pattern: DevicePattern;
-  /**
-   * True when the source preset was authored with audio / animation. Audio is consumed natively
-   * and always stays in the `.pulsar`; animation is rendered in JS and is inlined below whenever
-   * it is a JSON Lottie.
-   */
+  /** How the preset was authored. `lottie` below holds the payload, when it can be carried. */
   audio: boolean;
   animation: boolean;
-  /** The inlined Lottie, present when `animation` is true and the source was JSON. */
   lottie?: InlineLottie;
 }
 
@@ -102,8 +94,7 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
     );
   }
 
-  // Minified on purpose: this file ships inside the app's JS bundle (same call as nano-icons'
-  // glyphmaps). It is generated, so nobody reads the diff.
+  // Minified: this ships inside the app's JS bundle, and nobody reads a generated diff.
   return {
     filename: `${asset}.bundle.json`,
     content: JSON.stringify(sidecar) + '\n',

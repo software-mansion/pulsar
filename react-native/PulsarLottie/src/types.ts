@@ -25,18 +25,8 @@ export type HapticSource = Pattern | (() => void);
 /** Haptic-only additions layered on top of the native `LottieView` props. */
 export interface HapticConfig {
   /**
-   * A preset from a Pulsar bundle, supplying **both** halves at once: its Lottie animation becomes
-   * the `source` and its pattern becomes the `haptics`, already time-aligned by the author.
-   *
-   *     const Pack = createBundle(sidecar);
-   *     <HapticLottieView preset={Pack.celebration} autoPlay />
-   *
-   * `source`, `haptics` and `durationMs` still win if you pass them explicitly, so a preset can be
-   * used for the animation alone (or the haptics alone).
-   *
-   * The animation is only carried on the inline path (`createBundle`) and only for JSON Lotties —
-   * a preset from `loadBundle`, or one authored as a dotLottie, has `hasAnimation` true but no
-   * `animation`, so pass `source` yourself in that case.
+   * Supplies `source`, `haptics` and `durationMs` at once; each is still overridable on its own.
+   * A preset whose `animation` is undefined needs an explicit `source`.
    */
   preset?: PresetHandle;
   /** Haptic content to sync with the animation. Omit for a plain `LottieView`. */

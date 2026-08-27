@@ -34,9 +34,8 @@ abstract class GeneratePulsarBundlesTask : DefaultTask() {
     @TaskAction
     fun generate() {
         val dir = bundlesDir.orNull?.asFile
-        // Wipe first: Gradle does not prune an output directory for us, so a renamed or deleted
-        // bundle would otherwise leave a stale accessor compiling and a stale copy shipping in the
-        // APK's assets.
+        // Gradle does not prune output dirs, so a renamed bundle would leave a stale accessor
+        // compiling and a stale copy shipping in the APK.
         val srcOut = generatedSrcDir.get().asFile.also { it.deleteRecursively(); it.mkdirs() }
         val assetsOut = generatedAssetsDir.get().asFile.resolve("pulsar")
             .also { it.deleteRecursively(); it.mkdirs() }
@@ -104,8 +103,7 @@ internal fun emitKotlin(manifest: Map<String, Any?>, assetName: String, packageN
         appendLine("    const val bundleId = \"$bundleId\"")
         appendLine("    const val contentHash = \"$hash\"")
         appendLine()
-        // Presets sit at the top level of the loaded bundle, so this class carries the
-        // bundle-level members too. Mirrors tools/pulsar-gen/src/emit/kotlin.ts.
+        // Mirrors tools/pulsar-gen/src/emit/kotlin.ts.
         appendLine("    class Presets(private val r: BundleResolver) {")
         appendLine(fields)
         appendLine()

@@ -1,9 +1,7 @@
-// Pull each preset's haptics payload out of a bundle's zip entries (portable — no Node APIs,
-// so Studio's browser exporter reuses it). The `rn` target inlines these into its sidecar.
+// Pulls preset payloads out of a bundle's zip entries. Portable — no Node APIs.
 
 import type { BundleManifest, DevicePattern, InlineLottie } from './types.ts';
 
-/** Decoded zip entries, as returned by `readZip`. */
 export type EntryMap = Record<string, Uint8Array>;
 
 function assertDevicePattern(value: unknown, where: string): DevicePattern {
@@ -19,10 +17,6 @@ function assertDevicePattern(value: unknown, where: string): DevicePattern {
   return p as DevicePattern;
 }
 
-/**
- * Map every preset id to its decoded device pattern. Throws if a manifest entry points at a
- * path the zip does not contain, or at a payload that is not a device pattern.
- */
 export function extractPatterns(
   manifest: BundleManifest,
   entries: EntryMap,
@@ -47,13 +41,7 @@ export function extractPatterns(
   return out;
 }
 
-/**
- * Pull each preset's Lottie animation out of the zip, for targets that render it in JS.
- *
- * Only a JSON animation can be inlined. A dotLottie (`.lottie`) is itself a zip of binary parts —
- * `lottie-react-native` cannot take one as a plain object — so those are reported in `skipped` and
- * stay available through the binary `.pulsar` path only.
- */
+/** A dotLottie is a zip of binary parts, so it cannot be inlined — those ids land in `skipped`. */
 export function extractAnimations(
   manifest: BundleManifest,
   entries: EntryMap,

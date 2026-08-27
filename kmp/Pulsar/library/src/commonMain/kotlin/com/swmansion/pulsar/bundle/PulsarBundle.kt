@@ -66,8 +66,7 @@ class LoadedBundle internal constructor(
 }
 
 /**
- * Backs a generated presets class: resolves each preset by id, and carries the bundle-level members
- * the generated class re-exposes so that presets can sit at the top level (`bundle.heartbeatV2`).
+ * Backs a generated presets class.
  */
 class BundleResolver internal constructor(private val loaded: LoadedBundle) {
     operator fun get(id: String): PresetHandle = loaded.handle(id)!!
@@ -76,7 +75,6 @@ class BundleResolver internal constructor(private val loaded: LoadedBundle) {
     val revision: Int get() = loaded.revision
     val contentHash: String get() = loaded.contentHash
 
-    /** Dynamic escape hatch for ids not known at compile time; null when absent. */
     fun handle(id: String): PresetHandle? = loaded.handle(id)
     fun dispose() = loaded.dispose()
 }
@@ -90,10 +88,8 @@ class BundleDescriptor<P>(
     val build: (BundleResolver) -> P,
 )
 
-// `pulsar.loadBundle(SomeBundle.descriptor, bytes)` returns the generated presets class itself,
-// which carries both the presets and the bundle-level members (`id`, `contentHash`, `get`,
-// `dispose`). Kotlin cannot forward arbitrary typed members through a wrapper, so the generator
-// emits them.
+// `loadBundle` returns the generated presets class itself: Kotlin cannot forward typed members
+// through a wrapper, so the generator emits the bundle-level members onto it.
 
 class PulsarBundleException(message: String) : Exception(message)
 

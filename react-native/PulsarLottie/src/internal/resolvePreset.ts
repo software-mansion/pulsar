@@ -1,10 +1,7 @@
 import type { LottieViewProps } from 'lottie-react-native';
 import type { HapticConfig, HapticLottieProps, HapticSource } from '../types';
 
-/**
- * `HapticLottieProps` after a `preset` has been folded in: `source` is decided, so the engines can
- * read it without re-checking the preset.
- */
+/** `HapticLottieProps` with `source` decided, so the engines never re-check the preset. */
 export type ResolvedProps = Omit<LottieViewProps, 'source'> &
   HapticConfig & { source: LottieViewProps['source'] };
 
@@ -18,18 +15,11 @@ function warnOnce(key: string, message: string): void {
   console.warn(`[react-native-pulsar-lottie] ${message}`);
 }
 
-/**
- * Fold a bundle `preset` into the props: its Lottie becomes `source`, its pattern becomes
- * `haptics`, its authored length becomes `durationMs`. Anything passed explicitly wins.
- *
- * Returns `null` when there is nothing to render — a preset whose animation is not carried in JS
- * and no `source` to fall back on.
- */
+/** Folds a `preset` into the props. Explicit props win. `null` means there is nothing to render. */
 export function resolvePreset(props: HapticLottieProps): ResolvedProps | null {
   const { preset } = props;
   if (!preset) {
-    // Without a preset the prop union guarantees `source`.
-    return props as ResolvedProps;
+    return props as ResolvedProps; // the prop union guarantees `source` without a preset
   }
 
   const source = props.source ?? (preset.animation?.source as LottieViewProps['source']);
@@ -45,8 +35,7 @@ export function resolvePreset(props: HapticLottieProps): ResolvedProps | null {
     return null;
   }
 
-  // The pattern drives both engines. A preset from the binary path has none (it lives natively),
-  // so fall back to its own trigger, which `pattern` mode fires once at the animation start.
+  // `preset.play` is the fallback when the pattern lives natively: a trigger, fired once at start.
   const haptics: HapticSource | undefined = props.haptics ?? preset.pattern ?? preset.play;
 
   return {

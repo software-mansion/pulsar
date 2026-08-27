@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 // Generates a `<name>.bundle.json` sidecar next to every `.pulsar` in a directory.
-// The sidecar carries the device patterns inline and is the source of `bundle.presets.<id>`
-// autocomplete (keyof inference) — so the app imports one JSON and needs no binary asset.
 //
 //   node scripts/pulsar-gen-rn.mjs <dir> [<dir> ...]     (default: ./assets)
 //
@@ -14,7 +12,6 @@ import { inflateRawSync } from 'node:zlib';
 
 const SIDECAR_SCHEMA = 'pulsar.sidecar/1';
 
-/** Read every entry of a zip into a { name: Buffer } map. */
 function readEntries(bundlePath) {
   const buf = readFileSync(bundlePath);
   // Locate End Of Central Directory.

@@ -12,24 +12,19 @@ class PresetHandle {
 }
 
 /// Looks up preset handles by id when a generated descriptor builds its typed presets view.
-/// Backs a generated presets class: resolves each preset by id, and carries the bundle-level
-/// members the generated class re-exposes so presets can sit at the top level
-/// (`bundle.heartbeatV2`). Dart cannot forward arbitrary typed members through a wrapper.
+/// Backs a generated presets class.
 class BundleResolver {
   BundleResolver(this._token, this.bundleId, this.contentHash);
 
   final String _token;
 
-  /// Reverse-DNS identity of the loaded bundle.
   final String bundleId;
   final String contentHash;
 
   PresetHandle operator [](String id) => PresetHandle(_token, id);
 
-  /// Look a preset up by an id only known at runtime.
   PresetHandle? handle(String id) => _presetIds.contains(id) ? PresetHandle(_token, id) : null;
 
-  /// Release the native patterns this bundle parsed.
   void dispose() => unawaited(PulsarPlatform.instance.disposeBundle(_token));
 
   Set<String> _presetIds = const {};
@@ -57,8 +52,8 @@ class BundleDescriptor<P> {
 }
 
 /// The typed bundle returned by [Pulsar.loadBundle].
-// `pulsar.loadBundle(descriptor)` returns the generated presets class itself, which carries both
-// the presets and the bundle-level members (`id`, `contentHash`, `get`, `dispose`).
+// `loadBundle` returns the generated presets class itself: Dart cannot forward typed members
+// through a wrapper, so the generator emits the bundle-level members onto it.
 
 /// Bundle loading for [Pulsar].
 extension PulsarBundleLoader on Pulsar {
