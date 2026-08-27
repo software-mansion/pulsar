@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import typegpu from 'unplugin-typegpu/vite';
 import { BASE_PATH } from './config.ts';
 
 /**
@@ -14,7 +15,10 @@ import { BASE_PATH } from './config.ts';
 export default defineConfig({
   root: 'web-app',
   base: `${BASE_PATH}/web-app/`,
-  plugins: [react()],
+  // `typegpu()` compiles the game's `'use gpu'` particle shaders to WGSL at
+  // build time. Without it TypeGPU has no AST for those function bodies and
+  // throws "Missing metadata for tgpu.fn function body" at runtime.
+  plugins: [react(), typegpu()],
   server: {
     fs: {
       // Presets (JSON + waveform PNGs) live in the Astro asset tree and are
