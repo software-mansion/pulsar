@@ -23,6 +23,11 @@ struct MainTabView: View {
                     Label("Lottie", systemImage: "sparkles")
                 }
 
+            BundlesView()
+                .tabItem {
+                    Label("Bundles", systemImage: "shippingbox.fill")
+                }
+
             APITestingView()
                 .tabItem {
                     Label("API Tests", systemImage: "hammer.fill")

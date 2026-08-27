@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pulsar_haptics/pulsar.dart';
+
+import 'bundles/haptics_bundle.bundle.dart' as haptics_bundle;
 import 'package:pulsar_haptics_lottie/pulsar_haptics_lottie.dart';
 
 void main() {
@@ -37,6 +39,7 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
   late final PulsarPatternComposer _patternComposer =
       _pulsar.getPatternComposer();
   String _status = 'Ready';
+  haptics_bundle.HapticsBundlePresets? _bundle;
   HapticSupport _hapticSupport = HapticSupport.noSupport;
   double _amplitude = 0.5;
   double _frequency = 0.5;
@@ -45,6 +48,17 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
   void initState() {
     super.initState();
     _loadHapticSupport();
+    _loadBundle();
+  }
+
+  /// Loads the bundle shipped as a Flutter asset, through committed `pulsar-gen` output.
+  Future<void> _loadBundle() async {
+    try {
+      final bundle = await _pulsar.loadBundle(haptics_bundle.hapticsBundle, strict: true);
+      if (mounted) setState(() => _bundle = bundle);
+    } catch (e) {
+      if (mounted) setState(() => _status = 'Bundle failed to load: $e');
+    }
   }
 
   Future<void> _loadHapticSupport() async {
@@ -279,6 +293,28 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+
+          // Presets from a .pulsar bundle authored in Pulsar Studio.
+          _SectionHeader('Bundle Presets'),
+          if (_bundle == null)
+            const Text('Loading bundle…')
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _PresetButton('Agent',
+                    () => _tryHaptic('agentpattern', () async => _bundle!.agentpattern.play())),
+                _PresetButton('Fanfare',
+                    () => _tryHaptic('fanfare', () async => _bundle!.fanfare.play())),
+                // Authored with a synced sound; the native SDK plays it alongside the haptics.
+                _PresetButton('Arcade bonus',
+                    () => _tryHaptic('arcadeBonusAlert', () async => _bundle!.arcadeBonusAlert.play())),
+                _PresetButton('Lottie',
+                    () => _tryHaptic('lottie', () async => _bundle!.lottie.play())),
+              ],
+            ),
           const SizedBox(height: 12),
 
           // System impacts

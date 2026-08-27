@@ -26,6 +26,8 @@ import com.swmansion.pulsar.kmp.PatternData
 import com.swmansion.pulsar.kmp.SoundData
 import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.ValuePoint
+import com.swmansion.pulsar.kmp.app.bundles.HapticsBundle
+import pulsarapp.composeapp.generated.resources.Res
 import com.swmansion.pulsar.lottie.HapticLottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
@@ -65,6 +67,8 @@ fun App() {
                 },
                 style = MaterialTheme.typography.bodyLarge,
             )
+            BundleCard(pulsar) { status = it }
+
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -205,7 +209,7 @@ fun App() {
                     if (pulsar != null) {
                         HapticLottie(
                             progress = progress,
-                            durationMillis = composition?.durationMillis?.toLong() ?: 0L,
+                            durationMillis = composition?.duration?.inWholeMilliseconds ?: 0L,
                             isPlaying = true,
                             haptics = remember { verifiedLottiePattern() },
                             pulsar = pulsar,
@@ -266,6 +270,64 @@ fun App() {
 // Pattern authored to sync with `sample_3s.mp3` (music onset analysis): the
 // discrete beats land on the track's onsets, the continuous envelope traces its
 // energy.
+/**
+ * Plays presets from a bundle shipped as a Compose resource. KMP has no shared asset API, so the
+ * app supplies the bytes — hence the suspending read.
+ *
+ * KMP v1 has no bundle audio yet, so `arcadeBonusAlert` is felt but not heard.
+ */
+@Composable
+private fun BundleCard(pulsar: Pulsar?, onStatus: (String) -> Unit) {
+    var bundle by remember { mutableStateOf<HapticsBundle.Presets?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(pulsar) {
+        if (pulsar == null) return@LaunchedEffect
+        runCatching {
+            val bytes = Res.readBytes("files/hapticsBundle.pulsar")
+            pulsar.loadBundle(HapticsBundle.descriptor, bytes, strict = true)
+        }.onSuccess { bundle = it }.onFailure { error = it.message ?: "failed to load bundle" }
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("Bundle", style = MaterialTheme.typography.titleMedium)
+            val loaded = bundle
+            if (loaded == null) {
+                Text(error ?: "Loading ${HapticsBundle.bundleId}…", style = MaterialTheme.typography.bodySmall)
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Button(onClick = {
+                        loaded.agentpattern.play()
+                        onStatus("Played agentpattern from ${HapticsBundle.bundleId}")
+                    }) { Text("Agent") }
+                    Button(onClick = {
+                        loaded.fanfare.play()
+                        onStatus("Played fanfare from ${HapticsBundle.bundleId}")
+                    }) { Text("Fanfare") }
+                    Button(onClick = {
+                        loaded.lottie.play()
+                        onStatus("Played lottie from ${HapticsBundle.bundleId}")
+                    }) { Text("Lottie") }
+                }
+                val animation = loaded.lottie.animation
+                Text(
+                    if (animation != null) {
+                        "The lottie preset also carries ${animation.data.size} bytes of animation " +
+                            "at ${animation.frameRate} fps for your own Lottie view."
+                    } else {
+                        "No animation bytes carried."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+}
+
 private fun audioSyncPattern(): PatternData {
     return PatternData(
         continuousPattern = ContinuousPattern(

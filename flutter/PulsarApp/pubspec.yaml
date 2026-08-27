@@ -71,6 +71,8 @@ flutter:
   assets:
     - assets/sample-3s.mp3
     - assets/verified.json
+    # Directory entry: a new .pulsar bundle needs no extra line here.
+    - assets/pulsar/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
