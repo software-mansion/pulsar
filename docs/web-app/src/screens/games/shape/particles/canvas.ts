@@ -21,16 +21,71 @@ type P = {
   drag: number;
   gravity: number;
   seed: number;
+  /** CSS colour, used for the flat confetti cards. */
   color: string;
+  /** Pre-rendered glow for round kinds; null for confetti, which is flat. */
+  sprite: HTMLCanvasElement | null;
 };
 
 /** Half the GPU pool: 2D fill calls, not vertices, are the limit here. */
 const POOL = Math.min(1200, MAX_PARTICLES);
 
-const rgb = (color: readonly [number, number, number], tint: number) =>
-  `rgb(${Math.round(Math.min(255, color[0] * 255 * tint))} ${Math.round(
-    Math.min(255, color[1] * 255 * tint),
-  )} ${Math.round(Math.min(255, color[2] * 255 * tint))})`;
+/**
+ * Channels for a burst colour at a given tint, quantised.
+ *
+ * Rounding to 16 keeps the glow-sprite cache to a few dozen entries instead of
+ * one per particle — the tint is random, so the exact value is not worth a
+ * cache miss and a fresh gradient.
+ */
+const channels = (color: readonly [number, number, number], tint: number) =>
+  color.map((c) => Math.min(240, Math.round((c * 255 * tint) / 16) * 16)) as [
+    number,
+    number,
+    number,
+  ];
+
+const cssOf = ([r, g, b]: [number, number, number]) => `rgb(${r} ${g} ${b})`;
+
+/**
+ * Glow sprites, drawn once per colour and blitted thereafter.
+ *
+ * The GPU path gets its glow from the fragment shader — a soft radial falloff
+ * plus a core boosted past its own alpha, so the middle of a spark reads as
+ * light rather than paint. A flat `arc()` fill has neither, which is why the
+ * fallback used to render plain circles. This bakes the same profile into a
+ * bitmap: `drawImage` per particle is cheap, whereas building a gradient per
+ * particle per frame is not.
+ *
+ * The outer stop repeats the particle's own colour at zero alpha rather than
+ * using `transparent`, which interpolates towards black and rings every spark
+ * with a dark halo.
+ */
+const SPRITE_PX = 64;
+const glowCache = new Map<string, HTMLCanvasElement>();
+
+function glowSprite([r, g, b]: [number, number, number]): HTMLCanvasElement | null {
+  const key = `${r},${g},${b}`;
+  const cached = glowCache.get(key);
+  if (cached) return cached;
+
+  const sprite = document.createElement('canvas');
+  sprite.width = SPRITE_PX;
+  sprite.height = SPRITE_PX;
+  const paint = sprite.getContext('2d');
+  if (!paint) return null;
+
+  const mid = SPRITE_PX / 2;
+  const gradient = paint.createRadialGradient(mid, mid, 0, mid, mid, mid);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+  gradient.addColorStop(0.22, `rgba(${r}, ${g}, ${b}, 0.95)`);
+  gradient.addColorStop(0.55, `rgba(${r}, ${g}, ${b}, 0.45)`);
+  gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+  paint.fillStyle = gradient;
+  paint.fillRect(0, 0, SPRITE_PX, SPRITE_PX);
+
+  glowCache.set(key, sprite);
+  return sprite;
+}
 
 const rainbow = (t: number) =>
   `hsl(${Math.round(t * 360)} 90% ${58 + Math.round(Math.random() * 12)}%)`;
@@ -54,6 +109,7 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
     gravity: 0,
     seed: 0,
     color: '#fff',
+    sprite: null,
   }));
 
   let cursor = 0;
@@ -154,10 +210,14 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
       p.spin = (Math.random() - 0.5) * 3.2 * (burst.kind === BurstKind.confetti ? 3.5 : 1);
       p.angle = Math.random() * Math.PI * 2;
       p.seed = Math.random() * 100;
-      p.color =
-        burst.kind === BurstKind.confetti
-          ? rainbow(Math.random())
-          : rgb(burst.color, 0.78 + Math.random() * 0.44);
+      if (burst.kind === BurstKind.confetti) {
+        p.color = rainbow(Math.random());
+        p.sprite = null;
+      } else {
+        const tinted = channels(burst.color, 0.78 + Math.random() * 0.44);
+        p.color = cssOf(tinted);
+        p.sprite = glowSprite(tinted);
+      }
     }
   }
 
@@ -221,15 +281,21 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
         const size = p.size * (0.35 + grow);
 
         ctx.globalAlpha = Math.max(0, Math.min(1, fade));
-        ctx.fillStyle = p.color;
 
         if (p.kind === BurstKind.confetti) {
+          // Confetti is a solid card on the GPU too — its glow term is masked
+          // out there — so it stays a flat fill here.
+          ctx.fillStyle = p.color;
           ctx.save();
           ctx.translate(p.x, p.y);
           ctx.rotate(p.angle);
           ctx.fillRect(-size, -size * 0.42, size * 2, size * 0.84);
           ctx.restore();
+        } else if (p.sprite) {
+          // Diameter `size * 2`, matching the GPU's quad of ±size per corner.
+          ctx.drawImage(p.sprite, p.x - size, p.y - size, size * 2, size * 2);
         } else {
+          ctx.fillStyle = p.color;
           ctx.beginPath();
           ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
           ctx.fill();
