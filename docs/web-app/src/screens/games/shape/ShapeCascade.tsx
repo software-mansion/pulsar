@@ -283,7 +283,6 @@ export function ShapeCascade() {
   const [hint, setHint] = useState<{ from: number; to: number } | null>(null);
   /** The live chain counter. `exiting` keeps it mounted long enough to leave. */
   const [combo, setCombo] = useState<{ level: number; exiting: boolean } | null>(null);
-  const [backend, setBackend] = useState<ParticleField['backend'] | null>(null);
 
   const boardRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -348,7 +347,6 @@ export function ShapeCascade() {
       }
       field = created;
       effectsRef.current.field = created;
-      setBackend(created.backend);
 
       const loop = (now: number) => {
         // Clamped so a backgrounded tab does not resume with a huge timestep
@@ -956,16 +954,17 @@ export function ShapeCascade() {
 
       {shell && createPortal(<canvas ref={canvasRef} className="shape-particles" />, shell)}
 
-      <p className="hint shape-footnote">
-        {hapticsAvailable()
-          ? 'Every match, drop and combo is a different Pulsar pattern — cascades climb, specials sweep, combos land with the confetti.'
-          : 'This browser has no Vibration API, so the haptics are playing as sound instead. Open it on an Android phone to feel them.'}
-        {backend === 'webgpu'
-          ? ' Particles are running on WebGPU via TypeGPU.'
-          : backend === 'canvas'
-            ? ' WebGPU is unavailable here, so particles fall back to Canvas 2D.'
-            : ''}
-      </p>
+      {/*
+        Kept only where it explains something the player would otherwise find
+        baffling: on a device with no Vibration API a haptics demo appears to do
+        nothing, so it says why. Everywhere else the game speaks for itself.
+      */}
+      {!hapticsAvailable() && (
+        <p className="hint shape-footnote">
+          This browser has no Vibration API, so the haptics are playing as sound instead. Open it on
+          an Android phone to feel them.
+        </p>
+      )}
     </>
   );
 }
