@@ -289,6 +289,94 @@ class GameAudio {
     }
   }
 
+  /** A gentle rising figure when the game opens — a greeting, not a flourish. */
+  invite() {
+    const t = this.now();
+    if (t === null) return;
+    this.tone(t, { freq: step(2), duration: 0.2, gain: 0.09, type: 'sine' });
+    this.tone(t, { freq: step(5), duration: 0.3, gain: 0.1, delay: 0.12 });
+    this.tone(t, { freq: step(7), duration: 0.42, gain: 0.07, type: 'sine', delay: 0.24 });
+    this.burst(t, { duration: 0.3, gain: 0.04, from: 1200, to: 3400, q: 1.2, delay: 0.1 });
+  }
+
+  /**
+   * The "ta-daaa". A bright upward stab, then a major chord that blooms and
+   * rings out under a shower of high partials.
+   *
+   * Built on plain frequency ratios rather than the pentatonic table the rest of
+   * the game uses: a fanfare wants a true major triad, and the scale has no
+   * third in it.
+   */
+  fanfare() {
+    const t = this.now();
+    if (t === null) return;
+    const root = step(2);
+
+    // "ta"
+    this.tone(t, { freq: root, to: root * 1.5, duration: 0.13, gain: 0.16 });
+    this.burst(t, { duration: 0.09, gain: 0.07, from: 2200, to: 900, q: 1 });
+
+    // "daaa" — root, major third, fifth, octave, spread by a hair so the chord
+    // arrives as a strum instead of a block.
+    const at = 0.21;
+    [1, 1.26, 1.5, 2].forEach((ratio, i) => {
+      this.tone(t, {
+        freq: root * ratio,
+        duration: 0.62,
+        gain: 0.13 - i * 0.015,
+        delay: at + i * 0.02,
+      });
+      this.tone(t, {
+        freq: root * ratio * 2,
+        duration: 0.4,
+        gain: 0.045,
+        type: 'sine',
+        delay: at + i * 0.02,
+      });
+    });
+    this.burst(t, { duration: 0.5, gain: 0.06, from: 900, to: 4200, q: 1.4, delay: at });
+
+    for (let i = 0; i < 8; i++) {
+      this.tone(t, {
+        freq: step(7 + (i % 5)),
+        duration: 0.22,
+        gain: 0.05,
+        type: 'sine',
+        delay: at + 0.22 + i * 0.05,
+      });
+    }
+  }
+
+  /** End of the run: three descending steps onto a held chord. Warm, not grim. */
+  gameOver() {
+    const t = this.now();
+    if (t === null) return;
+    const root = step(2);
+
+    [0, 1, 2].forEach((i) => {
+      this.tone(t, { freq: root * 0.84 ** i, duration: 0.24, gain: 0.14, delay: i * 0.18 });
+    });
+
+    const at = 0.55;
+    [1, 1.26, 1.5].forEach((ratio, i) => {
+      this.tone(t, {
+        freq: root * 0.7 * ratio,
+        duration: 0.95,
+        gain: 0.12 - i * 0.02,
+        delay: at + i * 0.03,
+      });
+    });
+    this.burst(t, {
+      duration: 0.7,
+      gain: 0.05,
+      from: 600,
+      to: 200,
+      q: 1,
+      type: 'lowpass',
+      delay: at,
+    });
+  }
+
   shuffle() {
     const t = this.now();
     if (t === null) return;

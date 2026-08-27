@@ -260,3 +260,91 @@ export function finalePattern(level: number): HapticPattern {
     ...sparkle,
   ];
 }
+
+/**
+ * "Come and play" — fired when the game opens.
+ *
+ * Two light taps and a rising swell, kept deliberately gentle: it is a greeting,
+ * not an achievement, and it arrives before the player has done anything.
+ *
+ * Whether it is felt at all is up to the browser. `navigator.vibrate` is
+ * ignored without sticky user activation, so this plays for someone who tapped
+ * through from the games list and is silently dropped for someone who opened
+ * the URL directly — which is the right outcome either way.
+ */
+export const INVITE_MS = 440;
+
+export const invitePattern: HapticPattern = [
+  { type: 'pulse', timestamp: 0, duration: 40, intensity: 0.35, frequency: 0.5 },
+  { type: 'pulse', timestamp: 92, duration: 40, intensity: 0.5, frequency: 0.7 },
+  {
+    type: 'line',
+    timestamp: 180,
+    duration: 260,
+    intensity: [
+      { time: 0, value: 0.4 },
+      { time: 170, value: 0.8 },
+      { time: 260, value: 0.22 },
+    ],
+    frequency: [
+      { time: 0, value: 0.6 },
+      { time: 260, value: 0.95 },
+    ],
+  },
+];
+
+/**
+ * The "ta-daaa". A crisp hit, a beat of silence, then a swell that blooms and
+ * rings out — the gap is what makes the two halves read as one gesture rather
+ * than as two unrelated buzzes.
+ */
+export const FANFARE_MS = 780;
+
+export const fanfarePattern: HapticPattern = [
+  // "ta"
+  { type: 'pulse', timestamp: 0, duration: 90, intensity: 0.85, frequency: 0.75 },
+  // "d-" — the attack of the second syllable
+  { type: 'continuous', timestamp: 210, duration: 70 },
+  // "-aaa" — holds, then thins out
+  {
+    type: 'line',
+    timestamp: 285,
+    duration: 495,
+    intensity: [
+      { time: 0, value: 0.95 },
+      { time: 180, value: 0.8 },
+      { time: 495, value: 0.15 },
+    ],
+    frequency: [
+      { time: 0, value: 0.8 },
+      { time: 495, value: 0.35 },
+    ],
+  },
+];
+
+/**
+ * End of the run. Three settling knocks that lose weight as they go, then a low
+ * hold that fades — a cadence that resolves rather than celebrates, so it reads
+ * as "that's the game" instead of another combo.
+ */
+export const GAME_OVER_MS = 1150;
+
+export const gameOverPattern: HapticPattern = [
+  { type: 'pulse', timestamp: 0, duration: 80, intensity: 0.8, frequency: 0.6 },
+  { type: 'pulse', timestamp: 180, duration: 80, intensity: 0.7, frequency: 0.45 },
+  { type: 'pulse', timestamp: 360, duration: 90, intensity: 0.6, frequency: 0.3 },
+  { type: 'continuous', timestamp: 520, duration: 90 },
+  {
+    type: 'line',
+    timestamp: 620,
+    duration: 530,
+    intensity: [
+      { time: 0, value: 0.85 },
+      { time: 530, value: 0.1 },
+    ],
+    frequency: [
+      { time: 0, value: 0.3 },
+      { time: 530, value: 0.12 },
+    ],
+  },
+];

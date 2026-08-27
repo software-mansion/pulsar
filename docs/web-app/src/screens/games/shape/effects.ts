@@ -1,10 +1,16 @@
 import { gameAudio } from './audio';
 import {
+  FANFARE_MS,
   FINALE_MS,
+  GAME_OVER_MS,
+  INVITE_MS,
   Priority,
   bombBlastPattern,
   bombBornPattern,
+  fanfarePattern,
   finalePattern,
+  gameOverPattern,
+  invitePattern,
   landingPattern,
   matchPattern,
   playHaptic,
@@ -297,6 +303,88 @@ export function finaleEffect(
   }
 
   return FINALE_MS;
+}
+
+/**
+ * Played when the game opens: a light rising figure with a matching shimmer.
+ *
+ * Fired a beat after mount rather than immediately, so the particle field —
+ * which is built asynchronously — exists to receive the sparks. Returns its own
+ * length so the caller can schedule around it.
+ */
+export function inviteEffect({ field }: Effects, board: { width: number; height: number }): number {
+  playHaptic(invitePattern, Priority.special);
+  gameAudio.invite();
+
+  field?.emit({
+    kind: BurstKind.spark,
+    x: board.width / 2,
+    y: board.height / 2,
+    color: shapeRgb[4] ?? NEUTRAL_RGB,
+    count: 30,
+    energy: 0.42,
+  });
+
+  return INVITE_MS;
+}
+
+/**
+ * The "ta-daaa" flourish. Reserved for the loudest moments, and timed so the
+ * visual lands on the second syllable rather than the first — the burst belongs
+ * on the "daaa", not the "ta".
+ */
+export function fanfareEffect(
+  { field }: Effects,
+  board: { width: number; height: number },
+): number {
+  playHaptic(fanfarePattern, Priority.finale);
+  gameAudio.fanfare();
+
+  const x = board.width / 2;
+  const y = board.height * 0.42;
+
+  window.setTimeout(() => {
+    field?.emit({
+      kind: BurstKind.explosion,
+      x,
+      y,
+      color: NEUTRAL_RGB,
+      count: 90,
+      energy: 0.9,
+    });
+    laserRing(field, x, y, 12, 0.85, Math.PI / 5);
+  }, 210);
+
+  return FANFARE_MS;
+}
+
+/** End of the run: a resolving cadence and a last drift of confetti. */
+export function gameOverEffect(
+  { field }: Effects,
+  board: { width: number; height: number },
+): number {
+  playHaptic(gameOverPattern, Priority.finale);
+  gameAudio.gameOver();
+
+  // Slower and thinner than a combo's confetti — this is a curtain, not a
+  // celebration, so it drifts down rather than bursting out.
+  const columns = 5;
+  for (let i = 0; i < columns; i++) {
+    window.setTimeout(
+      () =>
+        field?.emit({
+          kind: BurstKind.confetti,
+          x: (board.width * (i + 0.5)) / columns,
+          y: board.height * 0.08,
+          color: NEUTRAL_RGB,
+          count: 18,
+          energy: 0.45,
+        }),
+      520 + i * 90,
+    );
+  }
+
+  return GAME_OVER_MS;
 }
 
 export function shuffleEffect() {

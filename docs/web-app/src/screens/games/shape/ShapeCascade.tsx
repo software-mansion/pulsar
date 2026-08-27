@@ -32,7 +32,10 @@ import {
   comboEffect,
   bornEffect,
   clearShake,
+  fanfareEffect,
   finaleEffect,
+  gameOverEffect,
+  inviteEffect,
   landingEffect,
   matchEffect,
   rejectEffect,
@@ -87,6 +90,14 @@ const CASCADE_BIAS_WARMUP = 0.28;
 
 /** Idle time before the board points out a move it can see. */
 const HINT_AFTER_MS = 4200;
+
+/**
+ * Delay before the opening greeting.
+ *
+ * The particle field is built asynchronously, so firing on mount would play the
+ * haptic into a screen with nothing to show for it.
+ */
+const INVITE_DELAY_MS = 420;
 
 /** Animation budget for each phase, in ms. Effects are timed against these. */
 const SWAP_MS = 175;
@@ -289,6 +300,8 @@ export function ShapeCascade() {
   const [nudge, setNudge] = useState<Nudge | null>(null);
   /** Guards the delayed clear in `settleNudge` against a newer settle. */
   const nudgeGenRef = useRef(0);
+  /** So the end-of-run cadence plays once, not on every re-render while over. */
+  const endedRef = useRef(false);
   const dragRef = useRef<{ from: number; originX: number; originY: number; done: boolean } | null>(
     null,
   );
@@ -298,6 +311,19 @@ export function ShapeCascade() {
 
   useLayoutEffect(() => {
     setShell(document.querySelector<HTMLElement>('.shell'));
+  }, []);
+
+  // A greeting when the game opens. Browsers ignore `navigator.vibrate` without
+  // sticky user activation, so this is felt by someone who tapped through from
+  // the games list and quietly skipped for a direct link — see `invitePattern`.
+  useEffect(() => {
+    const run = runRef.current;
+    const timer = window.setTimeout(() => {
+      if (runRef.current !== run) return;
+      gameAudio.unlock();
+      inviteEffect(effectsRef.current, sizeRef.current);
+    }, INVITE_DELAY_MS);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // --------------------------------------------------------- particles --
@@ -391,6 +417,20 @@ export function ShapeCascade() {
       clearShake();
       gameAudio.close();
     };
+  }, []);
+
+  /**
+   * Queues the "ta-daaa" to land once the finale has finished.
+   *
+   * They are kept apart deliberately: both claim the top haptic priority, so
+   * overlapping them would have the fanfare cancel the finale mid-swell and the
+   * player would feel one truncated buzz instead of two distinct gestures.
+   */
+  const playFanfareAfter = useCallback((delayMs: number, run: number) => {
+    window.setTimeout(() => {
+      if (runRef.current !== run) return;
+      fanfareEffect(effectsRef.current, sizeRef.current);
+    }, delayMs);
   }, []);
 
   const showBanner = useCallback((title: string, detail: string, kind: BannerKind) => {
@@ -600,9 +640,13 @@ export function ShapeCascade() {
       if (comboTitle) {
         const superCombo = SUPER_COMBOS.has(result.combo) || result.cascade >= SUPER_CASCADE;
         showBanner(comboTitle, 'Special combo', superCombo ? 'super' : 'combo');
-        finaleEffect(effectsRef.current, Math.max(3, result.cascade), sizeRef.current, {
-          superCombo,
-        });
+        const finaleMs = finaleEffect(
+          effectsRef.current,
+          Math.max(3, result.cascade),
+          sizeRef.current,
+          { superCombo },
+        );
+        if (superCombo) playFanfareAfter(finaleMs, run);
       }
 
       let previous = swapped;
@@ -620,9 +664,10 @@ export function ShapeCascade() {
         const title = CASCADE_TITLES[Math.min(CASCADE_TITLES.length - 1, result.cascade - 3)];
         const superCascade = result.cascade >= SUPER_CASCADE;
         showBanner(title, `${result.cascade}x cascade`, superCascade ? 'super' : 'cascade');
-        finaleEffect(effectsRef.current, result.cascade, sizeRef.current, {
+        const finaleMs = finaleEffect(effectsRef.current, result.cascade, sizeRef.current, {
           superCombo: superCascade,
         });
+        if (superCascade) playFanfareAfter(finaleMs, run);
         await wait(320);
       }
 
@@ -638,7 +683,7 @@ export function ShapeCascade() {
 
       if (runRef.current === run) setBusy(false);
     },
-    [board, playStep, settleNudge, generousAt, cascadeBias, showBanner],
+    [board, playStep, settleNudge, generousAt, cascadeBias, showBanner, playFanfareAfter],
   );
 
   /**
@@ -813,10 +858,22 @@ export function ShapeCascade() {
     setHint(null);
     setDryStreak(0);
     setCombo(null);
+    endedRef.current = false;
     setBusy(false);
   }
 
   const over = moves === 0 && !busy;
+
+  // Fires on the transition into "out of moves", and re-arms on restart.
+  useEffect(() => {
+    if (!over) {
+      endedRef.current = false;
+      return;
+    }
+    if (endedRef.current) return;
+    endedRef.current = true;
+    gameOverEffect(effectsRef.current, sizeRef.current);
+  }, [over]);
 
   return (
     <>
