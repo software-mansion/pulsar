@@ -8,7 +8,6 @@
     "build:web-app": "vite build --config vite.web-app.config.ts",
     "dev:web-app": "vite --config vite.web-app.config.ts",
     "typecheck:web-app": "tsc -p web-app/tsconfig.json --noEmit",
-    "sync:preview": "node scripts/build-figma-preview.mjs",
     "build": "npm run build:web-app && astro build",
     "preview": "astro preview",
     "astro": "astro",
