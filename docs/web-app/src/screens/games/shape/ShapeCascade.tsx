@@ -1,4 +1,13 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  lazy,
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -23,8 +32,9 @@ import {
 } from './engine';
 import { ShapeSprite } from './ShapeSprite';
 import { Counter } from './Counter';
+import { MoodPriority, usePandaMood } from './panda/moods';
 import { gameAudio } from './audio';
-import { hapticsAvailable, resetHaptics } from './haptics';
+import { FANFARE_MS, hapticsAvailable, INVITE_MS, resetHaptics } from './haptics';
 import { createParticleField, type ParticleField } from './particles';
 import {
   bannerEffect,
@@ -38,6 +48,7 @@ import {
   inviteEffect,
   landingEffect,
   matchEffect,
+  pokeEffect,
   rejectEffect,
   selectEffect,
   shuffleEffect,
@@ -55,6 +66,15 @@ import {
  * way is what lets the celebration know how deep a chain is *before* the first
  * shape pops, so the finale can be scheduled rather than discovered.
  */
+
+/*
+ * The mascot's artwork is ~54 kB of inlined SVG — a quarter of the app's entry
+ * chunk for something only this screen draws. Split out, it is fetched when the
+ * game mounts and never by someone who only opens Presets. `.panda` carries the
+ * artwork's aspect ratio, so the box is the right size before it arrives and
+ * nothing below it shifts when it lands.
+ */
+const Panda = lazy(() => import('./panda/Panda').then((m) => ({ default: m.Panda })));
 
 const STARTING_MOVES = 25;
 
@@ -90,6 +110,9 @@ const CASCADE_BIAS_WARMUP = 0.28;
 
 /** Idle time before the board points out a move it can see. */
 const HINT_AFTER_MS = 4200;
+
+/** Left alone for this long, the panda under the board nods off. */
+const DOZE_AFTER_MS = 14000;
 
 /**
  * Delay before the opening greeting.
@@ -284,6 +307,17 @@ export function ShapeCascade() {
   /** The live chain counter. `exiting` keeps it mounted long enough to leave. */
   const [combo, setCombo] = useState<{ level: number; exiting: boolean } | null>(null);
 
+  /**
+   * The mascot reacts to the same beats the haptics do — see `panda/moods.ts`
+   * for why its reactions are arbitrated the same way rather than simply set.
+   */
+  const {
+    mood: pandaMood,
+    react: pandaReact,
+    settle: pandaSettle,
+    reset: pandaReset,
+  } = usePandaMood();
+
   const boardRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   /**
@@ -321,9 +355,11 @@ export function ShapeCascade() {
       if (runRef.current !== run) return;
       gameAudio.unlock();
       inviteEffect(effectsRef.current, sizeRef.current);
+      pandaReact('wave', MoodPriority.finale, INVITE_MS + 700);
     }, INVITE_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, []);
+    // `pandaReact` is stable, so this still runs only on mount.
+  }, [pandaReact]);
 
   // --------------------------------------------------------- particles --
 
@@ -513,10 +549,14 @@ export function ShapeCascade() {
       const tiles = step.clear.cleared.length;
 
       matchEffect(effectsRef.current, points, tiles, step.clear.cascade);
+      pandaReact('happy', MoodPriority.beat, 620);
 
       if (step.clear.cascade >= 2) {
         setCombo({ level: step.clear.cascade, exiting: false });
         comboEffect(effectsRef.current, step.clear.cascade, boardSize);
+        // Held a little longer as the chain deepens, so a long cascade keeps
+        // the face lit rather than flickering back on every link.
+        pandaReact('excited', MoodPriority.event, 520 + step.clear.cascade * 120);
       }
 
       // Specials fire slightly after the pop so the two are distinguishable.
@@ -542,6 +582,7 @@ export function ShapeCascade() {
             ...pointOf(entry.index, before),
             color: entry.color,
           });
+          pandaReact('excited', MoodPriority.event, 780);
           // Say so when one was granted rather than earned, and say what it
           // does — a striped shape is useless to a player who has not worked
           // out that swapping it fires the line.
@@ -559,7 +600,7 @@ export function ShapeCascade() {
 
       await wait(FALL_MS);
     },
-    [pointOf, showBanner],
+    [pointOf, showBanner, pandaReact],
   );
 
   const playMove = useCallback(
@@ -580,6 +621,7 @@ export function ShapeCascade() {
       // surrounding row.
       if (!result) {
         rejectEffect();
+        pandaReact('grumpy', MoodPriority.event, 640);
 
         const horizontal = colOf(from) !== colOf(to);
         const direction = horizontal
@@ -628,6 +670,7 @@ export function ShapeCascade() {
       if (runRef.current !== run) return;
 
       setMoves((current) => Math.max(0, current - 1));
+      pandaSettle('idle');
 
       const madeSpecial = result.steps.some((step) => step.clear.created.length > 0);
       setDryStreak((current) => (madeSpecial ? 0 : current + 1));
@@ -643,6 +686,13 @@ export function ShapeCascade() {
           Math.max(3, result.cascade),
           sizeRef.current,
           { superCombo },
+        );
+        // The fanfare lands after the finale, so the celebration is held
+        // across both rather than dropping out between them.
+        pandaReact(
+          superCombo ? 'love' : 'excited',
+          MoodPriority.finale,
+          finaleMs + (superCombo ? FANFARE_MS : 260),
         );
         if (superCombo) playFanfareAfter(finaleMs, run);
       }
@@ -665,6 +715,11 @@ export function ShapeCascade() {
         const finaleMs = finaleEffect(effectsRef.current, result.cascade, sizeRef.current, {
           superCombo: superCascade,
         });
+        pandaReact(
+          superCascade ? 'love' : 'excited',
+          MoodPriority.finale,
+          finaleMs + (superCascade ? FANFARE_MS : 260),
+        );
         if (superCascade) playFanfareAfter(finaleMs, run);
         await wait(320);
       }
@@ -681,7 +736,17 @@ export function ShapeCascade() {
 
       if (runRef.current === run) setBusy(false);
     },
-    [board, playStep, settleNudge, generousAt, cascadeBias, showBanner, playFanfareAfter],
+    [
+      board,
+      playStep,
+      settleNudge,
+      generousAt,
+      cascadeBias,
+      showBanner,
+      playFanfareAfter,
+      pandaReact,
+      pandaSettle,
+    ],
   );
 
   /**
@@ -699,9 +764,17 @@ export function ShapeCascade() {
     const timer = window.setTimeout(() => {
       const best = findBestMove(board, { generousAt });
       if (best) setHint({ from: best.from, to: best.to });
+      // These are resting moods, not reactions: the player is thinking, and a
+      // face that snapped back to neutral after a second would just twitch.
+      pandaSettle('curious');
     }, HINT_AFTER_MS);
-    return () => window.clearTimeout(timer);
-  }, [board, busy, moves, generousAt]);
+    const doze = window.setTimeout(() => pandaSettle('sleepy'), DOZE_AFTER_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(doze);
+    };
+  }, [board, busy, moves, generousAt, pandaSettle]);
 
   // ------------------------------------------------------------- input --
 
@@ -774,6 +847,7 @@ export function ShapeCascade() {
     dragRef.current = { from: index, originX: event.clientX, originY: event.clientY, done: false };
     setSelected(index);
     selectEffect();
+    pandaReact('curious', MoodPriority.nudge, 900);
   }
 
   /**
@@ -858,6 +932,8 @@ export function ShapeCascade() {
     setCombo(null);
     endedRef.current = false;
     setBusy(false);
+    pandaReset('idle');
+    pandaReact('wave', MoodPriority.finale, 1400);
   }
 
   const over = moves === 0 && !busy;
@@ -871,7 +947,8 @@ export function ShapeCascade() {
     if (endedRef.current) return;
     endedRef.current = true;
     gameOverEffect(effectsRef.current, sizeRef.current);
-  }, [over]);
+    pandaSettle('sad');
+  }, [over, pandaSettle]);
 
   return (
     <>
@@ -951,6 +1028,10 @@ export function ShapeCascade() {
           </div>
         )}
       </div>
+
+      <Suspense fallback={<div className="panda" />}>
+        <Panda mood={pandaMood} onPoke={pokeEffect} />
+      </Suspense>
 
       {shell && createPortal(<canvas ref={canvasRef} className="shape-particles" />, shell)}
 

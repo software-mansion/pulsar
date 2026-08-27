@@ -1522,6 +1522,473 @@ input[type='range'] {
   margin-top: 12px;
 }
 
+/* ---------------------------------------------------------------- panda -- */
+
+/*
+ * The mascot under the board — see `panda/Panda.tsx` for what is riggable and
+ * why. Everything below is built from seven handles: the two eye groups, the
+ * two pupil groups nested inside them, the brows, the blush, the mouth, the
+ * bamboo, and `stage` for the sticker as a whole.
+ *
+ * Pivots are the load-bearing part. `transform-box: view-box` makes
+ * `transform-origin` a coordinate in the artwork's own space rather than a
+ * fraction of each shape's bounding box, which is the only way a scaleY on the
+ * eye can close it against the eyelid instead of its own centre. The numbers
+ * are the anatomical pivots of the source drawing, offset for its cropped
+ * viewBox — they are not adjustable by eye.
+ */
+
+/*
+ * A button, because poking it is a real interaction and a mouse should not be
+ * the only way to reach it. The artwork inside carries no accessible name, so
+ * the button's label is what gets announced.
+ */
+.panda {
+  display: block;
+  width: 132px;
+  /* Holds the box while the split-out artwork is still in flight. */
+  aspect-ratio: 599 / 715;
+  margin: 16px auto 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.panda:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 14px;
+}
+
+.panda svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Bounce and lean push the sticker past the viewBox; let them show. */
+  overflow: visible;
+}
+
+.panda g {
+  transform-box: view-box;
+}
+
+.panda .eye-r-lid {
+  transform-origin: 377px 211px;
+}
+.panda .eye-l-lid {
+  transform-origin: 225px 260px;
+}
+.panda .pupil-r,
+.panda .look-r {
+  transform-origin: 376px 211px;
+}
+.panda .pupil-l,
+.panda .look-l {
+  transform-origin: 239px 257px;
+}
+.panda .brow-r {
+  transform-origin: 344px 136px;
+}
+.panda .brow-l {
+  transform-origin: 204px 175px;
+}
+.panda .blush-r {
+  transform-origin: 414px 268px;
+}
+.panda .blush-l {
+  transform-origin: 211px 343px;
+}
+.panda .nose {
+  transform-origin: 329px 271px;
+}
+.panda .mouth {
+  transform-origin: 332px 287px;
+}
+.panda .bamboo {
+  transform-origin: 404px 472px;
+}
+.panda .stage {
+  transform-origin: 279px 667px;
+}
+
+@keyframes panda-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(0.994, 1.018);
+  }
+}
+
+/*
+ * The blink is a squash rather than an eyelid, because the eye patch is a solid
+ * shape with nothing behind it to reveal. Held at scale 1 for most of the cycle
+ * so it reads as a blink and not a pulse.
+ */
+@keyframes panda-blink {
+  0%,
+  88%,
+  100% {
+    transform: scaleY(1);
+  }
+  91% {
+    transform: scaleY(0.06);
+  }
+  94% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes panda-drift {
+  0%,
+  12%,
+  100% {
+    transform: translate(0, 0);
+  }
+  22%,
+  38% {
+    transform: translate(-6px, 2px);
+  }
+  50%,
+  68% {
+    transform: translate(7px, -1px);
+  }
+  80% {
+    transform: translate(2px, 4px);
+  }
+}
+
+/*
+ * The bamboo swings from the paw, so the leaf tips travel far. Past about two
+ * degrees they clear the white die-cut, which is a single path around the whole
+ * sticker and cannot follow them — hence the small amplitude everywhere except
+ * `wave`, where the gesture is the point.
+ */
+@keyframes panda-sway {
+  0%,
+  100% {
+    transform: rotate(-1.6deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+
+@keyframes panda-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  22% {
+    transform: translateY(-16px) scale(0.97, 1.05);
+  }
+  60% {
+    transform: translateY(0) scale(1.05, 0.95);
+  }
+  78% {
+    transform: translateY(-4px) scale(1, 1);
+  }
+}
+
+@keyframes panda-shiver {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes panda-lean {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  40%,
+  70% {
+    transform: rotate(4.5deg);
+  }
+}
+
+@keyframes panda-slump {
+  0%,
+  100% {
+    transform: translateY(4px) scale(1.02, 0.97);
+  }
+  50% {
+    transform: translateY(7px) scale(1.025, 0.962);
+  }
+}
+
+@keyframes panda-rock {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes panda-shake {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes panda-wave {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  25% {
+    transform: rotate(9deg);
+  }
+  50% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
+/* Resting behaviour — this is `idle`, and every mood below is a diff of it. */
+.panda .stage {
+  animation: panda-breathe 4s ease-in-out infinite;
+}
+.panda .eye-r-lid,
+.panda .eye-l-lid {
+  animation: panda-blink 5.2s infinite;
+}
+.panda .pupil-r,
+.panda .pupil-l {
+  animation: panda-drift 7s ease-in-out infinite;
+}
+.panda .bamboo {
+  animation: panda-sway 3.4s ease-in-out infinite;
+}
+
+/* --- sleepy: the resting mood once the player stops for a while --- */
+.panda--sleepy .stage {
+  animation: panda-breathe 6.5s ease-in-out infinite;
+}
+.panda--sleepy .eye-r-lid,
+.panda--sleepy .eye-l-lid {
+  animation: none;
+  transform: scaleY(0.2);
+}
+.panda--sleepy .pupil-r,
+.panda--sleepy .pupil-l {
+  animation: none;
+  transform: translateY(5px);
+}
+.panda--sleepy .mouth {
+  transform: translateY(2px) scale(0.7);
+}
+.panda--sleepy .blush-r,
+.panda--sleepy .blush-l {
+  transform: scale(0.9);
+}
+.panda--sleepy .bamboo {
+  animation: panda-sway 6s ease-in-out infinite;
+}
+
+/* --- curious: a shape is picked up, or the hint is pointing --- */
+.panda--curious .stage {
+  animation: panda-lean 3.4s ease-in-out infinite;
+}
+.panda--curious .eye-r-lid,
+.panda--curious .eye-l-lid {
+  animation: panda-blink 3.1s infinite;
+  transform: scaleY(1.1);
+}
+.panda--curious .pupil-r,
+.panda--curious .pupil-l {
+  animation: panda-drift 2.2s ease-in-out infinite;
+}
+.panda--curious .brow-l {
+  transform: translateY(-10px) rotate(-9deg);
+}
+.panda--curious .brow-r {
+  transform: translateY(-2px);
+}
+.panda--curious .mouth {
+  transform: scale(0.86);
+}
+
+/* --- happy: an ordinary match cleared --- */
+.panda--happy .stage {
+  animation: panda-bounce 0.62s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+.panda--happy .eye-r-lid,
+.panda--happy .eye-l-lid {
+  animation: none;
+  transform: scaleY(0.42);
+}
+.panda--happy .pupil-r,
+.panda--happy .pupil-l {
+  animation: none;
+  transform: translateY(-2px);
+}
+.panda--happy .blush-r,
+.panda--happy .blush-l {
+  transform: scale(1.28);
+}
+.panda--happy .mouth {
+  transform: scale(1.18, 1.28);
+}
+.panda--happy .brow-l,
+.panda--happy .brow-r {
+  transform: translateY(-5px);
+}
+.panda--happy .bamboo {
+  animation: panda-sway 1.1s ease-in-out infinite;
+}
+
+/* --- excited: a special was born, or the chain got long --- */
+.panda--excited .stage {
+  animation: panda-bounce 0.34s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+.panda--excited .eye-r-lid,
+.panda--excited .eye-l-lid {
+  animation: none;
+  transform: scaleY(1.14);
+}
+.panda--excited .pupil-r,
+.panda--excited .pupil-l {
+  animation: none;
+  transform: scale(1.22);
+}
+.panda--excited .blush-r,
+.panda--excited .blush-l {
+  transform: scale(1.45);
+}
+.panda--excited .mouth {
+  transform: scale(1.3, 1.4);
+}
+.panda--excited .brow-l,
+.panda--excited .brow-r {
+  transform: translateY(-8px);
+}
+.panda--excited .bamboo {
+  animation: panda-shake 0.18s ease-in-out infinite;
+}
+
+/* --- love: the super combos and the fanfare that follows them --- */
+.panda--love .stage {
+  animation: panda-rock 1.6s ease-in-out infinite;
+}
+.panda--love .eye-r-lid,
+.panda--love .eye-l-lid {
+  animation: none;
+  transform: scaleY(0.55);
+}
+.panda--love .pupil-r,
+.panda--love .pupil-l {
+  animation: none;
+  transform: scale(1.3);
+}
+.panda--love .blush-r,
+.panda--love .blush-l {
+  transform: scale(1.55);
+}
+.panda--love .mouth {
+  transform: scale(1.2, 1.3);
+}
+.panda--love .bamboo {
+  animation: panda-sway 1.6s ease-in-out infinite;
+}
+
+/* --- wave: hello on arrival, and again on a fresh run --- */
+.panda--wave .stage {
+  animation: panda-lean 1.2s ease-in-out infinite;
+}
+.panda--wave .eye-r-lid,
+.panda--wave .eye-l-lid {
+  animation: none;
+  transform: scaleY(0.5);
+}
+.panda--wave .blush-r,
+.panda--wave .blush-l {
+  transform: scale(1.2);
+}
+.panda--wave .mouth {
+  transform: scale(1.15, 1.2);
+}
+.panda--wave .bamboo {
+  animation: panda-wave 1s ease-in-out infinite;
+}
+
+/* --- grumpy: the swap was rejected --- */
+.panda--grumpy .stage {
+  animation: panda-shiver 0.12s linear infinite;
+}
+.panda--grumpy .eye-r-lid,
+.panda--grumpy .eye-l-lid {
+  animation: none;
+  transform: scaleY(0.72);
+}
+.panda--grumpy .pupil-r,
+.panda--grumpy .pupil-l {
+  animation: none;
+  transform: scale(0.9);
+}
+.panda--grumpy .brow-l {
+  transform: translateY(9px) rotate(20deg);
+}
+.panda--grumpy .brow-r {
+  transform: translateY(9px) rotate(-20deg);
+}
+.panda--grumpy .mouth {
+  transform: scale(0.78);
+}
+.panda--grumpy .bamboo {
+  animation: panda-shake 0.14s ease-in-out infinite;
+}
+
+/* --- sad: out of moves, and it stays that way until Play again --- */
+.panda--sad .stage {
+  animation: panda-slump 4.5s ease-in-out infinite;
+}
+.panda--sad .eye-r-lid,
+.panda--sad .eye-l-lid {
+  animation: panda-blink 6.4s infinite;
+  transform: scaleY(0.68);
+}
+.panda--sad .pupil-r,
+.panda--sad .pupil-l {
+  animation: none;
+  transform: translateY(6px);
+}
+.panda--sad .brow-l {
+  transform: translateY(2px) rotate(-22deg);
+}
+.panda--sad .brow-r {
+  transform: translateY(2px) rotate(22deg);
+}
+.panda--sad .mouth {
+  transform: translateY(4px) scale(0.62);
+}
+.panda--sad .blush-r,
+.panda--sad .blush-l {
+  transform: scale(0.8);
+  opacity: 0.6;
+}
+.panda--sad .bamboo {
+  animation: panda-sway 5.5s ease-in-out infinite;
+}
+
 /*
  * Players who ask for less motion still get the game, just without the
  * springing, popping and drop-in. Haptics and audio are untouched — they are
@@ -1560,5 +2027,18 @@ input[type='range'] {
   /* Without its animation the chip would sit there forever; hide it instead. */
   .counter__delta {
     display: none;
+  }
+
+  /*
+   * The panda keeps its expression — the pose is what says "that was a combo",
+   * and it is a static transform. Only the looping motion stops.
+   */
+  .panda .stage,
+  .panda .eye-r-lid,
+  .panda .eye-l-lid,
+  .panda .pupil-r,
+  .panda .pupil-l,
+  .panda .bamboo {
+    animation: none;
   }
 }

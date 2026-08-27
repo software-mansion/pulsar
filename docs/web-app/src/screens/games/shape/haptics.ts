@@ -95,6 +95,23 @@ export const rejectPattern: HapticPattern = [
 ];
 
 /**
+ * The panda under the board, poked.
+ *
+ * A hop is two events, not one: a light push-off and the thump of landing. The
+ * gap between them is the animation's own hang time, so `POKE_LANDS_MS` is
+ * shared with the keyframes in `panda/Panda.tsx` rather than tuned separately —
+ * the same reason the finale's riser is built against `FINALE_MS`. Landing is
+ * the heavier of the two and sits low, because that is where the weight is.
+ */
+export const POKE_MS = 640;
+export const POKE_LANDS_MS = 500;
+
+export const pokePattern: HapticPattern = [
+  { type: 'pulse', timestamp: 0, duration: 28, intensity: 0.38, frequency: 0.72 },
+  { type: 'pulse', timestamp: POKE_LANDS_MS, duration: 72, intensity: 0.82, frequency: 0.14 },
+];
+
+/**
  * A colour match. Bigger groups hit harder and last longer; deeper cascades sit
  * higher, so a five-chain climbs instead of repeating one thump.
  */
