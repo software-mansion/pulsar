@@ -307,8 +307,9 @@ export async function createGpuParticles(canvas: HTMLCanvasElement): Promise<Par
   }
   context.configure({ device: root.device, format, alphaMode: 'premultiplied' });
 
-  let width = canvas.clientWidth || 1;
-  let height = canvas.clientHeight || 1;
+  // 0 means "never sized" — see the note on the same fields in `canvas.ts`.
+  let width = 0;
+  let height = 0;
   let cursor = 0;
   let elapsed = 0;
   let destroyed = false;
@@ -410,10 +411,6 @@ export async function createGpuParticles(canvas: HTMLCanvasElement): Promise<Par
     },
   };
 
-  // `width`/`height` start at the canvas's own client size, so nudge the cached
-  // values first or the guard above would treat the initial sizing as a no-op.
-  width = 0;
-  height = 0;
   field.resize(canvas.clientWidth || 1, canvas.clientHeight || 1);
   particleBuffer.clear();
   return field;

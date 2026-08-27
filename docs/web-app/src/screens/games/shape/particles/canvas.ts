@@ -57,8 +57,15 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
   }));
 
   let cursor = 0;
-  let width = canvas.clientWidth || 1;
-  let height = canvas.clientHeight || 1;
+  /**
+   * 0 means "never sized". These must not be seeded from `canvas.clientWidth`:
+   * the canvas is stretched over the whole shell, so that is already the size
+   * the frame loop passes in, and the equality guard in `resize` would treat
+   * the very first call as a no-op — leaving the backing store at its 300x150
+   * default and every spark drawn into a thumbnail stretched over the app.
+   */
+  let width = 0;
+  let height = 0;
   let dpr = 1;
   let elapsed = 0;
   let destroyed = false;
@@ -154,7 +161,7 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
     }
   }
 
-  return {
+  const field: ParticleField = {
     backend: 'canvas',
 
     resize(nextWidth, nextHeight) {
@@ -242,4 +249,9 @@ export function createCanvasParticles(canvas: HTMLCanvasElement): ParticleField 
       destroyed = true;
     },
   };
+
+  // Sized up front rather than waiting for the first frame, so a burst emitted
+  // immediately after creation is not drawn into an unsized canvas.
+  field.resize(canvas.clientWidth || 1, canvas.clientHeight || 1);
+  return field;
 }
