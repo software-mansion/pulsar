@@ -17,7 +17,7 @@ import { PlaygroundProvider } from '@/contexts/PlaygroundContext';
 import { StoreReviewProvider } from '@/contexts/StoreReviewContext';
 import { ConnectionsProvider } from '@/contexts/ConnectionsContext';
 import { MediaSessionProvider } from '@/contexts/MediaSessionContext';
-import MediaPlayerSheet from '@/components/media/MediaPlayerSheet';
+import MediaMiniPlayer from '@/components/media/MediaMiniPlayer';
 import { posthog } from '@/src/config/posthog';
 import { SENTRY_CONFIG } from '@/src/config/public';
 
@@ -96,8 +96,9 @@ function RootLayout() {
                       <Stack.Screen name="playgroundModal" options={{ presentation: 'modal', title: 'Playground', headerShown: false }} />
                       <Stack.Screen name="playgroundSettingsModal" options={{ presentation: 'modal', title: 'Playground settings', headerShown: false }} />
                       <Stack.Screen name="editConnectionModal" options={{ presentation: 'modal', title: 'Connection', headerShown: false }} />
+                      <Stack.Screen name="mediaLibraryModal" options={{ presentation: 'modal', title: 'Haptics library', headerShown: false }} />
                     </Stack>
-                    <MediaPlayerSheet />
+                    <MediaMiniPlayer />
                     <StatusBar style="auto" />
                   </ThemeProvider>
                 </PlaygroundProvider>
