@@ -1,19 +1,17 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Pattern, usePatternComposer } from 'react-native-pulsar';
+import { usePatternComposer, type Pattern } from 'react-native-pulsar';
 
 import BasicLayout from '@/components/BasicLayout';
+import Button from '@/components/Button';
+import Card from '@/components/Card';
+import { formatMs } from '@/components/media/MediaProgress';
+import MediaScrubber from '@/components/media/MediaScrubber';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
-import HapticDemoButton from '@/components/demo/HapticDemoButton';
+import { patternDurationMs, patternStartingAt } from '@/src/haptics/patternSeek';
+import { usePlaybackClock } from '@/src/haptics/usePlaybackClock';
 
-// The haptic track was generated from `sample-3s.mp3` by onset/energy analysis,
-// so its discrete beats land on the music and its continuous envelope follows
-// the track's loudness. The JSON is already a `Pattern`; attaching the clip via
-// the `sound` field plays audio and haptics on one shared clock.
-//
-// Note: `require()` resolves a bundled asset to a remote Metro URL in dev but a
-// local file in release. iOS synced playback needs a local file, so verify the
-// sync on a release build / real device.
 const hapticTrack = require('@/assets/audio/sample-3s.haptics.json') as Pattern;
 
 const audioPattern: Pattern = {
@@ -24,8 +22,42 @@ const audioPattern: Pattern = {
   },
 };
 
+const durationMs = patternDurationMs(audioPattern);
+
 export default function AudioDemo() {
-  const composer = usePatternComposer(audioPattern);
+  const composer = usePatternComposer();
+  const clock = usePlaybackClock(durationMs);
+  const [draggedToMs, setDraggedToMs] = useState<number | null>(null);
+
+  const playFrom = (fromMs: number) => {
+    composer.stop();
+    composer.parse(patternStartingAt(audioPattern, fromMs));
+    composer.play();
+    clock.start(fromMs);
+  };
+
+  const stop = () => {
+    composer.stop();
+    clock.stop();
+  };
+
+  const togglePlay = () => {
+    if (clock.isRunning) {
+      stop();
+      return;
+    }
+    const hasRunToTheEnd = clock.positionMs >= durationMs;
+    playFrom(hasRunToTheEnd ? 0 : clock.positionMs);
+  };
+
+  const seek = (toMs: number) => {
+    if (clock.isRunning) {
+      playFrom(toMs);
+      return;
+    }
+    composer.stop();
+    clock.jumpTo(toMs);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -34,28 +66,35 @@ export default function AudioDemo() {
           Audio-synced haptics
         </ThemedText>
         <ThemedText style={Margins.marginTop2X}>
-          A short music clip played through the pattern composer, with haptics
-          that fall on the beat. Best felt on a real device.
+          A short music clip attached to the pattern&apos;s{' '}
+          <ThemedText type="defaultSemiBold">sound</ThemedText> field, so audio and haptics share
+          one clock. Drag the progress bar to play from anywhere. Best felt on a real device.
         </ThemedText>
 
-        <View style={styles.controls}>
-          <HapticDemoButton
-            label="▶ Play"
-            onPress={() => composer.play()}
-            style={styles.button}
-          />
-          <HapticDemoButton
-            label="■ Stop"
-            onPress={() => composer.stop()}
-            style={styles.button}
-          />
-        </View>
+        <Card style={Margins.marginTop4X}>
+          <ThemedText type="defaultSemiBold" numberOfLines={1}>
+            sample-3s.mp3
+          </ThemedText>
+          <View style={Margins.marginTop1X}>
+            <MediaScrubber
+              positionMs={clock.positionMs}
+              durationMs={durationMs}
+              onScrub={setDraggedToMs}
+              onSeek={seek}
+            />
+          </View>
+          <ThemedText style={styles.meta}>
+            {formatMs(draggedToMs ?? clock.positionMs)} / {formatMs(durationMs)}
+          </ThemedText>
 
-        <ThemedText style={Margins.marginTop4X}>
-          The clip is attached through the pattern&apos;s{' '}
-          <ThemedText type="defaultSemiBold">sound</ThemedText> field, so audio
-          and haptics share one clock — no manual scheduling.
-        </ThemedText>
+          <Button
+            label={clock.isRunning ? 'Stop' : 'Play'}
+            showIcon={clock.isRunning ? 'stop' : 'play'}
+            style={Margins.marginTop3X}
+            disableHaptics
+            onClick={togglePlay}
+          />
+        </Card>
       </BasicLayout>
     </ScrollView>
   );
@@ -65,13 +104,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 28,
   },
-  controls: {
-    marginTop: 22,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    columnGap: 16,
-  },
-  button: {
-    flex: 1,
+  meta: {
+    fontSize: 14,
+    color: '#496695',
   },
 });
