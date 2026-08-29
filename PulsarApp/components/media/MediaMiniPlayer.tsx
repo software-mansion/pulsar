@@ -13,19 +13,21 @@ const SKY = '#38ACDD';
 const SUBTLE = '#496695';
 const RED = '#FF6259';
 
-/**
- * The pinned mini-player for media-backed haptics received from Studio: it appears above
- * the tab bar on an incoming push and stays there while something is loaded. Tapping it
- * opens that connection's library (`/mediaLibraryModal`), which is where the full player
- * and the cached resources live — so this bar carries only play/stop and dismiss.
- */
+/** Pinned above the tab bar while a resource is loaded; tapping it opens the full player. */
 export default function MediaMiniPlayer() {
-  const { session, downloadProgress, positionMs, openConnectionId, dismissPlayer, stop, repeat } =
-    useMediaSession();
+  const {
+    session,
+    downloadProgress,
+    positionMs,
+    openConnectionId,
+    dismissPlayer,
+    stop,
+    playFromPlayhead,
+  } = useMediaSession();
   const insets = useSafeAreaInsets();
 
-  // The library modal shows a full player of its own; don't stack a second one under it.
-  if (!session || openConnectionId) return null;
+  const libraryScreenIsOpen = openConnectionId != null;
+  if (!session || libraryScreenIsOpen) return null;
 
   const isDownloading = session.status === 'downloading';
   const isPlaying = session.status === 'playing';
@@ -35,8 +37,7 @@ export default function MediaMiniPlayer() {
       ? positionMs / session.durationMs
       : 0;
 
-  // One control, one meaning: stop what's running, or start it again from the top.
-  const onTogglePlay = () => (isPlaying ? stop() : repeat());
+  const onTogglePlay = () => (isPlaying ? stop() : playFromPlayhead());
 
   return (
     <Animated.View
@@ -95,7 +96,6 @@ const styles = StyleSheet.create({
     left: 15,
     right: 15,
   },
-  // Matches the Card look used across the app (white, 2px sky border, offset shadow).
   card: {
     flexDirection: 'row',
     alignItems: 'center',

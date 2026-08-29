@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import React, {
   createContext,
   useCallback,
@@ -7,7 +8,7 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import { usePatternComposer } from 'react-native-pulsar';
+import { usePatternComposer, type Pattern } from 'react-native-pulsar';
 
 import type {
   AudioHapticsBroadcast,
@@ -25,16 +26,72 @@ import {
   type ResourceRecord,
 } from '@/src/connections/mediaLibrary';
 
-/**
- * The device-side player for media-backed haptics (audio, and — phase 2 — Lottie) received
- * from a Studio connection.
- *
- * It owns its OWN pattern composer (separate from the connection's confirmation buzzes),
- * downloads the clip, plays the haptics in sync with the media, and tracks a playback
- * clock manually — the SDK exposes no progress/`onComplete`, so elapsed time against the
- * known duration is the only signal. Cached clips live per-connection (see mediaLibrary),
- * so a resource can be replayed from the phone even when Studio isn't pushing.
- */
+/** Plays media-backed haptics from Studio on its own composer, off its own clock. */
+
+type EnvelopePoint = { time: number; value: number };
+type Sound = NonNullable<Pattern['sound']>;
+
+const PLAYS_TO_END_OF_FILE = 0;
+
+function interpolate(points: EnvelopePoint[], atMs: number): number {
+  if (points.length === 0) return 0;
+  if (atMs <= points[0].time) return points[0].value;
+  const last = points[points.length - 1];
+  if (atMs >= last.time) return last.value;
+  const nextIndex = points.findIndex((point) => point.time > atMs);
+  const before = points[nextIndex - 1];
+  const after = points[nextIndex];
+  const span = after.time - before.time;
+  if (span <= 0) return after.value;
+  return before.value + ((after.value - before.value) * (atMs - before.time)) / span;
+}
+
+function envelopeStartingAt(points: EnvelopePoint[], fromMs: number): EnvelopePoint[] {
+  const remaining = points
+    .filter((point) => point.time > fromMs)
+    .map((point) => ({ time: point.time - fromMs, value: point.value }));
+  if (remaining.length === 0) return [];
+  return [{ time: 0, value: interpolate(points, fromMs) }, ...remaining];
+}
+
+function soundStartingAt(sound: Sound, fromMs: number): Sound {
+  const trimmedWindow = sound.duration;
+  return {
+    ...sound,
+    start: (sound.start ?? 0) + fromMs,
+    duration: trimmedWindow ? Math.max(0, trimmedWindow - fromMs) : PLAYS_TO_END_OF_FILE,
+  };
+}
+
+/** An animation plays the pattern alone; its visual runs off the same clock. */
+function patternFor(record: ResourceRecord): Pattern {
+  if (record.kind !== 'audio') return record.pattern;
+  return {
+    ...record.pattern,
+    sound: {
+      uri: record.localUri,
+      volume: record.volume ?? 1,
+      offset: record.offset ?? 0,
+      start: record.soundStartMs ?? 0,
+      duration: record.soundDurationMs ?? PLAYS_TO_END_OF_FILE,
+    },
+  };
+}
+
+/** The composer can only play from zero, so seeking replays a re-anchored pattern. */
+function patternStartingAt(pattern: Pattern, fromMs: number): Pattern {
+  if (fromMs <= 0) return pattern;
+  return {
+    discretePattern: pattern.discretePattern
+      .filter((point) => point.time >= fromMs)
+      .map((point) => ({ ...point, time: point.time - fromMs })),
+    continuousPattern: {
+      amplitude: envelopeStartingAt(pattern.continuousPattern.amplitude, fromMs),
+      frequency: envelopeStartingAt(pattern.continuousPattern.frequency, fromMs),
+    },
+    ...(pattern.sound ? { sound: soundStartingAt(pattern.sound, fromMs) } : {}),
+  };
+}
 
 type SessionStatus = 'downloading' | 'ready' | 'playing' | 'stopped' | 'error';
 
@@ -51,36 +108,25 @@ export interface MediaSession {
 }
 
 interface MediaSessionContextValue {
-  /** The active player session (download/playback), or null when idle. */
   session: MediaSession | null;
-  /** Download fraction 0..1 while `status === 'downloading'`. */
+  /** 0..1 while `status === 'downloading'`. */
   downloadProgress: number;
-  /** Playback position in ms (drives the scrubber). */
   positionMs: number;
-  /** Which connection's library screen is open, or null. */
   openConnectionId: string | null;
-  /** Cached resources for `openConnectionId`. */
   library: ResourceRecord[];
 
-  // Called by the connection message handlers on an incoming push.
   startAudioHaptics: (connectionId: string, message: AudioHapticsBroadcast) => void;
   startAnimationHaptics: (connectionId: string, message: AnimationHapticsBroadcast) => void;
 
-  /** Load a connection's cached library (the `/mediaLibraryModal` screen calls this on mount). */
   openLibrary: (connectionId: string) => void;
-  /** Drop the loaded library when that screen goes away; playback continues. */
-  closeLibrary: () => void;
-  /** Hide the mini-player and stop playback. */
+  /** Takes the id so a screen leaving after a swap cannot clear its successor's library. */
+  closeLibrary: (connectionId: string) => void;
   dismissPlayer: () => void;
-  /** Play a cached resource from the library. */
   playResource: (connectionId: string, resourceId: string) => void;
-  /** Replay the current resource from the top (media + haptics). */
-  repeat: () => void;
-  /** Stop playback (the player stays visible). */
+  playFromPlayhead: () => void;
+  seek: (positionMs: number) => void;
   stop: () => void;
-  /** Delete a cached resource (file + record). */
   removeResource: (connectionId: string, resourceId: string) => void;
-  /** Purge a removed connection's cache and clear the player if it was showing it. */
   handleConnectionRemoved: (connectionId: string) => void;
 }
 
@@ -102,9 +148,10 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
   const sessionRef = useRef<MediaSession | null>(null);
   sessionRef.current = session;
   const currentRecordRef = useRef<ResourceRecord | null>(null);
-  // The active rAF handle for the playback clock. Held in a ref so a newer play() can
-  // cancel an older loop before it publishes a stale position.
+  const positionRef = useRef(0);
+  positionRef.current = positionMs;
   const rafRef = useRef<number | null>(null);
+  const isClockRunning = () => rafRef.current != null;
 
   const stopClock = useCallback(() => {
     if (rafRef.current != null) {
@@ -113,12 +160,11 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Drive the scrubber off wall-clock elapsed vs the known duration — the SDK gives no
-  // position, so this is the authority for "where are we" and "when did it end".
+  /** The SDK reports no position, so elapsed wall-clock against the known duration is it. */
   const startClock = useCallback(
-    (durationMs: number) => {
+    (durationMs: number, fromMs = 0) => {
       stopClock();
-      const start = Date.now();
+      const start = Date.now() - fromMs;
       const tick = () => {
         const elapsed = Date.now() - start;
         if (elapsed >= durationMs) {
@@ -140,32 +186,24 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     if (openRef.current === connectionId) setLibrary(list);
   }, []);
 
-  // Parse + play one cached record, and start the shared clock. Audio rides on
-  // `pattern.sound`; an animation plays the pattern alone (its visual is driven off the
-  // same clock on the library screen).
+  const showLibraryScreen = useCallback((connectionId: string) => {
+    const alreadyInFront = openRef.current === connectionId;
+    if (alreadyInFront) return;
+    const target = { pathname: '/mediaLibraryModal' as const, params: { connectionId } };
+    const anotherLibraryIsOpen = openRef.current != null;
+    if (anotherLibraryIsOpen) router.replace(target);
+    else router.push(target);
+  }, []);
+
   const playRecord = useCallback(
-    (connectionId: string, record: ResourceRecord) => {
+    (connectionId: string, record: ResourceRecord, fromMs = 0) => {
       currentRecordRef.current = record;
       try {
-        const pattern =
-          record.kind === 'audio'
-            ? {
-                ...record.pattern,
-                sound: {
-                  uri: record.localUri,
-                  volume: record.volume ?? 1,
-                  offset: record.offset ?? 0,
-                  // The SDK plays only [start, start+duration] of the downloaded file, so a
-                  // trimmed design honors the trim without a re-download.
-                  start: record.soundStartMs ?? 0,
-                  duration: record.soundDurationMs ?? 0,
-                },
-              }
-            : record.pattern;
-        composerRef.current.parse(pattern);
+        composerRef.current.stop();
+        composerRef.current.parse(patternStartingAt(patternFor(record), fromMs));
         composerRef.current.play();
       } catch {
-        // Haptics may fail on an unsupported device; the media/clock still run.
+        // An unsupported device still gets the media and the clock.
       }
       setSession({
         connectionId,
@@ -176,8 +214,9 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         status: 'playing',
         localUri: record.localUri,
       });
-      setPositionMs(0);
-      startClock(record.durationMs);
+      setPositionMs(fromMs);
+      positionRef.current = fromMs;
+      startClock(record.durationMs, fromMs);
     },
     [startClock],
   );
@@ -194,11 +233,10 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
       const { resourceId, name, version, durationMs, pattern } = message;
 
       stopClock();
-      // A push shows the compact mini-player; it doesn't force the library screen open —
-      // the user opens it by tapping the connection (or the bar).
       setDownloadProgress(0);
       setPositionMs(0);
       setSession({ connectionId, resourceId, kind, name, durationMs, status: 'downloading' });
+      showLibraryScreen(connectionId);
 
       try {
         const ext = extForContentType(media.contentType);
@@ -244,7 +282,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         );
       }
     },
-    [playRecord, refreshLibrary, stopClock],
+    [playRecord, refreshLibrary, showLibraryScreen, stopClock],
   );
 
   const startAudioHaptics = useCallback(
@@ -277,10 +315,11 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
       // no-op
     }
     setSession((s) => (s ? { ...s, status: 'stopped' } : s));
-    setPositionMs(0);
   }, [stopClock]);
 
-  const closeLibrary = useCallback(() => {
+  const closeLibrary = useCallback((connectionId: string) => {
+    const stillOwnsTheLibrary = openRef.current === connectionId;
+    if (!stillOwnsTheLibrary) return;
     setOpenConnectionId(null);
     setLibrary([]);
   }, []);
@@ -302,11 +341,31 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     [playRecord],
   );
 
-  const repeat = useCallback(() => {
+  const playFromPlayhead = useCallback(() => {
     const record = currentRecordRef.current;
     const active = sessionRef.current;
-    if (record && active) playRecord(active.connectionId, record);
+    if (!record || !active) return;
+    const hasRunToTheEnd = positionRef.current >= record.durationMs;
+    playRecord(active.connectionId, record, hasRunToTheEnd ? 0 : positionRef.current);
   }, [playRecord]);
+
+  const seek = useCallback(
+    (toMs: number) => {
+      const record = currentRecordRef.current;
+      const active = sessionRef.current;
+      if (!record || !active) return;
+      const target = Math.max(0, Math.min(toMs, record.durationMs));
+      // `session.status` is state read back through a ref, so it still reads 'stopped'
+      // for the render after a play; the clock handle is written synchronously.
+      if (isClockRunning()) {
+        playRecord(active.connectionId, record, target);
+      } else {
+        setPositionMs(target);
+        positionRef.current = target;
+      }
+    },
+    [playRecord],
+  );
 
   const removeResource = useCallback(
     (connectionId: string, resourceId: string) => {
@@ -350,7 +409,8 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         closeLibrary,
         dismissPlayer,
         playResource,
-        repeat,
+        playFromPlayhead,
+        seek,
         stop,
         removeResource,
         handleConnectionRemoved,

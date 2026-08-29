@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,7 +7,8 @@ import Button from '@/components/Button';
 import Card from '@/components/Card';
 import { Icon } from '@/components/Icon';
 import LottieCanvas from '@/components/media/LottieCanvas';
-import { MediaProgressBar, formatMs, sessionStatusText } from '@/components/media/MediaProgress';
+import { formatMs, sessionStatusText } from '@/components/media/MediaProgress';
+import MediaScrubber from '@/components/media/MediaScrubber';
 import { ThemedText } from '@/components/themed-text';
 import { Collapsible } from '@/components/ui/collapsible';
 import { Margins } from '@/constants/theme';
@@ -19,11 +20,6 @@ const NAVY = '#001A72';
 const SKY = '#38ACDD';
 const RED = '#FF6259';
 
-/**
- * A connection's media-haptics library: the player for whatever is loaded, plus the
- * resources cached on this device — each replayable without Studio pushing again.
- * Opened by tapping a Studio connection on Home, or the mini-player.
- */
 export default function MediaLibraryModal() {
   const params = useLocalSearchParams<{ connectionId?: string }>();
   const connectionId = typeof params.connectionId === 'string' ? params.connectionId : '';
@@ -37,30 +33,30 @@ export default function MediaLibraryModal() {
     closeLibrary,
     playResource,
     removeResource,
-    repeat,
+    playFromPlayhead,
+    seek,
     stop,
   } = useMediaSession();
   const { connections } = useConnections();
 
   const connection = connections.find((c) => c.id === connectionId);
+  const [draggedToMs, setDraggedToMs] = useState<number | null>(null);
 
-  // The library is loaded for as long as this screen is mounted — dismissing it (button,
-  // swipe or back) tears the state down through the cleanup.
   useEffect(() => {
     if (!connectionId) return;
     openLibrary(connectionId);
-    return () => closeLibrary();
+    return () => closeLibrary(connectionId);
   }, [connectionId, openLibrary, closeLibrary]);
 
-  // Only this connection's session belongs on this screen.
   const active = session && session.connectionId === connectionId ? session : null;
   const isDownloading = active?.status === 'downloading';
   const isPlaying = active?.status === 'playing';
+  const shownPositionMs = draggedToMs ?? positionMs;
   const fraction = useMemo(() => {
     if (!active) return 0;
     if (active.status === 'downloading') return downloadProgress;
-    return active.durationMs > 0 ? positionMs / active.durationMs : 0;
-  }, [active, downloadProgress, positionMs]);
+    return active.durationMs > 0 ? shownPositionMs / active.durationMs : 0;
+  }, [active, downloadProgress, shownPositionMs]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -94,11 +90,18 @@ export default function MediaLibraryModal() {
                 <ThemedText type="defaultSemiBold" numberOfLines={1}>
                   {active.name}
                 </ThemedText>
-                <View style={Margins.marginTop2X}>
-                  <MediaProgressBar fraction={fraction} color={isDownloading ? NAVY : SKY} />
+                <View style={Margins.marginTop1X}>
+                  <MediaScrubber
+                    positionMs={positionMs}
+                    durationMs={active.durationMs}
+                    color={isDownloading ? NAVY : SKY}
+                    disabled={isDownloading || active.status === 'error'}
+                    onScrub={setDraggedToMs}
+                    onSeek={seek}
+                  />
                 </View>
-                <ThemedText style={[styles.meta, Margins.marginTop1X]}>
-                  {sessionStatusText(active, downloadProgress, positionMs)}
+                <ThemedText style={styles.meta}>
+                  {sessionStatusText(active, downloadProgress, shownPositionMs)}
                 </ThemedText>
 
                 {!isDownloading && active.status !== 'error' && (
@@ -106,10 +109,9 @@ export default function MediaLibraryModal() {
                     label={isPlaying ? 'Stop' : 'Play'}
                     showIcon={isPlaying ? 'stop' : 'play'}
                     style={Margins.marginTop3X}
-                    // The press starts the media pattern on its own composer; a confirmation
-                    // chip on top of it would fight the very haptics being played.
+                    // A confirmation chip would fight the pattern this press starts.
                     disableHaptics
-                    onClick={() => (isPlaying ? stop() : repeat())}
+                    onClick={() => (isPlaying ? stop() : playFromPlayhead())}
                   />
                 )}
               </Card>
@@ -144,7 +146,6 @@ export default function MediaLibraryModal() {
   );
 }
 
-/** One cached resource. Tapping the row plays it — mirroring how a connection row opens. */
 function ResourceRow({
   record,
   active,

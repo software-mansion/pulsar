@@ -4,7 +4,6 @@ import type { MediaSession } from '@/contexts/MediaSessionContext';
 
 const SKY = '#38ACDD';
 
-/** `1:07` from a millisecond duration/position. */
 export function formatMs(ms: number): string {
   const total = Math.max(0, Math.round(ms / 1000));
   const m = Math.floor(total / 60);
@@ -12,7 +11,6 @@ export function formatMs(ms: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-/** The one-line status under a session's name: download percentage, error, or elapsed/total. */
 export function sessionStatusText(
   session: MediaSession,
   downloadProgress: number,
@@ -24,11 +22,9 @@ export function sessionStatusText(
   if (session.status === 'error') {
     return session.error ?? 'Could not load';
   }
-  const elapsed = session.status === 'playing' ? positionMs : session.durationMs;
-  return `${formatMs(elapsed)} / ${formatMs(session.durationMs)}`;
+  return `${formatMs(positionMs)} / ${formatMs(session.durationMs)}`;
 }
 
-/** The download/playback bar shared by the mini-player and the library modal; `fraction` 0..1. */
 export function MediaProgressBar({ fraction, color = SKY }: { fraction: number; color?: string }) {
   const pct = `${Math.max(0, Math.min(1, fraction)) * 100}%` as const;
   return (
