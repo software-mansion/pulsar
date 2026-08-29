@@ -57,7 +57,7 @@ interface MediaSessionContextValue {
   downloadProgress: number;
   /** Playback position in ms (drives the scrubber). */
   positionMs: number;
-  /** Which connection's library sheet is open, or null. */
+  /** Which connection's library screen is open, or null. */
   openConnectionId: string | null;
   /** Cached resources for `openConnectionId`. */
   library: ResourceRecord[];
@@ -66,21 +66,21 @@ interface MediaSessionContextValue {
   startAudioHaptics: (connectionId: string, message: AudioHapticsBroadcast) => void;
   startAnimationHaptics: (connectionId: string, message: AnimationHapticsBroadcast) => void;
 
-  /** Open a connection's library sheet. */
-  openConnection: (connectionId: string) => void;
-  /** Collapse the expanded library back to the mini-player (playback continues). */
-  collapse: () => void;
-  /** Hide the sheet and stop playback. */
-  closeSheet: () => void;
+  /** Load a connection's cached library (the `/mediaLibraryModal` screen calls this on mount). */
+  openLibrary: (connectionId: string) => void;
+  /** Drop the loaded library when that screen goes away; playback continues. */
+  closeLibrary: () => void;
+  /** Hide the mini-player and stop playback. */
+  dismissPlayer: () => void;
   /** Play a cached resource from the library. */
   playResource: (connectionId: string, resourceId: string) => void;
   /** Replay the current resource from the top (media + haptics). */
   repeat: () => void;
-  /** Stop playback (keeps the sheet open). */
+  /** Stop playback (the player stays visible). */
   stop: () => void;
   /** Delete a cached resource (file + record). */
   removeResource: (connectionId: string, resourceId: string) => void;
-  /** Purge a removed connection's cache and close the sheet if it was showing it. */
+  /** Purge a removed connection's cache and clear the player if it was showing it. */
   handleConnectionRemoved: (connectionId: string) => void;
 }
 
@@ -142,7 +142,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
 
   // Parse + play one cached record, and start the shared clock. Audio rides on
   // `pattern.sound`; an animation plays the pattern alone (its visual is driven off the
-  // same clock in the sheet).
+  // same clock on the library screen).
   const playRecord = useCallback(
     (connectionId: string, record: ResourceRecord) => {
       currentRecordRef.current = record;
@@ -194,8 +194,8 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
       const { resourceId, name, version, durationMs, pattern } = message;
 
       stopClock();
-      // A push shows the compact mini-player; it doesn't force the full library open —
-      // the user expands it by tapping the connection (or the bar).
+      // A push shows the compact mini-player; it doesn't force the library screen open —
+      // the user opens it by tapping the connection (or the bar).
       setDownloadProgress(0);
       setPositionMs(0);
       setSession({ connectionId, resourceId, kind, name, durationMs, status: 'downloading' });
@@ -261,7 +261,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     [startMedia],
   );
 
-  const openConnection = useCallback(
+  const openLibrary = useCallback(
     (connectionId: string) => {
       setOpenConnectionId(connectionId);
       void refreshLibrary(connectionId);
@@ -280,12 +280,12 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     setPositionMs(0);
   }, [stopClock]);
 
-  const collapse = useCallback(() => {
+  const closeLibrary = useCallback(() => {
     setOpenConnectionId(null);
     setLibrary([]);
   }, []);
 
-  const closeSheet = useCallback(() => {
+  const dismissPlayer = useCallback(() => {
     stop();
     setSession(null);
     setOpenConnectionId(null);
@@ -346,9 +346,9 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         library,
         startAudioHaptics,
         startAnimationHaptics,
-        openConnection,
-        collapse,
-        closeSheet,
+        openLibrary,
+        closeLibrary,
+        dismissPlayer,
         playResource,
         repeat,
         stop,

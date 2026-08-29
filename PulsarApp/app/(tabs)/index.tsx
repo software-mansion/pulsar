@@ -15,14 +15,12 @@ import ConnectionList from '@/components/home/ConnectionList';
 import HapticsSupportBanner from '@/components/home/HapticsSupportBanner';
 import NowPlayingToast from '@/components/NowPlayingToast';
 import { useConnections } from '@/contexts/ConnectionsContext';
-import { useMediaSession } from '@/contexts/MediaSessionContext';
 import { useKeepAwakeWhileFocused } from '@/hooks/useKeepAwakeWhileFocused';
 
 const logo = require('@/assets/images/logo.png');
 
 export default function HomeScreen() {
   const { connections, addByCode, remove, reconnect } = useConnections();
-  const { openConnection } = useMediaSession();
   const router = useRouter();
 
   // Patterns are usually played from a paired Studio/plugin while the phone
@@ -67,6 +65,9 @@ export default function HomeScreen() {
 
   const editConnection = (connectionId: string) =>
     router.push({ pathname: '/editConnectionModal', params: { connectionId } });
+
+  const openLibrary = (connectionId: string) =>
+    router.push({ pathname: '/mediaLibraryModal', params: { connectionId } });
 
   // A scanned QR is a pairing deep link (pulsarapp:///?code=… or the unified
   // pulsarapp://figma?token=…&code=…). Parse it the same way the deep-link
@@ -120,7 +121,7 @@ export default function HomeScreen() {
             onRemove={remove}
             onReconnect={reconnect}
             onOpenPreview={openPreview}
-            onOpenLibrary={openConnection}
+            onOpenLibrary={openLibrary}
             onEdit={editConnection}
           />
 

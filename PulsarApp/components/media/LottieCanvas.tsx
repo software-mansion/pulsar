@@ -46,26 +46,28 @@ export default function LottieCanvas({ uri, progress }: { uri: string; progress:
 }
 
 const styles = StyleSheet.create({
+  // An inset panel inside the player card, so it reads as part of it rather than a
+  // second card: the app's light-blue surface with the lighter border.
   canvas: {
     height: 200,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+    borderRadius: 4,
+    backgroundColor: '#E1F3FA',
     borderWidth: 2,
-    borderColor: '#001A72',
+    borderColor: '#B5E1F1',
     overflow: 'hidden',
     marginBottom: 12,
   },
   lottie: { width: '100%', height: '100%' },
   fallback: {
     height: 120,
-    borderRadius: 12,
-    backgroundColor: '#EAF4FB',
+    borderRadius: 4,
+    backgroundColor: '#E1F3FA',
     borderWidth: 2,
-    borderColor: '#001A72',
+    borderColor: '#B5E1F1',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
     paddingHorizontal: 16,
   },
-  fallbackText: { color: '#496695', fontSize: 13, textAlign: 'center' },
+  fallbackText: { color: '#496695', fontSize: 14, textAlign: 'center' },
 });

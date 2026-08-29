@@ -8,8 +8,13 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import {  BaseButton } from 'react-native-gesture-handler';
 
-export function Collapsible({ children, title, style }: PropsWithChildren & { title: string; style?: ViewProps['style'] }) {
-  const [isOpen, setIsOpen] = useState(false);
+export function Collapsible({
+  children,
+  title,
+  style,
+  defaultOpen = false,
+}: PropsWithChildren & { title: string; style?: ViewProps['style']; defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const theme = useColorScheme() ?? 'light';
 
   return (
