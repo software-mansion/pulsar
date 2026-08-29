@@ -6,17 +6,8 @@ const NAVY = '#001A72';
 const SKY = '#38ACDD';
 const TRACK_HEIGHT = 6;
 const THUMB_SIZE = 18;
-// The track is 6px tall — far too thin to grab. The gesture area is padded out to a
-// comfortable target while the bar itself stays slim.
-const TOUCH_HEIGHT = 32;
+const TOUCH_TARGET_HEIGHT = 32;
 
-/**
- * The playback bar for a media-backed haptic, draggable to seek.
- *
- * Reports the scrub position continuously through `onScrub` (so the caller's timestamp
- * follows the finger) and commits once on release through `onSeek` — the seek itself
- * re-parses and replays the pattern, which is far too expensive to do per frame.
- */
 export default function MediaScrubber({
   positionMs,
   durationMs,
@@ -33,50 +24,47 @@ export default function MediaScrubber({
   onScrub?: (ms: number | null) => void;
 }) {
   const [width, setWidth] = useState(0);
-  // Non-null only while a finger is down; it overrides the clock so the thumb tracks the
-  // drag instead of being yanked back by the next frame of playback.
-  const [scrubMs, setScrubMs] = useState<number | null>(null);
+  const [draggedToMs, setDraggedToMs] = useState<number | null>(null);
 
   const seekable = !disabled && durationMs > 0 && width > 0;
-  const displayMs = scrubMs ?? positionMs;
-  const fraction = durationMs > 0 ? Math.max(0, Math.min(1, displayMs / durationMs)) : 0;
+  const shownMs = draggedToMs ?? positionMs;
+  const fraction = durationMs > 0 ? Math.max(0, Math.min(1, shownMs / durationMs)) : 0;
 
-  const msAt = (x: number) => Math.max(0, Math.min(1, x / width)) * durationMs;
+  const msAtTouch = (x: number) => Math.max(0, Math.min(1, x / width)) * durationMs;
 
-  const scrub = (x: number) => {
-    const ms = msAt(x);
-    setScrubMs(ms);
+  const dragTo = (x: number) => {
+    const ms = msAtTouch(x);
+    setDraggedToMs(ms);
     onScrub?.(ms);
   };
 
-  const commit = (x: number) => {
-    const ms = msAt(x);
-    setScrubMs(null);
+  const releaseDrag = () => {
+    setDraggedToMs(null);
     onScrub?.(null);
+  };
+
+  const seekTo = (x: number) => {
+    const ms = msAtTouch(x);
+    releaseDrag();
     onSeek(ms);
   };
 
-  // runOnJS: these handlers drive React state and the seek, matching how Button drives its
-  // press. `event.x` is relative to this view, so the maths holds wherever it is laid out.
   const pan = Gesture.Pan()
     .enabled(seekable)
     .minDistance(0)
-    .onBegin((event) => scrub(event.x))
-    .onUpdate((event) => scrub(event.x))
-    .onEnd((event) => commit(event.x))
-    // A cancelled gesture must not leave the thumb stranded away from the real playhead.
-    .onFinalize(() => {
-      setScrubMs(null);
-      onScrub?.(null);
-    })
+    .onBegin((event) => dragTo(event.x))
+    .onUpdate((event) => dragTo(event.x))
+    .onEnd((event) => seekTo(event.x))
+    .onFinalize(releaseDrag)
     .runOnJS(true);
 
   const tap = Gesture.Tap()
     .enabled(seekable)
-    .onEnd((event) => commit(event.x))
+    .onEnd((event) => seekTo(event.x))
     .runOnJS(true);
 
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
+  const thumbLeft = fraction * (width - THUMB_SIZE);
 
   return (
     <GestureDetector gesture={Gesture.Exclusive(pan, tap)}>
@@ -84,15 +72,7 @@ export default function MediaScrubber({
         <View style={styles.track}>
           <View style={[styles.fill, { width: `${fraction * 100}%`, backgroundColor: color }]} />
         </View>
-        {seekable && (
-          <View
-            style={[
-              styles.thumb,
-              // Inset by half the thumb at each end so it stays inside the track's bounds.
-              { left: fraction * (width - THUMB_SIZE), borderColor: color },
-            ]}
-          />
-        )}
+        {seekable && <View style={[styles.thumb, { left: thumbLeft, borderColor: color }]} />}
       </View>
     </GestureDetector>
   );
@@ -100,7 +80,7 @@ export default function MediaScrubber({
 
 const styles = StyleSheet.create({
   touchArea: {
-    height: TOUCH_HEIGHT,
+    height: TOUCH_TARGET_HEIGHT,
     justifyContent: 'center',
   },
   track: {

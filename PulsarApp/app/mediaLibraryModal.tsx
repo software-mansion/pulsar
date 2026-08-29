@@ -20,11 +20,6 @@ const NAVY = '#001A72';
 const SKY = '#38ACDD';
 const RED = '#FF6259';
 
-/**
- * A connection's media-haptics library: the player for whatever is loaded, plus the
- * resources cached on this device — each replayable without Studio pushing again.
- * Opened by tapping a Studio connection on Home, or the mini-player.
- */
 export default function MediaLibraryModal() {
   const params = useLocalSearchParams<{ connectionId?: string }>();
   const connectionId = typeof params.connectionId === 'string' ? params.connectionId : '';
@@ -38,32 +33,25 @@ export default function MediaLibraryModal() {
     closeLibrary,
     playResource,
     removeResource,
-    play,
+    playFromPlayhead,
     seek,
     stop,
   } = useMediaSession();
   const { connections } = useConnections();
 
   const connection = connections.find((c) => c.id === connectionId);
-  // Where the finger is while dragging the scrubber, so the timestamp under it follows
-  // the drag rather than the (still running) playback clock.
-  const [scrubMs, setScrubMs] = useState<number | null>(null);
+  const [draggedToMs, setDraggedToMs] = useState<number | null>(null);
 
-  // The library is loaded for as long as this screen is mounted — dismissing it (button,
-  // swipe or back) tears the state down through the cleanup.
   useEffect(() => {
     if (!connectionId) return;
     openLibrary(connectionId);
     return () => closeLibrary(connectionId);
   }, [connectionId, openLibrary, closeLibrary]);
 
-  // Only this connection's session belongs on this screen.
   const active = session && session.connectionId === connectionId ? session : null;
   const isDownloading = active?.status === 'downloading';
   const isPlaying = active?.status === 'playing';
-  // The Lottie canvas follows the drag too, so scrubbing an animation previews the frame
-  // being seeked to.
-  const shownPositionMs = scrubMs ?? positionMs;
+  const shownPositionMs = draggedToMs ?? positionMs;
   const fraction = useMemo(() => {
     if (!active) return 0;
     if (active.status === 'downloading') return downloadProgress;
@@ -107,9 +95,8 @@ export default function MediaLibraryModal() {
                     positionMs={positionMs}
                     durationMs={active.durationMs}
                     color={isDownloading ? NAVY : SKY}
-                    // Nothing to seek through until the clip is on disk.
                     disabled={isDownloading || active.status === 'error'}
-                    onScrub={setScrubMs}
+                    onScrub={setDraggedToMs}
                     onSeek={seek}
                   />
                 </View>
@@ -122,10 +109,9 @@ export default function MediaLibraryModal() {
                     label={isPlaying ? 'Stop' : 'Play'}
                     showIcon={isPlaying ? 'stop' : 'play'}
                     style={Margins.marginTop3X}
-                    // The press starts the media pattern on its own composer; a confirmation
-                    // chip on top of it would fight the very haptics being played.
+                    // A confirmation chip would fight the pattern this press starts.
                     disableHaptics
-                    onClick={() => (isPlaying ? stop() : play())}
+                    onClick={() => (isPlaying ? stop() : playFromPlayhead())}
                   />
                 )}
               </Card>
@@ -160,7 +146,6 @@ export default function MediaLibraryModal() {
   );
 }
 
-/** One cached resource. Tapping the row plays it — mirroring how a connection row opens. */
 function ResourceRow({
   record,
   active,
