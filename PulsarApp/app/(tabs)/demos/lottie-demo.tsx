@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { HapticLottieView, type HapticLottieRef } from 'react-native-pulsar-lottie';
-import type { Pattern } from 'react-native-pulsar';
+import { HapticLottieView } from 'react-native-pulsar-lottie';
+import { usePatternComposer, useRealtimeComposer, type Pattern } from 'react-native-pulsar';
 
 import BasicLayout from '@/components/BasicLayout';
 import Button from '@/components/Button';
@@ -10,6 +10,7 @@ import { formatMs } from '@/components/media/MediaProgress';
 import MediaScrubber from '@/components/media/MediaScrubber';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
+import { envelopeValueAt, patternStartingAt } from '@/src/haptics/patternSeek';
 import { usePlaybackClock } from '@/src/haptics/usePlaybackClock';
 
 const verifiedAnimation = require('@/assets/animations/verified.json');
@@ -42,18 +43,24 @@ const verifiedPattern: Pattern = {
 };
 
 export default function LottieDemo() {
-  const animation = useRef<HapticLottieRef>(null);
+  const composer = usePatternComposer();
+  const realtime = useRealtimeComposer();
   const clock = usePlaybackClock(durationMs);
   const [draggedToMs, setDraggedToMs] = useState<number | null>(null);
+  const dragging = useRef(false);
+  const playAfterDrag = useRef(false);
+
+  const shownMs = draggedToMs ?? clock.positionMs;
 
   const playFrom = (fromMs: number) => {
-    animation.current?.setTimestamp(fromMs);
-    animation.current?.resume();
+    composer.stop();
+    composer.parse(patternStartingAt(verifiedPattern, fromMs));
+    composer.play();
     clock.start(fromMs);
   };
 
   const stop = () => {
-    animation.current?.pause();
+    composer.stop();
     clock.stop();
   };
 
@@ -66,13 +73,32 @@ export default function LottieDemo() {
     playFrom(hasRunToTheEnd ? 0 : clock.positionMs);
   };
 
-  const seek = (toMs: number) => {
-    if (clock.isRunning) {
-      playFrom(toMs);
+  const scrub = (toMs: number | null) => {
+    if (toMs == null) {
+      dragging.current = false;
+      realtime.stop();
+      setDraggedToMs(null);
       return;
     }
-    animation.current?.setTimestamp(toMs);
-    clock.jumpTo(toMs);
+    if (!dragging.current) {
+      dragging.current = true;
+      playAfterDrag.current = clock.isRunning;
+      stop();
+    }
+    setDraggedToMs(toMs);
+    realtime.set(
+      envelopeValueAt(verifiedPattern.continuousPattern.amplitude, toMs),
+      envelopeValueAt(verifiedPattern.continuousPattern.frequency, toMs),
+    );
+  };
+
+  const seek = (toMs: number) => {
+    const resume = playAfterDrag.current || clock.isRunning;
+    dragging.current = false;
+    playAfterDrag.current = false;
+    realtime.stop();
+    if (resume) playFrom(toMs);
+    else clock.jumpTo(toMs);
   };
 
   return (
@@ -82,20 +108,16 @@ export default function LottieDemo() {
           Lottie + haptics
         </ThemedText>
         <ThemedText style={Margins.marginTop2X}>
-          A drop-in replacement for LottieView that plays a haptic pattern in lockstep with the
-          animation timeline. Drag the progress bar to move both together. Best felt on a real
-          device.
+          A haptic pattern played in lockstep with the animation timeline. Play runs the whole
+          pattern through the composer; dragging the progress bar streams the envelope under your
+          finger. Best felt on a real device.
         </ThemedText>
 
         <Card style={Margins.marginTop4X}>
           <View style={styles.canvas}>
             <HapticLottieView
-              ref={animation}
               source={verifiedAnimation}
-              haptics={verifiedPattern}
-              hapticMode="realtime"
-              autoPlay={false}
-              loop={false}
+              progress={durationMs > 0 ? shownMs / durationMs : 0}
               style={styles.lottie}
             />
           </View>
@@ -107,12 +129,12 @@ export default function LottieDemo() {
             <MediaScrubber
               positionMs={clock.positionMs}
               durationMs={durationMs}
-              onScrub={setDraggedToMs}
+              onScrub={scrub}
               onSeek={seek}
             />
           </View>
           <ThemedText style={styles.meta}>
-            {formatMs(draggedToMs ?? clock.positionMs)} / {formatMs(durationMs)}
+            {formatMs(shownMs)} / {formatMs(durationMs)}
           </ThemedText>
 
           <Button

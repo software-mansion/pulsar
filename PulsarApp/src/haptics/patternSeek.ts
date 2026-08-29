@@ -1,11 +1,11 @@
 import type { Pattern } from 'react-native-pulsar';
 
-type EnvelopePoint = { time: number; value: number };
+export type EnvelopePoint = { time: number; value: number };
 type Sound = NonNullable<Pattern['sound']>;
 
 export const PLAYS_TO_END_OF_FILE = 0;
 
-function valueAt(points: EnvelopePoint[], atMs: number): number {
+export function envelopeValueAt(points: EnvelopePoint[], atMs: number): number {
   if (points.length === 0) return 0;
   if (atMs <= points[0].time) return points[0].value;
   const last = points[points.length - 1];
@@ -23,7 +23,7 @@ function envelopeStartingAt(points: EnvelopePoint[], fromMs: number): EnvelopePo
     .filter((point) => point.time > fromMs)
     .map((point) => ({ time: point.time - fromMs, value: point.value }));
   if (remaining.length === 0) return [];
-  return [{ time: 0, value: valueAt(points, fromMs) }, ...remaining];
+  return [{ time: 0, value: envelopeValueAt(points, fromMs) }, ...remaining];
 }
 
 function soundStartingAt(sound: Sound, fromMs: number): Sound {
