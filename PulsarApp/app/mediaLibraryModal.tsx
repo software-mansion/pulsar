@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,7 +7,8 @@ import Button from '@/components/Button';
 import Card from '@/components/Card';
 import { Icon } from '@/components/Icon';
 import LottieCanvas from '@/components/media/LottieCanvas';
-import { MediaProgressBar, formatMs, sessionStatusText } from '@/components/media/MediaProgress';
+import { formatMs, sessionStatusText } from '@/components/media/MediaProgress';
+import MediaScrubber from '@/components/media/MediaScrubber';
 import { ThemedText } from '@/components/themed-text';
 import { Collapsible } from '@/components/ui/collapsible';
 import { Margins } from '@/constants/theme';
@@ -37,30 +38,37 @@ export default function MediaLibraryModal() {
     closeLibrary,
     playResource,
     removeResource,
-    repeat,
+    play,
+    seek,
     stop,
   } = useMediaSession();
   const { connections } = useConnections();
 
   const connection = connections.find((c) => c.id === connectionId);
+  // Where the finger is while dragging the scrubber, so the timestamp under it follows
+  // the drag rather than the (still running) playback clock.
+  const [scrubMs, setScrubMs] = useState<number | null>(null);
 
   // The library is loaded for as long as this screen is mounted — dismissing it (button,
   // swipe or back) tears the state down through the cleanup.
   useEffect(() => {
     if (!connectionId) return;
     openLibrary(connectionId);
-    return () => closeLibrary();
+    return () => closeLibrary(connectionId);
   }, [connectionId, openLibrary, closeLibrary]);
 
   // Only this connection's session belongs on this screen.
   const active = session && session.connectionId === connectionId ? session : null;
   const isDownloading = active?.status === 'downloading';
   const isPlaying = active?.status === 'playing';
+  // The Lottie canvas follows the drag too, so scrubbing an animation previews the frame
+  // being seeked to.
+  const shownPositionMs = scrubMs ?? positionMs;
   const fraction = useMemo(() => {
     if (!active) return 0;
     if (active.status === 'downloading') return downloadProgress;
-    return active.durationMs > 0 ? positionMs / active.durationMs : 0;
-  }, [active, downloadProgress, positionMs]);
+    return active.durationMs > 0 ? shownPositionMs / active.durationMs : 0;
+  }, [active, downloadProgress, shownPositionMs]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -94,11 +102,19 @@ export default function MediaLibraryModal() {
                 <ThemedText type="defaultSemiBold" numberOfLines={1}>
                   {active.name}
                 </ThemedText>
-                <View style={Margins.marginTop2X}>
-                  <MediaProgressBar fraction={fraction} color={isDownloading ? NAVY : SKY} />
+                <View style={Margins.marginTop1X}>
+                  <MediaScrubber
+                    positionMs={positionMs}
+                    durationMs={active.durationMs}
+                    color={isDownloading ? NAVY : SKY}
+                    // Nothing to seek through until the clip is on disk.
+                    disabled={isDownloading || active.status === 'error'}
+                    onScrub={setScrubMs}
+                    onSeek={seek}
+                  />
                 </View>
-                <ThemedText style={[styles.meta, Margins.marginTop1X]}>
-                  {sessionStatusText(active, downloadProgress, positionMs)}
+                <ThemedText style={styles.meta}>
+                  {sessionStatusText(active, downloadProgress, shownPositionMs)}
                 </ThemedText>
 
                 {!isDownloading && active.status !== 'error' && (
@@ -109,7 +125,7 @@ export default function MediaLibraryModal() {
                     // The press starts the media pattern on its own composer; a confirmation
                     // chip on top of it would fight the very haptics being played.
                     disableHaptics
-                    onClick={() => (isPlaying ? stop() : repeat())}
+                    onClick={() => (isPlaying ? stop() : play())}
                   />
                 )}
               </Card>

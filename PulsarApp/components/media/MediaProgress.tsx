@@ -24,8 +24,9 @@ export function sessionStatusText(
   if (session.status === 'error') {
     return session.error ?? 'Could not load';
   }
-  const elapsed = session.status === 'playing' ? positionMs : session.durationMs;
-  return `${formatMs(elapsed)} / ${formatMs(session.durationMs)}`;
+  // Always the playhead, playing or not: it survives a stop and follows a scrub, and this
+  // line is what tells the user where a seek landed.
+  return `${formatMs(positionMs)} / ${formatMs(session.durationMs)}`;
 }
 
 /** The download/playback bar shared by the mini-player and the library modal; `fraction` 0..1. */

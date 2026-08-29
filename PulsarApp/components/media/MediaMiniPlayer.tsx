@@ -20,7 +20,7 @@ const RED = '#FF6259';
  * and the cached resources live — so this bar carries only play/stop and dismiss.
  */
 export default function MediaMiniPlayer() {
-  const { session, downloadProgress, positionMs, openConnectionId, dismissPlayer, stop, repeat } =
+  const { session, downloadProgress, positionMs, openConnectionId, dismissPlayer, stop, play } =
     useMediaSession();
   const insets = useSafeAreaInsets();
 
@@ -35,8 +35,8 @@ export default function MediaMiniPlayer() {
       ? positionMs / session.durationMs
       : 0;
 
-  // One control, one meaning: stop what's running, or start it again from the top.
-  const onTogglePlay = () => (isPlaying ? stop() : repeat());
+  // One control, one meaning: stop what's running, or resume it from the playhead.
+  const onTogglePlay = () => (isPlaying ? stop() : play());
 
   return (
     <Animated.View
