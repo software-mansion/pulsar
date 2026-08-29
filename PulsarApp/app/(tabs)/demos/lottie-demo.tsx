@@ -1,17 +1,20 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { HapticLottieView, type HapticLottieRef } from 'react-native-pulsar-lottie';
 import type { Pattern } from 'react-native-pulsar';
 
 import BasicLayout from '@/components/BasicLayout';
+import Button from '@/components/Button';
+import Card from '@/components/Card';
+import { formatMs } from '@/components/media/MediaProgress';
+import MediaScrubber from '@/components/media/MediaScrubber';
 import { ThemedText } from '@/components/themed-text';
 import { Margins } from '@/constants/theme';
-import HapticDemoButton from '@/components/demo/HapticDemoButton';
+import { usePlaybackClock } from '@/src/haptics/usePlaybackClock';
 
-// A haptic pattern spanning the ~2.4s "verified" animation. In the default
-// `realtime` mode the animation timeline is the master clock, so the haptics
-// follow play / pause / replay and land with the check: a gentle swell that
-// resolves into a firm confirming tap as the checkmark snaps in.
+const verifiedAnimation = require('@/assets/animations/verified.json');
+const durationMs = ((verifiedAnimation.op - verifiedAnimation.ip) / verifiedAnimation.fr) * 1000;
+
 const verifiedPattern: Pattern = {
   discretePattern: [
     { time: 100, amplitude: 0.35, frequency: 0.55 },
@@ -39,7 +42,38 @@ const verifiedPattern: Pattern = {
 };
 
 export default function LottieDemo() {
-  const ref = useRef<HapticLottieRef>(null);
+  const animation = useRef<HapticLottieRef>(null);
+  const clock = usePlaybackClock(durationMs);
+  const [draggedToMs, setDraggedToMs] = useState<number | null>(null);
+
+  const playFrom = (fromMs: number) => {
+    animation.current?.setTimestamp(fromMs);
+    animation.current?.resume();
+    clock.start(fromMs);
+  };
+
+  const stop = () => {
+    animation.current?.pause();
+    clock.stop();
+  };
+
+  const togglePlay = () => {
+    if (clock.isRunning) {
+      stop();
+      return;
+    }
+    const hasRunToTheEnd = clock.positionMs >= durationMs;
+    playFrom(hasRunToTheEnd ? 0 : clock.positionMs);
+  };
+
+  const seek = (toMs: number) => {
+    if (clock.isRunning) {
+      playFrom(toMs);
+      return;
+    }
+    animation.current?.setTimestamp(toMs);
+    clock.jumpTo(toMs);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -48,39 +82,47 @@ export default function LottieDemo() {
           Lottie + haptics
         </ThemedText>
         <ThemedText style={Margins.marginTop2X}>
-          A drop-in replacement for LottieView that plays a haptic pattern in
-          lockstep with the animation timeline. Best felt on a real device.
+          A drop-in replacement for LottieView that plays a haptic pattern in lockstep with the
+          animation timeline. Drag the progress bar to move both together. Best felt on a real
+          device.
         </ThemedText>
 
-        <View style={styles.canvas}>
-          <HapticLottieView
-            ref={ref}
-            source={require('@/assets/animations/verified.json')}
-            haptics={verifiedPattern}
-            hapticMode="realtime"
-            autoPlay
-            loop={false}
-            style={styles.lottie}
-          />
-        </View>
+        <Card style={Margins.marginTop4X}>
+          <View style={styles.canvas}>
+            <HapticLottieView
+              ref={animation}
+              source={verifiedAnimation}
+              haptics={verifiedPattern}
+              hapticMode="realtime"
+              autoPlay={false}
+              loop={false}
+              style={styles.lottie}
+            />
+          </View>
 
-        <View style={styles.controls}>
-          <HapticDemoButton
-            label="▶ Replay"
-            onPress={() => ref.current?.play()}
-            style={styles.button}
-          />
-          <HapticDemoButton
-            label="■ Stop"
-            onPress={() => ref.current?.stop()}
-            style={styles.button}
-          />
-        </View>
+          <ThemedText type="defaultSemiBold" numberOfLines={1}>
+            Verified
+          </ThemedText>
+          <View style={Margins.marginTop1X}>
+            <MediaScrubber
+              positionMs={clock.positionMs}
+              durationMs={durationMs}
+              onScrub={setDraggedToMs}
+              onSeek={seek}
+            />
+          </View>
+          <ThemedText style={styles.meta}>
+            {formatMs(draggedToMs ?? clock.positionMs)} / {formatMs(durationMs)}
+          </ThemedText>
 
-        <ThemedText style={Margins.marginTop4X}>
-          The timeline drives the haptics, so pausing or replaying the animation
-          keeps them in sync automatically.
-        </ThemedText>
+          <Button
+            label={clock.isRunning ? 'Stop' : 'Play'}
+            showIcon={clock.isRunning ? 'stop' : 'play'}
+            style={Margins.marginTop3X}
+            disableHaptics
+            onClick={togglePlay}
+          />
+        </Card>
       </BasicLayout>
     </ScrollView>
   );
@@ -91,27 +133,22 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
   },
   canvas: {
-    marginTop: 22,
-    height: 220,
-    borderRadius: 8,
+    height: 200,
+    borderRadius: 4,
+    backgroundColor: '#E1F3FA',
     borderWidth: 2,
-    borderColor: '#38ACDD',
-    backgroundColor: 'white',
+    borderColor: '#B5E1F1',
+    overflow: 'hidden',
+    marginBottom: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
   lottie: {
     width: 180,
     height: 180,
   },
-  controls: {
-    marginTop: 22,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    columnGap: 16,
-  },
-  button: {
-    flex: 1,
+  meta: {
+    fontSize: 14,
+    color: '#496695',
   },
 });

@@ -17,6 +17,18 @@ const defaultEdges = {
 
 const demos = [
   {
+    slug: 'audio-demo',
+    title: 'Audio Sync',
+  },
+  {
+    slug: 'lottie-demo',
+    title: 'Lottie',
+  },
+  {
+    slug: 'sensor-haptics-demo',
+    title: 'Accelerometer',
+  },
+  {
     slug: 'slider-demo',
     title: 'Slider',
   },
@@ -39,18 +51,6 @@ const demos = [
   {
     slug: 'notification-haptics-demo',
     title: 'Notification',
-  },
-  {
-    slug: 'sensor-haptics-demo',
-    title: 'Accelerometer',
-  },
-  {
-    slug: 'audio-demo',
-    title: 'Audio Sync',
-  },
-  {
-    slug: 'lottie-demo',
-    title: 'Lottie',
   },
 ];
 
