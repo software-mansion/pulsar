@@ -64,7 +64,7 @@ const audioPattern: Pattern = {
       { time: 3181, value: 0.861 },
     ],
   },
-  sound: { uri: require('../assets/sample-3s.mp3'), volume: 1.0 },
+  sound: { uri: require('../../assets/sample-3s.mp3'), volume: 1.0 },
 };
 
 export default function AudioHapticsScreen() {
