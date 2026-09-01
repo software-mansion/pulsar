@@ -2,40 +2,53 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const { withPulsar } = require('react-native-pulsar/metro');
 const path = require('path');
 
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- *
- * @type {import('@react-native/metro-config').MetroConfig}
- */
+// Packages linked with `file:` live outside `projectRoot`, so Metro has to watch them directly.
+const linkedPackages = {
+  'react-native-pulsar': path.resolve(__dirname, '../react-native-pulsar'),
+  'react-native-pulsar-lottie': path.resolve(__dirname, '../PulsarLottie'),
+};
+
+// Modules that must resolve to exactly one copy — the app's. Each linked package installs its own
+// dev copies at its own versions, and picking one of those up breaks at runtime: worklets, for
+// instance, compares the version of its JS against the version of the Babel plugin that compiled
+// the app.
+const sharedModules = [
+  ...Object.keys(linkedPackages),
+  'react',
+  'react-native',
+  'react-native-worklets',
+  'react-native-reanimated',
+  'lottie-react-native',
+  'react-native-gesture-handler',
+  'react-native-safe-area-context',
+];
+
+const isSharedModule = moduleName =>
+  sharedModules.some(name => moduleName === name || moduleName.startsWith(`${name}/`));
+
+/** @type {import('@react-native/metro-config').MetroConfig} */
 const config = {
   projectRoot: __dirname,
-  watchFolders: [
-    path.resolve(__dirname, '../react-native-pulsar'),
-    path.resolve(__dirname, '../PulsarLottie'),
-  ],
+  watchFolders: Object.values(linkedPackages),
   resolver: {
-    extraNodeModules: {
-      'react-native': path.resolve(__dirname, './node_modules/react-native'),
-      react: path.resolve(__dirname, './node_modules/react'),
-      'react-native-reanimated': path.resolve(__dirname, './node_modules/react-native-reanimated'),
-      'react-native-worklets': path.resolve(__dirname, './node_modules/react-native-worklets'),
-      'lottie-react-native': path.resolve(__dirname, './node_modules/lottie-react-native'),
+    // Keep the linked packages' own copies out of the graph entirely, so they are neither crawled
+    // nor reachable by a relative path that sidesteps `resolveRequest`.
+    blockList: Object.values(linkedPackages).flatMap(dir =>
+      sharedModules.map(name => new RegExp(`^${escapeRegExp(path.join(dir, 'node_modules', name))}/`)),
+    ),
+    resolveRequest: (context, moduleName, platform) => {
+      // Resolve shared modules as if the import came from the app root, whatever imported them.
+      const origin = isSharedModule(moduleName)
+        ? { ...context, originModulePath: path.join(__dirname, 'metro.config.js') }
+        : context;
+      return context.resolveRequest(origin, moduleName, platform);
     },
-    blockList: [
-      // Prevent Metro from using react-native from a library's node_modules
-      /react-native-pulsar\/node_modules\/react-native\/.*/,
-      /react-native-pulsar\/node_modules\/react\/.*/,
-      // ...and the same for the Lottie wrapper package.
-      /PulsarLottie\/node_modules\/react-native\/.*/,
-      /PulsarLottie\/node_modules\/react\/.*/,
-      /PulsarLottie\/node_modules\/react-native-reanimated\/.*/,
-      /PulsarLottie\/node_modules\/react-native-worklets\/.*/,
-      /PulsarLottie\/node_modules\/lottie-react-native\/.*/,
-      /PulsarLottie\/node_modules\/react-native-pulsar\/.*/,
-    ],
   },
 };
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 // `withPulsar` adds `.pulsar` to assetExts, so `require('./assets/test.pulsar')` resolves. Only
 // the binary path (bundle audio) needs it — the inline sidecar is a plain JSON import.
