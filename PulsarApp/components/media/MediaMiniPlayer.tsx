@@ -21,7 +21,7 @@ export default function MediaMiniPlayer() {
     positionMs,
     openConnectionId,
     dismissPlayer,
-    stop,
+    pause,
     playFromPlayhead,
   } = useMediaSession();
   const insets = useSafeAreaInsets();
@@ -37,7 +37,7 @@ export default function MediaMiniPlayer() {
       ? positionMs / session.durationMs
       : 0;
 
-  const onTogglePlay = () => (isPlaying ? stop() : playFromPlayhead());
+  const onTogglePlay = () => (isPlaying ? pause() : playFromPlayhead());
 
   return (
     <Animated.View
@@ -72,7 +72,7 @@ export default function MediaMiniPlayer() {
             onPress={onTogglePlay}
             hitSlop={8}
             style={styles.iconBtn}
-            accessibilityLabel={isPlaying ? 'Stop' : 'Play'}
+            accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
           >
             <Icon name={isPlaying ? 'stop' : 'play'} size={20} color={NAVY} />
           </TouchableOpacity>

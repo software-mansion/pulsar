@@ -24,6 +24,16 @@ export interface BroadcastMediaRef {
   size: number;
 }
 
+// A haptics-only preset from Studio or the Figma plugin. Older producers send no
+// `resourceId`, so the phone keys the library entry on the name instead.
+export interface PatternHapticsBroadcast {
+  kind: 'haptic-preset';
+  name?: string;
+  pattern: Pattern;
+  resourceId?: string;
+  version?: string;
+}
+
 // A preset scored to an AUDIO file, pushed from Studio (see device/toPattern.ts). The
 // clip is already trimmed, so the pattern and the audio both play from t=0.
 export interface AudioHapticsBroadcast {
@@ -62,9 +72,8 @@ export interface AnimationHapticsBroadcast {
 export interface ServerMessageHandlers {
   patchConnection: (id: string, patch: Partial<Connection>) => void;
   notify: (found: boolean, name: string) => void;
-  playPreset: (pattern: Pattern) => boolean;
-  // A media-backed haptic (audio / Lottie) — downloaded, then played in sync on the
-  // per-connection player sheet. `id` is the connection it arrived on.
+  // Everything a producer pushes lands on the player sheet for connection `id`.
+  startPatternHaptics: (id: string, message: PatternHapticsBroadcast) => void;
   startAudioHaptics: (id: string, message: AudioHapticsBroadcast) => void;
   startAnimationHaptics: (id: string, message: AnimationHapticsBroadcast) => void;
   emitPreviewUpdate: (id: string, update: Omit<PreviewUpdate, 'nonce'>) => void;
@@ -95,13 +104,9 @@ function handleBroadcast(id: string, message: unknown, handlers: ServerMessageHa
   const kind = (message as { kind?: unknown }).kind;
 
   if (kind === 'haptic-preset' && (message as { pattern?: unknown }).pattern) {
-    // A full JSON preset pushed from Pulsar Studio. Unlike the string path, this
-    // ALWAYS plays the supplied waveform via the composer — never a same-named
-    // built-in — so an edited preset plays as edited. Older app builds don't
-    // match this branch (the object isn't a 'preview-*'), so they harmlessly
-    // ignore it: the backward-compat seam.
-    const preset = message as { kind: string; name?: string; pattern: Pattern };
-    handlers.notify(handlers.playPreset(preset.pattern), preset.name ?? 'Haptic preset');
+    // Plays the supplied waveform, never a same-named built-in, so an edited preset
+    // plays as edited.
+    handlers.startPatternHaptics(id, message as PatternHapticsBroadcast);
     return;
   }
 

@@ -13,6 +13,7 @@ import { usePatternComposer, type Pattern } from 'react-native-pulsar';
 import type {
   AudioHapticsBroadcast,
   AnimationHapticsBroadcast,
+  PatternHapticsBroadcast,
 } from '@/src/connections/serverMessages';
 import {
   downloadClip,
@@ -25,13 +26,17 @@ import {
   type MediaKind,
   type ResourceRecord,
 } from '@/src/connections/mediaLibrary';
-import { PLAYS_TO_END_OF_FILE, patternStartingAt } from '@/src/haptics/patternSeek';
+import {
+  PLAYS_TO_END_OF_FILE,
+  patternDurationMs,
+  patternStartingAt,
+} from '@/src/haptics/patternSeek';
 
-/** Plays media-backed haptics from Studio on its own composer, off its own clock. */
+/** Plays the haptics a producer pushes on its own composer, off its own clock. */
 
-/** An animation plays the pattern alone; its visual runs off the same clock. */
+/** Only audio scores the pattern with a sound; a pattern or animation plays it alone. */
 function patternFor(record: ResourceRecord): Pattern {
-  if (record.kind !== 'audio') return record.pattern;
+  if (record.kind !== 'audio' || !record.localUri) return record.pattern;
   return {
     ...record.pattern,
     sound: {
@@ -53,6 +58,8 @@ export interface MediaSession {
   name: string;
   durationMs: number;
   status: SessionStatus;
+  /** The haptics being played — drawn as the waveform for a `pattern` session. */
+  pattern: Pattern;
   /** `file://` uri of the downloaded clip, once ready. */
   localUri?: string;
   error?: string;
@@ -66,6 +73,7 @@ interface MediaSessionContextValue {
   openConnectionId: string | null;
   library: ResourceRecord[];
 
+  startPatternHaptics: (connectionId: string, message: PatternHapticsBroadcast) => void;
   startAudioHaptics: (connectionId: string, message: AudioHapticsBroadcast) => void;
   startAnimationHaptics: (connectionId: string, message: AnimationHapticsBroadcast) => void;
 
@@ -76,6 +84,9 @@ interface MediaSessionContextValue {
   playResource: (connectionId: string, resourceId: string) => void;
   playFromPlayhead: () => void;
   seek: (positionMs: number) => void;
+  /** Halts playback where it stands, so `playFromPlayhead` resumes from there. */
+  pause: () => void;
+  /** Halts playback and rewinds to the start. */
   stop: () => void;
   removeResource: (connectionId: string, resourceId: string) => void;
   handleConnectionRemoved: (connectionId: string) => void;
@@ -163,6 +174,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         name: record.name,
         durationMs: record.durationMs,
         status: 'playing',
+        pattern: record.pattern,
         localUri: record.localUri,
       });
       setPositionMs(fromMs);
@@ -186,7 +198,15 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
       stopClock();
       setDownloadProgress(0);
       setPositionMs(0);
-      setSession({ connectionId, resourceId, kind, name, durationMs, status: 'downloading' });
+      setSession({
+        connectionId,
+        resourceId,
+        kind,
+        name,
+        durationMs,
+        status: 'downloading',
+        pattern,
+      });
       showLibraryScreen(connectionId);
 
       try {
@@ -236,6 +256,30 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     [playRecord, refreshLibrary, showLibraryScreen, stopClock],
   );
 
+  /** Haptics only: nothing to download, so it plays on arrival and is filed after. */
+  const startPatternHaptics = useCallback(
+    (connectionId: string, message: PatternHapticsBroadcast) => {
+      const name = message.name ?? 'Haptic preset';
+      const record: ResourceRecord = {
+        resourceId: message.resourceId ?? `name:${name}`,
+        name,
+        kind: 'pattern',
+        version: message.version ?? '',
+        durationMs: patternDurationMs(message.pattern),
+        pattern: message.pattern,
+        receivedAt: Date.now(),
+      };
+
+      stopClock();
+      setDownloadProgress(0);
+      showLibraryScreen(connectionId);
+      playRecord(connectionId, record);
+
+      void upsertResource(connectionId, record).then(() => refreshLibrary(connectionId));
+    },
+    [playRecord, refreshLibrary, showLibraryScreen, stopClock],
+  );
+
   const startAudioHaptics = useCallback(
     (connectionId: string, message: AudioHapticsBroadcast) => {
       void startMedia(connectionId, message, 'audio');
@@ -258,7 +302,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     [refreshLibrary],
   );
 
-  const stop = useCallback(() => {
+  const pause = useCallback(() => {
     stopClock();
     try {
       composerRef.current.stop();
@@ -268,6 +312,12 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     setSession((s) => (s ? { ...s, status: 'stopped' } : s));
   }, [stopClock]);
 
+  const stop = useCallback(() => {
+    pause();
+    setPositionMs(0);
+    positionRef.current = 0;
+  }, [pause]);
+
   const closeLibrary = useCallback((connectionId: string) => {
     const stillOwnsTheLibrary = openRef.current === connectionId;
     if (!stillOwnsTheLibrary) return;
@@ -276,11 +326,11 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const dismissPlayer = useCallback(() => {
-    stop();
+    pause();
     setSession(null);
     setOpenConnectionId(null);
     setLibrary([]);
-  }, [stop]);
+  }, [pause]);
 
   const playResource = useCallback(
     async (connectionId: string, resourceId: string) => {
@@ -321,27 +371,27 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
   const removeResource = useCallback(
     (connectionId: string, resourceId: string) => {
       if (sessionRef.current?.resourceId === resourceId) {
-        stop();
+        pause();
         setSession(null);
       }
       void removeResourceFromLibrary(connectionId, resourceId).then(() =>
         refreshLibrary(connectionId),
       );
     },
-    [refreshLibrary, stop],
+    [pause, refreshLibrary],
   );
 
   const handleConnectionRemoved = useCallback(
     (connectionId: string) => {
       if (openRef.current === connectionId) {
-        stop();
+        pause();
         setSession(null);
         setOpenConnectionId(null);
         setLibrary([]);
       }
       void purgeConnection(connectionId);
     },
-    [stop],
+    [pause],
   );
 
   useEffect(() => () => stopClock(), [stopClock]);
@@ -354,6 +404,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         positionMs,
         openConnectionId,
         library,
+        startPatternHaptics,
         startAudioHaptics,
         startAnimationHaptics,
         openLibrary,
@@ -362,6 +413,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         playResource,
         playFromPlayhead,
         seek,
+        pause,
         stop,
         removeResource,
         handleConnectionRemoved,
