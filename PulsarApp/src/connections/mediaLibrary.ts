@@ -5,7 +5,8 @@ import * as FileSystem from 'expo-file-system/legacy';
 import type { Pattern } from 'react-native-pulsar';
 
 /**
- * The phone's on-device library of media-backed haptics received from a Studio connection.
+ * The phone's on-device library of haptics received from a Studio connection — a plain
+ * pattern, or one scored to an audio clip or a Lottie animation.
  *
  * Two stores, kept in step:
  *   - an AsyncStorage INDEX, `connectionId -> ResourceRecord[]` (small metadata), and
@@ -16,7 +17,8 @@ import type { Pattern } from 'react-native-pulsar';
  * connection row does (`purgeConnection` on remove), plus a per-resource manual delete.
  */
 
-export type MediaKind = 'audio' | 'animation';
+/** A `pattern` record is haptics only — it has none of the clip fields below. */
+export type MediaKind = 'audio' | 'animation' | 'pattern';
 
 export interface ResourceRecord {
   /** Stable identity = the Studio preset id. A re-push with a new version replaces it. */
@@ -26,11 +28,11 @@ export interface ResourceRecord {
   /** Content hash from Studio; the dedupe key that decides re-download vs reuse. */
   version: string;
   /** Addresses the delivered bytes (content hash / source id) — the on-disk filename. */
-  clipId: string;
+  clipId?: string;
   /** `file://` path to the downloaded clip. */
-  localUri: string;
-  contentType: string;
-  sizeBytes: number;
+  localUri?: string;
+  contentType?: string;
+  sizeBytes?: number;
   durationMs: number;
   /** The haptic pattern to play. */
   pattern: Pattern;
@@ -158,7 +160,7 @@ export async function upsertResource(
   const index = await readIndex();
   const list = index[connectionId] ?? [];
   const previous = list.find((r) => r.resourceId === record.resourceId);
-  if (previous && previous.localUri !== record.localUri) {
+  if (previous?.localUri && previous.localUri !== record.localUri) {
     await deleteFile(previous.localUri);
   }
   index[connectionId] = [...list.filter((r) => r.resourceId !== record.resourceId), record];
@@ -170,7 +172,7 @@ export async function removeResource(connectionId: string, resourceId: string): 
   const index = await readIndex();
   const list = index[connectionId] ?? [];
   const target = list.find((r) => r.resourceId === resourceId);
-  if (target) await deleteFile(target.localUri);
+  if (target?.localUri) await deleteFile(target.localUri);
   index[connectionId] = list.filter((r) => r.resourceId !== resourceId);
   await writeIndex(index);
 }

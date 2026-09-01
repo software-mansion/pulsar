@@ -18,12 +18,24 @@ export function envelopeValueAt(points: EnvelopePoint[], atMs: number): number {
   return before.value + ((after.value - before.value) * (atMs - before.time)) / span;
 }
 
-function envelopeStartingAt(points: EnvelopePoint[], fromMs: number): EnvelopePoint[] {
+/**
+ * An envelope whose points all sit before the seek HOLDS its last value for the rest of
+ * the pattern rather than emptying. Emptying it would silence the whole continuous
+ * channel: the SDK builds that channel only when the amplitude AND frequency curves are
+ * both non-empty, so seeking past the end of either one killed both.
+ */
+function envelopeStartingAt(
+  points: EnvelopePoint[],
+  fromMs: number,
+  remainingMs: number,
+): EnvelopePoint[] {
+  if (points.length === 0) return [];
+  const held = { time: 0, value: envelopeValueAt(points, fromMs) };
   const remaining = points
     .filter((point) => point.time > fromMs)
     .map((point) => ({ time: point.time - fromMs, value: point.value }));
-  if (remaining.length === 0) return [];
-  return [{ time: 0, value: envelopeValueAt(points, fromMs) }, ...remaining];
+  if (remaining.length > 0) return [held, ...remaining];
+  return remainingMs > 0 ? [held, { time: remainingMs, value: held.value }] : [held];
 }
 
 function soundStartingAt(sound: Sound, fromMs: number): Sound {
@@ -38,13 +50,14 @@ function soundStartingAt(sound: Sound, fromMs: number): Sound {
 /** The composer can only play from zero, so seeking replays a re-anchored pattern. */
 export function patternStartingAt(pattern: Pattern, fromMs: number): Pattern {
   if (fromMs <= 0) return pattern;
+  const remainingMs = patternDurationMs(pattern) - fromMs;
   return {
     discretePattern: pattern.discretePattern
       .filter((point) => point.time >= fromMs)
       .map((point) => ({ ...point, time: point.time - fromMs })),
     continuousPattern: {
-      amplitude: envelopeStartingAt(pattern.continuousPattern.amplitude, fromMs),
-      frequency: envelopeStartingAt(pattern.continuousPattern.frequency, fromMs),
+      amplitude: envelopeStartingAt(pattern.continuousPattern.amplitude, fromMs, remainingMs),
+      frequency: envelopeStartingAt(pattern.continuousPattern.frequency, fromMs, remainingMs),
     },
     ...(pattern.sound ? { sound: soundStartingAt(pattern.sound, fromMs) } : {}),
   };

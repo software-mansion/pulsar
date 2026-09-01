@@ -8,7 +8,7 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import { Presets, usePatternComposer, type Pattern } from 'react-native-pulsar';
+import { Presets } from 'react-native-pulsar';
 
 import { handleServerMessage, type ServerMessageHandlers } from '@/src/connections/serverMessages';
 import { useMediaSession } from '@/contexts/MediaSessionContext';
@@ -73,14 +73,8 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   // preview consumer (e.g. a binding toggled back and forth).
   const previewNonce = useRef(0);
 
-  // The message handler closes over the composer, so read it through a ref that
-  // every render keeps current rather than closing over the first one.
-  const composer = usePatternComposer(undefined);
-  const composerRef = useRef(composer);
-  composerRef.current = composer;
-
-  // Media-backed haptics (audio / Lottie) are downloaded and played by the media session,
-  // read through a ref for the same reason as the composer.
+  // Every pushed haptic — pattern, audio or Lottie — is played by the media session,
+  // read through a ref so the handler never closes over a stale one.
   const media = useMediaSession();
   const mediaRef = useRef(media);
   mediaRef.current = media;
@@ -99,15 +93,7 @@ export function ConnectionsProvider({ children }: { children: ReactNode }) {
   const messageHandlers: ServerMessageHandlers = {
     patchConnection,
     notify,
-    playPreset: (pattern: Pattern) => {
-      try {
-        composerRef.current.parse(pattern);
-        composerRef.current.play();
-        return true;
-      } catch {
-        return false;
-      }
-    },
+    startPatternHaptics: (id, message) => mediaRef.current.startPatternHaptics(id, message),
     startAudioHaptics: (id, message) => mediaRef.current.startAudioHaptics(id, message),
     startAnimationHaptics: (id, message) => mediaRef.current.startAnimationHaptics(id, message),
     emitPreviewUpdate: (id, update) => {

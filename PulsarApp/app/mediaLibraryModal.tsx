@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Button from '@/components/Button';
 import Card from '@/components/Card';
-import { Icon } from '@/components/Icon';
+import { Icon, type IconName } from '@/components/Icon';
 import LottieCanvas from '@/components/media/LottieCanvas';
+import PatternCanvas from '@/components/media/PatternCanvas';
 import { formatMs, sessionStatusText } from '@/components/media/MediaProgress';
 import MediaScrubber from '@/components/media/MediaScrubber';
 import { ThemedText } from '@/components/themed-text';
@@ -14,11 +15,22 @@ import { Collapsible } from '@/components/ui/collapsible';
 import { Margins } from '@/constants/theme';
 import { connectionDisplayName, useConnections } from '@/contexts/ConnectionsContext';
 import { useMediaSession } from '@/contexts/MediaSessionContext';
-import type { ResourceRecord } from '@/src/connections/mediaLibrary';
+import type { MediaKind, ResourceRecord } from '@/src/connections/mediaLibrary';
 
 const NAVY = '#001A72';
 const SKY = '#38ACDD';
 const RED = '#FF6259';
+
+const KIND_ICON: Record<MediaKind, IconName> = {
+  audio: 'play',
+  animation: 'sparkles',
+  pattern: 'record',
+};
+const KIND_LABEL: Record<MediaKind, string> = {
+  audio: 'Audio',
+  animation: 'Animation',
+  pattern: 'Pattern',
+};
 
 export default function MediaLibraryModal() {
   const params = useLocalSearchParams<{ connectionId?: string }>();
@@ -35,6 +47,7 @@ export default function MediaLibraryModal() {
     removeResource,
     playFromPlayhead,
     seek,
+    pause,
     stop,
   } = useMediaSession();
   const { connections } = useConnections();
@@ -86,6 +99,13 @@ export default function MediaLibraryModal() {
                 {active.kind === 'animation' && active.localUri && (
                   <LottieCanvas uri={active.localUri} progress={fraction} />
                 )}
+                {active.kind === 'pattern' && (
+                  <PatternCanvas
+                    pattern={active.pattern}
+                    durationMs={active.durationMs}
+                    progress={fraction}
+                  />
+                )}
 
                 <ThemedText type="defaultSemiBold" numberOfLines={1}>
                   {active.name}
@@ -105,14 +125,27 @@ export default function MediaLibraryModal() {
                 </ThemedText>
 
                 {!isDownloading && active.status !== 'error' && (
-                  <Button
-                    label={isPlaying ? 'Stop' : 'Play'}
-                    showIcon={isPlaying ? 'stop' : 'play'}
-                    style={Margins.marginTop3X}
-                    // A confirmation chip would fight the pattern this press starts.
-                    disableHaptics
-                    onClick={() => (isPlaying ? stop() : playFromPlayhead())}
-                  />
+                  <View style={[styles.transport, Margins.marginTop3X]}>
+                    <Button
+                      label={isPlaying ? 'Pause' : 'Play'}
+                      showIcon={isPlaying ? 'stop' : 'play'}
+                      style={styles.transportPrimary}
+                      // A confirmation chip would fight the pattern this press starts.
+                      disableHaptics
+                      onClick={() => (isPlaying ? pause() : playFromPlayhead())}
+                    />
+                    <TouchableOpacity
+                      onPress={stop}
+                      disabled={!isPlaying && positionMs === 0}
+                      style={[
+                        styles.stopButton,
+                        !isPlaying && positionMs === 0 && styles.stopButtonDisabled,
+                      ]}
+                      accessibilityLabel="Stop"
+                    >
+                      <Icon name="square" size={20} color={RED} />
+                    </TouchableOpacity>
+                  </View>
                 )}
               </Card>
             )}
@@ -124,8 +157,7 @@ export default function MediaLibraryModal() {
             >
               {library.length === 0 ? (
                 <ThemedText style={[styles.meta, Margins.marginTop1X]}>
-                  Nothing yet. Play an audio- or animation-based haptic from Studio and it appears
-                  here.
+                  Nothing yet. Play a preset from Studio and it appears here.
                 </ThemedText>
               ) : (
                 library.map((record) => (
@@ -161,13 +193,13 @@ function ResourceRow({
     <Card style={[styles.resourceCard, active && styles.resourceCardActive]}>
       <View style={styles.resourceRow}>
         <TouchableOpacity style={styles.pressArea} onPress={onPlay} activeOpacity={0.6}>
-          <Icon name={record.kind === 'animation' ? 'sparkles' : 'play'} size={18} color={NAVY} />
+          <Icon name={KIND_ICON[record.kind]} size={18} color={NAVY} />
           <View style={styles.resourceInfo}>
             <ThemedText type="defaultSemiBold" numberOfLines={1}>
               {record.name}
             </ThemedText>
             <ThemedText style={styles.meta} numberOfLines={1}>
-              {record.kind === 'animation' ? 'Animation' : 'Audio'} · {formatMs(record.durationMs)}
+              {KIND_LABEL[record.kind]} · {formatMs(record.durationMs)}
             </ThemedText>
           </View>
         </TouchableOpacity>
@@ -216,6 +248,27 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 14,
     color: '#496695',
+  },
+  transport: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 10,
+  },
+  transportPrimary: {
+    flex: 1,
+  },
+  stopButton: {
+    width: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: RED,
+    boxShadow: '-3px 3px 0px #FF6259',
+  },
+  stopButtonDisabled: {
+    opacity: 0.4,
   },
   resourceCard: {
     paddingVertical: 12,
