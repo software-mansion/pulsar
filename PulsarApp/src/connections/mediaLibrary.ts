@@ -13,6 +13,11 @@ import type { Pattern } from 'react-native-pulsar';
  *   - the CLIP FILES under documentDirectory (persistent — survives restarts, unlike the
  *     cache directory the OS may evict).
  *
+ * The index stores each clip's path RELATIVE to the media root, never an absolute one:
+ * iOS hands the app a new container directory on reinstall/update while keeping its data,
+ * so an absolute uri saved yesterday points nowhere today — the clip would be on disk yet
+ * unplayable. The absolute uri is rebuilt on every read instead.
+ *
  * Retention is scoped to the connection: a connection's clips live as long as the
  * connection row does (`purgeConnection` on remove), plus a per-resource manual delete.
  */
@@ -29,7 +34,9 @@ export interface ResourceRecord {
   version: string;
   /** Addresses the delivered bytes (content hash / source id) — the on-disk filename. */
   clipId?: string;
-  /** `file://` path to the downloaded clip. */
+  /** The clip's path relative to the media root, e.g. `conn-1/abc123.json`. Persisted. */
+  clipPath?: string;
+  /** Absolute `file://` uri for this install — DERIVED from `clipPath`, never persisted. */
   localUri?: string;
   contentType?: string;
   sizeBytes?: number;
@@ -45,9 +52,34 @@ export interface ResourceRecord {
 }
 
 const STORAGE_KEY = 'pulsar:media-library';
-const MEDIA_ROOT = `${FileSystem.documentDirectory ?? ''}pulsar-media/`;
+const MEDIA_DIR = 'pulsar-media/';
+
+const mediaRoot = () => `${FileSystem.documentDirectory ?? ''}${MEDIA_DIR}`;
 
 type LibraryIndex = Record<string, ResourceRecord[]>;
+
+/**
+ * Records written before the index went relative kept an absolute uri. Everything after
+ * `pulsar-media/` is still valid — only the container prefix ahead of it went stale.
+ */
+function migratedClipPath(record: ResourceRecord): string | undefined {
+  if (record.clipPath) return record.clipPath;
+  const at = record.localUri?.indexOf(MEDIA_DIR);
+  if (record.localUri && at != null && at >= 0) return record.localUri.slice(at + MEDIA_DIR.length);
+  return undefined;
+}
+
+/** Attach the absolute uri this install would use for the record's clip. */
+function resolved(record: ResourceRecord): ResourceRecord {
+  const clipPath = migratedClipPath(record);
+  return clipPath ? { ...record, clipPath, localUri: clipUri(clipPath) } : { ...record, localUri: undefined };
+}
+
+/** Drop the derived uri so a stale container path can never make it back onto disk. */
+function forStorage(record: ResourceRecord): ResourceRecord {
+  const { localUri: _derived, ...persisted } = record;
+  return persisted;
+}
 
 async function readIndex(): Promise<LibraryIndex> {
   try {
@@ -77,15 +109,18 @@ export function extForContentType(contentType: string): string {
   return 'bin';
 }
 
-const connectionDir = (connectionId: string) => `${MEDIA_ROOT}${connectionId}/`;
+export function clipPathFor(connectionId: string, clipId: string, ext: string): string {
+  return `${connectionId}/${clipId}.${ext}`;
+}
 
-export function localPathFor(connectionId: string, clipId: string, ext: string): string {
-  return `${connectionDir(connectionId)}${clipId}.${ext}`;
+/** The absolute uri a relative clip path resolves to in THIS install. */
+export function clipUri(clipPath: string): string {
+  return `${mediaRoot()}${clipPath}`;
 }
 
 /** Create a connection's media directory if it isn't there yet. Idempotent. */
 async function ensureConnectionDir(connectionId: string): Promise<void> {
-  const dir = connectionDir(connectionId);
+  const dir = `${mediaRoot()}${connectionId}/`;
   const info = await FileSystem.getInfoAsync(dir);
   if (!info.exists) await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
 }
@@ -96,6 +131,12 @@ async function fileExists(uri: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/** Whether the record's clip is actually on this device — false for a haptics-only record. */
+export async function clipIsOnDisk(record: ResourceRecord): Promise<boolean> {
+  const clipPath = migratedClipPath(record);
+  return clipPath ? fileExists(clipUri(clipPath)) : false;
 }
 
 async function deleteFile(uri: string): Promise<void> {
@@ -109,7 +150,7 @@ async function deleteFile(uri: string): Promise<void> {
 /** The resources cached for a connection, most-recent first. */
 export async function listResources(connectionId: string): Promise<ResourceRecord[]> {
   const index = await readIndex();
-  return [...(index[connectionId] ?? [])].sort((a, b) => b.receivedAt - a.receivedAt);
+  return [...(index[connectionId] ?? [])].sort((a, b) => b.receivedAt - a.receivedAt).map(resolved);
 }
 
 /** The cached record for a resource, or undefined. */
@@ -118,12 +159,14 @@ export async function getResource(
   resourceId: string,
 ): Promise<ResourceRecord | undefined> {
   const index = await readIndex();
-  return (index[connectionId] ?? []).find((r) => r.resourceId === resourceId);
+  const record = (index[connectionId] ?? []).find((r) => r.resourceId === resourceId);
+  return record && resolved(record);
 }
 
 /**
- * Download a clip to its persistent path, reporting progress, and return the local uri.
- * Skips the network entirely when a file for this exact clip already exists on disk.
+ * Download a clip to its persistent path, reporting progress, and return the path relative
+ * to the media root. Skips the network entirely when a file for this exact clip already
+ * exists on disk.
  */
 export async function downloadClip(
   connectionId: string,
@@ -133,10 +176,11 @@ export async function downloadClip(
   onProgress?: (fraction: number) => void,
 ): Promise<string> {
   await ensureConnectionDir(connectionId);
-  const dest = localPathFor(connectionId, clipId, ext);
+  const clipPath = clipPathFor(connectionId, clipId, ext);
+  const dest = clipUri(clipPath);
   if (await fileExists(dest)) {
     onProgress?.(1);
-    return dest;
+    return clipPath;
   }
   const task = FileSystem.createDownloadResumable(url, dest, {}, (p) => {
     if (p.totalBytesExpectedToWrite > 0) {
@@ -145,7 +189,7 @@ export async function downloadClip(
   });
   const result = await task.downloadAsync();
   if (!result) throw new Error('Download did not complete');
-  return result.uri;
+  return clipPath;
 }
 
 /**
@@ -160,10 +204,14 @@ export async function upsertResource(
   const index = await readIndex();
   const list = index[connectionId] ?? [];
   const previous = list.find((r) => r.resourceId === record.resourceId);
-  if (previous?.localUri && previous.localUri !== record.localUri) {
-    await deleteFile(previous.localUri);
+  const previousClipPath = previous && migratedClipPath(previous);
+  if (previousClipPath && previousClipPath !== record.clipPath) {
+    await deleteFile(clipUri(previousClipPath));
   }
-  index[connectionId] = [...list.filter((r) => r.resourceId !== record.resourceId), record];
+  index[connectionId] = [
+    ...list.filter((r) => r.resourceId !== record.resourceId),
+    forStorage(record),
+  ];
   await writeIndex(index);
 }
 
@@ -172,14 +220,15 @@ export async function removeResource(connectionId: string, resourceId: string): 
   const index = await readIndex();
   const list = index[connectionId] ?? [];
   const target = list.find((r) => r.resourceId === resourceId);
-  if (target?.localUri) await deleteFile(target.localUri);
+  const targetClipPath = target && migratedClipPath(target);
+  if (targetClipPath) await deleteFile(clipUri(targetClipPath));
   index[connectionId] = list.filter((r) => r.resourceId !== resourceId);
   await writeIndex(index);
 }
 
 /** Drop everything for a connection — its whole directory and all its index entries. */
 export async function purgeConnection(connectionId: string): Promise<void> {
-  await deleteFile(connectionDir(connectionId));
+  await deleteFile(`${mediaRoot()}${connectionId}/`);
   const index = await readIndex();
   if (index[connectionId]) {
     delete index[connectionId];

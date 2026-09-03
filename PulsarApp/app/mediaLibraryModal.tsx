@@ -94,6 +94,19 @@ export default function MediaLibraryModal() {
           <>
             {active && (
               <Card>
+                {/* A clip file can go missing — cleared storage, a restore onto a new phone —
+                    while its index row and pattern survive. Say so instead of showing a
+                    blank canvas or a player that stays mute. */}
+                {active.clipMissing && (
+                  <View style={styles.notice}>
+                    <ThemedText style={styles.noticeText}>
+                      {active.kind === 'audio' ? 'The audio clip' : 'The animation'} is no longer
+                      on this device — the haptics still play. Send it from Studio again to
+                      restore it.
+                    </ThemedText>
+                  </View>
+                )}
+
                 {/* The Lottie canvas for a downloaded animation — its playhead runs off the
                     same clock as the haptics. */}
                 {active.kind === 'animation' && active.localUri && (
@@ -246,6 +259,18 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   meta: {
+    fontSize: 14,
+    color: '#496695',
+  },
+  notice: {
+    borderRadius: 4,
+    backgroundColor: '#E1F3FA',
+    borderWidth: 2,
+    borderColor: '#B5E1F1',
+    padding: 12,
+    marginBottom: 12,
+  },
+  noticeText: {
     fontSize: 14,
     color: '#496695',
   },

@@ -16,6 +16,8 @@ import type {
   PatternHapticsBroadcast,
 } from '@/src/connections/serverMessages';
 import {
+  clipIsOnDisk,
+  clipUri,
   downloadClip,
   extForContentType,
   getResource,
@@ -34,9 +36,12 @@ import {
 
 /** Plays the haptics a producer pushes on its own composer, off its own clock. */
 
-/** Only audio scores the pattern with a sound; a pattern or animation plays it alone. */
-function patternFor(record: ResourceRecord): Pattern {
-  if (record.kind !== 'audio' || !record.localUri) return record.pattern;
+/**
+ * Only audio scores the pattern with a sound; a pattern or animation plays it alone.
+ * A clip that is no longer on disk is left off too — the haptics still play, silently.
+ */
+function patternFor(record: ResourceRecord, clipMissing: boolean): Pattern {
+  if (record.kind !== 'audio' || !record.localUri || clipMissing) return record.pattern;
   return {
     ...record.pattern,
     sound: {
@@ -60,8 +65,10 @@ export interface MediaSession {
   status: SessionStatus;
   /** The haptics being played — drawn as the waveform for a `pattern` session. */
   pattern: Pattern;
-  /** `file://` uri of the downloaded clip, once ready. */
+  /** `file://` uri of the downloaded clip, once ready. Absent while the clip is missing. */
   localUri?: string;
+  /** The record expects a clip, but the file is not on this device (any more). */
+  clipMissing?: boolean;
   error?: string;
 }
 
@@ -110,6 +117,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
   const sessionRef = useRef<MediaSession | null>(null);
   sessionRef.current = session;
   const currentRecordRef = useRef<ResourceRecord | null>(null);
+  const clipMissingRef = useRef(false);
   const positionRef = useRef(0);
   positionRef.current = positionMs;
   const rafRef = useRef<number | null>(null);
@@ -158,11 +166,12 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const playRecord = useCallback(
-    (connectionId: string, record: ResourceRecord, fromMs = 0) => {
+    (connectionId: string, record: ResourceRecord, fromMs = 0, clipMissing = false) => {
       currentRecordRef.current = record;
+      clipMissingRef.current = clipMissing;
       try {
         composerRef.current.stop();
-        composerRef.current.parse(patternStartingAt(patternFor(record), fromMs));
+        composerRef.current.parse(patternStartingAt(patternFor(record, clipMissing), fromMs));
         composerRef.current.play();
       } catch {
         // An unsupported device still gets the media and the clock.
@@ -175,7 +184,8 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         durationMs: record.durationMs,
         status: 'playing',
         pattern: record.pattern,
-        localUri: record.localUri,
+        localUri: clipMissing ? undefined : record.localUri,
+        clipMissing,
       });
       setPositionMs(fromMs);
       positionRef.current = fromMs;
@@ -213,7 +223,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
         const ext = extForContentType(media.contentType);
         // downloadClip skips the network when the clip file already exists — so an
         // unchanged resend (same clipId) plays straight from disk.
-        const localUri = await downloadClip(
+        const clipPath = await downloadClip(
           connectionId,
           media.clipId,
           ext,
@@ -228,7 +238,8 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
           kind,
           version,
           clipId: media.clipId,
-          localUri,
+          clipPath,
+          localUri: clipUri(clipPath),
           contentType: media.contentType,
           sizeBytes: media.size,
           durationMs,
@@ -336,8 +347,11 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     async (connectionId: string, resourceId: string) => {
       const record = await getResource(connectionId, resourceId);
       if (!record) return;
+      // The index outlives the files: a clip can be gone (cleared storage, a restore onto
+      // a new phone). Say so rather than showing a blank canvas or a mute player.
+      const clipMissing = record.kind !== 'pattern' && !(await clipIsOnDisk(record));
       setOpenConnectionId(connectionId);
-      playRecord(connectionId, record);
+      playRecord(connectionId, record, 0, clipMissing);
     },
     [playRecord],
   );
@@ -347,7 +361,12 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     const active = sessionRef.current;
     if (!record || !active) return;
     const hasRunToTheEnd = positionRef.current >= record.durationMs;
-    playRecord(active.connectionId, record, hasRunToTheEnd ? 0 : positionRef.current);
+    playRecord(
+      active.connectionId,
+      record,
+      hasRunToTheEnd ? 0 : positionRef.current,
+      clipMissingRef.current,
+    );
   }, [playRecord]);
 
   const seek = useCallback(
@@ -359,7 +378,7 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
       // `session.status` is state read back through a ref, so it still reads 'stopped'
       // for the render after a play; the clock handle is written synchronously.
       if (isClockRunning()) {
-        playRecord(active.connectionId, record, target);
+        playRecord(active.connectionId, record, target, clipMissingRef.current);
       } else {
         setPositionMs(target);
         positionRef.current = target;
