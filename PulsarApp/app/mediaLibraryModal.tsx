@@ -94,6 +94,8 @@ export default function MediaLibraryModal() {
           <>
             {active && (
               <Card>
+                {active.clipMissing && <ClipMissingNotice kind={active.kind} />}
+
                 {/* The Lottie canvas for a downloaded animation — its playhead runs off the
                     same clock as the haptics. */}
                 {active.kind === 'animation' && active.localUri && (
@@ -178,6 +180,17 @@ export default function MediaLibraryModal() {
   );
 }
 
+function ClipMissingNotice({ kind }: { kind: MediaKind }) {
+  return (
+    <View style={styles.notice}>
+      <ThemedText style={styles.noticeText}>
+        {kind === 'audio' ? 'The audio clip' : 'The animation'} is no longer on this device — the
+        haptics still play. Send it from Studio again to restore it.
+      </ThemedText>
+    </View>
+  );
+}
+
 function ResourceRow({
   record,
   active,
@@ -246,6 +259,18 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   meta: {
+    fontSize: 14,
+    color: '#496695',
+  },
+  notice: {
+    borderRadius: 4,
+    backgroundColor: '#E1F3FA',
+    borderWidth: 2,
+    borderColor: '#B5E1F1',
+    padding: 12,
+    marginBottom: 12,
+  },
+  noticeText: {
     fontSize: 14,
     color: '#496695',
   },

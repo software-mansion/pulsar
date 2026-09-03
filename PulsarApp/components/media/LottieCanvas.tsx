@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 
@@ -16,6 +16,11 @@ try {
   LottieView = require('lottie-react-native').default;
 } catch {
   LottieView = null;
+}
+
+// Android reads a local clip only as a bare path, iOS only as a file:// url.
+function localFileSource(uri: string): { uri: string } {
+  return { uri: Platform.OS === 'android' ? uri.replace('file://', '') : uri };
 }
 
 /**
@@ -36,7 +41,7 @@ export default function LottieCanvas({ uri, progress }: { uri: string; progress:
   return (
     <View style={styles.canvas}>
       <LottieView
-        source={{ uri }}
+        source={localFileSource(uri)}
         progress={Math.max(0, Math.min(1, progress))}
         resizeMode="contain"
         style={styles.lottie}
