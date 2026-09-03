@@ -1,0 +1,16 @@
+{
+  "name": "@swmansion/preset-audio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Render the presets playground audio simulation of a Pulsar preset to WAV/MP3.",
+  "type": "module",
+  "engines": { "node": ">=23.6" },
+  "bin": { "preset-audio": "src/cli.mjs" },
+  "scripts": {
+    "render": "node src/cli.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "node-web-audio-api": "^2.2.0"
+  }
+}
