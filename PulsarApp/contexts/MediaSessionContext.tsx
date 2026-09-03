@@ -36,10 +36,7 @@ import {
 
 /** Plays the haptics a producer pushes on its own composer, off its own clock. */
 
-/**
- * Only audio scores the pattern with a sound; a pattern or animation plays it alone.
- * A clip that is no longer on disk is left off too — the haptics still play, silently.
- */
+/** Only audio scores the pattern with a sound; everything else plays it alone. */
 function patternFor(record: ResourceRecord, clipMissing: boolean): Pattern {
   if (record.kind !== 'audio' || !record.localUri || clipMissing) return record.pattern;
   return {
@@ -65,9 +62,8 @@ export interface MediaSession {
   status: SessionStatus;
   /** The haptics being played — drawn as the waveform for a `pattern` session. */
   pattern: Pattern;
-  /** `file://` uri of the downloaded clip, once ready. Absent while the clip is missing. */
+  /** `file://` uri of the downloaded clip, once ready. */
   localUri?: string;
-  /** The record expects a clip, but the file is not on this device (any more). */
   clipMissing?: boolean;
   error?: string;
 }
@@ -347,8 +343,6 @@ export function MediaSessionProvider({ children }: { children: ReactNode }) {
     async (connectionId: string, resourceId: string) => {
       const record = await getResource(connectionId, resourceId);
       if (!record) return;
-      // The index outlives the files: a clip can be gone (cleared storage, a restore onto
-      // a new phone). Say so rather than showing a blank canvas or a mute player.
       const clipMissing = record.kind !== 'pattern' && !(await clipIsOnDisk(record));
       setOpenConnectionId(connectionId);
       playRecord(connectionId, record, 0, clipMissing);

@@ -13,10 +13,8 @@ import type { Pattern } from 'react-native-pulsar';
  *   - the CLIP FILES under documentDirectory (persistent — survives restarts, unlike the
  *     cache directory the OS may evict).
  *
- * The index stores each clip's path RELATIVE to the media root, never an absolute one:
- * iOS hands the app a new container directory on reinstall/update while keeping its data,
- * so an absolute uri saved yesterday points nowhere today — the clip would be on disk yet
- * unplayable. The absolute uri is rebuilt on every read instead.
+ * Clip paths are stored relative to the media root because iOS moves the app container
+ * between installs, which strands every absolute uri written before the move.
  *
  * Retention is scoped to the connection: a connection's clips live as long as the
  * connection row does (`purgeConnection` on remove), plus a per-resource manual delete.
@@ -34,9 +32,9 @@ export interface ResourceRecord {
   version: string;
   /** Addresses the delivered bytes (content hash / source id) — the on-disk filename. */
   clipId?: string;
-  /** The clip's path relative to the media root, e.g. `conn-1/abc123.json`. Persisted. */
+  /** Relative to the media root, e.g. `conn-1/abc123.json`. */
   clipPath?: string;
-  /** Absolute `file://` uri for this install — DERIVED from `clipPath`, never persisted. */
+  /** Derived from `clipPath` on read, never stored. */
   localUri?: string;
   contentType?: string;
   sizeBytes?: number;
@@ -58,27 +56,25 @@ const mediaRoot = () => `${FileSystem.documentDirectory ?? ''}${MEDIA_DIR}`;
 
 type LibraryIndex = Record<string, ResourceRecord[]>;
 
-/**
- * Records written before the index went relative kept an absolute uri. Everything after
- * `pulsar-media/` is still valid — only the container prefix ahead of it went stale.
- */
-function migratedClipPath(record: ResourceRecord): string | undefined {
-  if (record.clipPath) return record.clipPath;
-  const at = record.localUri?.indexOf(MEDIA_DIR);
-  if (record.localUri && at != null && at >= 0) return record.localUri.slice(at + MEDIA_DIR.length);
-  return undefined;
+function clipPathWithinAbsoluteUri(uri: string | undefined): string | undefined {
+  const at = uri?.indexOf(MEDIA_DIR);
+  return uri != null && at != null && at >= 0 ? uri.slice(at + MEDIA_DIR.length) : undefined;
 }
 
-/** Attach the absolute uri this install would use for the record's clip. */
-function resolved(record: ResourceRecord): ResourceRecord {
-  const clipPath = migratedClipPath(record);
-  return clipPath ? { ...record, clipPath, localUri: clipUri(clipPath) } : { ...record, localUri: undefined };
+function clipPathOf(record: ResourceRecord): string | undefined {
+  return record.clipPath ?? clipPathWithinAbsoluteUri(record.localUri);
 }
 
-/** Drop the derived uri so a stale container path can never make it back onto disk. */
-function forStorage(record: ResourceRecord): ResourceRecord {
-  const { localUri: _derived, ...persisted } = record;
-  return persisted;
+function withUriForThisInstall(record: ResourceRecord): ResourceRecord {
+  const clipPath = clipPathOf(record);
+  return clipPath
+    ? { ...record, clipPath, localUri: clipUri(clipPath) }
+    : { ...record, localUri: undefined };
+}
+
+function withoutDerivedUri(record: ResourceRecord): ResourceRecord {
+  const { localUri: _derived, ...stored } = record;
+  return stored;
 }
 
 async function readIndex(): Promise<LibraryIndex> {
@@ -113,7 +109,6 @@ export function clipPathFor(connectionId: string, clipId: string, ext: string): 
   return `${connectionId}/${clipId}.${ext}`;
 }
 
-/** The absolute uri a relative clip path resolves to in THIS install. */
 export function clipUri(clipPath: string): string {
   return `${mediaRoot()}${clipPath}`;
 }
@@ -133,9 +128,8 @@ async function fileExists(uri: string): Promise<boolean> {
   }
 }
 
-/** Whether the record's clip is actually on this device — false for a haptics-only record. */
 export async function clipIsOnDisk(record: ResourceRecord): Promise<boolean> {
-  const clipPath = migratedClipPath(record);
+  const clipPath = clipPathOf(record);
   return clipPath ? fileExists(clipUri(clipPath)) : false;
 }
 
@@ -150,7 +144,9 @@ async function deleteFile(uri: string): Promise<void> {
 /** The resources cached for a connection, most-recent first. */
 export async function listResources(connectionId: string): Promise<ResourceRecord[]> {
   const index = await readIndex();
-  return [...(index[connectionId] ?? [])].sort((a, b) => b.receivedAt - a.receivedAt).map(resolved);
+  return [...(index[connectionId] ?? [])]
+    .sort((a, b) => b.receivedAt - a.receivedAt)
+    .map(withUriForThisInstall);
 }
 
 /** The cached record for a resource, or undefined. */
@@ -160,14 +156,10 @@ export async function getResource(
 ): Promise<ResourceRecord | undefined> {
   const index = await readIndex();
   const record = (index[connectionId] ?? []).find((r) => r.resourceId === resourceId);
-  return record && resolved(record);
+  return record && withUriForThisInstall(record);
 }
 
-/**
- * Download a clip to its persistent path, reporting progress, and return the path relative
- * to the media root. Skips the network entirely when a file for this exact clip already
- * exists on disk.
- */
+/** Downloads to the clip's persistent path, or reuses the file already there. */
 export async function downloadClip(
   connectionId: string,
   clipId: string,
@@ -204,13 +196,13 @@ export async function upsertResource(
   const index = await readIndex();
   const list = index[connectionId] ?? [];
   const previous = list.find((r) => r.resourceId === record.resourceId);
-  const previousClipPath = previous && migratedClipPath(previous);
+  const previousClipPath = previous && clipPathOf(previous);
   if (previousClipPath && previousClipPath !== record.clipPath) {
     await deleteFile(clipUri(previousClipPath));
   }
   index[connectionId] = [
     ...list.filter((r) => r.resourceId !== record.resourceId),
-    forStorage(record),
+    withoutDerivedUri(record),
   ];
   await writeIndex(index);
 }
@@ -220,7 +212,7 @@ export async function removeResource(connectionId: string, resourceId: string): 
   const index = await readIndex();
   const list = index[connectionId] ?? [];
   const target = list.find((r) => r.resourceId === resourceId);
-  const targetClipPath = target && migratedClipPath(target);
+  const targetClipPath = target && clipPathOf(target);
   if (targetClipPath) await deleteFile(clipUri(targetClipPath));
   index[connectionId] = list.filter((r) => r.resourceId !== resourceId);
   await writeIndex(index);

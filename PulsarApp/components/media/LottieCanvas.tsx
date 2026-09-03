@@ -18,13 +18,8 @@ try {
   LottieView = null;
 }
 
-/**
- * How each platform's Lottie recognises a clip sitting in the app's own storage:
- * Android takes the `sourceURL` as a plain path (anything with a scheme falls through to
- * its NETWORK loader, which renders an empty canvas without an error), while iOS resolves
- * a path with no scheme against the app bundle and needs the `file://` form.
- */
-function sourceFor(uri: string): { uri: string } {
+// Android reads a local clip only as a bare path, iOS only as a file:// url.
+function localFileSource(uri: string): { uri: string } {
   return { uri: Platform.OS === 'android' ? uri.replace('file://', '') : uri };
 }
 
@@ -46,7 +41,7 @@ export default function LottieCanvas({ uri, progress }: { uri: string; progress:
   return (
     <View style={styles.canvas}>
       <LottieView
-        source={sourceFor(uri)}
+        source={localFileSource(uri)}
         progress={Math.max(0, Math.min(1, progress))}
         resizeMode="contain"
         style={styles.lottie}
