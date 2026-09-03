@@ -78,7 +78,7 @@ cd Android
 
 ```bash
 cd react-native/react-native-pulsar
-npm run prepare    # Build TypeScript output to lib/
+npm run build      # Build TypeScript output to lib/
 npm run typecheck  # TypeScript check
 npm run lint       # ESLint
 npm test           # Jest tests
@@ -103,7 +103,7 @@ npm run android  # Build and run on Android
 npm run start    # Start Metro bundler
 ```
 
-The app references the RN library locally via `"react-native-pulsar": "file:../react-native/react-native-pulsar"`. After making library changes, run `npm run prepare` in the library directory, then restart Metro.
+The app references the RN library locally via `"react-native-pulsar": "file:../react-native/react-native-pulsar"`. After making library changes, run `npm run build` in the library directory, then restart Metro.
 
 ### Flutter SDK
 
