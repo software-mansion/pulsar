@@ -63,7 +63,11 @@ const notifications: Notification[] = [
   },
 ];
 
-const NotificationToast = ({ notification }: { notification: Notification }) => {
+const NotificationToast = ({
+  notification,
+}: {
+  notification: Notification;
+}) => {
   useEffect(() => {
     notification.play();
   }, []);
@@ -91,9 +95,13 @@ const NotificationToast = ({ notification }: { notification: Notification }) => 
 
 export default function NotificationHapticsDemo() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [displayedNotification, setDisplayedNotification] = useState<Notification | null>(null);
+  const [displayedNotification, setDisplayedNotification] =
+    useState<Notification | null>(null);
 
   const playSequence = () => {
+    if (isPlaying) {
+      return;
+    }
     setIsPlaying(true);
     showNextNotification(0);
   };
@@ -119,7 +127,8 @@ export default function NotificationHapticsDemo() {
           Notification Haptics
         </ThemedText>
         <ThemedText style={Margins.marginTop2X}>
-          Each notification type has its own unique haptic pattern that matches its intention.
+          Each notification type has its own unique haptic pattern that matches
+          its intention.
         </ThemedText>
 
         <View style={styles.notificationDisplay}>
@@ -138,7 +147,6 @@ export default function NotificationHapticsDemo() {
             style={styles.playButton}
           />
         </View>
-
       </BasicLayout>
     </ScrollView>
   );
