@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,27 +8,20 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {
-  createBundle,
-  createBundleFromAsset,
+  HapticLottieView,
+  type HapticLottieRef,
+} from 'react-native-pulsar-lottie';
+import {
   loadBundle,
   type PresetHandle,
-} from 'react-native-pulsar';
-import { HapticLottieView, type HapticLottieRef } from 'react-native-pulsar-lottie';
-import hapticsBundle from '../../assets/hapticsBundle.bundle.json';
+} from '../../assets/jacek-bundle.bundle';
 
 // Regenerate with `npm run pulsar-gen` after every Studio export.
-const Haptics = createBundle(hapticsBundle);
+const Haptics = loadBundle({ withAssets: false });
+type HapticsBundle = typeof Haptics;
 
-// Only presets are enumerable, so this is exactly the pack's contents.
-const presetIds = Object.keys(Haptics) as (keyof typeof hapticsBundle.presets)[];
-
-// The same sidecar, bound to the binary — the only path that carries the authored audio.
-const withAudioDescriptor = createBundleFromAsset(
-  hapticsBundle,
-  require('../../assets/hapticsBundle.pulsar'),
-);
-const loadWithAudio = () => loadBundle(withAudioDescriptor);
-type WithAudioBundle = Awaited<ReturnType<typeof loadWithAudio>>;
+// Bundle metadata is non-enumerable, so these are exactly the preset handles.
+const presets = Object.values(Haptics) as PresetHandle[];
 
 export default function BundlesScreen() {
   const lottieRef = React.useRef<HapticLottieRef>(null);
@@ -39,23 +32,23 @@ export default function BundlesScreen() {
         <Text style={styles.title}>Preset bundles</Text>
         <Text style={styles.body}>
           A .pulsar bundle authored in Pulsar Studio, loaded from its generated
-          sidecar. Preset names autocomplete and a typo is a compile error.
+          module. Preset names autocomplete and a typo is a compile error.
         </Text>
 
         <Text style={styles.section}>Play a preset</Text>
-        {presetIds.map(id => (
-          <PresetRow key={id} preset={Haptics[id]} />
+        {presets.map(preset => (
+          <PresetRow key={preset.id} preset={preset} />
         ))}
 
         <Text style={styles.section}>Animation from a preset</Text>
         <Text style={styles.body}>
-          The `lottie` preset carries its animation as well as its pattern, so
+          The `Loading` preset carries its animation as well as its pattern, so
           the view needs neither a source nor a haptics prop.
         </Text>
         <View style={styles.canvas}>
           <HapticLottieView
             ref={lottieRef}
-            preset={Haptics.lottie}
+            preset={Haptics.loadingAnimation}
             autoPlay
             loop={false}
             style={styles.lottie}
@@ -63,14 +56,82 @@ export default function BundlesScreen() {
         </View>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => lottieRef.current?.play()}>
+          onPress={() => lottieRef.current?.play()}
+        >
           <Text style={styles.buttonText}>▶ Replay animation</Text>
         </TouchableOpacity>
 
-        <Text style={styles.section}>Presets with audio</Text>
+        <Text style={styles.section}>Preset without audio</Text>
+        <Text style={styles.body}>
+          Without the .pulsar asset, play runs synchronously using the haptic
+          pattern embedded in the generated module. Authored audio is not
+          played.
+        </Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => Haptics.nokiaTune.play()}
+        >
+          <Text style={styles.buttonText}>Play haptics only</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.section}>Preset with audio</Text>
+        <Text style={styles.body}>
+          Loading with assets returns a Promise. Native code reads the .pulsar
+          binary first; after that, play is synchronous and includes authored
+          audio.
+        </Text>
         <AudioPresetDemo />
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function AudioPresetDemo() {
+  const [bundle, setBundle] = React.useState<HapticsBundle>();
+  const [error, setError] = React.useState<string>();
+
+  React.useEffect(() => {
+    let cancelled = false;
+    let loaded: HapticsBundle | undefined;
+
+    loadBundle({ withAssets: true })
+      .then(withAssets => {
+        loaded = withAssets;
+        if (cancelled) {
+          withAssets.dispose();
+          return;
+        }
+        setBundle(withAssets);
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      loaded?.dispose();
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <Text style={styles.body}>Failed to load audio bundle: {error}</Text>
+    );
+  }
+
+  if (!bundle) {
+    return <Text style={styles.body}>Loading audio bundle…</Text>;
+  }
+
+  return (
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => bundle.nokiaTune.play()}
+    >
+      <Text style={styles.buttonText}>Play haptics + audio</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -85,49 +146,13 @@ function PresetRow({ preset }: { preset: PresetHandle }) {
           {preset.hasAnimation ? ' · has animation' : ''}
         </Text>
       </View>
-      <TouchableOpacity style={styles.smallButton} onPress={() => preset.play()}>
+      <TouchableOpacity
+        style={styles.smallButton}
+        onPress={() => preset.play()}
+      >
         <Text style={styles.buttonText}>▶</Text>
       </TouchableOpacity>
     </View>
-  );
-}
-
-/** Contrasts the two paths: the sidecar plays haptics alone, the binary brings the sound. */
-function AudioPresetDemo() {
-  const [withAudio, setWithAudio] = useState<WithAudioBundle | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const play = async () => {
-    try {
-      const bundle = withAudio ?? (await loadWithAudio());
-      if (!withAudio) {
-        setWithAudio(bundle);
-      }
-      bundle.arcadeBonusAlert.play();
-    } catch (e) {
-      setError(String(e));
-    }
-  };
-
-  return (
-    <>
-      <Text style={styles.body}>
-        "{Haptics.arcadeBonusAlert.name}" was authored with a sound. From the
-        sidecar it plays haptics only; the same sidecar bound to the .pulsar
-        binary plays both.
-      </Text>
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={[styles.button, styles.flex]}
-          onPress={() => Haptics.arcadeBonusAlert.play()}>
-          <Text style={styles.buttonText}>Haptics only</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.flex]} onPress={play}>
-          <Text style={styles.buttonText}>With audio</Text>
-        </TouchableOpacity>
-      </View>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-    </>
   );
 }
 
@@ -164,8 +189,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   lottie: { width: 180, height: 180 },
-  buttonRow: { flexDirection: 'row', gap: 12 },
-  flex: { flex: 1 },
   button: {
     backgroundColor: '#007AFF',
     borderRadius: 10,
@@ -180,5 +203,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   buttonText: { color: 'white', fontSize: 15, fontWeight: '600' },
-  error: { color: '#c00', fontSize: 12, marginTop: 8 },
 });

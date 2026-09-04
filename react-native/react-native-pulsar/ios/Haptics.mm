@@ -90,21 +90,54 @@ RCT_EXPORT_MODULE()
 
 // Preset bundles ---------------------------------------------------------
 
-- (nonnull NSString *)Pulsar_loadBundle:(nonnull NSString *)base64 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:base64
-                                                     options:NSDataBase64DecodingIgnoreUnknownCharacters];
-  if (!data) {
-    NSLog(@"[RNPulsar] Pulsar_loadBundle: invalid base64");
-    return @"";
+- (void)Pulsar_loadBundleFromUri:(nonnull NSString *)uri
+                         resolve:(nonnull RCTPromiseResolveBlock)resolve
+                          reject:(nonnull RCTPromiseRejectBlock)reject {
+  NSURL *url = [NSURL URLWithString:uri];
+  if (!url.scheme) {
+    url = [NSURL fileURLWithPath:uri];
   }
-  NSError *error = nil;
-  LoadedBundle *bundle = [pulsar_ loadBundleWithData:data error:&error];
-  if (!bundle) {
-    NSLog(@"[RNPulsar] Pulsar_loadBundle failed: %@", error);
-    return @"";
+  if (!url) {
+    reject(@"PULSAR_INVALID_BUNDLE_URI", @"Pulsar: invalid bundle URI", nil);
+    return;
   }
-  bundlesRegistry_[bundle.id] = bundle;
-  return bundle.id;
+
+  void (^loadData)(NSData *) = ^(NSData *data) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      NSError *error = nil;
+      LoadedBundle *bundle = [self->pulsar_ loadBundleWithData:data error:&error];
+      if (!bundle) {
+        reject(@"PULSAR_LOAD_BUNDLE_FAILED", @"Pulsar: failed to load bundle", error);
+        return;
+      }
+      self->bundlesRegistry_[bundle.id] = bundle;
+      resolve(bundle.id);
+    });
+  };
+
+  if (url.isFileURL) {
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+      NSError *error = nil;
+      NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&error];
+      if (!data) {
+        reject(@"PULSAR_READ_BUNDLE_FAILED", @"Pulsar: failed to read bundle URI", error);
+        return;
+      }
+      loadData(data);
+    });
+    return;
+  }
+
+  NSURLSessionDataTask *task = [[NSURLSession sharedSession]
+      dataTaskWithURL:url
+    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+      if (!data || error) {
+        reject(@"PULSAR_READ_BUNDLE_FAILED", @"Pulsar: failed to read bundle URI", error);
+        return;
+      }
+      loadData(data);
+    }];
+  [task resume];
 }
 
 - (void)Pulsar_playBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {

@@ -1,5 +1,7 @@
 package com.swmansion.pulsar.reactnative
 
+import android.net.Uri
+import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -8,22 +10,26 @@ import com.swmansion.pulsar.bundle.LoadedBundle
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.types.CompatibilityMode
-import com.swmansion.pulsar.types.RealtimeComposerStrategy
 import com.swmansion.pulsar.types.ConfigPoint
 import com.swmansion.pulsar.types.ContinuousPattern
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.RealtimeComposerStrategy
 import com.swmansion.pulsar.types.SoundData
 import com.swmansion.pulsar.types.ValuePoint
+import java.io.File
+import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 
 @ReactModule(name = PulsarModule.NAME)
 class PulsarModule(reactContext: ReactApplicationContext) :
   NativeRNPulsarSpec(reactContext) {
   
+  private val reactContext = reactContext
   private val pulsar: PulsarReactNative = PulsarReactNative(reactContext)
   private var realtimeComposer: RealtimeComposer = pulsar.getRealtimeComposer()
   private var nextId: Int = 1
   private val patternComposersRegistry: MutableMap<Int, PatternComposer> = mutableMapOf()
-  private val bundlesRegistry: MutableMap<String, LoadedBundle> = mutableMapOf()
+  private val bundlesRegistry: MutableMap<String, LoadedBundle> = ConcurrentHashMap()
 
   // Pulsar -----------------------------------------------------------------
 
@@ -249,16 +255,68 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
   // Preset bundles -----------------------------------------------------------------
 
-  override fun Pulsar_loadBundle(base64: String?): String {
-    if (base64 == null) return ""
-    return try {
-      val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
-      val bundle = pulsar.loadBundle(bytes)
-      bundlesRegistry[bundle.id] = bundle
-      bundle.id
-    } catch (e: Exception) {
-      android.util.Log.e(NAME, "Pulsar_loadBundle failed", e)
-      ""
+  override fun Pulsar_loadBundleFromUri(
+    uri: String?,
+    promise: Promise,
+  ) {
+    if (uri == null) {
+      promise.reject("PULSAR_INVALID_BUNDLE_URI", "Pulsar: bundle URI is null")
+      return
+    }
+    Thread {
+      try {
+        val bytes = readBundleUri(uri)
+        val bundle = pulsar.loadBundle(bytes)
+        bundlesRegistry[bundle.id] = bundle
+        promise.resolve(bundle.id)
+      } catch (e: Exception) {
+        android.util.Log.e(NAME, "Pulsar_loadBundleFromUri failed", e)
+        promise.reject(
+          "PULSAR_LOAD_BUNDLE_FAILED",
+          "Pulsar: failed to load bundle URI",
+          e,
+        )
+      }
+    }.start()
+  }
+
+  private fun readBundleUri(uriString: String): ByteArray {
+    val uri = Uri.parse(uriString)
+    return when (uri.scheme?.lowercase()) {
+      "http", "https" -> {
+        URL(uriString).openStream().use { it.readBytes() }
+      }
+
+      "content" -> {
+        reactContext.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+          ?: error("Could not open content URI")
+      }
+
+      "asset" -> {
+        reactContext.assets.open(uri.path.orEmpty().removePrefix("/")).use { it.readBytes() }
+      }
+
+      "file" -> {
+        val path = uri.path ?: error("File URI has no path")
+        val assetMarker = "/android_asset/"
+        if (path.contains(assetMarker)) {
+          reactContext.assets.open(path.substringAfter(assetMarker)).use { it.readBytes() }
+        } else {
+          File(path).readBytes()
+        }
+      }
+
+      else -> {
+        // Metro packages non-image assets into res/raw for Android release builds and
+        // resolveAssetSource returns the resource identifier without an extension.
+        val resourceId =
+          reactContext.resources.getIdentifier(uriString, "raw", reactContext.packageName)
+        if (resourceId != 0) {
+          reactContext.resources.openRawResource(resourceId).use { it.readBytes() }
+        } else {
+          File(uriString).readBytes()
+        }
+      }
     }
   }
 
