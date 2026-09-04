@@ -82,9 +82,9 @@ const useAdaptiveHaptics = jest.fn(() => ({
 // Mirrors the real bundle: presets are direct members (non-enumerable metadata alongside), so a
 // test asserting on `bundle.someId.play` fails the same way it would in the app if that preset is
 // gone.
-function mockBundle(sidecar) {
+function mockBundle(definition) {
   const presets = {};
-  for (const [id, preset] of Object.entries(sidecar?.presets ?? {})) {
+  for (const [id, preset] of Object.entries(definition?.presets ?? {})) {
     presets[id] = {
       id,
       hasAudio: !!preset?.audio,
@@ -94,29 +94,19 @@ function mockBundle(sidecar) {
     };
   }
   return Object.defineProperties(presets, {
-    id: { value: sidecar?.id ?? '', enumerable: false },
-    contentHash: { value: sidecar?.contentHash ?? '', enumerable: false },
+    id: { value: definition?.id ?? '', enumerable: false },
+    contentHash: { value: definition?.contentHash ?? '', enumerable: false },
     get: { value: jest.fn((id) => presets[id]), enumerable: false },
     dispose: { value: jest.fn(), enumerable: false },
   });
 }
 
-const createBundle = jest.fn(mockBundle);
-const createBundleFromAsset = jest.fn((sidecar, asset) => ({
-  asset,
-  bundleId: sidecar?.id ?? '',
-  contentHash: sidecar?.contentHash ?? '',
-  presetIds: Object.keys(sidecar?.presets ?? {}),
-  media: Object.fromEntries(
-    Object.entries(sidecar?.presets ?? {}).map(([id, p]) => [
-      id,
-      { audio: !!p?.audio, animation: !!p?.animation },
-    ])
-  ),
-  __sidecar: sidecar,
-}));
-const loadBundle = jest.fn(async (descriptor) =>
-  mockBundle(descriptor?.__sidecar)
+const defineBundle = jest.fn((definition) =>
+  jest.fn((options) =>
+    options?.withAssets
+      ? Promise.resolve(mockBundle(definition))
+      : mockBundle(definition)
+  )
 );
 
 module.exports = {
@@ -126,9 +116,7 @@ module.exports = {
   useRealtimeComposer,
   usePatternComposer,
   useAdaptiveHaptics,
-  createBundle,
-  createBundleFromAsset,
-  loadBundle,
+  defineBundle,
   HapticSupport,
   RealtimeComposerStrategy,
 };

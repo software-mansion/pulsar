@@ -10,6 +10,7 @@ const {
   useRealtimeComposer,
   usePatternComposer,
   useAdaptiveHaptics,
+  defineBundle,
   HapticSupport,
   RealtimeComposerStrategy,
 } = require('react-native-pulsar');
@@ -27,7 +28,9 @@ describe('react-native-pulsar/jest-mock', () => {
   it('mocks every Settings method and returns a real support level', () => {
     Settings.enableHaptics(true);
     expect(Settings.enableHaptics).toHaveBeenCalledWith(true);
-    expect(Settings.getHapticsSupportLevel()).toBe(HapticSupport.ADVANCED_SUPPORT);
+    expect(Settings.getHapticsSupportLevel()).toBe(
+      HapticSupport.ADVANCED_SUPPORT
+    );
   });
 
   it('mocks the hooks and the composers they return', () => {
@@ -51,5 +54,25 @@ describe('react-native-pulsar/jest-mock', () => {
     expect(HapticSupport.ADVANCED_SUPPORT).toBe(3);
     expect(RealtimeComposerStrategy.ENVELOPE).toBe(0);
     expect(RealtimeComposerStrategy.ENVELOPE_WITH_DISCRETE_PRIMITIVES).toBe(3);
+  });
+
+  it('builds synchronous preset mocks through a generated bundle loader', async () => {
+    const loadBundle = defineBundle({
+      id: 'test',
+      contentHash: 'hash',
+      presets: {
+        success: { audio: true, animation: false },
+      },
+    });
+
+    const inline = loadBundle({ withAssets: false });
+    expect(inline).not.toHaveProperty('then');
+    inline.success.play();
+
+    const withAssets = await loadBundle({ withAssets: true });
+    const result: void = withAssets.success.play();
+
+    expect(result).toBeUndefined();
+    expect(withAssets.success.play).toHaveBeenCalledTimes(1);
   });
 });

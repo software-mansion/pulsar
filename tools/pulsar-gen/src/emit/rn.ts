@@ -1,14 +1,8 @@
-// React Native emitter — a JSON sidecar carrying the patterns inline, so the app needs no
-// `.pulsar` asset. Types arise from `keyof` inference over the import, so no .d.ts is generated.
+// React Native emitter — a typed module carrying patterns inline and statically requiring the
+// `.pulsar` asset. Consumers import only this module; preset keys arise from its object literal.
 
-import type {
-  BundleManifest,
-  DevicePattern,
-  GenerateOptions,
-  GeneratedFile,
-  InlineLottie,
-} from '../types.ts';
-import { resolveAssetName } from './shared.ts';
+import type { BundleManifest, DevicePattern, GenerateOptions, GeneratedFile, InlineLottie } from '../types.ts';
+import { DO_NOT_EDIT, resolveAssetName } from './shared.ts';
 
 /** Lets `createBundle` reject a stale file instead of silently playing nothing. */
 export const SIDECAR_SCHEMA = 'pulsar.sidecar/1';
@@ -40,9 +34,7 @@ export function buildSidecar(
   for (const p of manifest.presets) {
     const pattern = patterns[p.id];
     if (!pattern) {
-      throw new Error(
-        `rn target: no pattern for preset "${p.id}". Pass \`patterns\` from extractPatterns().`,
-      );
+      throw new Error(`rn target: no pattern for preset "${p.id}". Pass \`patterns\` from extractPatterns().`);
     }
     const entry: PresetSidecarEntry = {
       name: p.name,
@@ -77,16 +69,7 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
   const sidecar = buildSidecar(manifest, opts.patterns, animations);
 
   const warnings: string[] = [];
-  const withAudio = manifest.presets.filter((p) => p.audio).map((p) => p.id);
-  if (withAudio.length > 0) {
-    warnings.push(
-      `presets ${withAudio.join(', ')} carry audio, which is played natively and cannot be inlined — ` +
-        'they will play haptics only. Load the .pulsar binary (loadBundle) if you need the sound.',
-    );
-  }
-  const droppedAnimation = manifest.presets
-    .filter((p) => p.animation && !animations[p.id])
-    .map((p) => p.id);
+  const droppedAnimation = manifest.presets.filter((p) => p.animation && !animations[p.id]).map((p) => p.id);
   if (droppedAnimation.length > 0) {
     warnings.push(
       `presets ${droppedAnimation.join(', ')} have an animation that could not be inlined ` +
@@ -94,10 +77,19 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
     );
   }
 
-  // Minified: this ships inside the app's JS bundle, and nobody reads a generated diff.
+  // Keep the payload minified: it ships inside the app's JS bundle.
+  const serialized = JSON.stringify(sidecar);
+  const definition = serialized.slice(0, -1) + `,"asset":require(${JSON.stringify(`./${asset}.pulsar`)})}`;
   return {
-    filename: `${asset}.bundle.json`,
-    content: JSON.stringify(sidecar) + '\n',
+    filename: `${asset}.bundle.ts`,
+    content:
+      `// ${DO_NOT_EDIT}\n` +
+      `// prettier-ignore\n` +
+      `import { defineBundle } from 'react-native-pulsar';\n\n` +
+      `// prettier-ignore\n` +
+      `export const loadBundle = defineBundle(${definition});\n` +
+      `// prettier-ignore\n` +
+      `export type { PresetHandle } from 'react-native-pulsar';\n`,
     ...(warnings.length > 0 ? { warnings } : {}),
   };
 }

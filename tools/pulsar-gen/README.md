@@ -19,27 +19,31 @@ node src/cli.ts acme-pack.pulsar --target kotlin --package com.acme.haptics --st
 ```
 
 Targets: `swift` (`enum` + `BundleDescriptor`), `kotlin` (`object` + `BundleDescriptor`),
-`dart` (`*.bundle.dart`), `rn` (`.bundle.json` sidecar — types arise from `keyof` inference over
-the imported JSON, à la nano-icons; no `.d.ts` is generated).
+`dart` (`*.bundle.dart`), `rn` (`*.bundle.ts` module with a bound `loadBundle` function).
 
-The `rn` sidecar **inlines each preset's device pattern** (minified — it ships inside the app's JS
-bundle), so the app needs no `.pulsar` asset at runtime. That makes `patterns` a required option for
-that target. JSON Lottie animations are inlined too when you pass `animations`, since they are
-rendered in JS.
+The RN module **inlines each preset's device pattern** and statically requires the sibling
+`.pulsar` asset. `loadBundle({ withAssets: false })` is synchronous and uses only the inline
+patterns; `withAssets: true` returns a Promise and loads the binary natively for authored
+audio. JSON Lottie animations are
+inlined too when you pass `animations`, since they are rendered in JS.
 
 `react-native-pulsar` ships a zero-dependency copy of this emitter as `npx pulsar-gen-rn`, so apps
-can regenerate sidecars without installing pulsar-gen. The test suite pins the two to byte-identical
+can regenerate modules without installing pulsar-gen. The test suite pins the two to byte-identical
 output — change one and update the other.
 
 ## Programmatic API (portable — importable from Studio's browser bundle)
 
 ```ts
-import { validateManifest, generate, buildSidecar } from '@swmansion/pulsar-gen';
+import {
+  validateManifest,
+  generate,
+  buildSidecar,
+} from "@swmansion/pulsar-gen";
 // Node-only helpers (disk + zip):
-import { readBundleFile, computeContentHash } from '@swmansion/pulsar-gen/read';
+import { readBundleFile, computeContentHash } from "@swmansion/pulsar-gen/read";
 
-const { manifest, entries } = readBundleFile('acme-pack.pulsar');
-generate(manifest, 'rn', {
+const { manifest, entries } = readBundleFile("acme-pack.pulsar");
+generate(manifest, "rn", {
   patterns: extractPatterns(manifest, entries),
   animations: extractAnimations(manifest, entries).animations,
 });

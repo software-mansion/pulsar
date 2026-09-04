@@ -2387,7 +2387,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   FBLazyVector: 3c3be9a019176b5699455f7f66c5444b78a411c6
-  hermes-engine: 1ece30f159a55470af6d36207b5dd8c23dc6ecb7
+  hermes-engine: e88f42025e3ed453142121253eae08df0b84ae49
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: ee142214581f3bb68fbda7efcf07b835a189eeda
   Pulsar: 9f698548c9b8a34de8634682d7af7cc64f29209f

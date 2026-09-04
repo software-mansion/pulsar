@@ -50,6 +50,5 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// `withPulsar` adds `.pulsar` to assetExts, so `require('./assets/test.pulsar')` resolves. Only
-// the binary path (bundle audio) needs it — the inline sidecar is a plain JSON import.
+// `withPulsar` lets generated bundle modules statically require their `.pulsar` asset.
 module.exports = withPulsar(mergeConfig(getDefaultConfig(__dirname), config));
