@@ -193,3 +193,7 @@ Download the Pulsar companion app to feel haptic presets directly on your device
 ## Pulsar is created by Software Mansion
 
 Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. We can help you build your next dream product – [Hire us](https://swmansion.com/contact/projects?utm_source=reanimated&utm_medium=readme).
+
+## Acknowledgements
+
+Pulsar Studio's editor was shaped by [Meta Haptics Studio](https://developers.meta.com/horizon/resources/haptics-studio/), which showed what a dedicated tool for designing haptics can be. Pulsar is not affiliated with or endorsed by Meta.
