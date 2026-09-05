@@ -1,0 +1,86 @@
+---
+// Delegated from `document`, so it covers Starlight's markup and islands that
+// hydrate later. Event names must exist in src/analytics/events.ts.
+---
+
+<script>
+  const track = (event: string, props: Record<string, unknown> = {}) =>
+    window.posthog?.capture(event, props);
+
+  const SCROLL_DEPTHS = [25, 50, 75, 100];
+  const SCROLL_REPORT_WINDOW_MS = 250;
+  const IGNORE_PAGES_SHORTER_THAN_PX = 400;
+
+  const depthsReported = new Set<number>();
+  let pendingDepthReport: ReturnType<typeof setTimeout> | null = null;
+
+  function reportScrollDepth() {
+    pendingDepthReport = null;
+
+    const pageHeight = document.documentElement.scrollHeight;
+    if (pageHeight - window.innerHeight < IGNORE_PAGES_SHORTER_THAN_PX) return;
+
+    const readTo = ((window.scrollY + window.innerHeight) / pageHeight) * 100;
+    for (const depth of SCROLL_DEPTHS) {
+      if (readTo >= depth && !depthsReported.has(depth)) {
+        depthsReported.add(depth);
+        track('page_scroll_depth', { depth });
+      }
+    }
+  }
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      pendingDepthReport ??= setTimeout(reportScrollDepth, SCROLL_REPORT_WINDOW_MS);
+    },
+    { passive: true },
+  );
+
+  function trackMarkedElement(element: HTMLElement) {
+    const { phEvent, ...rest } = element.dataset;
+    const props: Record<string, string | undefined> = {};
+    for (const [key, value] of Object.entries(rest)) {
+      if (key.startsWith('ph')) props[key.slice(2).toLowerCase()] = value;
+    }
+    track(phEvent as string, props);
+  }
+
+  function hostOf(link: HTMLAnchorElement): string | null {
+    try {
+      const url = new URL(link.href, location.href);
+      const isExternal = /^https?:$/.test(url.protocol) && url.host !== location.host;
+      return isExternal ? url.host : null;
+    } catch {
+      return null;
+    }
+  }
+
+  document.addEventListener(
+    'click',
+    (event) => {
+      const target = event.target as Element | null;
+      if (!target?.closest) return;
+
+      const copyButton = target.closest('button[data-code]');
+      if (copyButton) {
+        const code = copyButton.closest('figure')?.querySelector('pre[data-language]');
+        track('code_copied', { language: code?.getAttribute('data-language') ?? 'unknown' });
+        return;
+      }
+
+      if (target.closest('site-search [data-open-modal]')) {
+        track('docs_search_opened');
+        return;
+      }
+
+      const marked = target.closest<HTMLElement>('[data-ph-event]');
+      if (marked) trackMarkedElement(marked);
+
+      const link = target.closest<HTMLAnchorElement>('a[href]');
+      const outboundHost = link && hostOf(link);
+      if (outboundHost) track('outbound_link_clicked', { host: outboundHost });
+    },
+    { capture: true },
+  );
+</script>

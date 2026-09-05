@@ -10,18 +10,12 @@ import { TagsInfo } from '../PresetsList/Tags';
 import { WebPresetsConfig } from '../../assets/webPresets/WebPresetsConfig';
 import { NoResult } from '../NoResult/NoResult';
 import { WebChartModal } from '../WebPreset/WebChartModal';
+import { track } from '../../../../analytics/analytics';
 
 const COMPACT_LAYOUT_KEY = 'web_presets_compact_layout';
 const FAVOURITES_KEY = 'web_presets_favourites';
 const SOUND_ENABLED_KEY = 'web_presets_sound_enabled';
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 export function WebPresetsList() {
   const headerRef = useRef<HTMLDivElement>(null);
@@ -65,7 +59,7 @@ export function WebPresetsList() {
     const value = e.target.checked;
     setSoundEnabled(value);
     localStorage.setItem(SOUND_ENABLED_KEY, String(value));
-    window.posthog?.capture(value ? 'web_preset_sound_enabled' : 'web_preset_sound_disabled');
+    track(value ? 'web_preset_sound_enabled' : 'web_preset_sound_disabled');
   }
 
   function handleToggleFavourite(presetName: string) {

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import styles from './StudioDemo.module.scss';
 import { BasicLayout } from '../../landing/Layouts/BasicLayout';
 import { BASE_PATH } from '../../../../config';
+import { track, trackFirstTimeOnly } from '../../../analytics/analytics';
 
 // A looping product demo, framed in the Pulsar "window" card. Sits right above
 // the waitlist so visitors can see Studio in action before signing up.
@@ -28,8 +29,24 @@ export function StudioDemo() {
       { threshold: 0.4 },
     );
 
+    const onPlay = () => track('studio_landing_demo_played');
+    const onTimeUpdate = () => {
+      if (!video.duration) return;
+      const percent = (video.currentTime / video.duration) * 100;
+      for (const quartile of [25, 50, 75, 100]) {
+        if (percent >= quartile)
+          trackFirstTimeOnly('studio_landing_demo_progress', { percent: quartile });
+      }
+    };
+
+    video.addEventListener('play', onPlay);
+    video.addEventListener('timeupdate', onTimeUpdate);
     observer.observe(video);
-    return () => observer.disconnect();
+    return () => {
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      observer.disconnect();
+    };
   }, []);
 
   return (

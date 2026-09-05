@@ -16,18 +16,12 @@ import heartFillIcon from '../../assets/new_assets/heart-fill.svg';
 import { AudioPatternUtility } from './audio-player';
 import { API_SERVER_URL } from '../config';
 import { openInStudio } from '../studioLink';
+import { track } from '../../../../analytics/analytics';
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 /** Open this preset in Pulsar Studio for editing (new tab). */
 function editInStudio(data: PatternData) {
-  window.posthog?.capture('preset_edit_in_studio', { preset_name: data.name });
+  track('preset_edit_in_studio', { preset_name: data.name });
   openInStudio(data);
 }
 
@@ -104,7 +98,7 @@ function CompactPreset({ preset, anchorId, definitionJson, handleCopy, definitio
       setIsPlaying(false);
     } else {
       setIsPlaying(true);
-      window.posthog?.capture('preset_played', { preset_name: data.name });
+      track('preset_played', { preset_name: data.name });
       const token = localStorage.getItem('hapticsToken');
       if (token) {
         fetch(`${API_SERVER_URL}/broadcast`, {
@@ -186,7 +180,7 @@ export function Preset(preset: PresetProps) {
 
   function handleUsageToggle() {
     if (!usageViewed) {
-      window.posthog?.capture('preset_code_copied', { preset_name: data.name });
+      track('preset_code_copied', { preset_name: data.name });
       setUsageViewed(true);
     }
   }

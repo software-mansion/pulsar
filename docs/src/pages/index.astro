@@ -4,6 +4,7 @@ import { TopBar } from '../components/landing/TopBar/TopBar';
 import { TopBanner } from '../components/landing/TopBanner/TopBanner';
 import { SectionHeader } from '../components/landing/SectionHeader/SectionHeader';
 import { Button } from '../components/landing/Button/Button';
+import { trackingAttributes } from '../analytics/analytics';
 import { VisitComposer } from '../components/landing/VisitComposer/VisitComposer';
 import '../styles/index.css';
 import commonStyle from '../components/landing/common.module.scss';
@@ -85,7 +86,11 @@ Presets that you can hear and feel with Live Preview." />
         subtitle="Don't spend time creating your own patterns. Just use ours and enjoy the benefits of having haptics in your app by using presets."
       />
       <PresetsList client:load />
-      <Button label="See all presets" url={`${BASE_PATH}/presets-playground/`} />
+      <Button
+        label="See all presets"
+        url={`${BASE_PATH}/presets-playground/`}
+        analytics={trackingAttributes('see_all_presets_clicked')}
+      />
       <VisitComposer client:load className={commonStyle.spaceTopMedium} />
     </BasicLayout>
 
@@ -112,14 +117,3 @@ Presets that you can hear and feel with Live Preview." />
     <SwmSection className={commonStyle.spaceTopLarge} />
   </body>
 </html>
-
-<script is:inline define:vars={{ basePath: BASE_PATH }}>
-  document.addEventListener('DOMContentLoaded', function () {
-    var seeAllBtn = document.querySelector(`a[href="${basePath}/presets-playground/"]`);
-    if (seeAllBtn) {
-      seeAllBtn.addEventListener('click', function () {
-        window.posthog?.capture('see_all_presets_clicked');
-      });
-    }
-  });
-</script>

@@ -9,13 +9,11 @@ import appleStoreBadge from '../../assets/interactive-playground/apple.svg';
 import googlePlayBadge from '../../assets/interactive-playground/google.png';
 import { Accordion } from '../Accordion/Accordion';
 import { Point } from '../Point/Point';
+import { track } from '../../../../analytics/analytics';
 
 declare global {
   interface Window {
     connectionChannel: number;
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
   }
 }
 
@@ -114,19 +112,19 @@ export default function Connection() {
             localStorage.setItem('hapticsToken', data.token);
             setStatus(true);
             setPaired(true);
-            window.posthog?.capture('device_connected', { connection_type: 'new' });
+            track('device_connected', { connection_type: 'new' });
           }
           break;
         case 'connection_restored':
           {
             setStatus(true);
-            window.posthog?.capture('device_connected', { connection_type: 'restored' });
+            track('device_connected', { connection_type: 'restored' });
           }
           break;
         case 'peer_disconnected':
           {
             setStatus(false);
-            window.posthog?.capture('device_disconnected');
+            track('device_disconnected');
           }
           break;
       }
@@ -152,7 +150,7 @@ export default function Connection() {
     setStatus(false);
     createChannel();
     setPaired(false);
-    window.posthog?.capture('reset_connection');
+    track('reset_connection');
   }
 
   return (

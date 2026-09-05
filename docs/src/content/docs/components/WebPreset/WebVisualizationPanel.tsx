@@ -4,6 +4,7 @@ import pauseIcon from '../../assets/new_assets/pause.svg';
 import { useEffect, useRef, useState } from 'react';
 import type { HapticPattern } from 'pulsar-haptics';
 import type { WebPresetConfig } from './types';
+import { track } from '../../../../analytics/analytics';
 
 // Mirror the generator constants in web/Pulsar/scripts/generate-images.ts so the play
 // indicator lines up with the rendered bars regardless of the image's display scale.
@@ -11,13 +12,6 @@ const PX_PER_MS = 0.3;
 const PAD_X = 14;
 const RIGHT_MARGIN = 24; // keep the playhead this far inside the right edge when scrolling
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 interface Props {
   visualization: WebPresetConfig;
@@ -106,7 +100,7 @@ export function WebVisualizationPanel({ visualization, soundEnabled = true, clas
 
     setIsPlaying(true);
     startAnimation();
-    window.posthog?.capture('web_preset_played', { preset_name: data.name });
+    track('web_preset_played', { preset_name: data.name });
 
     try {
       // Loaded lazily so the haptics library never runs during SSR.

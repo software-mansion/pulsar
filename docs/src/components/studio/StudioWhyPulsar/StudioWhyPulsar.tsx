@@ -5,6 +5,7 @@ import { BASE_PATH } from '../../../../config';
 import emojiStar from '../../../assets/landing-page/emoji2.svg';
 import emojiSad from '../../../assets/landing-page/emoji3.svg';
 import emojiNeutral from '../../../assets/landing-page/emoji_neutral.svg';
+import { trackingAttributes } from '../../../analytics/analytics';
 
 // A short base sequence, duplicated so the column can loop seamlessly: the CSS
 // marquee scrolls up by exactly one copy's height (translateY -50%), landing the
@@ -29,7 +30,11 @@ export function StudioWhyPulsar() {
             <p className={styles.paragraph}>
               All to make haptics easy to build, ship, and maintain across platforms.
             </p>
-            <a className={styles.link} href={`${BASE_PATH}/getting-started/`}>
+            <a
+              className={styles.link}
+              href={`${BASE_PATH}/getting-started/`}
+              {...trackingAttributes('studio_landing_docs_link_clicked')}
+            >
               Learn more about Pulsar
             </a>
           </div>

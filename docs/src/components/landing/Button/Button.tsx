@@ -8,6 +8,7 @@ interface ButtonProps {
   variant?: 'filled' | 'unfilled';
   className?: string;
   onClick?: () => void;
+  analytics?: Record<string, string>;
 }
 
 export function Button({
@@ -16,6 +17,7 @@ export function Button({
   variant = 'unfilled',
   className = '',
   onClick,
+  analytics,
 }: ButtonProps) {
   const classes = [
     styles.innerHolder,
@@ -25,12 +27,12 @@ export function Button({
   return (
     <div className={`${styles.background} ${className}`}>
       {url ? (
-        <a className={classes} href={url} onClick={onClick}>
+        <a className={classes} href={url} onClick={onClick} {...analytics}>
           {label}
           <img src={arrowIcon.src} alt="arrow" />
         </a>
       ) : (
-        <button className={classes} type="button" onClick={onClick}>
+        <button className={classes} type="button" onClick={onClick} {...analytics}>
           {label}
           <img src={arrowIcon.src} alt="arrow" />
         </button>

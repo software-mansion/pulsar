@@ -4,14 +4,7 @@ import styles from './VisitPlayground.module.scss';
 import { BASE_PATH } from '../../../../config';
 import commonStyles from '../common.module.scss';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
-
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
+import { trackingAttributes } from '../../../analytics/analytics';
 
 export function VisitPlayground({ className }: { className?: string }) {
   return (
@@ -31,7 +24,7 @@ export function VisitPlayground({ className }: { className?: string }) {
           label="Connect your phone"
           url={`${BASE_PATH}/presets-playground/`}
           className={commonStyles.spaceTopSmall}
-          onClick={() => window.posthog?.capture('connect_phone_cta_clicked')}
+          analytics={trackingAttributes('connect_phone_cta_clicked')}
         />
       </div>
     </div>

@@ -43,7 +43,8 @@ export function SwmSection({ className }: { className?: string }) {
             <a href="https://swmansion.com/privacy/policy/ " target="_blank" rel="noopener">
               Privacy Policy
             </a>
-            .
+            . We collect anonymous, cookieless usage statistics — no cookies, no tracking
+            across sites.
           </p>
         </div>
       </BasicLayout>

@@ -14,18 +14,12 @@ import {
 } from '../../assets/systemPresets/SystemPresetsConfig';
 import { NoResult } from '../NoResult/NoResult';
 import { ChartModal } from '../ChartModal/ChartModal';
+import { track } from '../../../../analytics/analytics';
 
 const COMPACT_LAYOUT_KEY = 'presets_compact_layout';
 const FAVOURITES_KEY = 'presets_favourites';
 const SOUND_ENABLED_KEY = 'presets_sound_enabled';
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 export function PresetsList() {
   const headerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +71,7 @@ export function PresetsList() {
     const value = e.target.checked;
     setSoundEnabled(value);
     localStorage.setItem(SOUND_ENABLED_KEY, String(value));
-    window.posthog?.capture(value ? 'preset_sound_enabled' : 'preset_sound_disabled');
+    track(value ? 'preset_sound_enabled' : 'preset_sound_disabled');
   }
 
   function handleToggleFavourite(presetName: string) {
@@ -85,10 +79,10 @@ export function PresetsList() {
       const next = new Set(prev);
       if (next.has(presetName)) {
         next.delete(presetName);
-        window.posthog?.capture('preset_unfavourited', { preset_name: presetName });
+        track('preset_unfavourited', { preset_name: presetName });
       } else {
         next.add(presetName);
-        window.posthog?.capture('preset_favourited', { preset_name: presetName });
+        track('preset_favourited', { preset_name: presetName });
       }
       localStorage.setItem(FAVOURITES_KEY, JSON.stringify(Array.from(next)));
       return next;
@@ -131,8 +125,8 @@ export function PresetsList() {
     } else {
       setSelectedTags(tags);
       if (tags.length > 0) {
-        window.posthog?.capture('preset_filter_applied', {
-          selected_tags: tags,
+        track('preset_filter_applied', {
+          selected_tags: [...tags].sort().join(','),
           tag_count: tags.length,
         });
       }
