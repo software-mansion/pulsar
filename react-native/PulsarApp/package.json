@@ -16,7 +16,7 @@
     "react-native": "0.86.2",
     "react-native-gesture-handler": "^2.20.2",
     "react-native-pulsar": "file:../react-native-pulsar",
-    "react-native-pulsar-lottie": "file:../PulsarLottie",
+    "react-native-pulsar-lottie": "file:../react-native-pulsar-lottie",
     "react-native-reanimated": "^4.5.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-worklets": "^0.10.0"

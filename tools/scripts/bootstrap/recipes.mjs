@@ -91,7 +91,7 @@ export const recipes = {
     packageJson: {
       dependencies: {
         'react-native-pulsar': 'file:../react-native-pulsar',
-        'react-native-pulsar-lottie': 'file:../PulsarLottie',
+        'react-native-pulsar-lottie': 'file:../react-native-pulsar-lottie',
         'lottie-react-native': '~7.3.8',
         'react-native-gesture-handler': '^2.20.2',
         // reanimated 4.5+ requires worklets 0.10.x — keep this pair in lockstep.

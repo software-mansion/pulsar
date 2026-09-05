@@ -5,7 +5,7 @@ const path = require('path');
 // Packages linked with `file:` live outside `projectRoot`, so Metro has to watch them directly.
 const linkedPackages = {
   'react-native-pulsar': path.resolve(__dirname, '../react-native-pulsar'),
-  'react-native-pulsar-lottie': path.resolve(__dirname, '../PulsarLottie'),
+  'react-native-pulsar-lottie': path.resolve(__dirname, '../react-native-pulsar-lottie'),
 };
 
 // Modules that must resolve to exactly one copy — the app's. Each linked package installs its own
