@@ -3,11 +3,7 @@ import Settings from './Settings';
 import useRealtimeComposer from './useRealtimeComposer';
 import usePatternComposer from './usePatternComposer';
 import useAdaptiveHaptics from './useAdaptiveHaptics';
-import {
-  createBundle,
-  createBundleFromAsset,
-  loadBundle,
-} from './createBundle';
+import { defineBundle } from './createBundle';
 
 export {
   Presets,
@@ -15,9 +11,7 @@ export {
   useRealtimeComposer,
   usePatternComposer,
   useAdaptiveHaptics,
-  createBundle,
-  createBundleFromAsset,
-  loadBundle,
+  defineBundle,
 };
 
 export type {
@@ -29,12 +23,12 @@ export type {
 } from './types';
 export type {
   Bundle,
+  BundleDefinition,
+  BundleLoader,
   BundleMeta,
-  BundleDescriptor,
-  BundleSidecar,
+  LoadBundleOptions,
   PresetHandle,
   PresetAnimation,
-  PresetMedia,
 } from './createBundle';
 export { HapticSupport, RealtimeComposerStrategy } from './NativeRNPulsar';
 export type { RealtimeComposer } from './useRealtimeComposer';

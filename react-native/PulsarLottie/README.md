@@ -46,11 +46,10 @@ A preset in a `.pulsar` bundle already pairs an animation with a pattern the aut
 Pass the preset and the view takes both — no `source`, no `haptics`:
 
 ```tsx
-import { createBundle } from 'react-native-pulsar';
 import { HapticLottieView } from 'react-native-pulsar-lottie';
-import pack from './assets/my-pack.bundle.json';
+import { loadBundle } from './assets/my-pack.bundle';
 
-const Pack = createBundle(pack);
+const Pack = loadBundle({ withAssets: false });
 
 function Celebration() {
   return <HapticLottieView preset={Pack.celebration} autoPlay style={{ width: 200, height: 200 }} />;
@@ -60,10 +59,9 @@ function Celebration() {
 The preset fills in three things, each still overridable on its own: `source` from its Lottie,
 `haptics` from its pattern, and `durationMs` from its authored length.
 
-The animation only travels in JS on the **inline** path (`createBundle`) and only for JSON Lotties.
-A preset from `loadBundle`, or one authored as a dotLottie, reports `hasAnimation: true` but carries
-no `animation` — pass `source` yourself there. If neither is available the view renders nothing and
-warns once, rather than crashing.
+Only JSON Lotties are embedded in the generated TypeScript module. A preset authored as a
+dotLottie reports `hasAnimation: true` but carries no `animation` — pass `source` yourself there.
+If neither is available the view renders nothing and warns once, rather than crashing.
 
 For the hook API, a preset works today without any extra option:
 `useHapticLottie({ haptics: preset.pattern })`.
