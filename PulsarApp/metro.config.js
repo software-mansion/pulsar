@@ -12,7 +12,7 @@ const config = {
   projectRoot: __dirname,
   watchFolders: [
     path.resolve(__dirname, '../react-native/react-native-pulsar'),
-    path.resolve(__dirname, '../react-native/PulsarLottie'),
+    path.resolve(__dirname, '../react-native/react-native-pulsar-lottie'),
   ],
   resolver: {
     extraNodeModules: {
@@ -29,12 +29,12 @@ const config = {
       /react-native\/react-native-pulsar\/node_modules\/react\/.*/,
       /react-native\/react-native-pulsar\/node_modules\/react-native-worklets\/.*/,
       // ...and the same for the Lottie wrapper package.
-      /react-native\/PulsarLottie\/node_modules\/react-native\/.*/,
-      /react-native\/PulsarLottie\/node_modules\/react\/.*/,
-      /react-native\/PulsarLottie\/node_modules\/react-native-worklets\/.*/,
-      /react-native\/PulsarLottie\/node_modules\/react-native-reanimated\/.*/,
-      /react-native\/PulsarLottie\/node_modules\/lottie-react-native\/.*/,
-      /react-native\/PulsarLottie\/node_modules\/react-native-pulsar\/.*/,
+      /react-native\/react-native-pulsar-lottie\/node_modules\/react-native\/.*/,
+      /react-native\/react-native-pulsar-lottie\/node_modules\/react\/.*/,
+      /react-native\/react-native-pulsar-lottie\/node_modules\/react-native-worklets\/.*/,
+      /react-native\/react-native-pulsar-lottie\/node_modules\/react-native-reanimated\/.*/,
+      /react-native\/react-native-pulsar-lottie\/node_modules\/lottie-react-native\/.*/,
+      /react-native\/react-native-pulsar-lottie\/node_modules\/react-native-pulsar\/.*/,
     ],
   },
 };
