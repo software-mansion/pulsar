@@ -114,6 +114,23 @@ function FigmaPreviewWebView({ token }: { token: string }) {
   // never trap a tap even if it lingers.
   const [loading, setLoading] = useState(true);
 
+  // The preview's own floating buttons can cover the design underneath them.
+  const [controlsHidden, setControlsHidden] = useState(false);
+  const sendControlsVisibility = useCallback((hidden: boolean) => {
+    webRef.current?.injectJavaScript(
+      buildPreviewInjection({ type: 'pulsar-haptics-update', kind: 'preview-controls', hidden })
+    );
+  }, []);
+  const toggleControls = useCallback(() => {
+    const hidden = !controlsHidden;
+    setControlsHidden(hidden);
+    sendControlsVisibility(hidden);
+  }, [controlsHidden, sendControlsVisibility]);
+
+  const reapplyControlsVisibility = useCallback(() => {
+    if (controlsHidden) sendControlsVisibility(true);
+  }, [controlsHidden, sendControlsVisibility]);
+
   const [webViewGeneration, setWebViewGeneration] = useState(0);
   const [gaveUpRestarting, setGaveUpRestarting] = useState(false);
   const restartTimesRef = useRef<number[]>([]);
@@ -123,6 +140,7 @@ function FigmaPreviewWebView({ token }: { token: string }) {
     setLoading(true);
     // The replacement page starts with its nav-bar toggle off.
     setTabBarHidden(false);
+    setControlsHidden(false);
     setResumeFrame(lastFocusedFrameRef.current ?? '');
     embedMountsRef.current = 0;
     setWebViewGeneration((generation) => generation + 1);
@@ -235,16 +253,34 @@ function FigmaPreviewWebView({ token }: { token: string }) {
               Close preview
             </ThemedText>
           </TouchableOpacity>
-          {/* Figma's embed can report itself loaded and still paint nothing,
-              which the page cannot detect across origins. */}
-          <TouchableOpacity
-            onPress={remountWebView}
-            style={styles.closeBtn}
-            hitSlop={8}
-            accessibilityLabel="Reload preview"
-          >
-            <Icon name="refresh-cw" size={18} color="#001A72" />
-          </TouchableOpacity>
+          <View style={styles.previewBarActions}>
+            <TouchableOpacity
+              onPress={toggleControls}
+              style={styles.closeBtn}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityState={{ selected: controlsHidden }}
+              accessibilityLabel={
+                controlsHidden ? 'Show preview buttons' : 'Hide preview buttons'
+              }
+            >
+              <Icon
+                name="sliders"
+                size={18}
+                color={controlsHidden ? '#8EA0C4' : '#001A72'}
+              />
+            </TouchableOpacity>
+            {/* Figma's embed can report itself loaded and still paint nothing,
+                which the page cannot detect across origins. */}
+            <TouchableOpacity
+              onPress={remountWebView}
+              style={styles.closeBtn}
+              hitSlop={8}
+              accessibilityLabel="Reload preview"
+            >
+              <Icon name="refresh-cw" size={18} color="#001A72" />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
       <View style={styles.webContainer}>
@@ -270,7 +306,10 @@ function FigmaPreviewWebView({ token }: { token: string }) {
             javaScriptEnabled
             domStorageEnabled
             onMessage={onMessage}
-            onLoadEnd={() => setLoading(false)}
+            onLoadEnd={() => {
+              setLoading(false);
+              reapplyControlsVisibility();
+            }}
             onContentProcessDidTerminate={onRendererGone}
             onRenderProcessGone={onRendererGone}
             style={styles.webview}
@@ -395,6 +434,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E1F3FA',
     backgroundColor: '#fff',
+  },
+  previewBarActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   closeBtn: {
     flexDirection: 'row',
