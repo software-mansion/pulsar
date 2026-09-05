@@ -5,11 +5,7 @@ import { useState, useRef } from 'react';
 import { AudioPatternUtility } from '../Preset/audio-player';
 import type { PresetConfig } from '../Preset/types';
 import { API_SERVER_URL } from '../config';
-
-type PosthogWithException = {
-  capture: (event: string, properties?: Record<string, unknown>) => void;
-  captureException?: (error: Error) => void;
-};
+import { track, trackError } from '../../../../analytics/analytics';
 
 interface VisualizationPanelProps {
   visualization: PresetConfig;
@@ -103,10 +99,10 @@ export function VisualizationPanel({
 
       const data = await response.json();
       console.log('Broadcast response:', data);
-      window.posthog?.capture('preset_played_on_device', { preset_name: presetName });
+      track('preset_played_on_device', { preset_name: presetName });
     } catch (error) {
       console.error('Error broadcasting to device:', error);
-      (window.posthog as PosthogWithException | undefined)?.captureException?.(error as Error);
+      trackError(error);
     }
   };
 
@@ -120,7 +116,7 @@ export function VisualizationPanel({
     } else {
       setIsPlaying(true);
       handlePlayOnDevice();
-      window.posthog?.capture('preset_played', { preset_name: presetName });
+      track('preset_played', { preset_name: presetName });
       try {
         if (!isParsed.current) {
           await audioPlayer.parsePattern(visualization.data);
@@ -131,7 +127,7 @@ export function VisualizationPanel({
         }
       } catch (error) {
         console.error('Error playing audio:', error);
-        (window.posthog as PosthogWithException | undefined)?.captureException?.(error as Error);
+        trackError(error);
       }
       startAnimation();
     }

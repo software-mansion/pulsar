@@ -13,14 +13,8 @@ import playIcon from '../../assets/new_assets/play.svg';
 import pauseIcon from '../../assets/new_assets/pause.svg';
 import heartIcon from '../../assets/new_assets/heart.svg';
 import heartFillIcon from '../../assets/new_assets/heart-fill.svg';
+import { track } from '../../../../analytics/analytics';
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 function toAnchorId(name: string) {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -60,7 +54,7 @@ function useWebPlayer(data: WebPresetConfig['data'], soundEnabled: boolean) {
       return;
     }
     setIsPlaying(true);
-    window.posthog?.capture('web_preset_played', { preset_name: data.name });
+    track('web_preset_played', { preset_name: data.name });
     try {
       const { Preset, Settings } = await import('pulsar-haptics');
       Settings.enableSound(soundEnabled);

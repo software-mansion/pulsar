@@ -17,6 +17,7 @@ import applausePreset from '../../../content/docs/assets/presets/Applause.json';
 import powerDownPreset from '../../../content/docs/assets/presets/PowerDown.json';
 import bloomPreset from '../../../content/docs/assets/presets/Bloom.json';
 import heartbeatPreset from '../../../content/docs/assets/presets/Heartbeat.json';
+import { track } from '../../../analytics/analytics';
 
 const CHART_POINTS = 9;
 
@@ -192,6 +193,7 @@ export function StudioHero() {
   const handleEmojiClick = async (index: number) => {
     setActiveIndex(index);
     setHasInteracted(true);
+    track('studio_landing_haptic_played', { preset: emojiTiles[index].label });
 
     // Real device haptics where supported.
     if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
@@ -239,7 +241,11 @@ export function StudioHero() {
           </p>
 
           <div className={styles.ctaRow}>
-            <Button label="Join the waitlist" url="#waitlist" />
+            <Button
+              label="Join the waitlist"
+              url="#waitlist"
+              onClick={() => track('studio_landing_cta_clicked', { location: 'hero' })}
+            />
             <span className={styles.priceHint}>with pricing starting from <b style={{ fontSize: '22px' }}>9$</b>/month</span>
           </div>
         </div>

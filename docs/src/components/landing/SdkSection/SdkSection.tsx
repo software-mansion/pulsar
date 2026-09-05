@@ -2,6 +2,7 @@ import { Button } from '../Button/Button';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import styles from './SdkSection.module.scss';
 import { BASE_PATH } from '../../../../config';
+import { trackingAttributes } from '../../../analytics/analytics';
 
 type Platform = {
   name: string;
@@ -57,13 +58,6 @@ const platforms: Platform[] = [
   },
 ];
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 export function SdkSection({ className }: { className?: string }) {
   return (
@@ -77,7 +71,7 @@ export function SdkSection({ className }: { className?: string }) {
         <Button
           label="See all of them"
           url={`${BASE_PATH}/sdk/overview/`}
-          onClick={() => window.posthog?.capture('sdk_section_viewed')}
+          analytics={trackingAttributes('sdk_section_viewed')}
         />
       </div>
       <div className={styles.right}>
@@ -88,9 +82,7 @@ export function SdkSection({ className }: { className?: string }) {
               className={styles.card}
               href={`${BASE_PATH}/sdk/${slug}/`}
               aria-label={`${name} SDK documentation`}
-              onClick={() =>
-                window.posthog?.capture('sdk_logo_clicked', { sdk: name })
-              }
+              {...trackingAttributes('sdk_logo_clicked', { sdk: name })}
             >
               <svg
                 viewBox="0 0 24 24"

@@ -3,19 +3,13 @@ import { PhoneCarousel } from './PhoneCarousel';
 import styles from './AppShowcase.module.scss';
 import appleBadge from '../../../assets/landing-page/apple-store-badge.svg';
 import googleBadge from '../../../assets/landing-page/google-play-badge.png';
+import { track } from '../../../analytics/analytics';
 
 const APP_STORE_URL =
   'https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104';
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app';
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 export function AppShowcase({ className }: { className?: string }) {
   return (
@@ -32,7 +26,7 @@ export function AppShowcase({ className }: { className?: string }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() =>
-              window.posthog?.capture('app_showcase_store_clicked', {
+              track('app_showcase_store_clicked', {
                 store: 'app_store',
               })
             }
@@ -48,7 +42,7 @@ export function AppShowcase({ className }: { className?: string }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() =>
-              window.posthog?.capture('app_showcase_store_clicked', {
+              track('app_showcase_store_clicked', {
                 store: 'google_play',
               })
             }

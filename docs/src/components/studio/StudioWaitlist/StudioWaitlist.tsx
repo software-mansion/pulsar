@@ -5,6 +5,7 @@ import { API_SERVER_URL } from '../../../content/docs/components/config';
 import star from '../../../assets/landing-page/star.svg';
 import arrowIcon from '../../../assets/landing-page/arrow-icon.svg';
 import wavePattern from '../../../assets/landing-page/pattern.svg';
+import { track } from '../../../analytics/analytics';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
@@ -16,6 +17,13 @@ export function StudioWaitlist() {
   const [consent, setConsent] = useState(false);
   const [consentError, setConsentError] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  const trackFirstFieldFilled = () => {
+    if (hasStarted) return;
+    setHasStarted(true);
+    track('studio_landing_waitlist_started');
+  };
 
   // Posts to the server's public /waitlist route, which adds the subscriber to the
   // MailerLite "Pulsar Studio" group (and, when opted in, the "SWM newsletter"
@@ -29,13 +37,16 @@ export function StudioWaitlist() {
     // message instead of silently sending nothing.
     if (!consent) {
       setConsentError(true);
+      track('studio_landing_waitlist_consent_blocked');
       return;
     }
 
     const form = e.currentTarget;
     const data = new FormData(form);
     setStatus('loading');
+    track('studio_landing_waitlist_submitted', { newsletter });
 
+    let failureReported = false;
     try {
       const res = await fetch(`${API_SERVER_URL}/waitlist`, {
         method: 'POST',
@@ -48,12 +59,18 @@ export function StudioWaitlist() {
           newsletter,
         }),
       });
-      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      if (!res.ok) {
+        failureReported = true;
+        track('studio_landing_waitlist_failed', { reason: 'http', status: res.status });
+        throw new Error(`Request failed (${res.status})`);
+      }
+      track('studio_landing_waitlist_succeeded', { newsletter });
       setStatus('success');
       setConsent(false);
       setNewsletter(false);
       form.reset();
     } catch {
+      if (!failureReported) track('studio_landing_waitlist_failed', { reason: 'network' });
       setStatus('error');
     }
   };
@@ -76,7 +93,7 @@ export function StudioWaitlist() {
           you know as soon as early access is available.
         </p>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} onFocusCapture={trackFirstFieldFilled}>
           <input className={styles.input} type="text" name="name" placeholder="Name" aria-label="Name" required />
           <input
             className={styles.input}

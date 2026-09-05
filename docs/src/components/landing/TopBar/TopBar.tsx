@@ -6,6 +6,10 @@ import logoGitHub from '../../../assets/landing-page/logo-github.png';
 import menuIcon from '../../../assets/landing-page/menu.svg';
 import closeIcon from '../../../assets/landing-page/x.svg';
 import { BASE_PATH } from '../../../../config';
+import { trackingAttributes } from '../../../analytics/analytics';
+
+const nav = (target: string, location: 'topbar' | 'mobile-menu') =>
+  trackingAttributes('nav_link_clicked', { target, location });
 
 export function TopBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,13 +30,23 @@ export function TopBar() {
           <span>Pulsar</span>
         </a>
         <div className={styles.menuItems}>
-          <a className={styles.studioLink} href={`${BASE_PATH}/studio/`}>
+          <a
+            className={styles.studioLink}
+            href={`${BASE_PATH}/studio/`}
+            {...nav('studio', 'topbar')}
+          >
             Studio
             <span className={styles.newDot} aria-hidden="true" />
           </a>
-          <a href={`${BASE_PATH}/presets-playground/`}>Presets</a>
-          <a href={`${BASE_PATH}/getting-started/`}>Getting started</a>
-          <a href={`${BASE_PATH}/sdk/overview/`}>Docs</a>
+          <a href={`${BASE_PATH}/presets-playground/`} {...nav('presets', 'topbar')}>
+            Presets
+          </a>
+          <a href={`${BASE_PATH}/getting-started/`} {...nav('getting-started', 'topbar')}>
+            Getting started
+          </a>
+          <a href={`${BASE_PATH}/sdk/overview/`} {...nav('docs', 'topbar')}>
+            Docs
+          </a>
         </div>
         <a href="https://github.com/software-mansion/pulsar" target="_blank">
           <img className={styles.gitLogo} src={logoGitHub.src} alt="GitHub" />
@@ -59,17 +73,34 @@ export function TopBar() {
               />
             </div>
             <nav className={styles.mobileMenuItems}>
-              <a className={styles.studioLink} href={`${BASE_PATH}/studio/`} onClick={closeMenu}>
+              <a
+                className={styles.studioLink}
+                href={`${BASE_PATH}/studio/`}
+                onClick={closeMenu}
+                {...nav('studio', 'mobile-menu')}
+              >
                 Studio
                 <span className={styles.newDot} aria-hidden="true" />
               </a>
-              <a href={`${BASE_PATH}/presets-playground/`} onClick={closeMenu}>
+              <a
+                href={`${BASE_PATH}/presets-playground/`}
+                onClick={closeMenu}
+                {...nav('presets', 'mobile-menu')}
+              >
                 Presets
               </a>
-              <a href={`${BASE_PATH}/getting-started/`} onClick={closeMenu}>
+              <a
+                href={`${BASE_PATH}/getting-started/`}
+                onClick={closeMenu}
+                {...nav('getting-started', 'mobile-menu')}
+              >
                 Getting started
               </a>
-              <a href={`${BASE_PATH}/sdk/overview/`} onClick={closeMenu}>
+              <a
+                href={`${BASE_PATH}/sdk/overview/`}
+                onClick={closeMenu}
+                {...nav('docs', 'mobile-menu')}
+              >
                 Docs
               </a>
             </nav>

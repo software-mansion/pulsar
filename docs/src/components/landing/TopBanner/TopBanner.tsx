@@ -11,14 +11,8 @@ import { EmojiButton } from '../EmojiButton/EmojiButton';
 import { SoundBar } from '../SoundBar/SoundBar';
 import { Presets } from 'pulsar-haptics';
 import { useRef, useState } from 'react';
+import { track } from '../../../analytics/analytics';
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, unknown>) => void;
-    };
-  }
-}
 
 export function TopBanner() {
   const [colorClass, setColorClass] = useState('');
@@ -90,14 +84,14 @@ export function TopBanner() {
             label="Preset playground"
             url={`${BASE_PATH}/presets-playground/`}
             className={styles.fullWidth}
-            onClick={() => window.posthog?.capture('preset_playground_cta_clicked')}
+            onClick={() => track('preset_playground_cta_clicked')}
           />
           <Button
             label="Read the docs"
             variant="filled"
             url={`${BASE_PATH}/getting-started/`}
             className={styles.fullWidth}
-            onClick={() => window.posthog?.capture('docs_cta_clicked')}
+            onClick={() => track('docs_cta_clicked')}
           />
         </div>
       </div>
@@ -133,7 +127,7 @@ export function TopBanner() {
                     setColorClass('');
                     setBackgroundAnimation(styles.wave);
                     handleAnimationEffect('');
-                    window.posthog?.capture('haptics_demo_interacted', {
+                    track('haptics_demo_interacted', {
                       emoji: 'emoji1',
                       effect: 'wave',
                     });
@@ -147,7 +141,7 @@ export function TopBanner() {
                     setColorClass(styles.yellow);
                     setBackgroundAnimation(styles.sonar);
                     handleAnimationEffect('stars');
-                    window.posthog?.capture('haptics_demo_interacted', {
+                    track('haptics_demo_interacted', {
                       emoji: 'emoji2',
                       effect: 'stars',
                     });
@@ -164,7 +158,7 @@ export function TopBanner() {
                     setColorClass(styles.red);
                     setBackgroundAnimation(styles.quake);
                     handleAnimationEffect('confetti');
-                    window.posthog?.capture('haptics_demo_interacted', {
+                    track('haptics_demo_interacted', {
                       emoji: 'emoji3',
                       effect: 'confetti',
                     });
@@ -178,7 +172,7 @@ export function TopBanner() {
                     setColorClass(styles.green);
                     setBackgroundAnimation(styles.heartbeat);
                     handleAnimationEffect('angels');
-                    window.posthog?.capture('haptics_demo_interacted', {
+                    track('haptics_demo_interacted', {
                       emoji: 'emoji4',
                       effect: 'angels',
                     });

@@ -2,6 +2,7 @@ import { Button } from '../Button/Button';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import styles from './StudioSection.module.scss';
 import { BASE_PATH } from '../../../../config';
+import { track } from '../../../analytics/analytics';
 
 // What Studio lets you do — short labels echoing the Studio landing feature grid.
 const highlights = [
@@ -59,7 +60,7 @@ export function StudioSection({ className }: { className?: string }) {
             label="Join the waitlist"
             variant="filled"
             url={`${BASE_PATH}/studio/#waitlist`}
-            onClick={() => window.posthog?.capture('studio_section_waitlist_clicked')}
+            onClick={() => track('studio_section_waitlist_clicked')}
           />
         </div>
       </div>
