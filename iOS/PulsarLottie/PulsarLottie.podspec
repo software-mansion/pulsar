@@ -11,7 +11,7 @@ and lottie-ios.
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Software Mansion' => 'krzysztof.piaskowy@swmansion.com' }
   s.source           = {
-    :git => 'https://github.com/software-mansion-labs/pulsar-ios-lottie.git',
+    :git => 'https://github.com/software-mansion-labs/pulsar-lottie-ios.git',
     :tag => s.version.to_s
   }
 

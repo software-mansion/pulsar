@@ -3,3 +3,5 @@
 Package.resolved
 *.xcodeproj
 DerivedData/
+/.tmp
+.DS_Store
