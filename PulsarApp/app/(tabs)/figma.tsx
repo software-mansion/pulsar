@@ -80,12 +80,19 @@ export default function FigmaScreen() {
 }
 
 function FigmaPreviewWebView({ token }: { token: string }) {
+  // A replacement WebView restarts on the payload's frame unless we hand this back.
+  const lastFocusedFrameRef = useRef<string | null>(null);
+  // The renderer dies before the preview can report this itself.
+  const embedMountsRef = useRef(0);
+  const [resumeFrame, setResumeFrame] = useState('');
+
   const previewUrl = useMemo(() => {
     // Strip any pre-existing query/hash so we don't accidentally double-append.
     const base = FIGMA_PREVIEW_URL.replace(/[?#].*$/, '');
     const search = new URLSearchParams({ host: 'app', token });
+    if (resumeFrame) search.set('frame', resumeFrame);
     return `${base}?${search.toString()}`;
-  }, [token]);
+  }, [token, resumeFrame]);
 
   const webRef = useRef<WebView>(null);
   const playFromHost = usePlayPatternFromHost();
@@ -116,6 +123,8 @@ function FigmaPreviewWebView({ token }: { token: string }) {
     setLoading(true);
     // The replacement page starts with its nav-bar toggle off.
     setTabBarHidden(false);
+    setResumeFrame(lastFocusedFrameRef.current ?? '');
+    embedMountsRef.current = 0;
     setWebViewGeneration((generation) => generation + 1);
   }, []);
 
@@ -133,7 +142,10 @@ function FigmaPreviewWebView({ token }: { token: string }) {
     // The JS inside the dead renderer is gone, so the preview cannot report this itself.
     Sentry.captureMessage('figma-preview: webview renderer terminated', {
       level: 'warning',
-      extra: { restartsInWindow: restartTimesRef.current.length },
+      extra: {
+        restartsInWindow: restartTimesRef.current.length,
+        embedMounts: embedMountsRef.current,
+      },
     });
     if (restartTimesRef.current.length > MAX_RENDERER_RESTARTS) {
       setLoading(false);
@@ -160,6 +172,9 @@ function FigmaPreviewWebView({ token }: { token: string }) {
     handledNonceRef.current = update.nonce;
     // Ignore updates targeting a different preview than the one we're showing.
     if (update.previewToken && update.previewToken !== token) return;
+    if (update.kind === 'preview-frame-focus' && update.nodeId) {
+      lastFocusedFrameRef.current = update.nodeId;
+    }
     webRef.current?.injectJavaScript(
       buildPreviewInjection({
         type: 'pulsar-haptics-update',
@@ -191,11 +206,17 @@ function FigmaPreviewWebView({ token }: { token: string }) {
           presetName?: string;
           pattern?: Pattern;
           hidden?: boolean;
+          nodeId?: string;
+          embedMounts?: number;
         };
         if (data.type === 'play-preset' && typeof data.presetName === 'string') {
           playFromHost(data.presetName, data.pattern);
         } else if (data.type === 'set-tab-bar-hidden' && typeof data.hidden === 'boolean') {
           setTabBarHidden(data.hidden);
+        } else if (data.type === 'preview-frame-shown' && typeof data.nodeId === 'string') {
+          // Unlike the plugin's relay, this follows navigation inside the prototype.
+          lastFocusedFrameRef.current = data.nodeId;
+          if (typeof data.embedMounts === 'number') embedMountsRef.current = data.embedMounts;
         }
       } catch {
         // Non-JSON messages aren't ours; swallow.
