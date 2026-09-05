@@ -82,9 +82,7 @@ export default function FigmaScreen() {
 function FigmaPreviewWebView({ token }: { token: string }) {
   // A replacement WebView restarts on the payload's frame unless we hand this back.
   const lastFocusedFrameRef = useRef<string | null>(null);
-  // Figma embeds the preview has mounted in this WebView document. The renderer
-  // dies without warning, taking the preview's own Sentry breadcrumbs with it,
-  // so this side has to carry the count onto the crash report.
+  // The renderer dies before the preview can report this itself.
   const embedMountsRef = useRef(0);
   const [resumeFrame, setResumeFrame] = useState('');
 
@@ -216,8 +214,7 @@ function FigmaPreviewWebView({ token }: { token: string }) {
         } else if (data.type === 'set-tab-bar-hidden' && typeof data.hidden === 'boolean') {
           setTabBarHidden(data.hidden);
         } else if (data.type === 'preview-frame-shown' && typeof data.nodeId === 'string') {
-          // Where the user actually is, including navigation inside the prototype
-          // that the plugin never sees - handed back as ?frame= on a remount.
+          // Unlike the plugin's relay, this follows navigation inside the prototype.
           lastFocusedFrameRef.current = data.nodeId;
           if (typeof data.embedMounts === 'number') embedMountsRef.current = data.embedMounts;
         }
