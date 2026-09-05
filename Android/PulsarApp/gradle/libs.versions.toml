@@ -38,6 +38,7 @@ lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie"
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 nmcp = { id = "com.gradleup.nmcp", version.ref = "nmcp" }
 
