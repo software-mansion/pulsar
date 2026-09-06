@@ -14,6 +14,12 @@
       "react-native": "./src/index.tsx",
       "default": "./lib/module/index.js"
     },
+    "./src/NativeRNPulsar": {
+      "types": "./lib/typescript/src/NativeRNPulsar.d.ts",
+      "source": "./src/NativeRNPulsar.ts",
+      "react-native": "./src/NativeRNPulsar.ts",
+      "default": "./lib/module/NativeRNPulsar.js"
+    },
     "./metro": "./metro.js",
     "./app.plugin.js": "./app.plugin.js",
     "./jest-mock": "./jest-mock.js",
