@@ -67,3 +67,39 @@ export type AdaptivePreset = {
 export type AdaptiveHaptics = {
   play: () => void;
 };
+
+/**
+ * What the device's vibrator can actually render, as reported by the platform.
+ *
+ * `Settings.getHapticsSupportLevel()` collapses hardware into one ordered level, which is
+ * the right check for "how rich a pattern can this device play". These flags are the
+ * finer-grained inputs behind it, for the cases where the level is not enough:
+ *
+ * - The level is decided by amplitude control (and, on Android 16+, the frequency
+ *   profile). Primitive support is **not** part of it, so a `STANDARD_SUPPORT` device
+ *   can still lack `VibrationEffect.Composition` primitives. Callers that render their
+ *   own single-hit patterns can read `hasPrimitiveSupport` to pick a waveform fallback
+ *   instead of composing primitives the vibrator will silently drop.
+ * - `minControlPointDurationMillis` is the shortest control point the vendor's envelope
+ *   implementation will honor, useful when authoring envelopes at runtime.
+ *
+ * Platform notes:
+ * - **Android:** each field maps to the corresponding `Vibrator` query.
+ * - **iOS:** Core Haptics exposes a single `supportsHaptics` capability and the Taptic
+ *   Engine renders the full event set uniformly, so `hasAmplitudeControl`,
+ *   `hasPrimitiveSupport` and `isEnvelopeSupported` all mirror it.
+ *   `isFrequencyProfileSupported` is `false` (Core Haptics models sharpness rather than
+ *   exposing a frequency profile) and `minControlPointDurationMillis` is `0`.
+ */
+export type HapticCapabilities = {
+  /** Amplitude (intensity) control, rather than on/off buzzing only. */
+  hasAmplitudeControl: boolean;
+  /** `VibrationEffect.Composition` primitives. Android: requires API 30+. */
+  hasPrimitiveSupport: boolean;
+  /** Envelope effects. Android: requires API 36+. */
+  isEnvelopeSupported: boolean;
+  /** A vendor frequency profile is available. Android: requires API 36+. iOS: always false. */
+  isFrequencyProfileSupported: boolean;
+  /** Shortest envelope control point the device will honor, in ms. */
+  minControlPointDurationMillis: number;
+};

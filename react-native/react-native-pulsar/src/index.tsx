@@ -26,6 +26,7 @@ export type {
   AdaptivePreset,
   AdaptivePresetConfig,
   AdaptiveHaptics,
+  HapticCapabilities,
 } from './types';
 export type {
   Bundle,

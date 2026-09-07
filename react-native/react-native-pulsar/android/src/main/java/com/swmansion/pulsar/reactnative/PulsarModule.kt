@@ -53,6 +53,17 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  override fun Pulsar_hasAmplitudeControl(): Boolean = pulsar.hasAmplitudeControl()
+
+  override fun Pulsar_hasPrimitiveSupport(): Boolean = pulsar.hasPrimitiveSupport()
+
+  override fun Pulsar_isEnvelopeSupported(): Boolean = pulsar.isEnvelopeSupported()
+
+  override fun Pulsar_isFrequencyProfileSupported(): Boolean = pulsar.isFrequencyProfileSupported()
+
+  override fun Pulsar_minControlPointDurationMillis(): Double =
+    pulsar.minControlPointDurationMillis().toDouble()
+
   override fun Pulsar_forceHapticsSupportLevel(level: Double) {
     val mode = when (level.toInt()) {
       0 -> CompatibilityMode.NO_SUPPORT

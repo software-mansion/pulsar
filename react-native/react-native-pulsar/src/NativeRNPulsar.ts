@@ -32,6 +32,11 @@ export interface Spec extends TurboModule {
   Pulsar_stopHaptics(): void;
   Pulsar_shutDownEngine(): void;
   Pulsar_hapticSupport(): HapticSupport;
+  Pulsar_hasAmplitudeControl(): boolean;
+  Pulsar_hasPrimitiveSupport(): boolean;
+  Pulsar_isEnvelopeSupported(): boolean;
+  Pulsar_isFrequencyProfileSupported(): boolean;
+  Pulsar_minControlPointDurationMillis(): number;
   Pulsar_forceHapticsSupportLevel(level: HapticSupport): void;
   Pulsar_enableImpulseCompositionMode(state: boolean): void;
   Pulsar_setRealtimeComposerStrategy(strategy: RealtimeComposerStrategy): void;

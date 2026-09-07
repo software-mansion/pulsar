@@ -1,4 +1,5 @@
 import Pulsar, { HapticSupport, RealtimeComposerStrategy } from './NativeRNPulsar';
+import type { HapticCapabilities } from './types';
 
 // workaround for RN prototype caching issue 
 Pulsar.Pulsar_enableSound;
@@ -8,6 +9,11 @@ Pulsar.Pulsar_preloadPresets;
 Pulsar.Pulsar_stopHaptics;
 Pulsar.Pulsar_shutDownEngine;
 Pulsar.Pulsar_hapticSupport;
+Pulsar.Pulsar_hasAmplitudeControl;
+Pulsar.Pulsar_hasPrimitiveSupport;
+Pulsar.Pulsar_isEnvelopeSupported;
+Pulsar.Pulsar_isFrequencyProfileSupported;
+Pulsar.Pulsar_minControlPointDurationMillis;
 Pulsar.Pulsar_forceHapticsSupportLevel;
 Pulsar.Pulsar_enableImpulseCompositionMode;
 Pulsar.Pulsar_setRealtimeComposerStrategy;
@@ -36,6 +42,16 @@ const Settings = {
   },
   getHapticsSupportLevel: () => {
     return Pulsar.Pulsar_hapticSupport();
+  },
+  getHapticCapabilities: (): HapticCapabilities => {
+    return {
+      hasAmplitudeControl: Pulsar.Pulsar_hasAmplitudeControl(),
+      hasPrimitiveSupport: Pulsar.Pulsar_hasPrimitiveSupport(),
+      isEnvelopeSupported: Pulsar.Pulsar_isEnvelopeSupported(),
+      isFrequencyProfileSupported: Pulsar.Pulsar_isFrequencyProfileSupported(),
+      minControlPointDurationMillis:
+        Pulsar.Pulsar_minControlPointDurationMillis(),
+    };
   },
   forceHapticsSupportLevel: (level: HapticSupport) => {
     Pulsar.Pulsar_forceHapticsSupportLevel(level);
