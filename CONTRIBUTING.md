@@ -21,7 +21,6 @@ pulsar/
 ├── flutter/
 │   ├── pulsar/         # Flutter plugin (Dart API + iOS/Android bridge)
 │   └── PulsarApp/      # Flutter example app
-├── PulsarApp/          # React Native Expo showcase app
 └── docs/               # Astro/Starlight documentation site
 ```
 
@@ -45,7 +44,7 @@ When you change native SDK code in `iOS/` or `Android/`, publish a new native ar
 
 ### Setup
 
-From the repo root, install all JS/TS dependencies (PulsarApp, React Native lib, docs):
+From the repo root, install all JS/TS dependencies (React Native lib, docs):
 
 ```bash
 npm run install:all
@@ -55,7 +54,7 @@ Other root scripts:
 
 ```bash
 npm run lint         # Run JS, Kotlin, and Swift linters
-npm run lint:js      # ESLint in PulsarApp + RN lib
+npm run lint:js      # ESLint in the RN lib
 npm run lint:kotlin  # ktlint (requires: brew install ktlint)
 npm run lint:swift   # swiftlint (requires: brew install swiftlint)
 ```
@@ -93,17 +92,6 @@ npm run android  # Android emulator
 ```
 
 For native changes (Swift/Kotlin), rebuild the app after running the above. For JS-only changes, Metro hot reload handles updates automatically. To test local native SDK changes without publishing, run `USE_LOCAL_PULSAR_IOS=1 pod install` in `react-native/PulsarApp/ios` or `USE_LOCAL_PULSAR_ANDROID=1 ./gradlew app:assembleDebug` in `react-native/PulsarApp/android`.
-
-### React Native Expo showcase app
-
-```bash
-cd PulsarApp
-npm run ios      # Build and run on iOS
-npm run android  # Build and run on Android
-npm run start    # Start Metro bundler
-```
-
-The app references the RN library locally via `"react-native-pulsar": "file:../react-native/react-native-pulsar"`. After making library changes, run `npm run build` in the library directory, then restart Metro.
 
 ### Flutter SDK
 

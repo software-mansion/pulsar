@@ -12,7 +12,6 @@ run() {
   fi
 }
 
-run "PulsarApp"
 run "react-native/react-native-pulsar"
 
 exit "$FAILED"
