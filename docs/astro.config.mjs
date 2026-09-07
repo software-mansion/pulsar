@@ -191,6 +191,10 @@ export default defineConfig({
       // deployment that actually serves the preview — keep it out of the
       // sitemap so we don't invite Google to index a bounce page.
       filter: (page) => !page.includes('/figma-preview'),
+      // The web app is a standalone Vite bundle emitted into public/web-app/,
+      // so it never passes through Astro's page pipeline and the integration
+      // cannot discover it. It is a real, linked destination — list it here.
+      customPages: ['https://docs.swmansion.com/pulsar/web-app/'],
     }),
   ],
 });

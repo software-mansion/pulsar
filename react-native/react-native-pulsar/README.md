@@ -77,10 +77,10 @@ stop();
 
 ## Documentation
 
-Full API reference and guides are available at the [documentation site](https://docs.swmansion.com/pulsar).
+Full API reference and guides are available at the [documentation site](https://docs.swmansion.com/pulsar/).
 
-- [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) - Core concepts: types of haptics, preloading, and caching
-- [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native) - TypeScript API reference
+- [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview/) - Core concepts: types of haptics, preloading, and caching
+- [React Native SDK](https://docs.swmansion.com/pulsar/sdk/react-native/) - TypeScript API reference
 
 <!-- ## AI Skills
 

@@ -179,7 +179,7 @@ Every preset method returns a `Promise<PresetPlaybackResult>` describing whether
   code
 />
 
-Want to hear and feel every preset? Browse the full gallery on the [Web preset playground](/web-presets-playground).
+Want to hear and feel every preset? Browse the full gallery on the [Web preset playground](/pulsar/web-presets-playground/).
 
 ---
 
@@ -392,7 +392,7 @@ if (!pulsar.isHapticsSupported()) {
 
 `navigator.vibrate` is required for real haptic output and is available in **Chrome, Edge, Firefox, and Chromium-based mobile browsers**. Use `pulsar.isHapticsSupported()` (or `useHapticsSupport()` in React) to feature-detect at runtime.
 
-Where the Vibration API is missing - most notably **Safari on iOS and iPadOS**, where Apple does not implement it (see the note at the top of this page), and on desktop browsers with no vibration motor - Pulsar can play an **audio simulation** of the pattern instead. Enable it with `pulsar.enableSound(true)` so users can still hear the shape of a haptic. For real haptics on Apple hardware, reach for the native [iOS](/sdk/ios) or [React Native](/sdk/react-native) SDKs.
+Where the Vibration API is missing - most notably **Safari on iOS and iPadOS**, where Apple does not implement it (see the note at the top of this page), and on desktop browsers with no vibration motor - Pulsar can play an **audio simulation** of the pattern instead. Enable it with `pulsar.enableSound(true)` so users can still hear the shape of a haptic. For real haptics on Apple hardware, reach for the native [iOS](/pulsar/sdk/ios/) or [React Native](/pulsar/sdk/react-native/) SDKs.
 
 ---
 
