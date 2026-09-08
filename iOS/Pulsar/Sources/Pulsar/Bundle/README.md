@@ -12,7 +12,7 @@ autocomplete.
 
 ```swift
 let pulsar = Pulsar()
-let bundle = try pulsar.loadBundle(AcmePack.descriptor)   // AcmePack is generated
+let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)   // AcmePack is generated
 bundle.heartbeatV2.play()                          // ← autocompletes
 bundle.explosion.stop()
 
@@ -22,7 +22,7 @@ if let anim = bundle.heartbeatV2.animation {
 }
 ```
 
-`loadBundle(_:strict:)` — pass `strict: true` to assert the loaded bundle's content hash matches
+`loadBundleSync(_:strict:)` — pass `strict: true` to assert the loaded bundle's content hash matches
 the generated types (fails loudly on a stale bundle/types mismatch instead of a silent surprise).
 
 ## Zero-manual codegen (build plugin)

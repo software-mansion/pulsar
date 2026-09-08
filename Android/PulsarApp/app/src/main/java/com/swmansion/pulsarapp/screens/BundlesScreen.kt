@@ -24,7 +24,7 @@ import com.swmansion.pulsarapp.bundles.HapticsBundle
 @Composable
 fun BundlesScreen(pulsar: Pulsar?) {
     val bundle: HapticsBundle.Presets? = remember(pulsar) {
-        runCatching { pulsar?.loadBundle(HapticsBundle.descriptor, strict = true) }.getOrNull()
+        runCatching { pulsar?.loadBundleSync(HapticsBundle.descriptor, strict = true) }.getOrNull()
     }
 
     Column(

@@ -53,20 +53,22 @@ export type BundleDefinition = {
   asset: number;
 };
 
-export type LoadBundleOptions =
-  | { readonly withAssets: false }
-  | { readonly withAssets: true };
-
 type PresetsOf<M extends BundleDefinition> = {
   [K in keyof M['presets']]: PresetHandle;
 };
 
 type LoadedBundle<M extends BundleDefinition> = Bundle<PresetsOf<M>>;
 
-export interface BundleLoader<M extends BundleDefinition> {
-  (options: { withAssets: false }): LoadedBundle<M>;
-  (options: { withAssets: true }): Promise<LoadedBundle<M>>;
-  (options: LoadBundleOptions): LoadedBundle<M> | Promise<LoadedBundle<M>>;
+/** The two loaders a generated `*.bundle.ts` module re-exports. */
+export interface BundleLoaders<M extends BundleDefinition> {
+  /**
+   * `includeAssets: false` (the default) plays the patterns embedded in the generated module —
+   * no `.pulsar` read, no authored audio. `true` reads the binary on the calling thread, which
+   * in dev is a blocking Metro HTTP round trip; `loadBundleWithAssetsAsync` avoids that.
+   */
+  loadBundleSync(includeAssets?: boolean): LoadedBundle<M>;
+  /** Reads the `.pulsar` natively, so authored audio plays. */
+  loadBundleWithAssetsAsync(): Promise<LoadedBundle<M>>;
 }
 
 function assertDefinition(definition: BundleDefinition | undefined): void {
@@ -91,41 +93,47 @@ function withNonEnumerableMeta<P extends object>(
   return Object.defineProperties(presets, descriptors) as Bundle<P>;
 }
 
-/**
- * Called by a generated `*.bundle.ts` module. Applications import the bound
- * `loadBundle` from that module instead of importing this function directly.
- */
-export function defineBundle<M extends BundleDefinition>(
-  definition: M
-): BundleLoader<M> {
-  assertDefinition(definition);
-
-  const load = ({
-    withAssets,
-  }: LoadBundleOptions): LoadedBundle<M> | Promise<LoadedBundle<M>> => {
-    if (!withAssets) {
-      return createLoadedBundle(definition);
-    }
-    return loadNativeBundle(definition);
-  };
-
-  return load as BundleLoader<M>;
-}
-
-async function loadNativeBundle<M extends BundleDefinition>(
-  definition: M
-): Promise<LoadedBundle<M>> {
+function resolveAssetUri(definition: BundleDefinition): string {
   const source = Image.resolveAssetSource(definition.asset);
   if (!source?.uri) {
     throw new Error(
       'Pulsar: could not resolve .pulsar asset — is withPulsar() configured in metro.config.js?'
     );
   }
-  const bundleToken = await Pulsar.Pulsar_loadBundleFromUri(source.uri);
-  if (!bundleToken) {
-    throw new Error(`Pulsar: failed to load bundle "${definition.id}"`);
+  return source.uri;
+}
+
+function assertToken(token: string, definition: BundleDefinition): string {
+  if (!token) {
+    throw new Error(
+      `Pulsar: failed to load bundle "${definition.id}" — see the native log for the cause.`
+    );
   }
-  return createLoadedBundle(definition, bundleToken);
+  return token;
+}
+
+/**
+ * Called by a generated `*.bundle.ts` module, which re-exports the two loaders. Applications
+ * import those from the generated module rather than calling this directly.
+ */
+export function defineBundle<M extends BundleDefinition>(
+  definition: M
+): BundleLoaders<M> {
+  assertDefinition(definition);
+
+  return {
+    loadBundleSync: (includeAssets = false) => {
+      if (!includeAssets) return createLoadedBundle(definition);
+      const uri = resolveAssetUri(definition);
+      const token = Pulsar.Pulsar_loadBundleFromUriSync(uri);
+      return createLoadedBundle(definition, assertToken(token, definition));
+    },
+    loadBundleWithAssetsAsync: async () => {
+      const uri = resolveAssetUri(definition);
+      const token = await Pulsar.Pulsar_loadBundleFromUri(uri);
+      return createLoadedBundle(definition, assertToken(token, definition));
+    },
+  };
 }
 
 function createLoadedBundle<M extends BundleDefinition>(
@@ -134,7 +142,17 @@ function createLoadedBundle<M extends BundleDefinition>(
 ): Bundle<PresetsOf<M>> {
   const parsedIds = new Map<string, number>();
   const presets: Record<string, PresetHandle> = {};
-  const nativeToken = bundleToken;
+  let disposed = false;
+
+  // A disposed bundle stays inert on both paths: the native token is gone, and re-parsing the
+  // inline pattern would silently resurrect a bundle the caller said it was done with.
+  const warnDisposed = (action: string, id: string) => {
+    if (__DEV__) {
+      console.warn(
+        `Pulsar: ignored ${action}() on preset "${id}" — bundle "${definition.id}" is disposed.`
+      );
+    }
+  };
 
   for (const [id, preset] of Object.entries(definition.presets)) {
     const parseOnce = () => {
@@ -154,10 +172,16 @@ function createLoadedBundle<M extends BundleDefinition>(
       animation: preset.lottie,
       hasAudio: preset.audio,
       hasAnimation: preset.animation,
-      play: nativeToken
-        ? () => Pulsar.Pulsar_playBundlePreset(nativeToken, id)
-        : () => Pulsar.PatternComposer_play(parseOnce()),
+      play: () => {
+        if (disposed) return warnDisposed('play', id);
+        if (bundleToken) {
+          Pulsar.Pulsar_playBundlePreset(bundleToken, id);
+          return;
+        }
+        Pulsar.PatternComposer_play(parseOnce());
+      },
       stop: () => {
+        if (disposed) return warnDisposed('stop', id);
         if (bundleToken) {
           Pulsar.Pulsar_stopBundlePreset(bundleToken, id);
           return;
@@ -173,10 +197,9 @@ function createLoadedBundle<M extends BundleDefinition>(
     contentHash: definition.contentHash,
     get: (id: string) => presets[id],
     dispose: () => {
-      if (bundleToken) {
-        Pulsar.Pulsar_disposeBundle(bundleToken);
-        bundleToken = undefined;
-      }
+      if (disposed) return;
+      disposed = true;
+      if (bundleToken) Pulsar.Pulsar_disposeBundle(bundleToken);
       for (const parsedId of parsedIds.values()) {
         Pulsar.PatternComposer_release(parsedId);
       }

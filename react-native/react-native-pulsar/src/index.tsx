@@ -24,9 +24,8 @@ export type {
 export type {
   Bundle,
   BundleDefinition,
-  BundleLoader,
+  BundleLoaders,
   BundleMeta,
-  LoadBundleOptions,
   PresetHandle,
   PresetAnimation,
 } from './createBundle';

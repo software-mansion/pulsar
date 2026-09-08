@@ -149,7 +149,7 @@ test('rn definition inlines a JSON Lottie and skips a binary dotLottie', () => {
   assert.equal(sidecar.presets.explosion.animation, true);
 });
 
-test('rn emitter warns about an un-inlinable animation', () => {
+test('rn emitter warns separately about audio and about an un-inlinable animation', () => {
   const { manifest, entries } = readBundleBytes(buildFixtureBundle());
   const file = generate(manifest, 'rn', {
     patterns: extractPatterns(manifest, entries),
@@ -157,10 +157,12 @@ test('rn emitter warns about an un-inlinable animation', () => {
   });
   const warnings = file.warnings ?? [];
 
-  assert.equal(warnings.length, 1);
-  assert.match(warnings[0]!, /explosion.*could not be inlined/s);
+  assert.equal(warnings.length, 2);
+  assert.match(warnings[0]!, /carry audio/);
+  assert.match(warnings[0]!, /loadBundleSync/);
+  assert.match(warnings[1]!, /explosion.*could not be inlined/s);
   // heartbeatV2's animation WAS inlined, so it must not be reported as dropped.
-  assert.doesNotMatch(warnings[0]!, /heartbeatV2/);
+  assert.doesNotMatch(warnings[1]!, /heartbeatV2/);
 });
 
 test('extractAnimations fails loudly when a manifest points at a missing animation', () => {

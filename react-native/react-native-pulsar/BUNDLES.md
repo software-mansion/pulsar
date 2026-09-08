@@ -11,8 +11,9 @@ Generate a `*.bundle.ts` module next to every `.pulsar` file:
 npx pulsar-gen-rn assets
 ```
 
-The generated module embeds haptic patterns and JSON Lottie animations. It also contains
-a static `require('./name.pulsar')`, so the application does not import the binary separately.
+The generated module embeds haptic patterns and JSON Lottie animations. It also contains a
+static `require('./name.pulsar')`, so the application does not import the binary separately —
+which also means the `.pulsar` ships in the app even if you only ever call `loadBundleSync()`.
 Do not edit generated modules.
 
 Expo can regenerate them on every prebuild:
@@ -36,30 +37,38 @@ module.exports = withPulsar(getDefaultConfig(__dirname));
 
 The generated file is the only Pulsar bundle import the application needs:
 
-```ts
-import { loadBundle } from './assets/hapticsBundle.bundle';
+Each generated module exports exactly two loaders:
 
-const Haptics = loadBundle({ withAssets: false });
+```ts
+import { loadBundleSync } from './assets/hapticsBundle.bundle';
+
+const Haptics = loadBundleSync();
 
 Haptics.fanfare.play();
 Haptics.fanfare.stop();
 Haptics.get(someRuntimeId)?.play();
 ```
 
-`withAssets: false` is synchronous. It does not read the `.pulsar` binary. Each haptic
-pattern is parsed lazily on its first `play()`. Authored audio is not played.
+`loadBundleSync()` does not read the `.pulsar` binary at all — it plays the patterns embedded
+in the generated module, parsing each one lazily on its first `play()`. Authored audio is not
+played on this path.
 
-To include authored audio, load the same generated module with assets:
+To get the authored audio, load the binary:
 
 ```ts
-const Haptics = await loadBundle({ withAssets: true });
+import { loadBundleWithAssetsAsync } from './assets/hapticsBundle.bundle';
+
+const Haptics = await loadBundleWithAssetsAsync();
 
 Haptics.fanfare.play(); // still synchronous after the load
 ```
 
-`withAssets: true` returns a `Promise`. It resolves the Metro asset URI and native code
-reads the `.pulsar` file before the promise settles. The binary no longer travels through
-JavaScript as base64. After that, `play()` is synchronous in both modes.
+Native code reads the `.pulsar` before the promise settles — the binary no longer travels
+through JavaScript as base64. After the load, `play()` is synchronous either way.
+
+`loadBundleSync(true)` reads the binary too, but on the calling thread. In release that is a
+local file read; in development it is a **blocking HTTP round trip to Metro**, so prefer
+`loadBundleWithAssetsAsync()` unless you genuinely cannot await.
 
 ## Presets and animations
 
@@ -87,5 +96,17 @@ A binary dotLottie (`.lottie`) cannot be embedded in TypeScript; codegen warns a
 The bundle metadata members `id`, `contentHash`, `get`, and `dispose` are non-enumerable.
 Therefore `Object.values(Haptics)` contains only preset handles.
 
-Call `dispose()` when a loaded bundle is no longer needed. Re-run `pulsar-gen-rn` after
-every Studio export so the generated module, content hash, and `.pulsar` asset stay in sync.
+Call `dispose()` when a loaded bundle is no longer needed. A disposed bundle is inert: further
+`play()` / `stop()` calls are ignored (and warn once in `__DEV__`) rather than silently
+re-parsing. Loading the same pack twice gives two independent bundles, so disposing one does
+not disturb the other.
+
+Re-run `pulsar-gen-rn` after every Studio export so the generated module, content hash, and
+`.pulsar` asset stay in sync.
+
+## Other SDKs
+
+The same vocabulary applies across platforms. Swift and Kotlin read the binary synchronously
+(`pulsar.loadBundleSync(AcmePack.descriptor)`); Flutter cannot, so it offers only
+`pulsar.loadBundleWithAssetsAsync(acmePack)`. React Native is the only target with an inline,
+no-binary path, because only it can embed the patterns in the app's JS bundle.

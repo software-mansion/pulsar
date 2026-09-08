@@ -24,12 +24,12 @@ import java.util.concurrent.ConcurrentHashMap
 class PulsarModule(reactContext: ReactApplicationContext) :
   NativeRNPulsarSpec(reactContext) {
   
-  private val reactContext = reactContext
   private val pulsar: PulsarReactNative = PulsarReactNative(reactContext)
   private var realtimeComposer: RealtimeComposer = pulsar.getRealtimeComposer()
   private var nextId: Int = 1
   private val patternComposersRegistry: MutableMap<Int, PatternComposer> = mutableMapOf()
   private val bundlesRegistry: MutableMap<String, LoadedBundle> = ConcurrentHashMap()
+  private val bundleTokenSeq = java.util.concurrent.atomic.AtomicLong(0)
 
   // Pulsar -----------------------------------------------------------------
 
@@ -255,6 +255,24 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
   // Preset bundles -----------------------------------------------------------------
 
+  // One token per load, not per bundle id: two callers loading the same pack must get independent
+  // handles, or disposing either one silently kills the other's playback.
+  private fun storeBundle(bundle: LoadedBundle): String {
+    val token = "${bundle.id}#${bundleTokenSeq.incrementAndGet()}"
+    bundlesRegistry[token] = bundle
+    return token
+  }
+
+  override fun Pulsar_loadBundleFromUriSync(uri: String?): String {
+    if (uri == null) return ""
+    return try {
+      storeBundle(pulsar.loadBundle(readBundleUri(uri)))
+    } catch (e: Exception) {
+      android.util.Log.e(NAME, "Pulsar_loadBundleFromUriSync failed", e)
+      ""
+    }
+  }
+
   override fun Pulsar_loadBundleFromUri(
     uri: String?,
     promise: Promise,
@@ -265,10 +283,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     }
     Thread {
       try {
-        val bytes = readBundleUri(uri)
-        val bundle = pulsar.loadBundle(bytes)
-        bundlesRegistry[bundle.id] = bundle
-        promise.resolve(bundle.id)
+        promise.resolve(storeBundle(pulsar.loadBundle(readBundleUri(uri))))
       } catch (e: Exception) {
         android.util.Log.e(NAME, "Pulsar_loadBundleFromUri failed", e)
         promise.reject(
@@ -288,19 +303,19 @@ class PulsarModule(reactContext: ReactApplicationContext) :
       }
 
       "content" -> {
-        reactContext.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        reactApplicationContext.contentResolver.openInputStream(uri)?.use { it.readBytes() }
           ?: error("Could not open content URI")
       }
 
       "asset" -> {
-        reactContext.assets.open(uri.path.orEmpty().removePrefix("/")).use { it.readBytes() }
+        reactApplicationContext.assets.open(uri.path.orEmpty().removePrefix("/")).use { it.readBytes() }
       }
 
       "file" -> {
         val path = uri.path ?: error("File URI has no path")
         val assetMarker = "/android_asset/"
         if (path.contains(assetMarker)) {
-          reactContext.assets.open(path.substringAfter(assetMarker)).use { it.readBytes() }
+          reactApplicationContext.assets.open(path.substringAfter(assetMarker)).use { it.readBytes() }
         } else {
           File(path).readBytes()
         }
@@ -310,9 +325,9 @@ class PulsarModule(reactContext: ReactApplicationContext) :
         // Metro packages non-image assets into res/raw for Android release builds and
         // resolveAssetSource returns the resource identifier without an extension.
         val resourceId =
-          reactContext.resources.getIdentifier(uriString, "raw", reactContext.packageName)
+          reactApplicationContext.resources.getIdentifier(uriString, "raw", reactApplicationContext.packageName)
         if (resourceId != 0) {
-          reactContext.resources.openRawResource(resourceId).use { it.readBytes() }
+          reactApplicationContext.resources.openRawResource(resourceId).use { it.readBytes() }
         } else {
           File(uriString).readBytes()
         }

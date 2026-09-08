@@ -47,9 +47,9 @@ Pass the preset and the view takes both — no `source`, no `haptics`:
 
 ```tsx
 import { HapticLottieView } from 'react-native-pulsar-lottie';
-import { loadBundle } from './assets/my-pack.bundle';
+import { loadBundleSync } from './assets/my-pack.bundle';
 
-const Pack = loadBundle({ withAssets: false });
+const Pack = loadBundleSync();
 
 function Celebration() {
   return <HapticLottieView preset={Pack.celebration} autoPlay style={{ width: 200, height: 200 }} />;

@@ -9,6 +9,7 @@ jest.mock('../NativeRNPulsar', () => ({
     PatternComposer_play: jest.fn(),
     PatternComposer_stop: jest.fn(),
     PatternComposer_release: jest.fn(),
+    Pulsar_loadBundleFromUriSync: jest.fn(),
     Pulsar_loadBundleFromUri: jest.fn(),
     Pulsar_playBundlePreset: jest.fn(),
     Pulsar_stopBundlePreset: jest.fn(),
@@ -57,7 +58,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   let next = 100;
   native.PatternComposer_parsePattern.mockImplementation(() => next++);
-  native.Pulsar_loadBundleFromUri.mockResolvedValue('com.acme.haptics');
+  native.Pulsar_loadBundleFromUriSync.mockReturnValue('com.acme.haptics#1');
+  native.Pulsar_loadBundleFromUri.mockResolvedValue('com.acme.haptics#1');
   jest.spyOn(Image, 'resolveAssetSource').mockReturnValue({
     uri: 'file:///bundle.pulsar',
   } as never);
@@ -65,40 +67,48 @@ beforeEach(() => {
 
 describe('defineBundle', () => {
   it('binds a definition without loading or parsing it', () => {
-    const loadBundle = defineBundle(definition);
+    const loaders = defineBundle(definition);
 
-    expect(loadBundle).toEqual(expect.any(Function));
+    expect(loaders.loadBundleSync).toEqual(expect.any(Function));
+    expect(loaders.loadBundleWithAssetsAsync).toEqual(expect.any(Function));
+    expect(native.Pulsar_loadBundleFromUriSync).not.toHaveBeenCalled();
     expect(native.Pulsar_loadBundleFromUri).not.toHaveBeenCalled();
     expect(native.PatternComposer_parsePattern).not.toHaveBeenCalled();
   });
 
-  it('loads the inline path without reading the .pulsar asset', () => {
-    const loadBundle = defineBundle(definition);
-    const bundle = loadBundle({ withAssets: false });
+  it('rejects a stale generated definition immediately', () => {
+    expect(() =>
+      defineBundle({ ...definition, schema: 'pulsar.sidecar/0' })
+    ).toThrow(/pulsar-gen-rn/);
+  });
+});
+
+describe('loadBundleSync', () => {
+  it('defaults to the inline path and never reads the .pulsar asset', () => {
+    const bundle = defineBundle(definition).loadBundleSync();
 
     expect(bundle).not.toHaveProperty('then');
     expect(Object.keys(bundle)).toEqual(['heartbeatV2', 'explosion']);
     expect(bundle.id).toBe('com.acme.haptics');
     expect(bundle.contentHash).toBe('sha256-abc');
     expect(Image.resolveAssetSource).not.toHaveBeenCalled();
-    expect(native.Pulsar_loadBundleFromUri).not.toHaveBeenCalled();
+    expect(native.Pulsar_loadBundleFromUriSync).not.toHaveBeenCalled();
   });
 
-  it('keeps inline play synchronous and parses each pattern once', () => {
-    const bundle = defineBundle(definition)({ withAssets: false });
+  it('parses each inline pattern once and plays it synchronously', () => {
+    const bundle = defineBundle(definition).loadBundleSync(false);
 
     const firstResult: void = bundle.heartbeatV2.play();
-    const secondResult: void = bundle.heartbeatV2.play();
+    bundle.heartbeatV2.play();
 
     expect(firstResult).toBeUndefined();
-    expect(secondResult).toBeUndefined();
     expect(native.PatternComposer_parsePattern).toHaveBeenCalledTimes(1);
     expect(native.PatternComposer_play).toHaveBeenCalledTimes(2);
     expect(native.PatternComposer_play).toHaveBeenLastCalledWith(100);
   });
 
   it('exposes preset metadata and dynamic lookup', () => {
-    const bundle = defineBundle(definition)({ withAssets: false });
+    const bundle = defineBundle(definition).loadBundleSync();
 
     expect(bundle.heartbeatV2.name).toBe('Heartbeat V2');
     expect(bundle.heartbeatV2.duration).toBe(1200);
@@ -108,17 +118,34 @@ describe('defineBundle', () => {
     expect(bundle.get('missing')).toBeUndefined();
   });
 
-  it('releases parsed inline patterns on dispose', () => {
-    const bundle = defineBundle(definition)({ withAssets: false });
-    bundle.heartbeatV2.play();
+  it('reads the asset on the calling thread when includeAssets is true', () => {
+    const bundle = defineBundle(definition).loadBundleSync(true);
 
-    bundle.dispose();
+    expect(bundle).not.toHaveProperty('then');
+    expect(native.Pulsar_loadBundleFromUriSync).toHaveBeenCalledWith(
+      'file:///bundle.pulsar'
+    );
 
-    expect(native.PatternComposer_release).toHaveBeenCalledWith(100);
+    bundle.explosion.play();
+    expect(native.Pulsar_playBundlePreset).toHaveBeenCalledWith(
+      'com.acme.haptics#1',
+      'explosion'
+    );
+    expect(native.PatternComposer_parsePattern).not.toHaveBeenCalled();
   });
 
+  it('throws when the native sync load fails', () => {
+    native.Pulsar_loadBundleFromUriSync.mockReturnValue('');
+
+    expect(() => defineBundle(definition).loadBundleSync(true)).toThrow(
+      /failed to load bundle "com.acme.haptics"/
+    );
+  });
+});
+
+describe('loadBundleWithAssetsAsync', () => {
   it('loads the Metro URI before returning an asset-backed bundle', async () => {
-    const pending = defineBundle(definition)({ withAssets: true });
+    const pending = defineBundle(definition).loadBundleWithAssetsAsync();
     expect(pending).toHaveProperty('then');
     const bundle = await pending;
 
@@ -130,22 +157,25 @@ describe('defineBundle', () => {
     const result: void = bundle.explosion.play();
     expect(result).toBeUndefined();
     expect(native.Pulsar_playBundlePreset).toHaveBeenCalledWith(
-      'com.acme.haptics',
+      'com.acme.haptics#1',
       'explosion'
-    );
-    expect(native.PatternComposer_parsePattern).not.toHaveBeenCalled();
-
-    bundle.dispose();
-    expect(native.Pulsar_disposeBundle).toHaveBeenCalledWith(
-      'com.acme.haptics'
     );
   });
 
+  it('still carries the inline pattern and animation for the Lottie view', async () => {
+    const bundle = await defineBundle(definition).loadBundleWithAssetsAsync();
+
+    expect(bundle.heartbeatV2.pattern).toEqual(
+      definition.presets.heartbeatV2.pattern
+    );
+    expect(bundle.heartbeatV2.animation?.totalFrames).toBe(60);
+  });
+
   it('rejects before returning when the asset cannot be resolved', async () => {
-    jest.spyOn(Image, 'resolveAssetSource').mockReturnValue(undefined);
+    jest.spyOn(Image, 'resolveAssetSource').mockReturnValue(undefined as never);
 
     await expect(
-      defineBundle(definition)({ withAssets: true })
+      defineBundle(definition).loadBundleWithAssetsAsync()
     ).rejects.toThrow(/withPulsar/);
   });
 
@@ -155,16 +185,53 @@ describe('defineBundle', () => {
     );
 
     await expect(
-      defineBundle(definition)({ withAssets: true })
+      defineBundle(definition).loadBundleWithAssetsAsync()
     ).rejects.toThrow('could not read asset');
   });
+});
 
-  it('rejects a stale generated definition immediately', () => {
-    const stale = {
-      ...definition,
-      schema: 'pulsar.sidecar/0',
-    };
+describe('dispose', () => {
+  it('releases parsed inline patterns', () => {
+    const bundle = defineBundle(definition).loadBundleSync();
+    bundle.heartbeatV2.play();
 
-    expect(() => defineBundle(stale)).toThrow(/pulsar-gen-rn/);
+    bundle.dispose();
+
+    expect(native.PatternComposer_release).toHaveBeenCalledWith(100);
+  });
+
+  it('releases the native bundle exactly once', async () => {
+    const bundle = await defineBundle(definition).loadBundleWithAssetsAsync();
+
+    bundle.dispose();
+    bundle.dispose();
+
+    expect(native.Pulsar_disposeBundle).toHaveBeenCalledTimes(1);
+    expect(native.Pulsar_disposeBundle).toHaveBeenCalledWith(
+      'com.acme.haptics#1'
+    );
+  });
+
+  // Before this, play() on a disposed asset-backed bundle still called native with a dead
+  // token while stop() went silent, and a disposed inline bundle quietly re-parsed itself.
+  it('leaves both paths inert afterwards', async () => {
+    const inline = defineBundle(definition).loadBundleSync();
+    const withAssets =
+      await defineBundle(definition).loadBundleWithAssetsAsync();
+
+    inline.dispose();
+    withAssets.dispose();
+    jest.clearAllMocks();
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    inline.heartbeatV2.play();
+    inline.heartbeatV2.stop();
+    withAssets.explosion.play();
+    withAssets.explosion.stop();
+
+    expect(native.PatternComposer_parsePattern).not.toHaveBeenCalled();
+    expect(native.PatternComposer_play).not.toHaveBeenCalled();
+    expect(native.Pulsar_playBundlePreset).not.toHaveBeenCalled();
+    expect(native.Pulsar_stopBundlePreset).not.toHaveBeenCalled();
   });
 });

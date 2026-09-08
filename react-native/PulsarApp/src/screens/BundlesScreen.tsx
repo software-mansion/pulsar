@@ -11,13 +11,14 @@ import {
   HapticLottieView,
   type HapticLottieRef,
 } from 'react-native-pulsar-lottie';
+import { type PresetHandle } from 'react-native-pulsar';
 import {
-  loadBundle,
-  type PresetHandle,
-} from '../../assets/jacek-bundle.bundle';
+  loadBundleSync,
+  loadBundleWithAssetsAsync,
+} from '../../assets/hapticsBundle.bundle';
 
 // Regenerate with `npm run pulsar-gen` after every Studio export.
-const Haptics = loadBundle({ withAssets: false });
+const Haptics = loadBundleSync();
 type HapticsBundle = typeof Haptics;
 
 // Bundle metadata is non-enumerable, so these are exactly the preset handles.
@@ -42,13 +43,13 @@ export default function BundlesScreen() {
 
         <Text style={styles.section}>Animation from a preset</Text>
         <Text style={styles.body}>
-          The `Loading` preset carries its animation as well as its pattern, so
+          The `lottie` preset carries its animation as well as its pattern, so
           the view needs neither a source nor a haptics prop.
         </Text>
         <View style={styles.canvas}>
           <HapticLottieView
             ref={lottieRef}
-            preset={Haptics.loadingAnimation}
+            preset={Haptics.lottie}
             autoPlay
             loop={false}
             style={styles.lottie}
@@ -56,29 +57,28 @@ export default function BundlesScreen() {
         </View>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => lottieRef.current?.play()}
-        >
+          onPress={() => lottieRef.current?.play()}>
           <Text style={styles.buttonText}>▶ Replay animation</Text>
         </TouchableOpacity>
 
         <Text style={styles.section}>Preset without audio</Text>
         <Text style={styles.body}>
-          Without the .pulsar asset, play runs synchronously using the haptic
-          pattern embedded in the generated module. Authored audio is not
-          played.
+          `loadBundleSync()` never reads the .pulsar binary — it plays the
+          pattern embedded in the generated module. "
+          {Haptics.arcadeBonusAlert.name}" was authored with a sound, so on this
+          path it plays haptics only.
         </Text>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => Haptics.nokiaTune.play()}
-        >
+          onPress={() => Haptics.arcadeBonusAlert.play()}>
           <Text style={styles.buttonText}>Play haptics only</Text>
         </TouchableOpacity>
 
         <Text style={styles.section}>Preset with audio</Text>
         <Text style={styles.body}>
-          Loading with assets returns a Promise. Native code reads the .pulsar
-          binary first; after that, play is synchronous and includes authored
-          audio.
+          `loadBundleWithAssetsAsync()` hands the .pulsar to native code before
+          it resolves, so the same preset plays its authored sound. After that,
+          play() is synchronous on both paths.
         </Text>
         <AudioPresetDemo />
       </ScrollView>
@@ -94,7 +94,7 @@ function AudioPresetDemo() {
     let cancelled = false;
     let loaded: HapticsBundle | undefined;
 
-    loadBundle({ withAssets: true })
+    loadBundleWithAssetsAsync()
       .then(withAssets => {
         loaded = withAssets;
         if (cancelled) {
@@ -128,8 +128,7 @@ function AudioPresetDemo() {
   return (
     <TouchableOpacity
       style={styles.button}
-      onPress={() => bundle.nokiaTune.play()}
-    >
+      onPress={() => bundle.arcadeBonusAlert.play()}>
       <Text style={styles.buttonText}>Play haptics + audio</Text>
     </TouchableOpacity>
   );
@@ -138,7 +137,7 @@ function AudioPresetDemo() {
 function PresetRow({ preset }: { preset: PresetHandle }) {
   return (
     <View style={styles.row}>
-      <View style={styles.rowText}>
+      <View style={styles.flex}>
         <Text style={styles.rowTitle}>{preset.name}</Text>
         <Text style={styles.rowMeta}>
           {preset.duration ? `${preset.duration} ms` : 'no duration'}
@@ -146,10 +145,7 @@ function PresetRow({ preset }: { preset: PresetHandle }) {
           {preset.hasAnimation ? ' · has animation' : ''}
         </Text>
       </View>
-      <TouchableOpacity
-        style={styles.smallButton}
-        onPress={() => preset.play()}
-      >
+      <TouchableOpacity style={styles.smallButton} onPress={() => preset.play()}>
         <Text style={styles.buttonText}>▶</Text>
       </TouchableOpacity>
     </View>
@@ -159,33 +155,32 @@ function PresetRow({ preset }: { preset: PresetHandle }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f5f5f5' },
   content: { padding: 20, paddingBottom: 40 },
-  title: { fontSize: 28, fontWeight: '700', color: '#111' },
-  section: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
-    marginTop: 28,
-    marginBottom: 8,
-  },
-  body: { fontSize: 14, lineHeight: 20, color: '#555', marginTop: 8 },
+  title: { fontSize: 24, fontWeight: '700', marginBottom: 8 },
+  section: { fontSize: 17, fontWeight: '600', marginTop: 24, marginBottom: 8 },
+  body: { fontSize: 14, color: '#444', lineHeight: 20 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 14,
-    marginTop: 10,
+    marginTop: 8,
   },
-  rowText: { flex: 1 },
-  rowTitle: { fontSize: 16, fontWeight: '600', color: '#111' },
+  flex: { flex: 1 },
+  rowTitle: { fontSize: 15, fontWeight: '600' },
   rowMeta: { fontSize: 12, color: '#888', marginTop: 2 },
+  smallButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
   canvas: {
-    marginTop: 12,
-    height: 200,
-    borderRadius: 10,
     backgroundColor: 'white',
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 12,
     overflow: 'hidden',
   },
   lottie: { width: 180, height: 180 },
@@ -195,12 +190,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 12,
-  },
-  smallButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
   },
   buttonText: { color: 'white', fontSize: 15, fontWeight: '600' },
 });

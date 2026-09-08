@@ -109,9 +109,19 @@ open class Pulsar(protected var context: Context) {
     /**
      * Typed load for Kotlin consumers, using a `pulsar-gen`-generated descriptor.
      *
-     *     val bundle = pulsar.loadBundle(AcmePack.descriptor)
+     *     val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
      *     bundle.heartbeatV2.play()
+     *
+     * Named for symmetry with the other SDKs: `loadBundleSync` everywhere it can be synchronous,
+     * `loadBundleWithAssetsAsync` where it cannot (Flutter, and React Native's async path).
      */
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P =
+        loadBundle(descriptor, strict)
+
+    @Deprecated(
+        "Renamed for cross-SDK symmetry",
+        ReplaceWith("loadBundleSync(descriptor, strict)"),
+    )
     fun <P> loadBundle(descriptor: BundleDescriptor<P>, strict: Boolean = false): P {
         val loaded = loadBundleFromAsset(descriptor.assetName)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {

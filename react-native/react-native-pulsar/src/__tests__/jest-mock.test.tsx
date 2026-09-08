@@ -57,7 +57,7 @@ describe('react-native-pulsar/jest-mock', () => {
   });
 
   it('builds synchronous preset mocks through a generated bundle loader', async () => {
-    const loadBundle = defineBundle({
+    const { loadBundleSync, loadBundleWithAssetsAsync } = defineBundle({
       id: 'test',
       contentHash: 'hash',
       presets: {
@@ -65,11 +65,11 @@ describe('react-native-pulsar/jest-mock', () => {
       },
     });
 
-    const inline = loadBundle({ withAssets: false });
+    const inline = loadBundleSync();
     expect(inline).not.toHaveProperty('then');
     inline.success.play();
 
-    const withAssets = await loadBundle({ withAssets: true });
+    const withAssets = await loadBundleWithAssetsAsync();
     const result: void = withAssets.success.play();
 
     expect(result).toBeUndefined();

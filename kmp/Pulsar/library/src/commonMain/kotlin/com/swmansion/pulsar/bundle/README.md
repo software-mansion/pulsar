@@ -23,7 +23,7 @@ suspending read:
 ```kotlin
 val pulsar = Pulsar.create()
 val bytes = Res.readBytes("files/acme-pack.pulsar")
-val bundle = pulsar.loadBundle(AcmePack.descriptor, bytes, strict = true)
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes, strict = true)
 
 bundle.heartbeatV2.play()
 bundle.explosion.stop()

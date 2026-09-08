@@ -662,7 +662,7 @@ var bundle by remember { mutableStateOf<AcmePack.Presets?>(null) }
 
 LaunchedEffect(Unit) {
     val bytes = Res.readBytes("files/acme-pack.pulsar")
-    bundle = pulsar.loadBundle(AcmePack.descriptor, bytes, strict = true)
+    bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes, strict = true)
 }
 
 bundle?.heartbeatV2?.play()

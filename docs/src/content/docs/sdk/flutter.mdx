@@ -714,7 +714,7 @@ import 'package:pulsar_haptics/pulsar_haptics.dart';
 import 'bundles/acme_pack.bundle.dart';
 
 final pulsar = Pulsar();
-final bundle = await pulsar.loadBundle(acmePack, strict: true);
+final bundle = await pulsar.loadBundleWithAssetsAsync(acmePack, strict: true);
 
 bundle.heartbeatV2.play();
 bundle.explosion.stop();

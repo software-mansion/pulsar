@@ -23,6 +23,7 @@
   int nextId;
   NSMutableDictionary<NSNumber*, PatternComposer*> *patternComposersRegistry_;
   NSMutableDictionary<NSString*, LoadedBundle*> *bundlesRegistry_;
+  unsigned long bundleTokenSeq_;
 }
 
 static BOOL RNPulsarIsAppActive(void) {
@@ -62,6 +63,7 @@ RCT_EXPORT_MODULE()
     nextId = 1;
     patternComposersRegistry_ = [NSMutableDictionary new];
     bundlesRegistry_ = [NSMutableDictionary new];
+    bundleTokenSeq_ = 0;
   }
   return self;
 }
@@ -103,12 +105,16 @@ RCT_EXPORT_MODULE()
   }
 }
 
-- (void)storeBundle:(LoadedBundle *)bundle {
-  if (bundle.id == nil) {
-    return;
+// One token per load, not per bundle id: two callers loading the same pack must get independent
+// handles, or disposing either one silently kills the other's playback.
+- (NSString *)storeBundle:(LoadedBundle *)bundle {
+  if (bundle == nil) {
+    return @"";
   }
   @synchronized (bundlesRegistry_) {
-    bundlesRegistry_[bundle.id] = bundle;
+    NSString *token = [NSString stringWithFormat:@"%@#%lu", bundle.id, ++bundleTokenSeq_];
+    bundlesRegistry_[token] = bundle;
+    return token;
   }
 }
 
@@ -123,13 +129,40 @@ RCT_EXPORT_MODULE()
   }
 }
 
-- (void)Pulsar_loadBundleFromUri:(nonnull NSString *)uri
-                         resolve:(nonnull RCTPromiseResolveBlock)resolve
-                          reject:(nonnull RCTPromiseRejectBlock)reject {
+// `dataWithContentsOfURL:` reads file:// and http(s):// alike, which is all the Metro-resolved
+// URI is ever going to be: a dev-server URL in debug, a file inside the .app in release.
+- (NSURL *)bundleURLForUri:(NSString *)uri {
   NSURL *url = [NSURL URLWithString:uri];
   if (!url.scheme) {
     url = [NSURL fileURLWithPath:uri];
   }
+  return url;
+}
+
+- (NSString *)Pulsar_loadBundleFromUriSync:(nonnull NSString *)uri {
+  NSURL *url = [self bundleURLForUri:uri];
+  if (!url) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundleFromUriSync: invalid URI %@", uri);
+    return @"";
+  }
+  NSError *error = nil;
+  NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&error];
+  if (!data) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundleFromUriSync: could not read %@: %@", uri, error);
+    return @"";
+  }
+  LoadedBundle *bundle = [pulsar_ loadBundleWithData:data error:&error];
+  if (!bundle) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundleFromUriSync: could not load %@: %@", uri, error);
+    return @"";
+  }
+  return [self storeBundle:bundle];
+}
+
+- (void)Pulsar_loadBundleFromUri:(nonnull NSString *)uri
+                         resolve:(nonnull RCTPromiseResolveBlock)resolve
+                          reject:(nonnull RCTPromiseRejectBlock)reject {
+  NSURL *url = [self bundleURLForUri:uri];
   if (!url) {
     reject(@"PULSAR_INVALID_BUNDLE_URI", @"Pulsar: invalid bundle URI", nil);
     return;
@@ -142,8 +175,7 @@ RCT_EXPORT_MODULE()
       reject(@"PULSAR_LOAD_BUNDLE_FAILED", @"Pulsar: failed to load bundle", error);
       return;
     }
-    [self storeBundle:bundle];
-    resolve(bundle.id);
+    resolve([self storeBundle:bundle]);
   };
 
   if (url.isFileURL) {

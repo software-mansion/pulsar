@@ -51,18 +51,28 @@ class BundleDescriptor<P> {
   final P Function(BundleResolver resolver) build;
 }
 
-/// The typed bundle returned by [Pulsar.loadBundle].
-// `loadBundle` returns the generated presets class itself: Dart cannot forward typed members
-// through a wrapper, so the generator emits the bundle-level members onto it.
+/// The typed bundle returned by [PulsarBundleLoader.loadBundleWithAssetsAsync].
+// It returns the generated presets class itself: Dart cannot forward typed members through a
+// wrapper, so the generator emits the bundle-level members onto it.
 
 /// Bundle loading for [Pulsar].
 extension PulsarBundleLoader on Pulsar {
   /// Load a `.pulsar` bundle asset and return its typed presets view.
   ///
   /// ```dart
-  /// final bundle = await pulsar.loadBundle(acmePack); // acmePack is generated
+  /// final bundle = await pulsar.loadBundleWithAssetsAsync(acmePack); // acmePack is generated
   /// bundle.heartbeatV2.play();
   /// ```
+  ///
+  /// Named for symmetry with the other SDKs. Flutter has no synchronous counterpart: the bundle
+  /// crosses a platform channel, so there is no `loadBundleSync` here.
+  Future<P> loadBundleWithAssetsAsync<P>(
+    BundleDescriptor<P> descriptor, {
+    bool strict = false,
+  }) =>
+      loadBundle(descriptor, strict: strict);
+
+  @Deprecated('Renamed to loadBundleWithAssetsAsync for cross-SDK symmetry')
   Future<P> loadBundle<P>(
     BundleDescriptor<P> descriptor, {
     bool strict = false,

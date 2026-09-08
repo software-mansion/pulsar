@@ -93,7 +93,8 @@ function buildSidecar(entries, where) {
   };
   if (manifest.revision !== undefined) sidecar.revision = manifest.revision;
 
-  return { sidecar, droppedAnimation };
+  const withAudio = manifest.presets.filter((p) => p.audio).map((p) => p.id);
+  return { sidecar, withAudio, droppedAnimation };
 }
 
 const dirs = process.argv.slice(2);
@@ -104,7 +105,7 @@ for (const dir of dirs) {
     if (!file.endsWith('.pulsar')) continue;
     const name = basename(file, '.pulsar');
     const bundlePath = join(dir, file);
-    const { sidecar, droppedAnimation } = buildSidecar(
+    const { sidecar, withAudio, droppedAnimation } = buildSidecar(
       readEntries(bundlePath),
       bundlePath
     );
@@ -121,12 +122,19 @@ for (const dir of dirs) {
         '// prettier-ignore\n' +
         "import { defineBundle } from 'react-native-pulsar';\n\n" +
         '// prettier-ignore\n' +
-        `export const loadBundle = defineBundle(${definition});\n` +
+        `export const { loadBundleSync, loadBundleWithAssetsAsync } = defineBundle(${definition});\n` +
         '// prettier-ignore\n' +
         "export type { PresetHandle } from 'react-native-pulsar';\n"
     );
     process.stderr.write(`pulsar-gen-rn: wrote ${out}\n`);
 
+    if (withAudio.length > 0) {
+      process.stderr.write(
+        `pulsar-gen-rn: warning: presets ${withAudio.join(', ')} carry audio, which is decoded ` +
+          'natively and cannot be inlined — `loadBundleSync()` plays their haptics only. Use ' +
+          '`loadBundleSync(true)` or `loadBundleWithAssetsAsync()` for the sound.\n'
+      );
+    }
     if (droppedAnimation.length > 0) {
       process.stderr.write(
         `pulsar-gen-rn: warning: presets ${droppedAnimation.join(', ')} have an animation that ` +

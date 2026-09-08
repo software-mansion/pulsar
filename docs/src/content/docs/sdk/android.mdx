@@ -769,7 +769,7 @@ pulsarBundles {
 
 ```kotlin
 val pulsar = Pulsar(context)
-val bundle = pulsar.loadBundle(AcmePack.descriptor, strict = true)
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor, strict = true)
 
 bundle.heartbeatV2.play()
 bundle.explosion.stop()

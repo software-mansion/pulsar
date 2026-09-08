@@ -7,7 +7,7 @@ autocomplete.
 
 ```kotlin
 val pulsar = Pulsar(context)
-val bundle = pulsar.loadBundle(AcmePack.descriptor)   // AcmePack is generated
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)   // AcmePack is generated
 bundle.heartbeatV2.play()                      // ← autocompletes
 bundle.explosion.stop()
 

@@ -4,7 +4,7 @@
 import type { BundleManifest, DevicePattern, GenerateOptions, GeneratedFile, InlineLottie } from '../types.ts';
 import { DO_NOT_EDIT, resolveAssetName } from './shared.ts';
 
-/** Lets `createBundle` reject a stale file instead of silently playing nothing. */
+/** Lets `defineBundle` reject a stale file instead of silently playing nothing. */
 export const SIDECAR_SCHEMA = 'pulsar.sidecar/1';
 
 export interface PresetSidecarEntry {
@@ -69,6 +69,14 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
   const sidecar = buildSidecar(manifest, opts.patterns, animations);
 
   const warnings: string[] = [];
+  const withAudio = manifest.presets.filter((p) => p.audio).map((p) => p.id);
+  if (withAudio.length > 0) {
+    warnings.push(
+      `presets ${withAudio.join(', ')} carry audio, which is decoded natively and cannot be inlined — ` +
+        '`loadBundleSync()` plays their haptics only. Use `loadBundleSync(true)` or ' +
+        '`loadBundleWithAssetsAsync()` for the sound.',
+    );
+  }
   const droppedAnimation = manifest.presets.filter((p) => p.animation && !animations[p.id]).map((p) => p.id);
   if (droppedAnimation.length > 0) {
     warnings.push(
@@ -87,7 +95,7 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
       `// prettier-ignore\n` +
       `import { defineBundle } from 'react-native-pulsar';\n\n` +
       `// prettier-ignore\n` +
-      `export const loadBundle = defineBundle(${definition});\n` +
+      `export const { loadBundleSync, loadBundleWithAssetsAsync } = defineBundle(${definition});\n` +
       `// prettier-ignore\n` +
       `export type { PresetHandle } from 'react-native-pulsar';\n`,
     ...(warnings.length > 0 ? { warnings } : {}),
