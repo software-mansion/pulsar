@@ -1,0 +1,68 @@
+---
+title: Account & settings
+description: Subscription state, the guided tour and FAQ, crash-report and Dev Mode annotation switches, and resizing the Pulsar plugin window.
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+import Clip from '../../../components/Clip.astro';
+import account from '../assets/figma-plugin/account.png';
+import accountHelp from '../assets/figma-plugin/account-help.png';
+import accountPrivacy from '../assets/figma-plugin/account-privacy.png';
+
+## Your subscription
+
+The **Account** tab shows which account you're signed in as and the state of
+your plugin licence — a running free trial, an active subscription and when it
+renews, or a cancelled one and the date access ends.
+
+<Screenshot
+  src={account}
+  alt="The Account tab showing an active Bundle subscription renewing in April"
+  caption="Manage plan opens Pulsar Studio in your browser; Refresh re-reads the licence after you change it there."
+  width={420}
+/>
+
+Subscriptions are managed on the web, not in the plugin. Change something in
+Studio, come back and press **Refresh**.
+
+## Help & how-to
+
+Below the licence card: **Take the tour** replays the five-step walkthrough, and
+a FAQ answers the questions the tour raises — how to bind, how to pair, what
+the tags mean, what Pulsar writes into your file, and why a phone might not
+connect.
+
+<Screenshot
+  src={accountHelp}
+  alt="The Help and how-to section with the tour button and the FAQ list"
+  caption="The FAQ and the tour share the same text, so they can't drift apart."
+  width={420}
+/>
+
+**Resources** links out to an onboarding Figma file, an example app to try the
+live preview against, and the privacy policy and terms. **Send feedback**
+reaches the Pulsar team directly.
+
+## Privacy
+
+<Screenshot
+  src={accountPrivacy}
+  alt="The two privacy switches: crash reports and Dev Mode annotations"
+  caption="Both are on by default and both can be turned off here."
+  width={420}
+/>
+
+- **Send crash reports** — shares errors and performance data to help fix bugs.
+  It never includes your design content.
+- **Annotate screens for developers** — marks each screen that has haptics with
+  a Dev Mode annotation so developers and their coding tools can see them.
+  Turning it off removes the annotations already added.
+
+## Resizing the window
+
+Drag the grip in the bottom-right corner to resize in both directions, or the
+right and bottom edges to change just the width or the height. Figma plugin
+windows can't be dragged from their outer edges, so these handles are the only
+way — and the size is remembered for next time.
+
+<Clip name="resize" caption="The three resize handles on the plugin window." />
