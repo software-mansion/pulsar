@@ -90,6 +90,39 @@ RCT_EXPORT_MODULE()
 
 // Preset bundles ---------------------------------------------------------
 
+// `methodQueue` is the main queue because RNPulsarIsAppActive() reads UIApplication, so most
+// members touch bundlesRegistry_ there. Loading runs off-main (unzipping and decoding a bundle
+// has no business on the frame thread), so every access goes through these three.
+
+- (LoadedBundle *)bundleForToken:(NSString *)token {
+  if (token == nil) {
+    return nil;
+  }
+  @synchronized (bundlesRegistry_) {
+    return bundlesRegistry_[token];
+  }
+}
+
+- (void)storeBundle:(LoadedBundle *)bundle {
+  if (bundle.id == nil) {
+    return;
+  }
+  @synchronized (bundlesRegistry_) {
+    bundlesRegistry_[bundle.id] = bundle;
+  }
+}
+
+- (LoadedBundle *)takeBundleForToken:(NSString *)token {
+  if (token == nil) {
+    return nil;
+  }
+  @synchronized (bundlesRegistry_) {
+    LoadedBundle *bundle = bundlesRegistry_[token];
+    [bundlesRegistry_ removeObjectForKey:token];
+    return bundle;
+  }
+}
+
 - (void)Pulsar_loadBundleFromUri:(nonnull NSString *)uri
                          resolve:(nonnull RCTPromiseResolveBlock)resolve
                           reject:(nonnull RCTPromiseRejectBlock)reject {
@@ -103,16 +136,14 @@ RCT_EXPORT_MODULE()
   }
 
   void (^loadData)(NSData *) = ^(NSData *data) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      NSError *error = nil;
-      LoadedBundle *bundle = [self->pulsar_ loadBundleWithData:data error:&error];
-      if (!bundle) {
-        reject(@"PULSAR_LOAD_BUNDLE_FAILED", @"Pulsar: failed to load bundle", error);
-        return;
-      }
-      self->bundlesRegistry_[bundle.id] = bundle;
-      resolve(bundle.id);
-    });
+    NSError *error = nil;
+    LoadedBundle *bundle = [self->pulsar_ loadBundleWithData:data error:&error];
+    if (!bundle) {
+      reject(@"PULSAR_LOAD_BUNDLE_FAILED", @"Pulsar: failed to load bundle", error);
+      return;
+    }
+    [self storeBundle:bundle];
+    resolve(bundle.id);
   };
 
   if (url.isFileURL) {
@@ -144,20 +175,24 @@ RCT_EXPORT_MODULE()
   if (!RNPulsarIsAppActive()) {
     return;
   }
+  LoadedBundle *bundle = [self bundleForToken:token];
   RNPulsarPerformSafely(@"Pulsar_playBundlePreset", ^{
-    [bundlesRegistry_[token] play:presetId];
+    [bundle play:presetId];
   });
 }
 
 - (void)Pulsar_stopBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {
+  LoadedBundle *bundle = [self bundleForToken:token];
   RNPulsarPerformSafely(@"Pulsar_stopBundlePreset", ^{
-    [[bundlesRegistry_[token] handle:presetId] stop];
+    [[bundle handle:presetId] stop];
   });
 }
 
 - (void)Pulsar_disposeBundle:(nonnull NSString *)token {
-  [bundlesRegistry_[token] dispose];
-  [bundlesRegistry_ removeObjectForKey:token];
+  LoadedBundle *bundle = [self takeBundleForToken:token];
+  RNPulsarPerformSafely(@"Pulsar_disposeBundle", ^{
+    [bundle dispose];
+  });
 }
 
 - (void)Pulsar_enableHaptics:(BOOL)state {
