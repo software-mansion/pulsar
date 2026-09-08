@@ -192,3 +192,14 @@ html {
     height: 30px;
   }
 }
+
+/* Studio side-panel screenshots are 2× captures of a ~280px column — show them at
+   their real size instead of letting the intrinsic width fill the content column. */
+.studio-shot-narrow {
+  margin: 1.5rem 0;
+}
+
+.studio-shot-narrow img {
+  max-width: 300px;
+  height: auto;
+}
