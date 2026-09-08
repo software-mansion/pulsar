@@ -116,25 +116,6 @@ export default defineConfig({
           slug: 'presets-playground',
         },
         {
-          label: 'AI Skills',
-          items: [
-            { label: 'Overview', slug: 'skills' },
-            { label: 'Figma MCP', slug: 'skills/figma-mcp' },
-          ],
-        },
-        {
-          label: 'Figma Plugin',
-          items: [
-            { label: 'Overview', slug: 'figma-plugin' },
-            { label: 'The preset library', slug: 'figma-plugin/presets' },
-            { label: 'Binding haptics', slug: 'figma-plugin/binding' },
-            { label: 'Live preview on a phone', slug: 'figma-plugin/live-preview' },
-            { label: 'Sharing & handoff', slug: 'figma-plugin/sharing' },
-            { label: 'Your own patterns', slug: 'figma-plugin/studio-patterns' },
-            { label: 'Account & settings', slug: 'figma-plugin/settings' },
-          ],
-        },
-        {
           label: 'Pulsar Studio',
           items: [
             { label: 'Overview', slug: 'studio/overview' },
@@ -152,12 +133,20 @@ export default defineConfig({
             },
           ],
         },
-        // {
-        //   label: 'Figma → code',
-        //   slug: 'figma',
-        // },
         {
-          label: 'SDK',
+          label: 'Pulsar plugin for Figma',
+          items: [
+            { label: 'Overview', slug: 'figma-plugin' },
+            { label: 'The preset library', slug: 'figma-plugin/presets' },
+            { label: 'Binding haptics', slug: 'figma-plugin/binding' },
+            { label: 'Live preview on a phone', slug: 'figma-plugin/live-preview' },
+            { label: 'Sharing & handoff', slug: 'figma-plugin/sharing' },
+            { label: 'Your own patterns', slug: 'figma-plugin/studio-patterns' },
+            { label: 'Account & settings', slug: 'figma-plugin/settings' },
+          ],
+        },
+        {
+          label: 'Pulsar Haptics SDK',
           items: [
             { label: 'Overview', slug: 'sdk/overview' },
             { label: 'iOS', slug: 'sdk/ios' },
@@ -187,6 +176,13 @@ export default defineConfig({
             // public/web-app/ — nothing of it loads until this link is opened.
             // Starlight prepends `base`, so this stays base-relative.
             { label: 'Pulsar Web App', link: '/web-app/' },
+          ],
+        },
+        {
+          label: 'AI Skills',
+          items: [
+            { label: 'Overview', slug: 'skills' },
+            { label: 'Figma MCP', slug: 'skills/figma-mcp' },
           ],
         },
         {
