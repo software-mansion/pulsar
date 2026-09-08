@@ -124,11 +124,21 @@ export default defineConfig({
         },
         {
           label: 'Pulsar Studio',
-          link: 'https://docs.swmansion.com/pulsar/studio/',
-        },
-        {
-          label: 'Studio',
-          items: [{ label: 'MCP', slug: 'studio/mcp' }],
+          items: [
+            { label: 'Overview', slug: 'studio/overview' },
+            { label: 'The editor', slug: 'studio/editor' },
+            { label: 'Playing it back', slug: 'studio/playback' },
+            { label: 'Media', slug: 'studio/media' },
+            { label: 'Generating haptics', slug: 'studio/generating' },
+            { label: 'Tools', slug: 'studio/tools' },
+            { label: 'Projects & files', slug: 'studio/projects' },
+            { label: 'Settings & shortcuts', slug: 'studio/settings' },
+            { label: 'MCP', slug: 'studio/mcp' },
+            {
+              label: 'About Pulsar Studio',
+              link: 'https://docs.swmansion.com/pulsar/studio/',
+            },
+          ],
         },
         // {
         //   label: 'Figma → code',
