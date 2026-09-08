@@ -123,6 +123,18 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Figma Plugin',
+          items: [
+            { label: 'Overview', slug: 'figma-plugin' },
+            { label: 'The preset library', slug: 'figma-plugin/presets' },
+            { label: 'Binding haptics', slug: 'figma-plugin/binding' },
+            { label: 'Live preview on a phone', slug: 'figma-plugin/live-preview' },
+            { label: 'Sharing & handoff', slug: 'figma-plugin/sharing' },
+            { label: 'Your own patterns', slug: 'figma-plugin/studio-patterns' },
+            { label: 'Account & settings', slug: 'figma-plugin/settings' },
+          ],
+        },
+        {
           label: 'Pulsar Studio',
           items: [
             { label: 'Overview', slug: 'studio/overview' },
@@ -153,6 +165,17 @@ export default defineConfig({
             { label: 'React Native', slug: 'sdk/react-native' },
             { label: 'Kotlin Multiplatform', slug: 'sdk/kmp' },
             { label: 'Flutter', slug: 'sdk/flutter' },
+          ],
+        },
+        {
+          label: 'Pulsar Lottie SDK',
+          items: [
+            { label: 'Overview', slug: 'lottie/overview' },
+            { label: 'iOS', slug: 'lottie/ios' },
+            { label: 'Android', slug: 'lottie/android' },
+            { label: 'React Native', slug: 'lottie/react-native' },
+            { label: 'Kotlin Multiplatform', slug: 'lottie/kmp' },
+            { label: 'Flutter', slug: 'lottie/flutter' },
           ],
         },
         {
