@@ -1,7 +1,9 @@
 import Foundation
 
 /// Re-anchors an authored pattern so playing it from zero feels like playing the original
-/// from `fromMs`. The composer only ever starts at zero.
+/// from `fromMs`. `CHHapticAdvancedPatternPlayer.seek(toOffset:)` cannot stand in for this:
+/// it emits nothing for a `hapticContinuous` or `audioCustom` event it lands inside (Apple
+/// radar 29274583), and those are the two events every parsed pattern is built from.
 enum PatternSeek {
   static func interpolatedValue(of points: [ValuePoint], at atMs: Double) -> Float {
     guard let first = points.first, let last = points.last else { return 0 }
