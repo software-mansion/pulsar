@@ -34,10 +34,9 @@ enum class HapticMode {
  * animator (the per-frame clock) and samples the pattern; in [HapticMode.PATTERN]
  * it fires a pre-parsed pattern aligned to the start.
  *
- * Pass a bundle [preset] to take its pattern and authored duration, or [haptics] for
- * a pattern of your own — an explicit [haptics] wins. A preset that carries audio plays
- * through its own handle, which needs [HapticMode.PATTERN], so [hapticMode] defaults to
- * `PATTERN` for one; pass it yourself to override.
+ * A bundle [preset] supplies the pattern and authored duration; an explicit [haptics]
+ * overrides it. [hapticMode] defaults to [HapticMode.REALTIME], or to [HapticMode.PATTERN]
+ * for a preset carrying audio, which only sounds there.
  *
  * Call [release] when done to detach the animator listener and stop haptics.
  */
@@ -52,8 +51,8 @@ class HapticLottieController @JvmOverloads constructor(
     durationMs: Long? = null,
 ) {
     private val pattern: PatternData? = haptics ?: preset?.pattern
-    private val playsItself = haptics == null && preset?.hasAudio == true
-    private val mode = hapticMode ?: if (playsItself) HapticMode.PATTERN else HapticMode.REALTIME
+    private val playsOwnAudio = haptics == null && preset?.hasAudio == true
+    private val mode = hapticMode ?: if (playsOwnAudio) HapticMode.PATTERN else HapticMode.REALTIME
 
     private val useRealtime = mode == HapticMode.REALTIME && pattern != null
     private val hasContinuous = pattern != null &&
@@ -63,11 +62,10 @@ class HapticLottieController @JvmOverloads constructor(
     private val realtime: RealtimeComposer? =
         if (useRealtime) pulsar.getRealtimeComposer() else null
 
-    /** Set when the preset plays itself, so the audio it was authored with plays too. */
-    private val presetPlayback: PresetHandle? = if (!useRealtime && playsItself) preset else null
+    private val audioPreset: PresetHandle? = if (!useRealtime && playsOwnAudio) preset else null
 
     private val composer: PatternComposer? =
-        if (!useRealtime && !playsItself && pattern != null) {
+        if (!useRealtime && !playsOwnAudio && pattern != null) {
             // Pre-parse so the engine is warm and play() fires without delay.
             pulsar.getPatternComposer().apply { parsePattern(pattern) }
         } else {
@@ -124,7 +122,7 @@ class HapticLottieController @JvmOverloads constructor(
         if (!hapticsEnabled) return
         when {
             useRealtime -> lastT = 0L
-            presetPlayback != null -> presetPlayback.play()
+            audioPreset != null -> audioPreset.play()
             else -> composer?.play()
         }
     }
@@ -135,7 +133,7 @@ class HapticLottieController @JvmOverloads constructor(
                 lastT = 0L
                 if (hasContinuous) realtime?.stop()
             }
-            presetPlayback != null -> presetPlayback.stop()
+            audioPreset != null -> audioPreset.stop()
             else -> composer?.stop()
         }
     }

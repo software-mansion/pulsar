@@ -69,10 +69,8 @@ class HapticLottie extends StatefulWidget {
   /// Render a bundle [preset]: its Lottie animation, its pattern and its
   /// authored duration, with no separate `src`.
   ///
-  /// A preset that carries audio plays that audio too, which needs
-  /// [HapticMode.pattern] — so [hapticMode] defaults to `pattern` for one. A
-  /// preset with no animation renders an empty box; check `hasAnimation`, or use
-  /// [HapticLottie.asset] and pass the preset alongside it.
+  /// A preset with no animation renders an empty box; check `hasAnimation`, or
+  /// use [HapticLottie.asset] and pass the preset alongside it.
   const HapticLottie.preset(
     PresetHandle this.preset, {
     super.key,

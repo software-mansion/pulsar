@@ -33,7 +33,7 @@ test('a preset supplies source, haptics and duration', () => {
   assert.equal(out?.haptics, pattern);
   assert.equal(out?.durationMs, 1500);
   assert.equal(out?.hapticMode, 'realtime');
-  assert.equal(out?.presetPlayback, undefined);
+  assert.equal(out?.audioPreset, undefined);
 });
 
 test('a preset with audio plays itself, in pattern mode, so its audio plays too', () => {
@@ -41,7 +41,7 @@ test('a preset with audio plays itself, in pattern mode, so its audio plays too'
   const out = resolvePreset({ preset: p } as HapticLottieProps);
 
   assert.equal(out?.hapticMode, 'pattern');
-  assert.equal(out?.presetPlayback, p, 'the handle itself is passed through, so its identity is stable');
+  assert.equal(out?.audioPreset, p, 'the handle itself is passed through, so its identity is stable');
 });
 
 test('an explicit hapticMode wins over an audio preset default', () => {
@@ -59,7 +59,7 @@ test('explicit haptics keep an audio preset from playing itself', () => {
     haptics: pattern,
   } as unknown as HapticLottieProps);
 
-  assert.equal(out?.presetPlayback, undefined);
+  assert.equal(out?.audioPreset, undefined);
 });
 
 test('explicit props win over the preset', () => {

@@ -34,8 +34,8 @@ fun PresetHandle.animationJson(): String? = animation?.data?.decodeToString()
  * Compose): [HapticLottie] wires a Compose Lottie animation to it, but you can
  * drive it from any progress source.
  *
- * Pass a bundle [preset] to take its pattern and authored duration, or [haptics] for
- * a pattern of your own — an explicit [haptics] wins.
+ * A bundle [preset] supplies the pattern and authored duration; an explicit [haptics]
+ * overrides it.
  */
 class HapticLottieEngine(
     pulsar: Pulsar,
@@ -47,8 +47,8 @@ class HapticLottieEngine(
     durationMs: Long? = null,
 ) {
     private val pattern: PatternData? = haptics ?: preset?.pattern
-    private val playsItself = haptics == null && preset?.hasAudio == true
-    private val mode = hapticMode ?: if (playsItself) HapticMode.PATTERN else HapticMode.REALTIME
+    private val playsOwnAudio = haptics == null && preset?.hasAudio == true
+    private val mode = hapticMode ?: if (playsOwnAudio) HapticMode.PATTERN else HapticMode.REALTIME
 
     private val useRealtime = mode == HapticMode.REALTIME && pattern != null
     private val hasContinuous = pattern != null &&
@@ -58,11 +58,10 @@ class HapticLottieEngine(
     private val realtime: RealtimeComposer? =
         if (useRealtime) pulsar.getRealtimeComposer() else null
 
-    /** Set when the preset plays itself, so the audio it was authored with plays too. */
-    private val presetPlayback: PresetHandle? = if (!useRealtime && playsItself) preset else null
+    private val audioPreset: PresetHandle? = if (!useRealtime && playsOwnAudio) preset else null
 
     private val composer: PatternComposer? =
-        if (!useRealtime && !playsItself && pattern != null) {
+        if (!useRealtime && !playsOwnAudio && pattern != null) {
             pulsar.getPatternComposer().also { it.parsePattern(pattern) } // pre-parse / warm
         } else {
             null
@@ -89,7 +88,7 @@ class HapticLottieEngine(
         if (isPlaying) {
             lastT = 0
             if (!useRealtime && hapticsEnabled) {
-                if (presetPlayback != null) presetPlayback.play() else composer?.play()
+                if (audioPreset != null) audioPreset.play() else composer?.play()
             }
         } else {
             stop()
@@ -126,7 +125,7 @@ class HapticLottieEngine(
         lastT = 0
         when {
             useRealtime -> if (hasContinuous) realtime?.stop()
-            presetPlayback != null -> presetPlayback.stop()
+            audioPreset != null -> audioPreset.stop()
             else -> composer?.stop()
         }
     }

@@ -34,8 +34,7 @@ public final class HapticLottieController: NSObject {
     private let hasContinuous: Bool
     private let realtime: RealtimeComposer?
     private let pattern: PatternComposer?
-    /// Set when the preset plays itself, so the audio it was authored with plays too.
-    private let presetPlayback: PresetHandle?
+    private let audioPreset: PresetHandle?
 
     private var displayLink: CADisplayLink?
     private var timeMs: Double = 0
@@ -45,10 +44,9 @@ public final class HapticLottieController: NSObject {
 
     /// Creates a controller bound to `animationView`.
     ///
-    /// Pass a bundle `preset` to take its pattern and authored duration, or `haptics`
-    /// for a pattern of your own — an explicit `haptics` wins. A preset that carries
-    /// audio plays through its own handle, which needs ``HapticMode/pattern``, so
-    /// `hapticMode` defaults to `.pattern` for one; pass it yourself to override.
+    /// A bundle `preset` supplies the pattern and authored duration; an explicit
+    /// `haptics` overrides it. `hapticMode` defaults to `.realtime`, or to `.pattern`
+    /// for a preset carrying audio, which only sounds there.
     public init(
         animationView: LottieAnimationView,
         pulsar: Pulsar,
@@ -60,8 +58,8 @@ public final class HapticLottieController: NSObject {
         durationMs: Double? = nil
     ) {
         let resolved = haptics ?? preset?.pattern
-        let playsItself = haptics == nil && preset?.hasAudio == true
-        let mode = hapticMode ?? (playsItself ? .pattern : .realtime)
+        let playsOwnAudio = haptics == nil && preset?.hasAudio == true
+        let mode = hapticMode ?? (playsOwnAudio ? .pattern : .realtime)
 
         self.animationView = animationView
         self.mode = mode
@@ -76,8 +74,8 @@ public final class HapticLottieController: NSObject {
         self.sampled = flattened
         self.hasContinuous = flattened?.hasContinuous ?? false
         self.realtime = realtimeMode ? pulsar.getRealtimeComposer() : nil
-        self.presetPlayback = realtimeMode ? nil : (playsItself ? preset : nil)
-        if !realtimeMode, !playsItself, let h = resolved {
+        self.audioPreset = realtimeMode ? nil : (playsOwnAudio ? preset : nil)
+        if !realtimeMode, !playsOwnAudio, let h = resolved {
             let pc = pulsar.getPatternComposer()
             pc.parsePattern(hapticsData: h) // pre-parse / warm
             self.pattern = pc
@@ -239,8 +237,8 @@ public final class HapticLottieController: NSObject {
         guard hapticsEnabled else { return }
         if useRealtime {
             lastT = 0
-        } else if let presetPlayback {
-            presetPlayback.play()
+        } else if let audioPreset {
+            audioPreset.play()
         } else {
             pattern?.play()
         }
@@ -250,8 +248,8 @@ public final class HapticLottieController: NSObject {
         if useRealtime {
             lastT = 0
             if hapticsEnabled && hasContinuous { realtime?.stop() }
-        } else if let presetPlayback {
-            presetPlayback.stop()
+        } else if let audioPreset {
+            audioPreset.stop()
         } else {
             pattern?.stop()
         }

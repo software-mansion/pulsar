@@ -27,9 +27,6 @@ export interface HapticConfig {
   /**
    * Supplies `source`, `haptics` and `durationMs` at once; each is still overridable on its own.
    * A preset whose `animation` is undefined needs an explicit `source`.
-   *
-   * A preset that carries audio also plays that audio, which needs `pattern` mode — so one
-   * defaults to `pattern` rather than `realtime`. Set `hapticMode` yourself to override.
    */
   preset?: PresetHandle;
   /** Haptic content to sync with the animation. Omit for a plain `LottieView`. */

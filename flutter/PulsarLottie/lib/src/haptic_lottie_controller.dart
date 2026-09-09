@@ -30,11 +30,10 @@ enum HapticMode {
 class HapticLottieController {
   /// Creates a controller bound to [animationController].
   ///
-  /// Pass a bundle [preset] to take its pattern and authored duration, or
-  /// [haptics] for a pattern of your own — an explicit [haptics] wins. Omit both
-  /// for a plain animation. A preset that carries audio plays through its own
-  /// handle, which needs [HapticMode.pattern], so [hapticMode] defaults to
-  /// `pattern` for one; pass it yourself to override. The [pulsar] instance is
+  /// A bundle [preset] supplies the pattern and authored duration; an explicit
+  /// [haptics] overrides it, and omitting both leaves a plain animation.
+  /// [hapticMode] defaults to [HapticMode.realtime], or to [HapticMode.pattern]
+  /// for a preset carrying audio, which only sounds there. A [pulsar] instance is
   /// created internally if not supplied.
   HapticLottieController({
     required this.animationController,
@@ -46,7 +45,7 @@ class HapticLottieController {
     this.durationMs,
     Pulsar? pulsar,
   }) : _pulsar = pulsar ?? Pulsar(),
-       _playsItself = haptics == null && (preset?.hasAudio ?? false),
+       _playsOwnAudio = haptics == null && (preset?.hasAudio ?? false),
        hapticMode =
            hapticMode ??
            (haptics == null && (preset?.hasAudio ?? false)
@@ -78,7 +77,7 @@ class HapticLottieController {
   final double? durationMs;
 
   final Pulsar _pulsar;
-  final bool _playsItself;
+  final bool _playsOwnAudio;
   PulsarRealtimeComposer? _realtime;
   PulsarPatternComposer? _pattern;
   double _lastT = 0;
@@ -124,7 +123,7 @@ class HapticLottieController {
     if (_useRealtime) {
       _realtime = _pulsar.getRealtimeComposer();
       animationController.addListener(_onTick);
-    } else if (!_playsItself) {
+    } else if (!_playsOwnAudio) {
       _pattern = _pulsar.getPatternComposer();
       // Pre-parse so the engine is warm and play() fires without delay.
       unawaited(_pattern!.parsePattern(_resolvedPattern!));
@@ -167,7 +166,7 @@ class HapticLottieController {
     }
     if (_useRealtime) {
       _lastT = 0;
-    } else if (_playsItself) {
+    } else if (_playsOwnAudio) {
       preset!.play();
     } else {
       await _pattern?.play();
@@ -180,7 +179,7 @@ class HapticLottieController {
       if (_hasContinuous) {
         await _realtime?.stop();
       }
-    } else if (_playsItself) {
+    } else if (_playsOwnAudio) {
       preset?.stop();
     } else {
       await _pattern?.stop();

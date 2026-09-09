@@ -24,8 +24,6 @@ struct BundlesView: View {
                     }
 
                     Section("Animation from a preset") {
-                        // The preset carries its animation as well as its pattern, so
-                        // HapticLottieView needs neither a name nor a haptics argument.
                         HapticLottieView(preset: bundle.lottie)
                             .frame(height: 160)
                             .frame(maxWidth: .infinity)
