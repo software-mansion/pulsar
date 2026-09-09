@@ -11,12 +11,6 @@ import com.swmansion.pulsar.kmp.RealtimeComposerHandle
 import com.swmansion.pulsar.kmp.SoundData
 import com.swmansion.pulsar.kmp.registerPulsarFactory
 
-/**
- * A platform handle that records what the Lottie engine asks the device to do, so the
- * tests can assert the emitted haptics rather than only that nothing threw.
- *
- * Register it with [installTestPulsar] before building a [Pulsar].
- */
 class RecordingHandle : PulsarPlatformHandle {
     val realtime = RecordingRealtime()
     val pattern = RecordingPattern()
@@ -96,8 +90,7 @@ class RecordingPattern : PatternComposerHandle {
     }
 }
 
-/** Installs a fresh recorder as the platform and returns the [Pulsar] built on it. */
-fun installTestPulsar(): Pair<Pulsar, RecordingHandle> {
+fun installRecordingPulsar(): Pair<Pulsar, RecordingHandle> {
     val handle = RecordingHandle()
     registerPulsarFactory(object : PulsarPlatformFactory {
         override fun createPulsar(): PulsarPlatformHandle = handle
@@ -105,18 +98,12 @@ fun installTestPulsar(): Pair<Pulsar, RecordingHandle> {
     return Pulsar.create() to handle
 }
 
-/**
- * Builds `.pulsar` archives in memory so tests can get real `PresetHandle`s through the
- * public `Pulsar.loadBundle` path — the handle's own constructor is internal to the core.
- */
 object TestBundle {
 
-    /** A 2s animation (60 frames @ 30fps) with nothing in it. */
     const val LOTTIE_JSON =
         """{"v":"5.7.4","fr":30,"ip":0,"op":60,"w":100,"h":100,"nm":"empty","ddd":0,""" +
             """"assets":[],"layers":[]}"""
 
-    /** Amplitude ramps 0→1 across 800ms; one flat frequency point; two transients. */
     private const val HAPTICS_JSON =
         """{"continuousPattern":{"amplitude":[{"time":0,"value":0.0},{"time":800,"value":1.0}],""" +
             """"frequency":[{"time":0,"value":0.3}]},""" +
@@ -143,7 +130,6 @@ object TestBundle {
         return storedZip(entries)
     }
 
-    /** Minimal STORE-only zip writer, so no platform zip API is needed in common code. */
     private fun storedZip(entries: Map<String, String>): ByteArray {
         fun crc32(bytes: ByteArray): Int {
             val table = IntArray(256) { n ->

@@ -1,16 +1,11 @@
 import Foundation
 
-/// Builds `.pulsar` archives in memory so the tests can obtain real `PresetHandle`s
-/// through the public `Pulsar.loadBundle(data:)` path — the handle's own initializer
-/// is internal to the core module.
 enum TestBundle {
 
-  /// A 2s animation (60 frames @ 30fps) with nothing in it, but parseable by Lottie.
   static let lottieJSON = """
     {"v":"5.7.4","fr":30,"ip":0,"op":60,"w":100,"h":100,"nm":"empty","ddd":0,"assets":[],"layers":[]}
     """
 
-  /// Amplitude ramps 0→1 across 800ms; one flat frequency point; two transients.
   private static let hapticsJSON = """
     {"continuousPattern":{"amplitude":[{"time":0,"value":0.0},{"time":800,"value":1.0}],\
     "frequency":[{"time":0,"value":0.3}]},\
@@ -18,7 +13,6 @@ enum TestBundle {
     {"time":600,"amplitude":0.4,"frequency":0.2}]}
     """
 
-  /// A single-preset bundle, optionally carrying synced audio and/or its Lottie animation.
   static func data(
     durationMs: Double = 1500,
     withAudio: Bool = false,
@@ -42,8 +36,6 @@ enum TestBundle {
     if withAnimation { entries.append(("anim/celebration.json", lottieJSON)) }
     return storedZip(entries)
   }
-
-  // MARK: - A minimal STORE-only zip writer
 
   private static func crc32(_ bytes: [UInt8]) -> UInt32 {
     var table = [UInt32](repeating: 0, count: 256)

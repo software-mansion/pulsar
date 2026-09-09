@@ -2,10 +2,6 @@ import { test, describe, beforeEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createElement } from 'react';
 
-/**
- * Records what the hook asks of `react-native-pulsar`, standing in for the native
- * pattern composer. Registered as a module mock before the hook is imported.
- */
 const composer = {
   parsed: [] as unknown[],
   plays: 0,
@@ -28,7 +24,6 @@ const composer = {
   },
 };
 
-// React needs to know it is inside an act() scope before anything renders.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 mock.module('react-native-pulsar', {
@@ -47,7 +42,6 @@ type Options = Parameters<typeof useHapticLottie>[0];
 type Handle = ReturnType<typeof useHapticLottie>;
 type Preset = NonNullable<Options['preset']>;
 
-/** Renders the hook once and hands back its result. */
 function renderHook(options: Options): Handle {
   let handle: Handle | undefined;
   function Probe() {
@@ -68,10 +62,8 @@ const pattern = {
   discretePattern: [{ time: 0, amplitude: 1, frequency: 0.5 }],
 };
 
-/** The hook's `Pattern` type lives in the native package; the shape above is enough. */
 const asHaptics = (p: object) => p as NonNullable<Options['haptics']>;
 
-/** A generated bundle preset, as the hook sees it. */
 function preset(over: Record<string, unknown> = {}) {
   const played: string[] = [];
   return Object.assign(

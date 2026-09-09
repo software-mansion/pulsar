@@ -1,32 +1,17 @@
 import 'package:pulsar_haptics/pulsar.dart';
 
-/// A [PulsarPlatform] that records every call the Lottie SDK makes into the
-/// engine, so tests can assert what a transport action actually emitted rather
-/// than only that it did not throw.
-class FakePulsarPlatform extends PulsarPlatform {
-  /// Installs a fresh recorder as the platform every test reads through.
-  static FakePulsarPlatform install() {
-    final platform = FakePulsarPlatform();
+class RecordingPulsarPlatform extends PulsarPlatform {
+  static RecordingPulsarPlatform install() {
+    final platform = RecordingPulsarPlatform();
     PulsarPlatform.instance = platform;
     return platform;
   }
 
-  /// Every recorded call, in order, by method name.
   final List<String> calls = <String>[];
-
-  /// `[amplitude, frequency]` of each `RealtimeComposer.set`.
   final List<List<double>> realtimeSets = <List<double>>[];
-
-  /// `[amplitude, frequency]` of each `RealtimeComposer.playDiscrete`.
   final List<List<double>> discretes = <List<double>>[];
-
-  /// Patterns handed to `PatternComposer.parsePattern`.
   final List<PatternData> parsedPatterns = <PatternData>[];
-
-  /// Preset ids played through their own native handle (the audio path).
   final List<String> playedPresets = <String>[];
-
-  /// Preset ids stopped through their own native handle.
   final List<String> stoppedPresets = <String>[];
 
   int _nextComposerId = 1;

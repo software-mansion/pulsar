@@ -29,15 +29,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowVibrator
 
-/**
- * Public-API coverage for [HapticLottieController], [LottieAnimationView.bindHaptics]
- * and [HapticLottieView].
- *
- * Everything here needs a real `Context`, `Vibrator` and `LottieAnimationView`, so it
- * runs under Robolectric. Writing `progress` on a view that has a composition notifies
- * the animator's update listeners synchronously, which is the controller's own per-frame
- * clock — that is how the ticks below are driven deterministically.
- */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class HapticLottieControllerTest {
@@ -55,7 +46,6 @@ class HapticLottieControllerTest {
         ),
     )
 
-    /** Records what the controller's per-frame clock pushes into the realtime engine. */
     private lateinit var realtime: RecordingComposable
 
     @Before
@@ -68,13 +58,10 @@ class HapticLottieControllerTest {
         }
         ShadowVibrator.reset()
         pulsar = Pulsar(app)
-        // `Pulsar` caches one realtime composer, and its delegate is swappable — so the
-        // controller ends up driving this recorder instead of the device.
         realtime = RecordingComposable()
         pulsar.getRealtimeComposer().delegate = realtime
     }
 
-    /** True once the pattern engine has pushed an effect at the device. */
     private fun vibratorTouched(): Boolean {
         val shadow = shadowOf(
             RuntimeEnvironment.getApplication().getSystemService(Vibrator::class.java),
@@ -86,14 +73,17 @@ class HapticLottieControllerTest {
             shadow.primitiveEffects.orEmpty().isNotEmpty()
     }
 
-    private fun composition(): LottieComposition =
+    private fun twoSecondComposition(): LottieComposition =
         LottieCompositionFactory.fromJsonStringSync(TestBundle.LOTTIE_JSON, null).value!!
 
-    /** A view that already renders a 2s composition, so `progress` writes take effect. */
     private fun view(withComposition: Boolean = true): LottieAnimationView =
         LottieAnimationView(RuntimeEnvironment.getApplication()).apply {
-            if (withComposition) setComposition(composition())
+            if (withComposition) setComposition(twoSecondComposition())
         }
+
+    private fun LottieAnimationView.tickAt(ms: Long, clockMs: Long = PATTERN_CLOCK_MS) {
+        progress = ms.toFloat() / clockMs
+    }
 
     private fun preset(
         durationMs: Double = 1500.0,
@@ -102,8 +92,6 @@ class HapticLottieControllerTest {
     ): PresetHandle = pulsar
         .loadBundle(TestBundle.bytes(durationMs, withAudio, withAnimation))
         .handle("celebration")!!
-
-    // region construction
 
     @Test
     fun bindHapticsReturnsAControllerForTheView() {
@@ -115,7 +103,6 @@ class HapticLottieControllerTest {
         val lottie = view()
         val controller = lottie.bindHaptics(pulsar)
 
-        // Transport still steers the animation; nothing reaches the engine.
         controller.setTimestamp(400)
         controller.play()
         controller.stop()
@@ -132,10 +119,6 @@ class HapticLottieControllerTest {
 
         assertEquals(0.5f, lottie.progress, 1e-6f)
     }
-
-    // endregion
-
-    // region duration resolution, observed through setTimestamp
 
     @Test
     fun anExplicitDurationWinsOverEverything() {
@@ -163,7 +146,7 @@ class HapticLottieControllerTest {
         val lottie = view(withComposition = false)
         val controller = lottie.bindHaptics(pulsar, haptics = pattern)
 
-        lottie.setComposition(composition()) // 60 frames @ 30fps ≈ 2000ms
+        lottie.setComposition(twoSecondComposition())
         controller.setTimestamp(1000)
 
         assertEquals(0.5f, lottie.progress, 1e-3f)
@@ -171,7 +154,7 @@ class HapticLottieControllerTest {
 
     @Test
     fun aCompositionTheViewAlreadyHadCountsToo() {
-        val lottie = view() // composition set before binding
+        val lottie = view()
         val controller = lottie.bindHaptics(pulsar, haptics = pattern)
 
         controller.setTimestamp(1000)
@@ -179,14 +162,10 @@ class HapticLottieControllerTest {
         assertEquals(0.5f, lottie.progress, 1e-3f)
     }
 
-    // endregion
-
-    // region transport
-
     @Test
     fun playRewindsToTheStart() {
         val lottie = view()
-        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
         controller.setTimestamp(400)
 
         controller.play()
@@ -197,7 +176,7 @@ class HapticLottieControllerTest {
     @Test
     fun stopAndResetBothRewind() {
         val lottie = view()
-        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
         controller.setTimestamp(600)
         controller.stop()
@@ -211,7 +190,7 @@ class HapticLottieControllerTest {
     @Test
     fun pauseAndResumeLeaveThePlayheadWhereItWas() {
         val lottie = view()
-        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
         controller.setTimestamp(600)
 
         controller.pause()
@@ -223,7 +202,7 @@ class HapticLottieControllerTest {
     @Test
     fun setTimestampClampsToBothEndsOfTheClock() {
         val lottie = view()
-        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
         controller.setTimestamp(5000)
         assertEquals(1f, lottie.progress, 1e-6f)
@@ -238,9 +217,7 @@ class HapticLottieControllerTest {
         val controller = lottie.bindHaptics(pulsar, haptics = pattern)
 
         controller.setLoop(true)
-        // Robolectric's ValueAnimator shadow rewrites INFINITE to 1 so a test can never
-        // hang on an endless animation — all that is observable here is "looping, forward".
-        assertNotEquals(0, lottie.repeatCount)
+        assertNotEquals(NO_REPEATS, lottie.repeatCount)
         assertEquals(LottieDrawable.RESTART, lottie.repeatMode)
 
         controller.setLoop(true, count = 3, reverse = true)
@@ -248,26 +225,22 @@ class HapticLottieControllerTest {
         assertEquals(LottieDrawable.REVERSE, lottie.repeatMode)
 
         controller.setLoop(false)
-        assertEquals(0, lottie.repeatCount)
+        assertEquals(NO_REPEATS, lottie.repeatCount)
     }
-
-    // endregion
-
-    // region the per-frame haptic clock
 
     @Test
     fun aTickSamplesTheEnvelopesAndFiresThePassedTransients() {
         val lottie = view()
-        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
-        lottie.progress = 0.5f // t = 400ms
+        lottie.tickAt(400)
 
         assertEquals(0.5f, realtime.sets.last().first, 1e-3f)
         assertEquals(0.3f, realtime.sets.last().second, 1e-6f)
         assertEquals(1, realtime.discretes.size)
         assertEquals(1f, realtime.discretes.last().first, 1e-6f)
 
-        lottie.progress = 0.9f // t = 720ms — the 600ms transient is now behind us
+        lottie.tickAt(720)
 
         assertEquals(2, realtime.discretes.size)
         assertEquals(0.4f, realtime.discretes.last().first, 1e-6f)
@@ -277,11 +250,11 @@ class HapticLottieControllerTest {
     @Test
     fun aTransientNeverFiresTwiceInOnePass() {
         val lottie = view()
-        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
-        lottie.progress = 0.4f
-        lottie.progress = 0.45f
-        lottie.progress = 0.5f
+        lottie.tickAt(320)
+        lottie.tickAt(360)
+        lottie.tickAt(400)
 
         assertEquals(1, realtime.discretes.size)
     }
@@ -289,11 +262,11 @@ class HapticLottieControllerTest {
     @Test
     fun wrappingBackToTheStartReArmsTheTransients() {
         val lottie = view()
-        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
-        lottie.progress = 0.5f
-        lottie.progress = 0.1f // looped
-        lottie.progress = 0.5f
+        lottie.tickAt(400)
+        lottie.tickAt(80)
+        lottie.tickAt(400)
 
         assertEquals(2, realtime.discretes.size)
     }
@@ -301,9 +274,9 @@ class HapticLottieControllerTest {
     @Test
     fun hapticOffsetShiftsWhereThePatternIsSampled() {
         val lottie = view()
-        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L, hapticOffset = 400L)
+        lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS, hapticOffset = 400L)
 
-        lottie.progress = 0.25f // t = 200ms, sampled at 600ms
+        lottie.tickAt(200)
 
         assertEquals(0.75f, realtime.sets.last().first, 1e-3f)
     }
@@ -315,9 +288,9 @@ class HapticLottieControllerTest {
             continuousPattern = ContinuousPattern(amplitude = emptyList(), frequency = emptyList()),
             discretePattern = listOf(ConfigPoint(100L, 1f, 0.5f)),
         )
-        val controller = lottie.bindHaptics(pulsar, haptics = discreteOnly, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = discreteOnly, durationMs = PATTERN_CLOCK_MS)
 
-        lottie.progress = 0.5f
+        lottie.tickAt(400)
         controller.pause()
 
         assertTrue(realtime.sets.isEmpty())
@@ -328,7 +301,7 @@ class HapticLottieControllerTest {
     @Test
     fun pauseStopAndResetSilenceTheContinuousChannel() {
         val lottie = view()
-        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
         controller.pause()
         controller.stop()
@@ -340,11 +313,11 @@ class HapticLottieControllerTest {
     @Test
     fun playRearmsTheTransientWindow() {
         val lottie = view()
-        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
-        lottie.progress = 0.5f
+        lottie.tickAt(400)
         controller.play()
-        lottie.progress = 0.5f
+        lottie.tickAt(400)
 
         assertEquals(2, realtime.discretes.size)
     }
@@ -353,10 +326,10 @@ class HapticLottieControllerTest {
     fun hapticsDisabledLeavesTheEngineUntouched() {
         val lottie = view()
         val controller =
-            lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L, hapticsEnabled = false)
+            lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS, hapticsEnabled = false)
 
-        lottie.progress = 0.5f
-        lottie.progress = 0.9f
+        lottie.tickAt(400)
+        lottie.tickAt(720)
         controller.play()
         controller.stop()
 
@@ -368,13 +341,13 @@ class HapticLottieControllerTest {
     @Test
     fun releaseDetachesTheListenerSoLaterFramesAreSilent() {
         val lottie = view()
-        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = 800L)
+        val controller = lottie.bindHaptics(pulsar, haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
         controller.release()
         realtime.clear()
 
-        lottie.progress = 0.5f
-        lottie.progress = 0.9f
+        lottie.tickAt(400)
+        lottie.tickAt(720)
 
         assertTrue(realtime.sets.isEmpty())
         assertTrue(realtime.discretes.isEmpty())
@@ -388,13 +361,8 @@ class HapticLottieControllerTest {
         controller.release()
     }
 
-    // endregion
-
-    // region modes
-
     @Test
     fun aPresetWithAudioPlaysThroughThePresetItself() {
-        // `pattern` mode is chosen for it, so the preset's own audio plays with the haptics.
         val controller = view().bindHaptics(pulsar, preset = preset(withAudio = true))
 
         controller.play()
@@ -410,24 +378,18 @@ class HapticLottieControllerTest {
             pulsar,
             haptics = pattern,
             hapticMode = HapticMode.PATTERN,
-            durationMs = 800L,
+            durationMs = PATTERN_CLOCK_MS,
         )
-        // In pattern mode the timeline is not the haptic clock: ticking emits nothing.
-        lottie.progress = 0.5f
+        lottie.tickAt(400)
         assertTrue(realtime.sets.isEmpty())
         assertTrue(realtime.discretes.isEmpty())
         assertFalse(vibratorTouched())
 
-        // The whole buffered pattern goes to the device in one shot instead.
         controller.play()
         assertTrue(vibratorTouched())
 
         controller.stop()
     }
-
-    // endregion
-
-    // region HapticLottieView
 
     @Test
     fun theViewExposesTheControllerItLastBound() {
@@ -444,7 +406,7 @@ class HapticLottieControllerTest {
     @Test
     fun theViewKeepsAnAnimationItAlreadyHas() {
         val lottie = HapticLottieView(RuntimeEnvironment.getApplication())
-        val existing = composition()
+        val existing = twoSecondComposition()
         lottie.setComposition(existing)
 
         lottie.bindHaptics(pulsar, preset = preset())
@@ -462,9 +424,6 @@ class HapticLottieControllerTest {
         assertNotNull(controller)
     }
 
-    // endregion
-
-    /** Stands in for the device end of `RealtimeComposer`. */
     private class RecordingComposable : RealtimeComposable {
         val sets = mutableListOf<Pair<Float, Float>>()
         val discretes = mutableListOf<Pair<Float, Float>>()
@@ -489,5 +448,10 @@ class HapticLottieControllerTest {
             discretes.clear()
             stops = 0
         }
+    }
+
+    private companion object {
+        const val NO_REPEATS = 0
+        const val PATTERN_CLOCK_MS = 800L
     }
 }

@@ -9,8 +9,8 @@ import 'package:pulsar_haptics_lottie/pulsar_haptics_lottie.dart';
 
 import 'fake_pulsar_platform.dart';
 
-/// A 2s (60 frames @ 30fps) animation with nothing in it — enough for the
-/// `lottie` parser, and its length is what `onLoaded` feeds the controller.
+const _sixtyFramesAtThirtyFps = Duration(seconds: 2);
+
 const _lottieJson =
     '{"v":"5.7.4","fr":30,"ip":0,"op":60,"w":100,"h":100,"nm":"empty",'
     '"ddd":0,"assets":[],"layers":[]}';
@@ -39,7 +39,6 @@ PresetHandle _preset({bool withAnimation = true, double duration = 0}) =>
           : null,
     );
 
-/// Serves the one Lottie asset the `.asset` constructor asks for.
 class _TestAssetBundle extends CachingAssetBundle {
   @override
   Future<ByteData> load(String key) async =>
@@ -51,11 +50,16 @@ class _TestAssetBundle extends CachingAssetBundle {
 }
 
 void main() {
-  late FakePulsarPlatform native;
+  late RecordingPulsarPlatform native;
 
   setUp(() {
-    native = FakePulsarPlatform.install();
+    native = RecordingPulsarPlatform.install();
   });
+
+  Future<void> settleComposition(WidgetTester tester) async {
+    await tester.pump();
+    await tester.pump();
+  }
 
   Future<void> pumpLottie(WidgetTester tester, Widget child) async {
     await tester.pumpWidget(
@@ -66,11 +70,7 @@ void main() {
         ),
       ),
     );
-    // Two frames: one for the composition future to resolve, one for `onLoaded`
-    // to run and the animation to be handed its length. Not `pumpAndSettle` —
-    // that would run any auto-played animation all the way to its end.
-    await tester.pump();
-    await tester.pump();
+    await settleComposition(tester);
   }
 
   group('HapticLottie.preset', () {
@@ -171,8 +171,7 @@ void main() {
           onControllerCreated: (c) => controller = c,
         ),
       );
-      // Past the 2s composition, a repeating controller is still running.
-      await tester.pump(const Duration(milliseconds: 2500));
+      await tester.pump(_sixtyFramesAtThirtyFps + const Duration(milliseconds: 500));
 
       expect(controller!.animationController.isAnimating, isTrue);
       await tester.pumpWidget(const SizedBox());
@@ -237,8 +236,10 @@ void main() {
       );
 
       expect(find.byType(Lottie), findsOneWidget);
-      // 60 frames at 30fps.
-      expect(controller!.durationMsResolved, 2000);
+      expect(
+        controller!.durationMsResolved,
+        _sixtyFramesAtThirtyFps.inMilliseconds,
+      );
     });
 
     testWidgets('an explicit durationMs still wins over the composition', (
@@ -304,8 +305,6 @@ void main() {
     ) async {
       HapticLottieController? controller;
 
-      // flutter_test refuses real network calls, so the composition never
-      // arrives — what is covered here is the constructor and the wiring.
       await pumpLottie(
         tester,
         HapticLottie.network(
@@ -315,7 +314,6 @@ void main() {
         ),
       );
 
-      // The builder is mounted; the inner `Lottie` only appears once bytes arrive.
       expect(find.byType(LottieBuilder), findsOneWidget);
       expect(find.byType(Lottie), findsNothing);
       expect(controller, isNotNull);

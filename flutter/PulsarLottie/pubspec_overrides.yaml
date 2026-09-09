@@ -1,5 +1,3 @@
-# Local development only: resolve pulsar_haptics from the in-repo sources, which are
-# ahead of the published package (bundle presets). Not part of the published archive.
 dependency_overrides:
   pulsar_haptics:
     path: ../pulsar

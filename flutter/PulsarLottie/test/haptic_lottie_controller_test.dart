@@ -16,7 +16,6 @@ const _pattern = PatternData(
   ],
 );
 
-/// A pattern with no continuous channels — only transients.
 const _discreteOnly = PatternData(
   continuousPattern: ContinuousPattern(amplitude: [], frequency: []),
   discretePattern: [DiscretePoint(time: 100, amplitude: 1, frequency: 0.5)],
@@ -36,14 +35,22 @@ PresetHandle _preset({
   hasAudio: hasAudio,
 );
 
+const _patternClockMs = 800.0;
+const _defaultCompositionDuration = Duration(milliseconds: 800);
+const _noComposition = Duration.zero;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late FakePulsarPlatform native;
+  late RecordingPulsarPlatform native;
 
   setUp(() {
-    native = FakePulsarPlatform.install();
+    native = RecordingPulsarPlatform.install();
   });
+
+  void tickAt(HapticLottieController controller, double ms) {
+    controller.animationController.value = ms / _patternClockMs;
+  }
 
   HapticLottieController controllerFor({
     PresetHandle? preset,
@@ -54,11 +61,9 @@ void main() {
     bool hapticsEnabled = true,
     Duration? compositionDuration,
   }) {
-    // `play()` drives a real `AnimationController.forward`, which needs a length:
-    // default to one, and pass `Duration.zero` where "no composition yet" is the point.
     final animation = AnimationController(
       vsync: const TestVSync(),
-      duration: compositionDuration ?? const Duration(milliseconds: 800),
+      duration: compositionDuration ?? _defaultCompositionDuration,
     );
     addTearDown(animation.dispose);
     final controller = HapticLottieController(
@@ -144,7 +149,7 @@ void main() {
       expect(
         controllerFor(
           haptics: _pattern,
-          compositionDuration: Duration.zero,
+          compositionDuration: _noComposition,
         ).durationMsResolved,
         800,
       );
@@ -162,7 +167,7 @@ void main() {
 
     test('with nothing to derive from, the clock is zero', () {
       expect(
-        controllerFor(compositionDuration: Duration.zero).durationMsResolved,
+        controllerFor(compositionDuration: _noComposition).durationMsResolved,
         0,
       );
     });
@@ -190,7 +195,7 @@ void main() {
 
   group('realtime transport', () {
     test('play restarts the animation from the beginning', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
       controller.animationController.value = 0.5;
 
       await controller.play();
@@ -200,19 +205,17 @@ void main() {
     });
 
     test('a tick samples the envelopes and fires the transients passed', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
 
-      // Half-way: amplitude ramps 0→1 over 800ms, frequency is a single flat point.
-      controller.animationController.value = 0.5;
+      tickAt(controller, 400);
       await pumpEventQueue();
 
       expect(native.realtimeSets.last, [closeTo(0.5, 1e-6), closeTo(0.3, 1e-6)]);
-      // Only the 250ms transient is behind the playhead.
       expect(native.discretes, [
         [closeTo(1, 1e-6), closeTo(0.5, 1e-6)],
       ]);
 
-      controller.animationController.value = 0.9;
+      tickAt(controller, 720);
       await pumpEventQueue();
 
       expect(native.discretes.length, 2, reason: 'the 600ms transient fires too');
@@ -220,22 +223,22 @@ void main() {
     });
 
     test('a transient never fires twice for the same playhead pass', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
 
-      controller.animationController.value = 0.4;
-      controller.animationController.value = 0.45;
-      controller.animationController.value = 0.5;
+      tickAt(controller, 320);
+      tickAt(controller, 360);
+      tickAt(controller, 400);
       await pumpEventQueue();
 
       expect(native.discretes.length, 1);
     });
 
     test('wrapping back to the start re-arms the transients', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
 
-      controller.animationController.value = 0.5;
-      controller.animationController.value = 0.1; // looped
-      controller.animationController.value = 0.5;
+      tickAt(controller, 400);
+      tickAt(controller, 80);
+      tickAt(controller, 400);
       await pumpEventQueue();
 
       expect(native.discretes.length, 2);
@@ -244,20 +247,20 @@ void main() {
     test('hapticOffset shifts where the pattern is sampled', () async {
       final controller = controllerFor(
         haptics: _pattern,
-        durationMs: 800,
+        durationMs: _patternClockMs,
         hapticOffset: 400,
       );
 
-      controller.animationController.value = 0.25; // t = 200ms, ht = 600ms
+      tickAt(controller, 200);
       await pumpEventQueue();
 
       expect(native.realtimeSets.last.first, closeTo(0.75, 1e-6));
     });
 
     test('a discrete-only pattern drives no continuous channel', () async {
-      final controller = controllerFor(haptics: _discreteOnly, durationMs: 800);
+      final controller = controllerFor(haptics: _discreteOnly, durationMs: _patternClockMs);
 
-      controller.animationController.value = 0.5;
+      tickAt(controller, 400);
       await controller.pause();
       await pumpEventQueue();
 
@@ -271,7 +274,7 @@ void main() {
     });
 
     test('pause stops the animation and the continuous haptic', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
       await controller.play();
 
       await controller.pause();
@@ -282,7 +285,7 @@ void main() {
     });
 
     test('resume drives the animation forward again', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
       controller.animationController.value = 0.4;
 
       await controller.resume();
@@ -291,7 +294,7 @@ void main() {
     });
 
     test('stop rewinds and silences the haptics', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
       await controller.play();
       controller.animationController.value = 0.6;
 
@@ -304,7 +307,7 @@ void main() {
     });
 
     test('reset rewinds like stop', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
       controller.animationController.value = 0.6;
       native.calls.clear();
 
@@ -315,27 +318,35 @@ void main() {
       expect(native.calls, contains('realtimeStop'));
     });
 
-    test('setTimestamp seeks the animation and the transient window', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+    test('setTimestamp seeks the animation', () async {
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
 
       controller.setTimestamp(400);
-      expect(controller.animationController.value, closeTo(0.5, 1e-6));
 
-      // NOTE: writing `AnimationController.value` notifies listeners synchronously,
-      // so the seek itself runs one tick and fires the transients it jumped over —
-      // iOS and Android move the playhead silently. Documented, not asserted as
-      // desired behaviour.
+      expect(controller.animationController.value, closeTo(0.5, 1e-6));
+    });
+
+    test('a tick after a seek does not replay what the seek passed', () async {
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
+      controller.setTimestamp(400);
       native.discretes.clear();
 
-      // What matters either way: the window moved, so the next tick does not
-      // replay what the seek passed.
-      controller.animationController.value = 0.55;
+      tickAt(controller, 440);
       await pumpEventQueue();
+
       expect(native.discretes, isEmpty);
     });
 
+    test('seeking forward replays the transients it jumps over', () async {
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
+
+      controller.setTimestamp(400);
+
+      expect(native.discretes.length, 1);
+    });
+
     test('setTimestamp clamps to the ends of the clock', () {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
 
       controller.setTimestamp(5000);
       expect(controller.animationController.value, 1);
@@ -345,7 +356,7 @@ void main() {
     });
 
     test('setTimestamp is a no-op on a zero-length clock', () {
-      final controller = controllerFor(compositionDuration: Duration.zero);
+      final controller = controllerFor(compositionDuration: _noComposition);
 
       controller.setTimestamp(400);
 
@@ -353,7 +364,7 @@ void main() {
     });
 
     test('setLoop(true) repeats the animation and rearms the haptics', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
 
       await controller.setLoop(true, count: 2, reverse: true);
 
@@ -361,7 +372,7 @@ void main() {
     });
 
     test('setLoop(false) stops the animation', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
       await controller.play();
 
       await controller.setLoop(false);
@@ -370,7 +381,7 @@ void main() {
     });
 
     test('dispose detaches the listener, so later frames are silent', () async {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
       controller.dispose();
       native.calls.clear();
       native.realtimeSets.clear();
@@ -383,7 +394,7 @@ void main() {
     });
 
     test('dispose is idempotent', () {
-      final controller = controllerFor(haptics: _pattern, durationMs: 800);
+      final controller = controllerFor(haptics: _pattern, durationMs: _patternClockMs);
 
       controller.dispose();
 
@@ -395,7 +406,7 @@ void main() {
     test('the animation still runs but nothing is sent to the engine', () async {
       final controller = controllerFor(
         haptics: _pattern,
-        durationMs: 800,
+        durationMs: _patternClockMs,
         hapticsEnabled: false,
       );
 
@@ -415,7 +426,7 @@ void main() {
       final controller = controllerFor(
         haptics: _pattern,
         hapticMode: HapticMode.pattern,
-        durationMs: 800,
+        durationMs: _patternClockMs,
       );
       await pumpEventQueue();
 
@@ -432,7 +443,7 @@ void main() {
       final controller = controllerFor(
         haptics: _pattern,
         hapticMode: HapticMode.pattern,
-        durationMs: 800,
+        durationMs: _patternClockMs,
       );
       await pumpEventQueue();
 
@@ -450,7 +461,7 @@ void main() {
       final controller = controllerFor(
         haptics: _pattern,
         hapticMode: HapticMode.pattern,
-        durationMs: 800,
+        durationMs: _patternClockMs,
       );
 
       controller.animationController.value = 0.5;
@@ -464,7 +475,7 @@ void main() {
       final controller = controllerFor(
         haptics: _pattern,
         hapticMode: HapticMode.pattern,
-        durationMs: 800,
+        durationMs: _patternClockMs,
       );
       await pumpEventQueue();
 
@@ -502,7 +513,7 @@ void main() {
       );
 
       await controller.play();
-      controller.animationController.value = 0.5;
+      tickAt(controller, 400);
       await controller.pause();
       await controller.stop();
       await pumpEventQueue();

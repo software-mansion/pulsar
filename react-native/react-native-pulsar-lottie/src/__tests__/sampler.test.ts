@@ -132,7 +132,6 @@ describe('lottieDurationMs', () => {
   test('gives up on a source it cannot read', () => {
     assert.equal(lottieDurationMs(undefined), undefined);
     assert.equal(lottieDurationMs(42), undefined);
-    // A `require()`d asset — a number to the bundler, nothing to read here.
     assert.equal(lottieDurationMs({ uri: 'https://example.com/a.json' }), undefined);
     assert.equal(lottieDurationMs({ fr: 30 }), undefined);
   });

@@ -12,12 +12,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Public-API coverage for [HapticLottieEngine] and [animationJson] — the whole
- * non-Compose surface of the KMP Lottie SDK. The `@Composable` wrappers
- * ([HapticLottie], [HapticLottieSync]) are thin adapters that feed this engine
- * a Compose progress value.
- */
 class HapticLottieEngineTest {
 
     private lateinit var pulsar: Pulsar
@@ -36,13 +30,18 @@ class HapticLottieEngineTest {
 
     @BeforeTest
     fun setUp() {
-        val (p, handle) = installTestPulsar()
+        val (p, handle) = installRecordingPulsar()
         pulsar = p
         device = handle
     }
 
     private fun preset(durationMs: Double = 1500.0, withAnimation: Boolean = true): PresetHandle =
         pulsar.loadBundle(TestBundle.bytes(durationMs, withAnimation)).handle("celebration")!!
+
+    private fun HapticLottieEngine.tickAt(ms: Long, animationMs: Long = 0L) {
+        val clock = if (animationMs > 0L) animationMs else PATTERN_CLOCK_MS
+        onProgress(ms.toFloat() / clock, animationMs)
+    }
 
     private fun engine(
         preset: PresetHandle? = null,
@@ -60,8 +59,6 @@ class HapticLottieEngineTest {
         hapticsEnabled = hapticsEnabled,
         durationMs = durationMs,
     )
-
-    // region duration resolution
 
     @Test
     fun anExplicitDurationWinsOverEverything() {
@@ -89,23 +86,19 @@ class HapticLottieEngineTest {
         assertEquals(0L, engine().resolvedDurationMs)
     }
 
-    // endregion
-
-    // region the progress-driven clock
-
     @Test
     fun progressSamplesTheEnvelopesAndFiresThePassedTransients() {
-        val e = engine(haptics = pattern, durationMs = 800L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS)
         e.setPlaying(true)
 
-        e.onProgress(0.5f) // t = 400ms
+        e.tickAt(400)
 
         assertEquals(0.5f, device.realtime.sets.last().first, 1e-3f)
         assertEquals(0.3f, device.realtime.sets.last().second, 1e-6f)
         assertEquals(1, device.realtime.discretes.size)
         assertEquals(1f, device.realtime.discretes.last().first, 1e-6f)
 
-        e.onProgress(0.9f) // t = 720ms
+        e.tickAt(720)
 
         assertEquals(2, device.realtime.discretes.size)
         assertEquals(0.4f, device.realtime.discretes.last().first, 1e-6f)
@@ -114,9 +107,9 @@ class HapticLottieEngineTest {
 
     @Test
     fun nothingIsEmittedBeforePlayingStarts() {
-        val e = engine(haptics = pattern, durationMs = 800L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
-        e.onProgress(0.5f)
+        e.tickAt(400)
 
         assertTrue(device.realtime.sets.isEmpty())
         assertTrue(device.realtime.discretes.isEmpty())
@@ -124,34 +117,34 @@ class HapticLottieEngineTest {
 
     @Test
     fun aTransientNeverFiresTwiceInOnePass() {
-        val e = engine(haptics = pattern, durationMs = 800L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS)
         e.setPlaying(true)
 
-        e.onProgress(0.4f)
-        e.onProgress(0.45f)
-        e.onProgress(0.5f)
+        e.tickAt(320)
+        e.tickAt(360)
+        e.tickAt(400)
 
         assertEquals(1, device.realtime.discretes.size)
     }
 
     @Test
     fun wrappingBackToTheStartReArmsTheTransients() {
-        val e = engine(haptics = pattern, durationMs = 800L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS)
         e.setPlaying(true)
 
-        e.onProgress(0.5f)
-        e.onProgress(0.1f) // looped
-        e.onProgress(0.5f)
+        e.tickAt(400)
+        e.tickAt(80)
+        e.tickAt(400)
 
         assertEquals(2, device.realtime.discretes.size)
     }
 
     @Test
     fun aCallerCanSupplyItsOwnAnimationLength() {
-        val e = engine(haptics = pattern) // no fixed duration
+        val e = engine(haptics = pattern)
         e.setPlaying(true)
 
-        e.onProgress(0.25f, durationMs = 1600L) // t = 400ms
+        e.tickAt(400, animationMs = 1600L)
 
         assertEquals(0.5f, device.realtime.sets.last().first, 1e-3f)
         assertEquals(1, device.realtime.discretes.size)
@@ -159,20 +152,20 @@ class HapticLottieEngineTest {
 
     @Test
     fun anExplicitDurationOutranksTheOneFedPerFrame() {
-        val e = engine(haptics = pattern, durationMs = 800L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS)
         e.setPlaying(true)
 
-        e.onProgress(0.5f, durationMs = 4000L) // still t = 400ms
+        e.onProgress(progress = 0.5f, durationMs = 4000L)
 
         assertEquals(0.5f, device.realtime.sets.last().first, 1e-3f)
     }
 
     @Test
     fun hapticOffsetShiftsWhereThePatternIsSampled() {
-        val e = engine(haptics = pattern, durationMs = 800L, hapticOffset = 400L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS, hapticOffset = 400L)
         e.setPlaying(true)
 
-        e.onProgress(0.25f) // t = 200ms, sampled at 600ms
+        e.tickAt(200)
 
         assertEquals(0.75f, device.realtime.sets.last().first, 1e-3f)
     }
@@ -183,10 +176,10 @@ class HapticLottieEngineTest {
             continuousPattern = ContinuousPattern(amplitude = emptyList(), frequency = emptyList()),
             discretePattern = listOf(ConfigPoint(100L, 1f, 0.5f)),
         )
-        val e = engine(haptics = discreteOnly, durationMs = 800L)
+        val e = engine(haptics = discreteOnly, durationMs = PATTERN_CLOCK_MS)
         e.setPlaying(true)
 
-        e.onProgress(0.5f)
+        e.tickAt(400)
         e.stop()
 
         assertTrue(device.realtime.sets.isEmpty())
@@ -196,10 +189,10 @@ class HapticLottieEngineTest {
 
     @Test
     fun hapticsDisabledLeavesTheEngineUntouched() {
-        val e = engine(haptics = pattern, durationMs = 800L, hapticsEnabled = false)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS, hapticsEnabled = false)
 
         e.setPlaying(true)
-        e.onProgress(0.5f)
+        e.tickAt(400)
         e.setPlaying(false)
 
         assertTrue(device.realtime.sets.isEmpty())
@@ -207,27 +200,23 @@ class HapticLottieEngineTest {
         assertEquals(0, device.pattern.plays)
     }
 
-    // endregion
-
-    // region play/pause and stop
-
     @Test
     fun pausingStopsTheContinuousChannelAndRewindsTheWindow() {
-        val e = engine(haptics = pattern, durationMs = 800L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS)
         e.setPlaying(true)
-        e.onProgress(0.5f)
+        e.tickAt(400)
 
         e.setPlaying(false)
         assertEquals(1, device.realtime.stops)
 
         e.setPlaying(true)
-        e.onProgress(0.5f)
+        e.tickAt(400)
         assertEquals(2, device.realtime.discretes.size, "the window restarts, so the transient replays")
     }
 
     @Test
     fun repeatingTheSamePlayStateChangesNothing() {
-        val e = engine(haptics = pattern, durationMs = 800L)
+        val e = engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS)
 
         e.setPlaying(true)
         e.setPlaying(true)
@@ -239,18 +228,14 @@ class HapticLottieEngineTest {
 
     @Test
     fun stopIsSafeBeforeAnythingPlayed() {
-        engine(haptics = pattern, durationMs = 800L).stop()
+        engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS).stop()
 
         assertEquals(1, device.realtime.stops)
     }
 
-    // endregion
-
-    // region pattern mode
-
     @Test
     fun patternModeBuffersUpFrontAndFiresOnPlay() {
-        val e = engine(haptics = pattern, hapticMode = HapticMode.PATTERN, durationMs = 800L)
+        val e = engine(haptics = pattern, hapticMode = HapticMode.PATTERN, durationMs = PATTERN_CLOCK_MS)
 
         assertEquals(1, device.pattern.parsed.size, "the pattern is pre-parsed so play() is instant")
         assertEquals(0, device.pattern.plays)
@@ -258,7 +243,7 @@ class HapticLottieEngineTest {
         e.setPlaying(true)
         assertEquals(1, device.pattern.plays)
 
-        e.onProgress(0.5f)
+        e.tickAt(400)
         assertTrue(device.realtime.sets.isEmpty(), "the timeline is not the haptic clock here")
 
         e.setPlaying(false)
@@ -276,7 +261,7 @@ class HapticLottieEngineTest {
 
     @Test
     fun realtimeIsTheDefaultAndNeedsNoPatternComposer() {
-        engine(haptics = pattern, durationMs = 800L).setPlaying(true)
+        engine(haptics = pattern, durationMs = PATTERN_CLOCK_MS).setPlaying(true)
 
         assertTrue(device.pattern.parsed.isEmpty())
         assertEquals(0, device.pattern.plays)
@@ -287,7 +272,7 @@ class HapticLottieEngineTest {
         val e = engine()
 
         e.setPlaying(true)
-        e.onProgress(0.5f)
+        e.tickAt(400)
         e.stop()
 
         assertTrue(device.pattern.parsed.isEmpty())
@@ -307,16 +292,12 @@ class HapticLottieEngineTest {
         val e = engine(preset = preset(), haptics = ownPattern, durationMs = 400L)
         e.setPlaying(true)
 
-        e.onProgress(0.5f)
+        e.tickAt(400)
 
         assertEquals(1f, device.realtime.sets.last().first, 1e-6f)
         assertEquals(0.9f, device.realtime.sets.last().second, 1e-6f)
         assertTrue(device.realtime.discretes.isEmpty(), "the preset's transients are not used")
     }
-
-    // endregion
-
-    // region the preset's animation
 
     @Test
     fun animationJsonDecodesTheLottieThePresetWasAuthoredAgainst() {
@@ -328,5 +309,7 @@ class HapticLottieEngineTest {
         assertNull(preset(withAnimation = false).animationJson())
     }
 
-    // endregion
+    private companion object {
+        const val PATTERN_CLOCK_MS = 800L
+    }
 }

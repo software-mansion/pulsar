@@ -37,7 +37,6 @@ android {
     }
     testOptions {
         unitTests {
-            // Robolectric needs the Android resources/manifest available to unit tests.
             isIncludeAndroidResources = true
         }
     }
@@ -50,7 +49,6 @@ dependencies {
     implementation(libs.lottie)
     implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
-    // Pinned here rather than in the example app's shared catalog, matching :Pulsar.
     testImplementation("org.robolectric:robolectric:4.14.1")
 }
 
