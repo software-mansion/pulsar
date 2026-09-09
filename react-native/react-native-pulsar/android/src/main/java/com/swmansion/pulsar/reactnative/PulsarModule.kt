@@ -1,8 +1,10 @@
 package com.swmansion.pulsar.reactnative
 
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.swmansion.pulsar.bundle.LoadedBundle
 import com.swmansion.pulsar.composers.PatternComposer
@@ -53,16 +55,16 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun Pulsar_hasAmplitudeControl(): Boolean = pulsar.hasAmplitudeControl()
-
-  override fun Pulsar_hasPrimitiveSupport(): Boolean = pulsar.hasPrimitiveSupport()
-
-  override fun Pulsar_isEnvelopeSupported(): Boolean = pulsar.isEnvelopeSupported()
-
-  override fun Pulsar_isFrequencyProfileSupported(): Boolean = pulsar.isFrequencyProfileSupported()
-
-  override fun Pulsar_minControlPointDurationMillis(): Double =
-    pulsar.minControlPointDurationMillis().toDouble()
+  override fun Pulsar_hapticCapabilities(): WritableMap {
+    val capabilities = pulsar.hapticCapabilities()
+    return Arguments.createMap().apply {
+      putBoolean("hasAmplitudeControl", capabilities.hasAmplitudeControl)
+      putBoolean("hasPrimitiveSupport", capabilities.hasPrimitiveSupport)
+      putBoolean("isEnvelopeSupported", capabilities.isEnvelopeSupported)
+      putBoolean("isFrequencyProfileSupported", capabilities.isFrequencyProfileSupported)
+      putDouble("minControlPointDurationMillis", capabilities.minControlPointDurationMillis.toDouble())
+    }
+  }
 
   override fun Pulsar_forceHapticsSupportLevel(level: Double) {
     val mode = when (level.toInt()) {

@@ -1,14 +1,14 @@
 export {};
 
-// Settings is a thin wrapper over the Turbo Module, so the mock stands in for the
-// native side and the assertions cover the mapping.
 const mockNative = {
   Pulsar_hapticSupport: jest.fn(() => 2),
-  Pulsar_hasAmplitudeControl: jest.fn(() => true),
-  Pulsar_hasPrimitiveSupport: jest.fn(() => false),
-  Pulsar_isEnvelopeSupported: jest.fn(() => false),
-  Pulsar_isFrequencyProfileSupported: jest.fn(() => false),
-  Pulsar_minControlPointDurationMillis: jest.fn(() => 35),
+  Pulsar_hapticCapabilities: jest.fn(() => ({
+    hasAmplitudeControl: true,
+    hasPrimitiveSupport: false,
+    isEnvelopeSupported: false,
+    isFrequencyProfileSupported: false,
+    minControlPointDurationMillis: 35,
+  })),
   Pulsar_enableHaptics: jest.fn(),
   Pulsar_enableSound: jest.fn(),
   Pulsar_enableCache: jest.fn(),
@@ -41,7 +41,11 @@ jest.mock('../NativeRNPulsar', () => ({
 const Settings = require('../Settings').default;
 
 describe('Settings.getHapticCapabilities', () => {
-  it('maps every capability from its native getter', () => {
+  beforeEach(() => {
+    mockNative.Pulsar_hapticCapabilities.mockClear();
+  });
+
+  it('returns the capabilities the single native call reports', () => {
     expect(Settings.getHapticCapabilities()).toEqual({
       hasAmplitudeControl: true,
       hasPrimitiveSupport: false,
@@ -49,10 +53,9 @@ describe('Settings.getHapticCapabilities', () => {
       isFrequencyProfileSupported: false,
       minControlPointDurationMillis: 35,
     });
+    expect(mockNative.Pulsar_hapticCapabilities).toHaveBeenCalledTimes(1);
   });
 
-  // The support level is decided by amplitude control, so it cannot answer the
-  // primitive question on its own — that is the reason these flags are exposed.
   it('reports missing primitives on a device the level calls STANDARD_SUPPORT', () => {
     expect(Settings.getHapticsSupportLevel()).toBe(2);
     expect(Settings.getHapticCapabilities().hasPrimitiveSupport).toBe(false);

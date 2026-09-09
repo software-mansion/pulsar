@@ -756,8 +756,6 @@ import { Settings } from 'react-native-pulsar';
 
 const { hasPrimitiveSupport } = Settings.getHapticCapabilities();
 
-// Composed primitives are dropped silently when unsupported, so pick a
-// waveform-based pattern on those devices instead.
 if (!hasPrimitiveSupport) {
   Settings.enableImpulseCompositionMode(false);
 }

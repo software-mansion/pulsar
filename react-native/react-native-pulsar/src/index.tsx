@@ -26,7 +26,6 @@ export type {
   AdaptivePreset,
   AdaptivePresetConfig,
   AdaptiveHaptics,
-  HapticCapabilities,
 } from './types';
 export type {
   Bundle,
@@ -38,4 +37,5 @@ export type {
   PresetMedia,
 } from './createBundle';
 export { HapticSupport, RealtimeComposerStrategy } from './NativeRNPulsar';
+export type { HapticCapabilities } from './NativeRNPulsar';
 export type { RealtimeComposer } from './useRealtimeComposer';

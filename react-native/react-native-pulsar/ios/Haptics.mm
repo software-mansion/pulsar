@@ -155,28 +155,15 @@ RCT_EXPORT_MODULE()
   return [pulsar_ isHapticsSupported] ? @(3) : @(0);
 }
 
-// Core Haptics exposes one `supportsHaptics` capability and the Taptic Engine renders the
-// full event set uniformly, so the render-capability flags all mirror it.
-- (nonnull NSNumber *)Pulsar_hasAmplitudeControl {
-  return @([pulsar_ isHapticsSupported]);
-}
-
-- (nonnull NSNumber *)Pulsar_hasPrimitiveSupport {
-  return @([pulsar_ isHapticsSupported]);
-}
-
-- (nonnull NSNumber *)Pulsar_isEnvelopeSupported {
-  return @([pulsar_ isHapticsSupported]);
-}
-
-- (nonnull NSNumber *)Pulsar_isFrequencyProfileSupported {
-  // Core Haptics models sharpness rather than exposing a vendor frequency profile.
-  return @(NO);
-}
-
-- (nonnull NSNumber *)Pulsar_minControlPointDurationMillis {
-  // Core Haptics has no vendor-reported minimum; parameter curves are continuous.
-  return @(0);
+- (nonnull NSDictionary *)Pulsar_hapticCapabilities {
+  NSNumber *coreHapticsSupported = @([pulsar_ isHapticsSupported]);
+  return @{
+    @"hasAmplitudeControl" : coreHapticsSupported,
+    @"hasPrimitiveSupport" : coreHapticsSupported,
+    @"isEnvelopeSupported" : coreHapticsSupported,
+    @"isFrequencyProfileSupported" : @(NO),
+    @"minControlPointDurationMillis" : @(0),
+  };
 }
 
 - (void)Pulsar_forceHapticsSupportLevel:(double)level {
