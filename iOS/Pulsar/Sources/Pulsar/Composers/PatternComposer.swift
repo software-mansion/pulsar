@@ -18,6 +18,7 @@ public class PatternComposer: NSObject {
   // (Core Haptics registers an audio resource by URL only, so a windowed clip has to be
   // sliced to a file first). Removed on the next parse and on dispose.
   private var tempAudioURL: URL?
+  private var audioResourceID: CHHapticAudioResourceID?
 
   public convenience init(engine: HapticEngineWrapper, audioSimulator: AudioSimulator) {
     self.init()
@@ -29,14 +30,25 @@ public class PatternComposer: NSObject {
     dispose()
   }
 
-  @objc public func parsePattern(hapticsData: PatternData) {
-    parse(hapticsData: hapticsData, audioEvent: nil)
+  /// `fromMs` starts the pattern that far into its own timeline.
+  @objc public func parsePattern(hapticsData: PatternData, fromMs: Double = 0) {
+    releaseAudio()
+    parse(hapticsData: PatternSeek.pattern(hapticsData, from: fromMs), audioEvent: nil)
   }
 
-  @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0) {
-    removeTempAudio()
-    let audioEvent = makeAudioEvent(uri: uri, volume: volume, offset: offset, start: start, duration: duration)
-    parse(hapticsData: hapticsData, audioEvent: audioEvent)
+  /// `start`/`duration` are the authored trim window in the file; `fromMs` seeks the whole
+  /// preset, moving audio and haptics together.
+  @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0, fromMs: Double = 0) {
+    releaseAudio()
+    let window = PatternSeek.soundWindow(offset: offset, start: start, duration: duration, from: fromMs)
+    let audioEvent = makeAudioEvent(
+      uri: uri,
+      volume: volume,
+      offset: window.offset,
+      start: window.start,
+      duration: window.duration
+    )
+    parse(hapticsData: PatternSeek.pattern(hapticsData, from: fromMs), audioEvent: audioEvent)
   }
 
   private func parse(hapticsData: PatternData, audioEvent: CHHapticEvent?) {
@@ -115,6 +127,7 @@ public class PatternComposer: NSObject {
       }
     }
     guard let resourceID = engine.registerAudioResource(url: url) else { return nil }
+    audioResourceID = resourceID
     return CHHapticEvent(
       audioResourceID: resourceID,
       parameters: [CHHapticEventParameter(parameterID: .audioVolume, value: volume)],
@@ -149,7 +162,11 @@ public class PatternComposer: NSObject {
     }
   }
 
-  private func removeTempAudio() {
+  private func releaseAudio() {
+    if let id = audioResourceID {
+      engine.unregisterAudioResource(id)
+      audioResourceID = nil
+    }
     if let url = tempAudioURL {
       try? FileManager.default.removeItem(at: url)
       tempAudioURL = nil
@@ -193,6 +210,6 @@ public class PatternComposer: NSObject {
     discretePattern = nil
     audioBuffer = nil
     hasSound = false
-    removeTempAudio()
+    releaseAudio()
   }
 }

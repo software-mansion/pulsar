@@ -446,6 +446,19 @@ One generated module drives both paths, so the types are identical either way. L
 twice gives two independent bundles; `dispose()` on one leaves the other working, and a disposed
 bundle is inert rather than silently re-parsing.
 
+### Playing from a position
+
+Pass `fromMs` to start a preset that far into its own timeline, so a progress bar can scrub it:
+
+```ts
+bundle.celebration.play(2500);   // start 2.5s in
+bundle.celebration.play();       // ...and from the top
+```
+
+The native side re-anchors the pattern and seeks the audio to match, so both move together. On the
+embedded-pattern path there is no audio to move, so a seek there scrubs the haptics alone. Every
+non-zero seek re-parses; playing from the start reuses the cached parse.
+
 ---
 
 ## usePatternComposer

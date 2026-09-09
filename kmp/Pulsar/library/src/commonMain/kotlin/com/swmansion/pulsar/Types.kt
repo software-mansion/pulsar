@@ -50,6 +50,11 @@ data class SoundData(
     val offset: Long = 0L,
     val startMs: Long = 0L,
     val durationMs: Long = 0L,
+    /**
+     * Whether the file carries baked haptic channels. Android only, and only for an explicit
+     * `.ogg`: when false the file is plain audio and Pulsar's own haptics play alongside it.
+     */
+    val hapticChannels: Boolean = true,
 )
 
 data class PatternData(

@@ -107,6 +107,28 @@ describe('loadBundleSync', () => {
     expect(native.PatternComposer_play).toHaveBeenLastCalledWith(100);
   });
 
+  it('hands the seek to the native composer and re-parses only when it moves', () => {
+    const bundle = defineBundle(definition).loadBundleSync(false);
+
+    bundle.heartbeatV2.play();
+    bundle.heartbeatV2.play(600);
+    bundle.heartbeatV2.play(600);
+
+    expect(native.PatternComposer_parsePattern).toHaveBeenCalledTimes(2);
+    expect(native.PatternComposer_parsePattern).toHaveBeenNthCalledWith(
+      1,
+      definition.presets.heartbeatV2.pattern,
+      0
+    );
+    expect(native.PatternComposer_parsePattern).toHaveBeenNthCalledWith(
+      2,
+      definition.presets.heartbeatV2.pattern,
+      600
+    );
+    expect(native.PatternComposer_release).toHaveBeenCalledWith(100);
+    expect(native.PatternComposer_play).toHaveBeenLastCalledWith(101);
+  });
+
   it('exposes preset metadata and dynamic lookup', () => {
     const bundle = defineBundle(definition).loadBundleSync();
 
@@ -129,9 +151,28 @@ describe('loadBundleSync', () => {
     bundle.explosion.play();
     expect(native.Pulsar_playBundlePreset).toHaveBeenCalledWith(
       'com.acme.haptics#1',
-      'explosion'
+      'explosion',
+      0
     );
     expect(native.PatternComposer_parsePattern).not.toHaveBeenCalled();
+  });
+
+  it('forwards a seek position to the native bundle', () => {
+    const bundle = defineBundle(definition).loadBundleSync(true);
+
+    bundle.explosion.play(750);
+    expect(native.Pulsar_playBundlePreset).toHaveBeenLastCalledWith(
+      'com.acme.haptics#1',
+      'explosion',
+      750
+    );
+
+    bundle.explosion.play(-1);
+    expect(native.Pulsar_playBundlePreset).toHaveBeenLastCalledWith(
+      'com.acme.haptics#1',
+      'explosion',
+      0
+    );
   });
 
   it('throws when the native sync load fails', () => {
@@ -158,7 +199,8 @@ describe('loadBundleAsync', () => {
     expect(result).toBeUndefined();
     expect(native.Pulsar_playBundlePreset).toHaveBeenCalledWith(
       'com.acme.haptics#1',
-      'explosion'
+      'explosion',
+      0
     );
   });
 

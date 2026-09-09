@@ -31,6 +31,7 @@ import 'bundles/acme_pack.bundle.dart';
 final pulsar = Pulsar();
 final bundle = await pulsar.loadBundleAsync(acmePack); // acmePack is generated
 bundle.heartbeatV2.play();                 // ← autocompletes
+bundle.heartbeatV2.play(fromMs: 2500);     // starts 2.5s in
 bundle.explosion.stop();
 ```
 

@@ -134,7 +134,11 @@ class MockPulsarPlatform
   }) async => const [];
 
   @override
-  Future<void> playBundlePreset(String token, String presetId) async {}
+  Future<void> playBundlePreset(
+    String token,
+    String presetId, {
+    double fromMs = 0,
+  }) async {}
 
   @override
   Future<void> stopBundlePreset(String token, String presetId) async {}

@@ -258,8 +258,6 @@ fun App() {
 /**
  * Plays presets from a bundle shipped as a Compose resource. KMP has no shared asset API, so the
  * app supplies the bytes — hence the suspending read.
- *
- * KMP v1 has no bundle audio yet, so `arcadeBonusAlert` is felt but not heard.
  */
 @Composable
 private fun BundleCard(pulsar: Pulsar?, onStatus: (String) -> Unit) {

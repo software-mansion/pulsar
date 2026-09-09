@@ -7,6 +7,7 @@ import com.swmansion.pulsar.audio.AudioHapticPlayer
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.PatternSeek
 import com.swmansion.pulsar.types.SoundData
 
 class PatternComposer(
@@ -28,34 +29,44 @@ class PatternComposer(
     private var soundPlayer: AudioHapticPlayer? = null
     private var useCoupledHaptics = false
 
-    fun parsePattern(hapticsData: PatternData) {
+    /** [fromMs] starts the pattern that far into its own timeline. */
+    @JvmOverloads
+    fun parsePattern(hapticsData: PatternData, fromMs: Long = 0L) {
+        val seekedPattern = PatternSeek.patternFrom(hapticsData, fromMs)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrationEffect = try {
-                engine.getHapticBuilder().createVibrationEffect(hapticsData)
+                engine.getHapticBuilder().createVibrationEffect(seekedPattern)
             } catch (_: IllegalArgumentException) {
-                val message = "Skipping invalid haptic pattern after Android validation failure: ${summarizePattern(hapticsData)}"
+                val message = "Skipping invalid haptic pattern after Android validation failure: ${summarizePattern(seekedPattern)}"
                 Log.w(TAG, message)
                 null
             }
             if (vibrationEffect == null) {
-                val message = "Skipping invalid haptic pattern because it produced no playable vibration effect: ${summarizePattern(hapticsData)}"
+                val message = "Skipping invalid haptic pattern because it produced no playable vibration effect: ${summarizePattern(seekedPattern)}"
                 Log.w(TAG, message)
             }
         }
 
-        audioBuffer = audioSimulator.parsePattern(hapticsData)
+        audioBuffer = audioSimulator.parsePattern(seekedPattern)
     }
 
-    fun parsePatternWithSound(hapticsData: PatternData, sound: SoundData) {
-        parsePattern(hapticsData)
+    /**
+     * The sound's own `startMs`/`durationMs` are the authored trim window in the file; [fromMs]
+     * seeks the whole preset, moving audio and haptics together.
+     */
+    @JvmOverloads
+    fun parsePatternWithSound(hapticsData: PatternData, sound: SoundData, fromMs: Long = 0L) {
+        parsePattern(hapticsData, fromMs)
 
+        val seekedSound = PatternSeek.soundFrom(sound, fromMs)
         soundPlayer?.release()
 
-        useCoupledHaptics = sound.hapticChannels && isOggUri(sound.uri) && engine.supportsAudioCoupledHaptics()
+        useCoupledHaptics =
+            seekedSound.hapticChannels && isOggUri(seekedSound.uri) && engine.supportsAudioCoupledHaptics()
 
         soundPlayer = AudioHapticPlayer(
             context = engine.getContext(),
-            sound = sound,
+            sound = seekedSound,
             hapticChannelsMuted = !useCoupledHaptics,
         ).also { it.load() }
     }

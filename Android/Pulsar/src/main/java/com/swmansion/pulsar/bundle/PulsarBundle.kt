@@ -35,16 +35,21 @@ class PresetHandle internal constructor(
 
     private var composer: PatternComposer? = null
 
-    private fun ensureParsed() {
-        if (composer == null) {
-            val c = haptics.getPatternComposer()
-            if (sound != null) c.parsePatternWithSound(pattern, sound) else c.parsePattern(pattern)
-            composer = c
-        }
+    private var parsedFromMs: Long? = null
+
+    private fun ensureParsed(fromMs: Long) {
+        val alreadyParsedHere = composer != null && parsedFromMs == fromMs
+        if (alreadyParsedHere) return
+        val c = composer ?: haptics.getPatternComposer()
+        if (sound != null) c.parsePatternWithSound(pattern, sound, fromMs) else c.parsePattern(pattern, fromMs)
+        composer = c
+        parsedFromMs = fromMs
     }
 
-    fun play() {
-        ensureParsed()
+    /** Plays the preset from [fromMs] into its timeline, audio and haptics together. */
+    @JvmOverloads
+    fun play(fromMs: Long = 0L) {
+        ensureParsed(maxOf(0L, fromMs))
         composer?.play()
     }
 
@@ -55,6 +60,7 @@ class PresetHandle internal constructor(
     internal fun dispose() {
         composer?.release()
         composer = null
+        parsedFromMs = null
     }
 }
 
@@ -67,9 +73,10 @@ class LoadedBundle internal constructor(
 ) {
     fun handle(id: String): PresetHandle? = handles[id]
     val presetIds: List<String> get() = handles.keys.toList()
-    fun play(id: String): Boolean {
+    @JvmOverloads
+    fun play(id: String, fromMs: Long = 0L): Boolean {
         val h = handles[id] ?: return false
-        h.play()
+        h.play(fromMs)
         return true
     }
     fun dispose() = handles.values.forEach { it.dispose() }

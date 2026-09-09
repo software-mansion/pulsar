@@ -89,6 +89,11 @@ internal class IOSHapticEngineWrapper {
         return if (id == null || id.toLong() == 0L) null else id
     }
 
+    fun unregisterAudioResource(id: CHHapticAudioResourceID) {
+        runCatching { engine?.unregisterAudioResource(id, null) }
+            .onFailure { log("Error unregistering audio resource: ${it.message}") }
+    }
+
     fun getRealtimePlayer(): CHHapticAdvancedPatternPlayerProtocol? {
         if (!canPlayHaptics()) return null
         startEngine()

@@ -45,11 +45,14 @@ a bundle stored there always takes the `bytes` overload — which is what the ex
 The loaded bundle's content hash is asserted against the generated types, failing loudly on a stale
 bundle/types mismatch. Pass `strict = false` to skip it.
 
-## Limits
+## Media
 
-KMP v1 plays a preset's haptics and exposes its animation bytes (`preset.animation`) for the host
-app's own Lottie view. **Synced bundle audio is not wired yet** — it needs platform temp-file
-extraction — so use the native iOS/Android SDKs for audio-synced packs.
+A preset plays its haptics and, when it carries one, its synced audio track — the loader extracts
+the audio from the archive into a platform cache directory, because both composers take audio by
+uri. `preset.hasAudio` reports whether there is one.
+
+Animation is carried, not rendered: `preset.animation` exposes the Lottie bytes and timing for the
+host app's own Lottie view.
 
 ## Untyped surface
 
@@ -57,4 +60,5 @@ extraction — so use the native iOS/Android SDKs for audio-synced packs.
 val loaded = pulsar.loadBundle(bytes)   // no descriptor
 loaded.presetIds                        // -> List<String>
 loaded.play("heartbeatV2")              // -> Boolean
+loaded.play("heartbeatV2", fromMs = 2500)   // seeks audio + haptics
 ```

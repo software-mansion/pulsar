@@ -728,10 +728,19 @@ Audio authored into a preset plays through the native iOS/Android path alongside
 animation bytes are carried for your own Lottie view.
 
 Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`,
-`play()`, `stop()`, and `animation` — the Lottie `data`, `frameRate` and `totalFrames`, ready for
+`play({fromMs})`, `stop()`, and `animation` — the Lottie `data`, `frameRate` and `totalFrames`, ready for
 `Lottie.memory`. That metadata is read back from the native bundle when it loads; pass
 `includeAnimations: false` to `loadBundleAsync` to skip the animation bytes when nothing will
 render them.
+
+Pass `fromMs` to start a preset that far into its own timeline — audio and haptics seek together,
+so a progress bar can scrub it:
+
+```dart
+bundle.heartbeatV2.play(fromMs: 2500);
+```
+
+Every non-zero seek re-parses the preset; playing from the start reuses the cached parse.
 
 The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that
 for you — pattern, animation and duration — so you rarely have to unpack it by hand.

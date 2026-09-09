@@ -268,8 +268,8 @@ interface PulsarPresetsHandle {
 }
 
 interface PatternComposerHandle {
-    fun parsePattern(pattern: PatternData)
-    fun parsePatternWithSound(pattern: PatternData, sound: SoundData)
+    fun parsePattern(pattern: PatternData, fromMs: Long = 0L)
+    fun parsePatternWithSound(pattern: PatternData, sound: SoundData, fromMs: Long = 0L)
     fun playPattern(pattern: PatternData)
     fun play()
     fun playAudioOnly()

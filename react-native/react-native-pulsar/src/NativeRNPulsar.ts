@@ -50,7 +50,7 @@ export interface Spec extends TurboModule {
   RealtimeComposer_isActive(): boolean;
   RealtimeComposer_playDiscrete(amplitude: number, frequency: number): void;
 
-  PatternComposer_parsePattern(data: Pattern): number;
+  PatternComposer_parsePattern(data: Pattern, fromMs: number): number;
   PatternComposer_parsePatternWithSound(
     data: Pattern,
     uri: string,
@@ -66,7 +66,11 @@ export interface Spec extends TurboModule {
   // Both return an opaque token, or "" on failure. Sync blocks the JS thread on the URI read.
   Pulsar_loadBundleFromUriSync(uri: string): string;
   Pulsar_loadBundleFromUri(uri: string): Promise<string>;
-  Pulsar_playBundlePreset(token: string, presetId: string): void;
+  Pulsar_playBundlePreset(
+    token: string,
+    presetId: string,
+    fromMs: number
+  ): void;
   Pulsar_stopBundlePreset(token: string, presetId: string): void;
   Pulsar_disposeBundle(token: string): void;
 }

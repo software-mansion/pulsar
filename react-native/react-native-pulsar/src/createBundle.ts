@@ -21,7 +21,8 @@ export type PresetHandle = {
   readonly animation?: PresetAnimation;
   readonly hasAudio: boolean;
   readonly hasAnimation: boolean;
-  play: () => void;
+  /** Plays the preset from `fromMs` into its timeline — haptics plus its synced audio. */
+  play: (fromMs?: number) => void;
   stop: () => void;
 };
 
@@ -132,6 +133,7 @@ function createLoadedBundle<M extends BundleDefinition>(
   bundleToken?: string
 ): Bundle<PresetsOf<M>> {
   const parsedIds = new Map<string, number>();
+  const parsedFrom = new Map<string, number>();
   const presets: Record<string, PresetHandle> = {};
   let disposed = false;
 
@@ -144,12 +146,19 @@ function createLoadedBundle<M extends BundleDefinition>(
   };
 
   for (const [id, preset] of Object.entries(definition.presets)) {
-    const parseOnce = () => {
-      const alreadyParsed = parsedIds.get(id);
-      if (alreadyParsed !== undefined) return alreadyParsed;
+    const parseAt = (fromMs: number) => {
+      const previousId = parsedIds.get(id);
+      const alreadyParsedHere =
+        previousId !== undefined && parsedFrom.get(id) === fromMs;
+      if (alreadyParsedHere) return previousId;
+      if (previousId !== undefined) Pulsar.PatternComposer_release(previousId);
 
-      const parsedId = Pulsar.PatternComposer_parsePattern(preset.pattern);
+      const parsedId = Pulsar.PatternComposer_parsePattern(
+        preset.pattern,
+        fromMs
+      );
       parsedIds.set(id, parsedId);
+      parsedFrom.set(id, fromMs);
       return parsedId;
     };
 
@@ -161,13 +170,14 @@ function createLoadedBundle<M extends BundleDefinition>(
       animation: preset.lottie,
       hasAudio: preset.audio,
       hasAnimation: preset.animation,
-      play: () => {
+      play: (fromMs = 0) => {
         if (disposed) return warnDisposed('play', id);
+        const from = Math.max(0, fromMs);
         if (bundleToken) {
-          Pulsar.Pulsar_playBundlePreset(bundleToken, id);
+          Pulsar.Pulsar_playBundlePreset(bundleToken, id, from);
           return;
         }
-        Pulsar.PatternComposer_play(parseOnce());
+        Pulsar.PatternComposer_play(parseAt(from));
       },
       stop: () => {
         if (disposed) return warnDisposed('stop', id);
@@ -193,6 +203,7 @@ function createLoadedBundle<M extends BundleDefinition>(
         Pulsar.PatternComposer_release(parsedId);
       }
       parsedIds.clear();
+      parsedFrom.clear();
     },
   });
 }

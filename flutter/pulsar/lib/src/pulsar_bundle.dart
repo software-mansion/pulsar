@@ -92,8 +92,11 @@ class PresetHandle {
   /// Whether the preset carries a Lottie animation, exposed as [animation].
   bool get hasAnimation => animation != null;
 
-  /// Play the preset natively — haptics, plus its synced audio when it has any.
-  void play() => unawaited(PulsarPlatform.instance.playBundlePreset(_token, id));
+  /// Play the preset from [fromMs] into its timeline — haptics, plus its synced
+  /// audio when it has any.
+  void play({double fromMs = 0}) => unawaited(
+    PulsarPlatform.instance.playBundlePreset(_token, id, fromMs: fromMs),
+  );
 
   /// Stop a preset started with [play].
   void stop() => unawaited(PulsarPlatform.instance.stopBundlePreset(_token, id));

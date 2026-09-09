@@ -417,8 +417,10 @@ val composer = pulsar.getPatternComposer()
 Parses a `PatternData` object and prepares it for playback.
 
 ```kotlin
-fun parsePattern(pattern: PatternData)
+fun parsePattern(pattern: PatternData, fromMs: Long = 0)
 ```
+
+`fromMs` starts the pattern that far into its own timeline. The engine can only play a parsed pattern from zero, so Pulsar re-anchors it instead: discrete events before the seek are dropped and the rest rebased, and each continuous envelope is re-anchored on its value at that instant.
 
 #### `parsePatternWithSound(pattern, sound)`
 
@@ -429,8 +431,10 @@ Synchronized sound is not part of the latest release (`0.1.0`). It is available 
 Parses a pattern together with a short sound played in sync with the haptics.
 
 ```kotlin
-fun parsePatternWithSound(pattern: PatternData, sound: SoundData)
+fun parsePatternWithSound(pattern: PatternData, sound: SoundData, fromMs: Long = 0)
 ```
+
+`fromMs` seeks the whole preset: the haptics are re-anchored and the sound advances into the file by the same amount, so both move together. It composes with the sound's own `startMs`/`durationMs` trim window rather than replacing it.
 
 On Android, an explicit `.ogg` with baked haptic channels enables audio-coupled sync on supported devices; any other file — or a bare name, which defaults to `.wav` — plays the audio while the pattern's own haptics fire in parallel. On iOS the sound is registered as a Core Haptics audio event on the pattern's timeline. See [`SoundData`](#sounddata).
 
@@ -687,16 +691,18 @@ a bundle kept there uses the `bytes` overload above.
 The loaded bundle's content hash is checked against the generated types; pass `strict = false`
 to skip it.
 
-Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play()`, `stop()`, and `animation` — the Lottie bytes
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play(fromMs = 0)`, `stop()`, and `animation` — the Lottie bytes
 and timing for your own animation view.
 
-The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that for you — pattern, animation and duration — so you rarely have to unpack it by hand.
+Pass `fromMs` to start a preset that far into its own timeline — audio and haptics seek together, so a progress bar can scrub it:
 
-:::caution
-KMP v1 plays a preset's haptics and carries its animation bytes, but **synced bundle audio is not
-wired yet** (it needs platform temp-file extraction). Use the native iOS or Android SDK for packs
-whose presets carry sound.
-:::
+```kotlin
+bundle.heartbeatV2.play(fromMs = 2500)
+```
+
+Every non-zero seek re-parses the preset; playing from the start reuses the cached parse.
+
+The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that for you — pattern, animation and duration — so you rarely have to unpack it by hand.
 
 See [`kmp/PulsarApp`](https://github.com/software-mansion/pulsar/tree/main/kmp/PulsarApp) for a
 working screen.

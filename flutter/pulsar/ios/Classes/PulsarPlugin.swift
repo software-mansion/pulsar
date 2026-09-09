@@ -90,7 +90,8 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
         result(FlutterError(code: "INVALID_ARGS", message: "token/presetId required", details: nil))
         return
       }
-      bundles[token]?.handle(presetId)?.play()
+      let fromMs = (args?["fromMs"] as? NSNumber)?.doubleValue ?? 0
+      bundles[token]?.handle(presetId)?.play(fromMs: fromMs)
       result(nil)
 
     case "Pulsar_stopBundlePreset":

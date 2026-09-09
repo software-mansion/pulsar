@@ -42,8 +42,11 @@ abstract class PulsarPlatform extends PlatformInterface {
     bool includeAnimations = true,
   }) => throw UnimplementedError('bundlePresets() not implemented');
 
-  Future<void> playBundlePreset(String token, String presetId) =>
-      throw UnimplementedError('playBundlePreset() not implemented');
+  Future<void> playBundlePreset(
+    String token,
+    String presetId, {
+    double fromMs = 0,
+  }) => throw UnimplementedError('playBundlePreset() not implemented');
 
   Future<void> stopBundlePreset(String token, String presetId) =>
       throw UnimplementedError('stopBundlePreset() not implemented');

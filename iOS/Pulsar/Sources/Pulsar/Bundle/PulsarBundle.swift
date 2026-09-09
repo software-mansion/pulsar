@@ -72,6 +72,7 @@ struct ResolvedSound {
   private weak var pulsar: Pulsar?
   private let sound: ResolvedSound?
   private var composer: PatternComposer?
+  private var parsedFromMs: Double?
 
   init(id: String, name: String, duration: Double, pulsar: Pulsar, pattern: PatternData, sound: ResolvedSound?, animation: BundleAnimation?) {
     self.id = id
@@ -83,19 +84,34 @@ struct ResolvedSound {
     self.animation = animation
   }
 
-  private func ensureParsed() {
-    guard composer == nil, let pulsar = pulsar else { return }
-    let c = pulsar.getPatternComposer()
+  private func ensureParsed(fromMs: Double) {
+    let alreadyParsedHere = composer != nil && parsedFromMs == fromMs
+    guard !alreadyParsedHere, let pulsar = pulsar else { return }
+    let c = composer ?? pulsar.getPatternComposer()
     if let s = sound {
-      c.parsePatternWithSound(hapticsData: pattern, uri: s.uri, volume: s.volume, offset: s.offset)
+      c.parsePatternWithSound(
+        hapticsData: pattern,
+        uri: s.uri,
+        volume: s.volume,
+        offset: s.offset,
+        start: 0,
+        duration: 0,
+        fromMs: fromMs
+      )
     } else {
-      c.parsePattern(hapticsData: pattern)
+      c.parsePattern(hapticsData: pattern, fromMs: fromMs)
     }
     composer = c
+    parsedFromMs = fromMs
   }
 
   @objc public func play() {
-    ensureParsed()
+    play(fromMs: 0)
+  }
+
+  /// Plays the preset from `fromMs` into its timeline, audio and haptics together.
+  @objc public func play(fromMs: Double) {
+    ensureParsed(fromMs: max(0, fromMs))
     composer?.play()
   }
 
@@ -106,6 +122,7 @@ struct ResolvedSound {
   func dispose() {
     composer?.dispose()
     composer = nil
+    parsedFromMs = nil
   }
 }
 
@@ -126,8 +143,11 @@ struct ResolvedSound {
   @objc public func handle(_ id: String) -> PresetHandle? { handles[id] }
   @objc public var presetIds: [String] { Array(handles.keys) }
   @objc public func play(_ id: String) -> Bool {
+    play(id, fromMs: 0)
+  }
+  @objc public func play(_ id: String, fromMs: Double) -> Bool {
     guard let h = handles[id] else { return false }
-    h.play()
+    h.play(fromMs: fromMs)
     return true
   }
   @objc public func dispose() { handles.values.forEach { $0.dispose() } }

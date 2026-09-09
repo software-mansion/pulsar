@@ -3,6 +3,7 @@ package com.swmansion.pulsar.kmp.bundle
 import com.swmansion.pulsar.kmp.PatternComposer
 import com.swmansion.pulsar.kmp.PatternData
 import com.swmansion.pulsar.kmp.Pulsar
+import com.swmansion.pulsar.kmp.SoundData
 import kotlinx.serialization.json.Json
 
 /** Lottie bytes + timing for a preset's animation; the host app's own Lottie view renders it. */
@@ -12,12 +13,7 @@ class BundleAnimation internal constructor(
     val totalFrames: Int,
 )
 
-/**
- * A single playable preset from a loaded bundle. Parses its pattern lazily on first play.
- *
- * NOTE: KMP v1 plays haptics and exposes animation bytes; synced bundle audio is not yet wired
- * (it needs platform temp-file extraction) — use the native iOS/Android SDKs for audio-synced packs.
- */
+/** A single playable preset from a loaded bundle. Parses its pattern lazily on first play. */
 class PresetHandle internal constructor(
     val id: String,
     /** Human label the preset was authored under. */
@@ -30,23 +26,30 @@ class PresetHandle internal constructor(
      */
     val pattern: PatternData,
     private val haptics: Pulsar,
+    private val sound: SoundData?,
 ) {
-    /** Always `false` on KMP: synced bundle audio is not wired yet (see the class note). */
-    val hasAudio: Boolean get() = false
+    /** Whether the preset carries a synced audio track, which [play] plays alongside the haptics. */
+    val hasAudio: Boolean get() = sound != null
 
     /** Whether the preset carries a Lottie animation, exposed as [animation]. */
     val hasAnimation: Boolean get() = animation != null
 
     private var composer: PatternComposer? = null
 
-    private fun ensureParsed() {
-        if (composer == null) {
-            composer = haptics.getPatternComposer().also { it.parsePattern(pattern) }
-        }
+    private var parsedFromMs: Long? = null
+
+    private fun ensureParsed(fromMs: Long) {
+        val alreadyParsedHere = composer != null && parsedFromMs == fromMs
+        if (alreadyParsedHere) return
+        val c = composer ?: haptics.getPatternComposer()
+        if (sound != null) c.parsePatternWithSound(pattern, sound, fromMs) else c.parsePattern(pattern, fromMs)
+        composer = c
+        parsedFromMs = fromMs
     }
 
-    fun play() {
-        ensureParsed()
+    /** Plays the preset from [fromMs] into its timeline, audio and haptics together. */
+    fun play(fromMs: Long = 0L) {
+        ensureParsed(maxOf(0L, fromMs))
         composer?.play()
     }
 
@@ -57,6 +60,7 @@ class PresetHandle internal constructor(
     internal fun dispose() {
         composer?.dispose()
         composer = null
+        parsedFromMs = null
     }
 }
 
@@ -69,9 +73,9 @@ class LoadedBundle internal constructor(
 ) {
     fun handle(id: String): PresetHandle? = handles[id]
     val presetIds: List<String> get() = handles.keys.toList()
-    fun play(id: String): Boolean {
+    fun play(id: String, fromMs: Long = 0L): Boolean {
         val h = handles[id] ?: return false
-        h.play()
+        h.play(fromMs)
         return true
     }
     fun dispose() = handles.values.forEach { it.dispose() }
@@ -127,6 +131,18 @@ internal object BundleLoaderImpl {
             val animation = preset.animation?.let { anim ->
                 files[anim.src]?.let { BundleAnimation(it, anim.frameRate ?: 0.0, anim.totalFrames ?: 0) }
             }
+            val sound = preset.audio?.let { audio ->
+                files[audio.src]?.let { data ->
+                    SoundData(
+                        uri = writeBundleMedia(manifest.id, audio.src.substringAfterLast('/'), data),
+                        volume = audio.volume ?: 1f,
+                        offset = (audio.offset ?: 0.0).toLong(),
+                        // Bundle audio is plain music: always play Pulsar's own haptics alongside it.
+                        hapticChannels = false,
+                    )
+                }
+            }
+
             handles[preset.id] = PresetHandle(
                 id = preset.id,
                 name = preset.name,
@@ -134,6 +150,7 @@ internal object BundleLoaderImpl {
                 animation = animation,
                 pattern = pattern,
                 haptics = haptics,
+                sound = sound,
             )
         }
         return LoadedBundle(manifest.id, manifest.hash ?: "", manifest.revision ?: 0, handles)

@@ -195,13 +195,15 @@ RCT_EXPORT_MODULE()
   [task resume];
 }
 
-- (void)Pulsar_playBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {
+- (void)Pulsar_playBundlePreset:(nonnull NSString *)token
+                      presetId:(nonnull NSString *)presetId
+                        fromMs:(double)fromMs {
   if (!RNPulsarIsAppActive()) {
     return;
   }
   LoadedBundle *bundle = [self bundleForToken:token];
   RNPulsarPerformSafely(@"Pulsar_playBundlePreset", ^{
-    [bundle play:presetId];
+    [bundle play:presetId fromMs:fromMs];
   });
 }
 
@@ -300,11 +302,12 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
   return [[PatternData alloc] initWithContinuousPattern:continuousPattern discretePattern:discretePoints];
 }
 
-- (nonnull NSNumber *)PatternComposer_parsePattern:(JS::NativeRNPulsar::Pattern &)data {
+- (nonnull NSNumber *)PatternComposer_parsePattern:(JS::NativeRNPulsar::Pattern &)data
+                                           fromMs:(double)fromMs {
   auto patternComposer = [pulsar_ getPatternComposer];
 
   PatternData *patternData = PatternDataFromJSPattern(data);
-  [patternComposer parsePatternWithHapticsData:patternData];
+  [patternComposer parsePatternWithHapticsData:patternData fromMs:fromMs];
 
   int currentId = nextId;
   nextId++;
@@ -326,7 +329,8 @@ static PatternData *PatternDataFromJSPattern(JS::NativeRNPulsar::Pattern &data) 
                                                  volume:(float)volume
                                                  offset:offset
                                                   start:start
-                                               duration:duration];
+                                               duration:duration
+                                                 fromMs:0];
 
   int currentId = nextId;
   nextId++;

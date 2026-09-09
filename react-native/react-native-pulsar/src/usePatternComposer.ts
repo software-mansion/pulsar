@@ -40,7 +40,7 @@ export default function usePatternComposer(pattern?: Pattern): PatternComposer {
       const { volume = 1, offset = 0, start = 0, duration = 0 } = pattern.sound;
       newPatternId = Pulsar.PatternComposer_parsePatternWithSound(pattern, resolvedUri, volume, offset, start, duration);
     } else {
-      newPatternId = Pulsar.PatternComposer_parsePattern(pattern);
+      newPatternId = Pulsar.PatternComposer_parsePattern(pattern, 0);
     }
     patternId.set(newPatternId);
   }, [pattern]);
