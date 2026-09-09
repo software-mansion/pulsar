@@ -1,4 +1,4 @@
-name: Publish iOS Lottie to CocoaPods
+name: publish-ios-lottie
 
 on:
   workflow_dispatch:

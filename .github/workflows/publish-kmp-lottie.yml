@@ -1,4 +1,4 @@
-name: Publish KMP Lottie to Maven
+name: publish-kmp-lottie
 
 on:
   workflow_dispatch:

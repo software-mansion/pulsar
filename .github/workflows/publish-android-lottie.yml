@@ -1,4 +1,4 @@
-name: Publish Android Lottie to Maven
+name: publish-android-lottie
 
 on:
   workflow_dispatch:

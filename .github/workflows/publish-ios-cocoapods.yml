@@ -1,4 +1,4 @@
-name: Publish iOS package to CocoaPods
+name: publish-ios-cocoapods
 
 on:
   workflow_dispatch:
