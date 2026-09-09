@@ -56,4 +56,59 @@ final class SamplerTests: XCTestCase {
         XCTAssertEqual(clamp01(5), 1, accuracy: 1e-6)
         XCTAssertEqual(clamp01(0.4), 0.4, accuracy: 1e-6)
     }
+
+    func testSinglePointHoldsItsValue() {
+        let flat = [EnvPoint(time: 500, value: 0.7)]
+        XCTAssertEqual(sampleEnvelope(flat, 0), 0.7, accuracy: 1e-6)
+        XCTAssertEqual(sampleEnvelope(flat, 500), 0.7, accuracy: 1e-6)
+        XCTAssertEqual(sampleEnvelope(flat, 10_000), 0.7, accuracy: 1e-6)
+    }
+
+    func testZeroWidthSpanTakesTheLaterValue() {
+        let step = [
+            EnvPoint(time: 0, value: 0),
+            EnvPoint(time: 400, value: 0.2),
+            EnvPoint(time: 400, value: 0.9),
+            EnvPoint(time: 800, value: 1),
+        ]
+        XCTAssertEqual(sampleEnvelope(step, 400), 0.2, accuracy: 1e-6)
+        XCTAssertEqual(sampleEnvelope(step, 600), 0.95, accuracy: 1e-6)
+    }
+
+    func testAnEmptyPatternHasNoLengthAndNoContinuousChannel() {
+        let empty = sampledPattern(
+            from: PatternData(
+                continuousPattern: ContinuousPattern(amplitude: [], frequency: []),
+                discretePattern: []
+            )
+        )
+        XCTAssertEqual(patternDurationMs(empty), 0, accuracy: 1e-6)
+        XCTAssertFalse(empty.hasContinuous)
+    }
+
+    func testOneSidedContinuousChannelsDoNotCount() {
+        let amplitudeOnly = sampledPattern(
+            from: PatternData(
+                continuousPattern: ContinuousPattern(
+                    amplitude: [ValuePoint(time: 0, value: 1)],
+                    frequency: []
+                ),
+                discretePattern: []
+            )
+        )
+        XCTAssertFalse(amplitudeOnly.hasContinuous, "both channels are needed to drive one")
+    }
+
+    func testALateTransientCanBeTheLongestChannel() {
+        let pattern = sampledPattern(
+            from: PatternData(
+                continuousPattern: ContinuousPattern(
+                    amplitude: [ValuePoint(time: 0, value: 0), ValuePoint(time: 300, value: 1)],
+                    frequency: [ValuePoint(time: 0, value: 0.3)]
+                ),
+                discretePattern: [DiscretePoint(time: 1200, amplitude: 1, frequency: 0.5)]
+            )
+        )
+        XCTAssertEqual(patternDurationMs(pattern), 1200, accuracy: 1e-6)
+    }
 }
