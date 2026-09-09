@@ -18,6 +18,8 @@ public class PatternComposer: NSObject {
   // (Core Haptics registers an audio resource by URL only, so a windowed clip has to be
   // sliced to a file first). Removed on the next parse and on dispose.
   private var tempAudioURL: URL?
+  // The engine-side resource the current audio event plays, released alongside that temp file.
+  private var audioResourceID: CHHapticAudioResourceID?
 
   public convenience init(engine: HapticEngineWrapper, audioSimulator: AudioSimulator) {
     self.init()
@@ -30,11 +32,12 @@ public class PatternComposer: NSObject {
   }
 
   @objc public func parsePattern(hapticsData: PatternData) {
+    releaseAudio()
     parse(hapticsData: hapticsData, audioEvent: nil)
   }
 
   @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0) {
-    removeTempAudio()
+    releaseAudio()
     let audioEvent = makeAudioEvent(uri: uri, volume: volume, offset: offset, start: start, duration: duration)
     parse(hapticsData: hapticsData, audioEvent: audioEvent)
   }
@@ -115,6 +118,7 @@ public class PatternComposer: NSObject {
       }
     }
     guard let resourceID = engine.registerAudioResource(url: url) else { return nil }
+    audioResourceID = resourceID
     return CHHapticEvent(
       audioResourceID: resourceID,
       parameters: [CHHapticEventParameter(parameterID: .audioVolume, value: volume)],
@@ -149,7 +153,11 @@ public class PatternComposer: NSObject {
     }
   }
 
-  private func removeTempAudio() {
+  private func releaseAudio() {
+    if let id = audioResourceID {
+      engine.unregisterAudioResource(id)
+      audioResourceID = nil
+    }
     if let url = tempAudioURL {
       try? FileManager.default.removeItem(at: url)
       tempAudioURL = nil
@@ -193,6 +201,6 @@ public class PatternComposer: NSObject {
     discretePattern = nil
     audioBuffer = nil
     hasSound = false
-    removeTempAudio()
+    releaseAudio()
   }
 }

@@ -2,6 +2,7 @@ package com.swmansion.pulsar.kmp.bundle
 
 import com.swmansion.pulsar.kmp.PatternComposer
 import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.PatternSeek
 import com.swmansion.pulsar.kmp.Pulsar
 import kotlinx.serialization.json.Json
 
@@ -39,14 +40,29 @@ class PresetHandle internal constructor(
 
     private var composer: PatternComposer? = null
 
-    private fun ensureParsed() {
-        if (composer == null) {
-            composer = haptics.getPatternComposer().also { it.parsePattern(pattern) }
-        }
+    /** The seek position [composer] is currently parsed at, or null while unparsed. */
+    private var parsedFromMs: Long? = null
+
+    /**
+     * Parses at [fromMs], reusing the cached parse when the position has not moved. A preset
+     * played only from the start therefore still parses exactly once, as it always has.
+     */
+    private fun ensureParsed(fromMs: Long) {
+        if (composer != null && parsedFromMs == fromMs) return
+        val c = composer ?: haptics.getPatternComposer()
+        c.parsePattern(PatternSeek.patternFrom(pattern, fromMs))
+        composer = c
+        parsedFromMs = fromMs
     }
 
-    fun play() {
-        ensureParsed()
+    /**
+     * Plays the preset from [fromMs] into its timeline. Defaults to the start of the preset.
+     *
+     * The pattern is re-anchored and re-parsed on every non-zero seek; `play()` keeps the parse
+     * cached, so repeat plays from the start cost nothing extra.
+     */
+    fun play(fromMs: Long = 0L) {
+        ensureParsed(maxOf(0L, fromMs))
         composer?.play()
     }
 
@@ -57,6 +73,7 @@ class PresetHandle internal constructor(
     internal fun dispose() {
         composer?.dispose()
         composer = null
+        parsedFromMs = null
     }
 }
 
@@ -69,9 +86,9 @@ class LoadedBundle internal constructor(
 ) {
     fun handle(id: String): PresetHandle? = handles[id]
     val presetIds: List<String> get() = handles.keys.toList()
-    fun play(id: String): Boolean {
+    fun play(id: String, fromMs: Long = 0L): Boolean {
         val h = handles[id] ?: return false
-        h.play()
+        h.play(fromMs)
         return true
     }
     fun dispose() = handles.values.forEach { it.dispose() }

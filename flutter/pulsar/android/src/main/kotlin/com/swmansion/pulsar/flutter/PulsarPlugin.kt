@@ -124,7 +124,8 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 if (token == null || presetId == null) {
                     return result.error("INVALID_ARGS", "token/presetId required", null)
                 }
-                bundles[token]?.handle(presetId)?.play()
+                val fromMs = call.argument<Double>("fromMs") ?: 0.0
+                bundles[token]?.handle(presetId)?.play(fromMs.toLong())
                 result.success(null)
             }
 

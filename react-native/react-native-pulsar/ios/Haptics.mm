@@ -195,13 +195,15 @@ RCT_EXPORT_MODULE()
   [task resume];
 }
 
-- (void)Pulsar_playBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {
+- (void)Pulsar_playBundlePreset:(nonnull NSString *)token
+                      presetId:(nonnull NSString *)presetId
+                        fromMs:(double)fromMs {
   if (!RNPulsarIsAppActive()) {
     return;
   }
   LoadedBundle *bundle = [self bundleForToken:token];
   RNPulsarPerformSafely(@"Pulsar_playBundlePreset", ^{
-    [bundle play:presetId];
+    [bundle play:presetId fromMs:fromMs];
   });
 }
 

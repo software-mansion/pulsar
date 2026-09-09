@@ -59,7 +59,11 @@ class RecordingPulsarPlatform extends PulsarPlatform {
       calls.add('patternRelease');
 
   @override
-  Future<void> playBundlePreset(String token, String presetId) async {
+  Future<void> playBundlePreset(
+    String token,
+    String presetId, {
+    double fromMs = 0,
+  }) async {
     calls.add('playBundlePreset');
     playedPresets.add(presetId);
   }

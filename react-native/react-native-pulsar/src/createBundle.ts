@@ -1,5 +1,6 @@
 import { Image } from 'react-native';
 import Pulsar from './NativeRNPulsar';
+import { patternFrom } from './patternSeek';
 import type { Pattern } from './types';
 
 // workaround for RN prototype caching issue
@@ -21,7 +22,14 @@ export type PresetHandle = {
   readonly animation?: PresetAnimation;
   readonly hasAudio: boolean;
   readonly hasAnimation: boolean;
-  play: () => void;
+  /**
+   * Plays the preset — haptics plus its synced audio, if it has one. Pass `fromMs` to start
+   * that far into the preset's timeline: the pattern is re-anchored and the audio seeks to
+   * match. Defaults to the start.
+   *
+   * Every non-zero seek re-parses; playing from the start reuses the cached parse.
+   */
+  play: (fromMs?: number) => void;
   stop: () => void;
 };
 
@@ -132,6 +140,8 @@ function createLoadedBundle<M extends BundleDefinition>(
   bundleToken?: string
 ): Bundle<PresetsOf<M>> {
   const parsedIds = new Map<string, number>();
+  // What each cached parse is anchored at, so a repeat play from the same position reuses it.
+  const parsedFrom = new Map<string, number>();
   const presets: Record<string, PresetHandle> = {};
   let disposed = false;
 
@@ -144,12 +154,20 @@ function createLoadedBundle<M extends BundleDefinition>(
   };
 
   for (const [id, preset] of Object.entries(definition.presets)) {
-    const parseOnce = () => {
+    const parseAt = (fromMs: number) => {
       const alreadyParsed = parsedIds.get(id);
-      if (alreadyParsed !== undefined) return alreadyParsed;
+      if (alreadyParsed !== undefined && parsedFrom.get(id) === fromMs) {
+        return alreadyParsed;
+      }
+      if (alreadyParsed !== undefined) {
+        Pulsar.PatternComposer_release(alreadyParsed);
+      }
 
-      const parsedId = Pulsar.PatternComposer_parsePattern(preset.pattern);
+      const parsedId = Pulsar.PatternComposer_parsePattern(
+        patternFrom(preset.pattern, fromMs)
+      );
       parsedIds.set(id, parsedId);
+      parsedFrom.set(id, fromMs);
       return parsedId;
     };
 
@@ -161,13 +179,14 @@ function createLoadedBundle<M extends BundleDefinition>(
       animation: preset.lottie,
       hasAudio: preset.audio,
       hasAnimation: preset.animation,
-      play: () => {
+      play: (fromMs = 0) => {
         if (disposed) return warnDisposed('play', id);
+        const from = Math.max(0, fromMs);
         if (bundleToken) {
-          Pulsar.Pulsar_playBundlePreset(bundleToken, id);
+          Pulsar.Pulsar_playBundlePreset(bundleToken, id, from);
           return;
         }
-        Pulsar.PatternComposer_play(parseOnce());
+        Pulsar.PatternComposer_play(parseAt(from));
       },
       stop: () => {
         if (disposed) return warnDisposed('stop', id);
@@ -193,6 +212,7 @@ function createLoadedBundle<M extends BundleDefinition>(
         Pulsar.PatternComposer_release(parsedId);
       }
       parsedIds.clear();
+      parsedFrom.clear();
     },
   });
 }

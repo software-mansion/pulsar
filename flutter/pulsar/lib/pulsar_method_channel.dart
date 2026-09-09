@@ -44,11 +44,15 @@ class MethodChannelPulsar extends PulsarPlatform {
   }
 
   @override
-  Future<void> playBundlePreset(String token, String presetId) =>
-      methodChannel.invokeMethod('Pulsar_playBundlePreset', {
-        'token': token,
-        'presetId': presetId,
-      });
+  Future<void> playBundlePreset(
+    String token,
+    String presetId, {
+    double fromMs = 0,
+  }) => methodChannel.invokeMethod('Pulsar_playBundlePreset', {
+    'token': token,
+    'presetId': presetId,
+    'fromMs': fromMs,
+  });
 
   @override
   Future<void> stopBundlePreset(String token, String presetId) =>

@@ -93,7 +93,13 @@ class PresetHandle {
   bool get hasAnimation => animation != null;
 
   /// Play the preset natively — haptics, plus its synced audio when it has any.
-  void play() => unawaited(PulsarPlatform.instance.playBundlePreset(_token, id));
+  ///
+  /// Pass [fromMs] to start that far into the preset's timeline: the pattern is
+  /// re-anchored and the audio seeks to match. Defaults to the start. Every
+  /// non-zero seek re-parses; playing from the start reuses the cached parse.
+  void play({double fromMs = 0}) => unawaited(
+    PulsarPlatform.instance.playBundlePreset(_token, id, fromMs: fromMs),
+  );
 
   /// Stop a preset started with [play].
   void stop() => unawaited(PulsarPlatform.instance.stopBundlePreset(_token, id));

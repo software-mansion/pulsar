@@ -346,9 +346,9 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     return reactApplicationContext.resources.openRawResource(resourceId).use { it.readBytes() }
   }
 
-  override fun Pulsar_playBundlePreset(token: String?, presetId: String?) {
+  override fun Pulsar_playBundlePreset(token: String?, presetId: String?, fromMs: Double) {
     if (token == null || presetId == null) return
-    bundlesRegistry[token]?.play(presetId)
+    bundlesRegistry[token]?.play(presetId, fromMs.toLong())
   }
 
   override fun Pulsar_stopBundlePreset(token: String?, presetId: String?) {

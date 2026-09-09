@@ -3,6 +3,7 @@ package com.swmansion.pulsar.bundle
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.PatternSeek
 import com.swmansion.pulsar.types.SoundData
 
 /** Lottie bytes + timing for a preset's animation; the host app's own Lottie view renders it. */
@@ -35,16 +36,36 @@ class PresetHandle internal constructor(
 
     private var composer: PatternComposer? = null
 
-    private fun ensureParsed() {
-        if (composer == null) {
-            val c = haptics.getPatternComposer()
-            if (sound != null) c.parsePatternWithSound(pattern, sound) else c.parsePattern(pattern)
-            composer = c
+    /** The seek position [composer] is currently parsed at, or null while unparsed. */
+    private var parsedFromMs: Long? = null
+
+    /**
+     * Parses at [fromMs], reusing the cached parse when the position has not moved. A preset
+     * played only from the start therefore still parses exactly once, as it always has.
+     */
+    private fun ensureParsed(fromMs: Long) {
+        if (composer != null && parsedFromMs == fromMs) return
+        val c = composer ?: haptics.getPatternComposer()
+        val seeked = PatternSeek.patternFrom(pattern, fromMs)
+        if (sound != null) {
+            c.parsePatternWithSound(seeked, PatternSeek.soundFrom(sound, fromMs))
+        } else {
+            c.parsePattern(seeked)
         }
+        composer = c
+        parsedFromMs = fromMs
     }
 
-    fun play() {
-        ensureParsed()
+    /**
+     * Plays the preset from [fromMs] into its timeline, audio and haptics together. Defaults to
+     * the start of the preset.
+     *
+     * The pattern is re-anchored and re-parsed on every non-zero seek; `play()` keeps the parse
+     * cached, so repeat plays from the start cost nothing extra.
+     */
+    @JvmOverloads
+    fun play(fromMs: Long = 0L) {
+        ensureParsed(maxOf(0L, fromMs))
         composer?.play()
     }
 
@@ -55,6 +76,7 @@ class PresetHandle internal constructor(
     internal fun dispose() {
         composer?.release()
         composer = null
+        parsedFromMs = null
     }
 }
 
@@ -67,9 +89,10 @@ class LoadedBundle internal constructor(
 ) {
     fun handle(id: String): PresetHandle? = handles[id]
     val presetIds: List<String> get() = handles.keys.toList()
-    fun play(id: String): Boolean {
+    @JvmOverloads
+    fun play(id: String, fromMs: Long = 0L): Boolean {
         val h = handles[id] ?: return false
-        h.play()
+        h.play(fromMs)
         return true
     }
     fun dispose() = handles.values.forEach { it.dispose() }

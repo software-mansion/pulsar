@@ -79,6 +79,16 @@ public extension HapticEngineWrapper {
     }
   }
 
+  /// Releases a resource obtained from ``registerAudioResource(url:)``. Re-parsing a sounded
+  /// pattern registers a fresh one, so the replaced resource has to be handed back.
+  func unregisterAudioResource(_ id: CHHapticAudioResourceID) {
+    do {
+      try engine?.unregisterAudioResource(id)
+    } catch {
+      print("Error unregistering audio resource: \(error.localizedDescription)")
+    }
+  }
+
   func getRealtimePlayer() -> CHHapticAdvancedPatternPlayer? {
     bootstrapAppLifecycleTrackingIfNeeded()
     guard canPlayHaptics() else { return nil }

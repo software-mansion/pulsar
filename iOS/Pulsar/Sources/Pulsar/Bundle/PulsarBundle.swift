@@ -72,6 +72,8 @@ struct ResolvedSound {
   private weak var pulsar: Pulsar?
   private let sound: ResolvedSound?
   private var composer: PatternComposer?
+  /// The seek position the cached ``composer`` is currently parsed at, or nil while unparsed.
+  private var parsedFromMs: Double?
 
   init(id: String, name: String, duration: Double, pulsar: Pulsar, pattern: PatternData, sound: ResolvedSound?, animation: BundleAnimation?) {
     self.id = id
@@ -83,19 +85,40 @@ struct ResolvedSound {
     self.animation = animation
   }
 
-  private func ensureParsed() {
-    guard composer == nil, let pulsar = pulsar else { return }
-    let c = pulsar.getPatternComposer()
+  /// Parses at `fromMs`, reusing the cached parse when the position has not moved. A preset
+  /// played only from the start therefore still parses exactly once, as it always has.
+  private func ensureParsed(fromMs: Double) {
+    guard composer == nil || parsedFromMs != fromMs, let pulsar = pulsar else { return }
+    let c = composer ?? pulsar.getPatternComposer()
+    let seeked = PatternSeek.pattern(pattern, from: fromMs)
     if let s = sound {
-      c.parsePatternWithSound(hapticsData: pattern, uri: s.uri, volume: s.volume, offset: s.offset)
+      let window = PatternSeek.soundWindow(offset: s.offset, from: fromMs)
+      c.parsePatternWithSound(
+        hapticsData: seeked,
+        uri: s.uri,
+        volume: s.volume,
+        offset: window.offset,
+        start: window.start,
+        duration: 0
+      )
     } else {
-      c.parsePattern(hapticsData: pattern)
+      c.parsePattern(hapticsData: seeked)
     }
     composer = c
+    parsedFromMs = fromMs
   }
 
+  /// Plays the preset from its start — haptics plus its synced audio, if it has one.
   @objc public func play() {
-    ensureParsed()
+    play(fromMs: 0)
+  }
+
+  /// Plays the preset from `fromMs` into its timeline, audio and haptics together.
+  ///
+  /// The pattern is re-anchored and re-parsed on every non-zero seek; `fromMs: 0` keeps the
+  /// parse cached, so repeat plays from the start cost nothing extra.
+  @objc public func play(fromMs: Double) {
+    ensureParsed(fromMs: max(0, fromMs))
     composer?.play()
   }
 
@@ -106,6 +129,7 @@ struct ResolvedSound {
   func dispose() {
     composer?.dispose()
     composer = nil
+    parsedFromMs = nil
   }
 }
 
@@ -126,8 +150,11 @@ struct ResolvedSound {
   @objc public func handle(_ id: String) -> PresetHandle? { handles[id] }
   @objc public var presetIds: [String] { Array(handles.keys) }
   @objc public func play(_ id: String) -> Bool {
+    play(id, fromMs: 0)
+  }
+  @objc public func play(_ id: String, fromMs: Double) -> Bool {
     guard let h = handles[id] else { return false }
-    h.play()
+    h.play(fromMs: fromMs)
     return true
   }
   @objc public func dispose() { handles.values.forEach { $0.dispose() } }

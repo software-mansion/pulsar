@@ -107,6 +107,30 @@ describe('loadBundleSync', () => {
     expect(native.PatternComposer_play).toHaveBeenLastCalledWith(100);
   });
 
+  it('re-parses an inline pattern at each new seek and releases the last one', () => {
+    const bundle = defineBundle(definition).loadBundleSync(false);
+
+    bundle.heartbeatV2.play();
+    bundle.heartbeatV2.play(600);
+    bundle.heartbeatV2.play(600);
+
+    expect(native.PatternComposer_parsePattern).toHaveBeenCalledTimes(2);
+    // The parse anchored at zero is freed once the seek replaces it.
+    expect(native.PatternComposer_release).toHaveBeenCalledWith(100);
+    expect(native.PatternComposer_play).toHaveBeenLastCalledWith(101);
+
+    // Seeking past the last authored point leaves the envelope holding its final value,
+    // which is what keeps the continuous channel alive.
+    const seeked = native.PatternComposer_parsePattern.mock.calls[1]![0]!;
+    expect(seeked.discretePattern).toEqual([]);
+    expect(seeked.continuousPattern.amplitude).toEqual([
+      { time: 0, value: 0.9 },
+    ]);
+    expect(seeked.continuousPattern.frequency).toEqual([
+      { time: 0, value: 0.5 },
+    ]);
+  });
+
   it('exposes preset metadata and dynamic lookup', () => {
     const bundle = defineBundle(definition).loadBundleSync();
 
@@ -129,9 +153,28 @@ describe('loadBundleSync', () => {
     bundle.explosion.play();
     expect(native.Pulsar_playBundlePreset).toHaveBeenCalledWith(
       'com.acme.haptics#1',
-      'explosion'
+      'explosion',
+      0
     );
     expect(native.PatternComposer_parsePattern).not.toHaveBeenCalled();
+  });
+
+  it('forwards a seek position to the native bundle', () => {
+    const bundle = defineBundle(definition).loadBundleSync(true);
+
+    bundle.explosion.play(750);
+    expect(native.Pulsar_playBundlePreset).toHaveBeenLastCalledWith(
+      'com.acme.haptics#1',
+      'explosion',
+      750
+    );
+
+    bundle.explosion.play(-1);
+    expect(native.Pulsar_playBundlePreset).toHaveBeenLastCalledWith(
+      'com.acme.haptics#1',
+      'explosion',
+      0
+    );
   });
 
   it('throws when the native sync load fails', () => {
@@ -158,7 +201,8 @@ describe('loadBundleAsync', () => {
     expect(result).toBeUndefined();
     expect(native.Pulsar_playBundlePreset).toHaveBeenCalledWith(
       'com.acme.haptics#1',
-      'explosion'
+      'explosion',
+      0
     );
   });
 
