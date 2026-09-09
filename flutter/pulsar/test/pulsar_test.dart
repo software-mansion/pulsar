@@ -48,6 +48,16 @@ class MockPulsarPlatform
   Future<HapticSupport> hapticSupport() async => HapticSupport.standardSupport;
 
   @override
+  Future<HapticCapabilities> hapticCapabilities() async =>
+      const HapticCapabilities(
+        hasAmplitudeControl: true,
+        hasPrimitiveSupport: false,
+        isEnvelopeSupported: false,
+        isFrequencyProfileSupported: false,
+        minControlPointDurationMillis: 35,
+      );
+
+  @override
   Future<int> patternParsePattern(PatternData data, {int? composerId}) async {
     final resolvedComposerId = composerId ?? nextComposerId++;
     parsedComposerIds.add(resolvedComposerId);
@@ -145,6 +155,20 @@ void main() {
 
   test('$MethodChannelPulsar is the default instance', () {
     expect(initialPlatform, isInstanceOf<MethodChannelPulsar>());
+  });
+
+  test('hapticCapabilities delegates to the platform interface', () async {
+    final pulsar = Pulsar();
+    final fakePlatform = MockPulsarPlatform();
+    PulsarPlatform.instance = fakePlatform;
+
+    final capabilities = await pulsar.hapticCapabilities();
+
+    expect(await pulsar.hapticSupport(), HapticSupport.standardSupport);
+    expect(capabilities.hasPrimitiveSupport, isFalse);
+    expect(capabilities.minControlPointDurationMillis, 35);
+
+    PulsarPlatform.instance = initialPlatform;
   });
 
   test('Pulsar presets delegate to the platform interface', () async {

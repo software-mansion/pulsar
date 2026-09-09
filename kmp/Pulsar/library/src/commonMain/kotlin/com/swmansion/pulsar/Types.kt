@@ -13,6 +13,14 @@ enum class CompatibilityMode {
     ADVANCED_SUPPORT,
 }
 
+data class HapticCapabilities(
+    val hasAmplitudeControl: Boolean,
+    val hasPrimitiveSupport: Boolean,
+    val isEnvelopeSupported: Boolean,
+    val isFrequencyProfileSupported: Boolean,
+    val minControlPointDurationMillis: Long,
+)
+
 enum class RealtimeComposerStrategy {
     ENVELOPE,
     PRIMITIVE_TICK,

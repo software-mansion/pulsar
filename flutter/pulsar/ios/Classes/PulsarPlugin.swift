@@ -181,6 +181,16 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       let supported = pulsar.isHapticsSupported()
       result(supported ? 2 : 0)
 
+    case "Pulsar_hapticCapabilities":
+      let capabilities = pulsar.hapticCapabilities()
+      result([
+        "hasAmplitudeControl": capabilities.hasAmplitudeControl,
+        "hasPrimitiveSupport": capabilities.hasPrimitiveSupport,
+        "isEnvelopeSupported": capabilities.isEnvelopeSupported,
+        "isFrequencyProfileSupported": capabilities.isFrequencyProfileSupported,
+        "minControlPointDurationMillis": Int(capabilities.minControlPointDurationMillis),
+      ])
+
     case "Pulsar_forceHapticsSupportLevel":
       // No-op on iOS — CoreHaptics support level is hardware-determined.
       result(nil)

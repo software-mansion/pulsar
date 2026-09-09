@@ -44,6 +44,14 @@ interface PulsarPlatformHandle {
     fun canPlayHaptics(): Boolean
     fun hapticSupport(): CompatibilityMode =
         if (isHapticsSupported()) CompatibilityMode.ADVANCED_SUPPORT else CompatibilityMode.NO_SUPPORT
+    fun hapticCapabilities(): HapticCapabilities =
+        HapticCapabilities(
+            hasAmplitudeControl = isHapticsSupported(),
+            hasPrimitiveSupport = isHapticsSupported(),
+            isEnvelopeSupported = isHapticsSupported(),
+            isFrequencyProfileSupported = false,
+            minControlPointDurationMillis = 0,
+        )
     fun forceHapticsSupportLevel(mode: CompatibilityMode) {}
     fun getRealtimeComposerStrategy(): RealtimeComposerStrategy = RealtimeComposerStrategy.ENVELOPE
     fun setRealtimeComposerStrategy(strategy: RealtimeComposerStrategy) {}

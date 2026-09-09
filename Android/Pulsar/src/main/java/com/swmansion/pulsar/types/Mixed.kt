@@ -12,3 +12,11 @@ enum class CompatibilityMode {
     STANDARD_SUPPORT,
     ADVANCED_SUPPORT,
 }
+
+data class HapticCapabilities(
+    val hasAmplitudeControl: Boolean,
+    val hasPrimitiveSupport: Boolean,
+    val isEnvelopeSupported: Boolean,
+    val isFrequencyProfileSupported: Boolean,
+    val minControlPointDurationMillis: Long,
+)

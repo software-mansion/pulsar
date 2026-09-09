@@ -107,6 +107,9 @@ class Pulsar {
   Future<bool> isHapticsSupported() async =>
       (await hapticSupport()) != HapticSupport.noSupport;
 
+  Future<HapticCapabilities> hapticCapabilities() =>
+      PulsarPlatform.instance.hapticCapabilities();
+
   /// Override haptic support level (useful for testing). Android only.
   Future<void> forceHapticsSupportLevel(HapticSupport level) =>
       PulsarPlatform.instance.forceHapticsSupportLevel(level);

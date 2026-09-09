@@ -215,6 +215,19 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 result.success(p.hapticSupport().ordinal)
             }
 
+            "Pulsar_hapticCapabilities" -> {
+                val capabilities = p.hapticCapabilities()
+                result.success(
+                    mapOf(
+                        "hasAmplitudeControl" to capabilities.hasAmplitudeControl,
+                        "hasPrimitiveSupport" to capabilities.hasPrimitiveSupport,
+                        "isEnvelopeSupported" to capabilities.isEnvelopeSupported,
+                        "isFrequencyProfileSupported" to capabilities.isFrequencyProfileSupported,
+                        "minControlPointDurationMillis" to capabilities.minControlPointDurationMillis,
+                    )
+                )
+            }
+
             "Pulsar_forceHapticsSupportLevel" -> {
                 val level = call.argument<Int>("level")
                     ?: return result.error("INVALID_ARGS", "level required", null)

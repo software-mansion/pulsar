@@ -54,6 +54,33 @@ enum HapticSupport {
   advancedSupport,
 }
 
+class HapticCapabilities {
+  const HapticCapabilities({
+    required this.hasAmplitudeControl,
+    required this.hasPrimitiveSupport,
+    required this.isEnvelopeSupported,
+    required this.isFrequencyProfileSupported,
+    required this.minControlPointDurationMillis,
+  });
+
+  factory HapticCapabilities.fromMap(Map<dynamic, dynamic> map) =>
+      HapticCapabilities(
+        hasAmplitudeControl: map['hasAmplitudeControl'] as bool? ?? false,
+        hasPrimitiveSupport: map['hasPrimitiveSupport'] as bool? ?? false,
+        isEnvelopeSupported: map['isEnvelopeSupported'] as bool? ?? false,
+        isFrequencyProfileSupported:
+            map['isFrequencyProfileSupported'] as bool? ?? false,
+        minControlPointDurationMillis:
+            (map['minControlPointDurationMillis'] as num?)?.toInt() ?? 0,
+      );
+
+  final bool hasAmplitudeControl;
+  final bool hasPrimitiveSupport;
+  final bool isEnvelopeSupported;
+  final bool isFrequencyProfileSupported;
+  final int minControlPointDurationMillis;
+}
+
 /// Android-only haptic composition strategy.
 /// Ordinal values match the Android RealtimeComposerStrategy enum order.
 enum RealtimeComposerStrategy {

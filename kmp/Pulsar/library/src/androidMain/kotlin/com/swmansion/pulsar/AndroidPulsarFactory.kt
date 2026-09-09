@@ -77,6 +77,17 @@ private class AndroidPulsarHandle(
 
     override fun hapticSupport(): CompatibilityMode = nativePulsar.hapticSupport().toCommonCompatibilityMode()
 
+    override fun hapticCapabilities(): HapticCapabilities =
+        nativePulsar.hapticCapabilities().let {
+            HapticCapabilities(
+                hasAmplitudeControl = it.hasAmplitudeControl,
+                hasPrimitiveSupport = it.hasPrimitiveSupport,
+                isEnvelopeSupported = it.isEnvelopeSupported,
+                isFrequencyProfileSupported = it.isFrequencyProfileSupported,
+                minControlPointDurationMillis = it.minControlPointDurationMillis,
+            )
+        }
+
     override fun forceHapticsSupportLevel(mode: CompatibilityMode) {
         nativePulsar.forceHapticsSupportLevel(mode.toAndroidCompatibilityMode())
     }
