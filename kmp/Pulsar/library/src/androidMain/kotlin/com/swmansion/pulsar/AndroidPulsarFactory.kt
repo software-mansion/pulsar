@@ -333,12 +333,12 @@ private class AndroidPresetsHandle(
 private class AndroidPatternComposerHandle(
     private val composer: AndroidPatternComposer,
 ) : PatternComposerHandle {
-    override fun parsePattern(pattern: PatternData) {
-        composer.parsePattern(pattern.toAndroidPatternData())
+    override fun parsePattern(pattern: PatternData, fromMs: Long) {
+        composer.parsePattern(pattern.toAndroidPatternData(), fromMs)
     }
 
-    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
-        composer.parsePatternWithSound(pattern.toAndroidPatternData(), sound.toAndroidSoundData())
+    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData, fromMs: Long) {
+        composer.parsePatternWithSound(pattern.toAndroidPatternData(), sound.toAndroidSoundData(), fromMs)
     }
 
     override fun playPattern(pattern: PatternData) {

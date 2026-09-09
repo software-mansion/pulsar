@@ -2,7 +2,6 @@ package com.swmansion.pulsar.kmp.bundle
 
 import com.swmansion.pulsar.kmp.PatternComposer
 import com.swmansion.pulsar.kmp.PatternData
-import com.swmansion.pulsar.kmp.PatternSeek
 import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.SoundData
 import kotlinx.serialization.json.Json
@@ -47,12 +46,7 @@ class PresetHandle internal constructor(
     private fun ensureParsed(fromMs: Long) {
         if (composer != null && parsedFromMs == fromMs) return
         val c = composer ?: haptics.getPatternComposer()
-        val seeked = PatternSeek.patternFrom(pattern, fromMs)
-        if (sound != null) {
-            c.parsePatternWithSound(seeked, PatternSeek.soundFrom(sound, fromMs))
-        } else {
-            c.parsePattern(seeked)
-        }
+        if (sound != null) c.parsePatternWithSound(pattern, sound, fromMs) else c.parsePattern(pattern, fromMs)
         composer = c
         parsedFromMs = fromMs
     }

@@ -7,6 +7,7 @@ import com.swmansion.pulsar.audio.AudioHapticPlayer
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.types.PatternData
+import com.swmansion.pulsar.types.PatternSeek
 import com.swmansion.pulsar.types.SoundData
 
 class PatternComposer(
@@ -28,7 +29,13 @@ class PatternComposer(
     private var soundPlayer: AudioHapticPlayer? = null
     private var useCoupledHaptics = false
 
-    fun parsePattern(hapticsData: PatternData) {
+    /**
+     * Parses a pattern for playback. [fromMs] starts it that far into its own timeline: the
+     * engine can only play a parsed pattern from zero, so the pattern is re-anchored instead.
+     */
+    @JvmOverloads
+    fun parsePattern(hapticsData0: PatternData, fromMs: Long = 0L) {
+        val hapticsData = PatternSeek.patternFrom(hapticsData0, fromMs)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrationEffect = try {
                 engine.getHapticBuilder().createVibrationEffect(hapticsData)
@@ -46,9 +53,15 @@ class PatternComposer(
         audioBuffer = audioSimulator.parsePattern(hapticsData)
     }
 
-    fun parsePatternWithSound(hapticsData: PatternData, sound: SoundData) {
-        parsePattern(hapticsData)
+    /**
+     * As [parsePattern], with a synced audio track. The sound's own `startMs`/`durationMs` are
+     * the authored trim window in the file; [fromMs] seeks the whole preset, moving both together.
+     */
+    @JvmOverloads
+    fun parsePatternWithSound(hapticsData: PatternData, sound0: SoundData, fromMs: Long = 0L) {
+        parsePattern(hapticsData, fromMs)
 
+        val sound = PatternSeek.soundFrom(sound0, fromMs)
         soundPlayer?.release()
 
         useCoupledHaptics = sound.hapticChannels && isOggUri(sound.uri) && engine.supportsAudioCoupledHaptics()

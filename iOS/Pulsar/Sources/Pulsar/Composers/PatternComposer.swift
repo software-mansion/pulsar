@@ -31,15 +31,26 @@ public class PatternComposer: NSObject {
     dispose()
   }
 
-  @objc public func parsePattern(hapticsData: PatternData) {
+  /// Parses a pattern for playback. `fromMs` starts it that far into its own timeline: the
+  /// engine can only play a parsed pattern from zero, so the pattern is re-anchored instead.
+  @objc public func parsePattern(hapticsData: PatternData, fromMs: Double = 0) {
     releaseAudio()
-    parse(hapticsData: hapticsData, audioEvent: nil)
+    parse(hapticsData: PatternSeek.pattern(hapticsData, from: fromMs), audioEvent: nil)
   }
 
-  @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0) {
+  /// As ``parsePattern(hapticsData:fromMs:)``, with a synced audio track. `start`/`duration` are
+  /// the authored trim window in the file; `fromMs` seeks the whole preset, moving both together.
+  @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0, fromMs: Double = 0) {
     releaseAudio()
-    let audioEvent = makeAudioEvent(uri: uri, volume: volume, offset: offset, start: start, duration: duration)
-    parse(hapticsData: hapticsData, audioEvent: audioEvent)
+    let window = PatternSeek.soundWindow(offset: offset, start: start, duration: duration, from: fromMs)
+    let audioEvent = makeAudioEvent(
+      uri: uri,
+      volume: volume,
+      offset: window.offset,
+      start: window.start,
+      duration: window.duration
+    )
+    parse(hapticsData: PatternSeek.pattern(hapticsData, from: fromMs), audioEvent: audioEvent)
   }
 
   private func parse(hapticsData: PatternData, audioEvent: CHHapticEvent?) {

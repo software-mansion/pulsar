@@ -73,20 +73,27 @@ import Foundation
   }
 
   @Test func soundSeeksIntoTheFileByTheSameAmount() {
-    let window = PatternSeek.soundWindow(offset: 0, from: 300)
+    let window = PatternSeek.soundWindow(offset: 0, start: 0, duration: 0, from: 300)
     #expect(window.start == 300)
     #expect(window.offset == 0)
+    #expect(window.duration == 0)
   }
 
   @Test func soundEatsIntoTheLeadInBeforeItTouchesTheFile() {
     // 200ms into a 500ms lead-in: the audio has not begun, so only the wait shortens.
-    let early = PatternSeek.soundWindow(offset: 500, from: 200)
+    let early = PatternSeek.soundWindow(offset: 500, start: 0, duration: 0, from: 200)
     #expect(early.start == 0)
     #expect(early.offset == 300)
 
     // Past the lead-in, the remainder is a seek into the file.
-    let late = PatternSeek.soundWindow(offset: 500, from: 800)
+    let late = PatternSeek.soundWindow(offset: 500, start: 0, duration: 0, from: 800)
     #expect(late.start == 300)
     #expect(late.offset == 0)
+  }
+
+  @Test func anAuthoredTrimWindowShrinksAndItsStartAdvances() {
+    let window = PatternSeek.soundWindow(offset: 0, start: 1000, duration: 900, from: 400)
+    #expect(window.start == 1400)
+    #expect(window.duration == 500)
   }
 }

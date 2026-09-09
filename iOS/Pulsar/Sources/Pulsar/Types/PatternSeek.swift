@@ -63,10 +63,20 @@ enum PatternSeek {
   /// Where the audio file and the haptics line up after a seek.
   ///
   /// A sound offset by `offset` ms is at file position `t - offset` when the haptics are at
-  /// `t`, so seeking to `fromMs` either advances into the file or eats into the lead-in.
-  static func soundWindow(offset: Double, from fromMs: Double) -> (start: Double, offset: Double) {
+  /// `t`, so seeking to `fromMs` either advances into the file or eats into the lead-in. A zero
+  /// `duration` means "to the end of the file", so only an authored trim window shrinks.
+  static func soundWindow(
+    offset: Double,
+    start: Double,
+    duration: Double,
+    from fromMs: Double
+  ) -> (start: Double, duration: Double, offset: Double) {
     let lead = max(0, offset)
-    if fromMs <= lead { return (start: 0, offset: lead - fromMs) }
-    return (start: fromMs - lead, offset: 0)
+    let intoFile = max(0, fromMs - lead)
+    return (
+      start: start + intoFile,
+      duration: duration > 0 ? max(0, duration - intoFile) : 0,
+      offset: max(0, lead - fromMs)
+    )
   }
 }

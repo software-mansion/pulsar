@@ -2,6 +2,7 @@ package com.swmansion.pulsar.kmp.iosimpl.composers
 
 import com.swmansion.pulsar.kmp.PatternComposerHandle
 import com.swmansion.pulsar.kmp.PatternData
+import com.swmansion.pulsar.kmp.PatternSeek
 import com.swmansion.pulsar.kmp.SoundData
 import com.swmansion.pulsar.kmp.iosimpl.audio.IOSAudioBuffer
 import com.swmansion.pulsar.kmp.iosimpl.audio.IOSAudioSimulator
@@ -52,14 +53,17 @@ internal class IOSPatternComposerHandle(
     // The engine-side resource the current audio event plays, released alongside that temp file.
     private var audioResourceId: CHHapticAudioResourceID? = null
 
-    override fun parsePattern(pattern: PatternData) {
+    override fun parsePattern(pattern: PatternData, fromMs: Long) {
         releaseAudio()
-        parse(pattern, audioEvent = null)
+        parse(PatternSeek.patternFrom(pattern, fromMs), audioEvent = null)
     }
 
-    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
+    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData, fromMs: Long) {
         releaseAudio()
-        parse(pattern, audioEvent = makeAudioEvent(sound))
+        parse(
+            PatternSeek.patternFrom(pattern, fromMs),
+            audioEvent = makeAudioEvent(PatternSeek.soundFrom(sound, fromMs)),
+        )
     }
 
     private fun parse(pattern: PatternData, audioEvent: CHHapticEvent?) {

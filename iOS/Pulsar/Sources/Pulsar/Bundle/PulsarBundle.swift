@@ -90,19 +90,18 @@ struct ResolvedSound {
   private func ensureParsed(fromMs: Double) {
     guard composer == nil || parsedFromMs != fromMs, let pulsar = pulsar else { return }
     let c = composer ?? pulsar.getPatternComposer()
-    let seeked = PatternSeek.pattern(pattern, from: fromMs)
     if let s = sound {
-      let window = PatternSeek.soundWindow(offset: s.offset, from: fromMs)
       c.parsePatternWithSound(
-        hapticsData: seeked,
+        hapticsData: pattern,
         uri: s.uri,
         volume: s.volume,
-        offset: window.offset,
-        start: window.start,
-        duration: 0
+        offset: s.offset,
+        start: 0,
+        duration: 0,
+        fromMs: fromMs
       )
     } else {
-      c.parsePattern(hapticsData: seeked)
+      c.parsePattern(hapticsData: pattern, fromMs: fromMs)
     }
     composer = c
     parsedFromMs = fromMs

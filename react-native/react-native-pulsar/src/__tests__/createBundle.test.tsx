@@ -107,7 +107,7 @@ describe('loadBundleSync', () => {
     expect(native.PatternComposer_play).toHaveBeenLastCalledWith(100);
   });
 
-  it('re-parses an inline pattern at each new seek and releases the last one', () => {
+  it('hands the seek to the native composer and re-parses only when it moves', () => {
     const bundle = defineBundle(definition).loadBundleSync(false);
 
     bundle.heartbeatV2.play();
@@ -115,20 +115,20 @@ describe('loadBundleSync', () => {
     bundle.heartbeatV2.play(600);
 
     expect(native.PatternComposer_parsePattern).toHaveBeenCalledTimes(2);
+    // The authored pattern goes over untouched — the native side re-anchors it.
+    expect(native.PatternComposer_parsePattern).toHaveBeenNthCalledWith(
+      1,
+      definition.presets.heartbeatV2.pattern,
+      0
+    );
+    expect(native.PatternComposer_parsePattern).toHaveBeenNthCalledWith(
+      2,
+      definition.presets.heartbeatV2.pattern,
+      600
+    );
     // The parse anchored at zero is freed once the seek replaces it.
     expect(native.PatternComposer_release).toHaveBeenCalledWith(100);
     expect(native.PatternComposer_play).toHaveBeenLastCalledWith(101);
-
-    // Seeking past the last authored point leaves the envelope holding its final value,
-    // which is what keeps the continuous channel alive.
-    const seeked = native.PatternComposer_parsePattern.mock.calls[1]![0]!;
-    expect(seeked.discretePattern).toEqual([]);
-    expect(seeked.continuousPattern.amplitude).toEqual([
-      { time: 0, value: 0.9 },
-    ]);
-    expect(seeked.continuousPattern.frequency).toEqual([
-      { time: 0, value: 0.5 },
-    ]);
   });
 
   it('exposes preset metadata and dynamic lookup', () => {

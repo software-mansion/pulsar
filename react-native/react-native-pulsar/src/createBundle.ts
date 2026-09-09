@@ -1,6 +1,5 @@
 import { Image } from 'react-native';
 import Pulsar from './NativeRNPulsar';
-import { patternFrom } from './patternSeek';
 import type { Pattern } from './types';
 
 // workaround for RN prototype caching issue
@@ -163,8 +162,10 @@ function createLoadedBundle<M extends BundleDefinition>(
         Pulsar.PatternComposer_release(alreadyParsed);
       }
 
+      // The native composer re-anchors the pattern, the same way the bundle path does.
       const parsedId = Pulsar.PatternComposer_parsePattern(
-        patternFrom(preset.pattern, fromMs)
+        preset.pattern,
+        fromMs
       );
       parsedIds.set(id, parsedId);
       parsedFrom.set(id, fromMs);

@@ -411,14 +411,17 @@ private class FakePatternHandle : PatternComposerHandle {
     var audioOnlyPlayed = false
     var stopped = false
     var soundParsed: SoundData? = null
+    var parsedFromMs: Long? = null
 
-    override fun parsePattern(pattern: PatternData) {
+    override fun parsePattern(pattern: PatternData, fromMs: Long) {
         parsed = true
+        parsedFromMs = fromMs
     }
 
-    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
+    override fun parsePatternWithSound(pattern: PatternData, sound: SoundData, fromMs: Long) {
         parsed = true
         soundParsed = sound
+        parsedFromMs = fromMs
     }
 
     override fun playPattern(pattern: PatternData) {

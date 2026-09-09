@@ -3,7 +3,6 @@ package com.swmansion.pulsar.bundle
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.types.PatternData
-import com.swmansion.pulsar.types.PatternSeek
 import com.swmansion.pulsar.types.SoundData
 
 /** Lottie bytes + timing for a preset's animation; the host app's own Lottie view renders it. */
@@ -46,12 +45,7 @@ class PresetHandle internal constructor(
     private fun ensureParsed(fromMs: Long) {
         if (composer != null && parsedFromMs == fromMs) return
         val c = composer ?: haptics.getPatternComposer()
-        val seeked = PatternSeek.patternFrom(pattern, fromMs)
-        if (sound != null) {
-            c.parsePatternWithSound(seeked, PatternSeek.soundFrom(sound, fromMs))
-        } else {
-            c.parsePattern(seeked)
-        }
+        if (sound != null) c.parsePatternWithSound(pattern, sound, fromMs) else c.parsePattern(pattern, fromMs)
         composer = c
         parsedFromMs = fromMs
     }

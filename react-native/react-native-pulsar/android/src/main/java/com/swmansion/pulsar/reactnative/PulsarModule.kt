@@ -188,12 +188,12 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     )
   }
 
-  override fun PatternComposer_parsePattern(data: ReadableMap?): Double {
+  override fun PatternComposer_parsePattern(data: ReadableMap?, fromMs: Double): Double {
     val patternComposer = pulsar.getPatternComposer()
-    
+
     data?.let {
       val patternData = patternDataFromJSPattern(it)
-      patternComposer.parsePattern(patternData)
+      patternComposer.parsePattern(patternData, fromMs.toLong())
     }
 
     val currentId = nextId
