@@ -717,6 +717,7 @@ Configuration methods available directly on the `Pulsar` instance.
 | `shutDownEngine()`                      | Shut down the haptic engine                 |
 | `isHapticsSupported() -> Bool`          | Check if the device supports haptics        |
 | `isHapticsEnabled: Bool`                | Returns whether haptic feedback is currently enabled |
+| `hapticCapabilities() -> HapticCapabilities` | Returns what the device can render, see [`HapticCapabilities`](#hapticcapabilities) |
 
 ### Example
 
@@ -796,6 +797,27 @@ class DiscretePoint: NSObject, Codable {
 ```
 
 Use `discretePattern` for distinct taps and impacts. Use `continuousPattern` envelopes to shape a sustained haptic over time.
+
+### HapticCapabilities
+
+What the device's haptic hardware can render, returned by `pulsar.hapticCapabilities()`.
+
+```swift
+class HapticCapabilities: NSObject {
+  let hasAmplitudeControl: Bool
+  let hasPrimitiveSupport: Bool
+  let isEnvelopeSupported: Bool
+  let isFrequencyProfileSupported: Bool
+  let minControlPointDurationMillis: Double
+}
+```
+
+Core Haptics exposes a single `supportsHaptics` capability and the Taptic Engine renders the
+full event set uniformly, so `hasAmplitudeControl`, `hasPrimitiveSupport` and
+`isEnvelopeSupported` all mirror `isHapticsSupported()`. `isFrequencyProfileSupported` is
+`false` (Core Haptics models sharpness rather than exposing a frequency profile) and
+`minControlPointDurationMillis` is `0`. The type is shared with the Android SDK, where the
+fields carry per-device values.
 
 ### Preset
 

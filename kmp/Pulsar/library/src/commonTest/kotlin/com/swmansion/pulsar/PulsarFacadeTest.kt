@@ -81,11 +81,22 @@ class PulsarFacadeTest {
         assertTrue(pulsar.isHapticsSupported())
         assertTrue(pulsar.canPlayHaptics())
         assertEquals(CompatibilityMode.STANDARD_SUPPORT, pulsar.hapticSupport())
+        assertEquals(
+            HapticCapabilities(
+                hasAmplitudeControl = true,
+                hasPrimitiveSupport = false,
+                isEnvelopeSupported = false,
+                isFrequencyProfileSupported = false,
+                minControlPointDurationMillis = 35,
+            ),
+            pulsar.hapticCapabilities(),
+        )
         assertEquals(CompatibilityMode.STANDARD_SUPPORT, factory.handle.forcedSupportLevel)
         assertTrue(factory.handle.impulseCompositionModeEnabled)
         pulsar.shutDownEngine()
         assertTrue(factory.handle.engineShutDown)
     }
+
 }
 
 private class FakeFactory : PulsarPlatformFactory {
@@ -159,6 +170,15 @@ private class FakeHandle : PulsarPlatformHandle {
     override fun canPlayHaptics(): Boolean = true
 
     override fun hapticSupport(): CompatibilityMode = supportLevel
+
+    override fun hapticCapabilities(): HapticCapabilities =
+        HapticCapabilities(
+            hasAmplitudeControl = true,
+            hasPrimitiveSupport = false,
+            isEnvelopeSupported = false,
+            isFrequencyProfileSupported = false,
+            minControlPointDurationMillis = 35,
+        )
 
     override fun forceHapticsSupportLevel(mode: CompatibilityMode) {
         supportLevel = mode

@@ -3,6 +3,27 @@ import Foundation
 /// Represents a point in a haptic pattern's continuous curve
 /// - time: Time in milliseconds (ms)
 /// - value: Normalized value between 0.0 and 1.0
+@objc public class HapticCapabilities: NSObject {
+  @objc public let hasAmplitudeControl: Bool
+  @objc public let hasPrimitiveSupport: Bool
+  @objc public let isEnvelopeSupported: Bool
+  @objc public let isFrequencyProfileSupported: Bool
+  @objc public let minControlPointDurationMillis: Double
+  @objc public init(
+    hasAmplitudeControl: Bool,
+    hasPrimitiveSupport: Bool,
+    isEnvelopeSupported: Bool,
+    isFrequencyProfileSupported: Bool,
+    minControlPointDurationMillis: Double
+  ) {
+    self.hasAmplitudeControl = hasAmplitudeControl
+    self.hasPrimitiveSupport = hasPrimitiveSupport
+    self.isEnvelopeSupported = isEnvelopeSupported
+    self.isFrequencyProfileSupported = isFrequencyProfileSupported
+    self.minControlPointDurationMillis = minControlPointDurationMillis
+  }
+}
+
 @objc public class ValuePoint: NSObject, Codable {
   @objc public let time: Double
   @objc public let value: Float

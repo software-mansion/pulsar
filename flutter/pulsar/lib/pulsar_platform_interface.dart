@@ -90,6 +90,9 @@ abstract class PulsarPlatform extends PlatformInterface {
   Future<HapticSupport> hapticSupport() =>
       throw UnimplementedError('hapticSupport() not implemented');
 
+  Future<HapticCapabilities> hapticCapabilities() =>
+      throw UnimplementedError('hapticCapabilities() not implemented');
+
   Future<void> forceHapticsSupportLevel(HapticSupport level) =>
       throw UnimplementedError('forceHapticsSupportLevel() not implemented');
 

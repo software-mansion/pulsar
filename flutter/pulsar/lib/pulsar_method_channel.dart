@@ -136,6 +136,14 @@ class MethodChannelPulsar extends PulsarPlatform {
   }
 
   @override
+  Future<HapticCapabilities> hapticCapabilities() async {
+    final raw = await methodChannel.invokeMapMethod<String, dynamic>(
+      'Pulsar_hapticCapabilities',
+    );
+    return HapticCapabilities.fromMap(raw ?? const {});
+  }
+
+  @override
   Future<void> forceHapticsSupportLevel(HapticSupport level) => methodChannel
       .invokeMethod('Pulsar_forceHapticsSupportLevel', {'level': level.index});
 

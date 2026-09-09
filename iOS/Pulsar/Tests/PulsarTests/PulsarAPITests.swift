@@ -18,6 +18,16 @@ import Foundation
         #expect(pulsar.canPlayHaptics() == false)
     }
 
+    @Test func hapticCapabilitiesFollowHapticSupport() {
+        let pulsar = Pulsar()
+        let capabilities = pulsar.hapticCapabilities()
+        #expect(capabilities.hasAmplitudeControl == pulsar.isHapticsSupported())
+        #expect(capabilities.hasPrimitiveSupport == pulsar.isHapticsSupported())
+        #expect(capabilities.isEnvelopeSupported == pulsar.isHapticsSupported())
+        #expect(capabilities.isFrequencyProfileSupported == false)
+        #expect(capabilities.minControlPointDurationMillis == 0)
+    }
+
     @Test func hapticsAreEnabledByDefaultAndToggle() {
         let pulsar = Pulsar()
         #expect(pulsar.isHapticsEnabled == true)

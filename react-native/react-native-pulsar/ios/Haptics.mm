@@ -248,13 +248,13 @@ RCT_EXPORT_MODULE()
 }
 
 - (nonnull NSDictionary *)Pulsar_hapticCapabilities {
-  NSNumber *coreHapticsSupported = @([pulsar_ isHapticsSupported]);
+  HapticCapabilities *capabilities = [pulsar_ hapticCapabilities];
   return @{
-    @"hasAmplitudeControl" : coreHapticsSupported,
-    @"hasPrimitiveSupport" : coreHapticsSupported,
-    @"isEnvelopeSupported" : coreHapticsSupported,
-    @"isFrequencyProfileSupported" : @(NO),
-    @"minControlPointDurationMillis" : @(0),
+    @"hasAmplitudeControl" : @(capabilities.hasAmplitudeControl),
+    @"hasPrimitiveSupport" : @(capabilities.hasPrimitiveSupport),
+    @"isEnvelopeSupported" : @(capabilities.isEnvelopeSupported),
+    @"isFrequencyProfileSupported" : @(capabilities.isFrequencyProfileSupported),
+    @"minControlPointDurationMillis" : @(capabilities.minControlPointDurationMillis),
   };
 }
 

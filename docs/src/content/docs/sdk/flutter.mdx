@@ -763,6 +763,7 @@ Configuration methods available directly on the `Pulsar` instance. All return a 
 | `isHapticsSupported()`                                        | Returns `true` if the device supports haptics                                                |
 | `canPlayHaptics()`                                            | Returns `true` when haptics can play right now                                               |
 | `hapticSupport()`                                             | Returns the device's [`HapticSupport`](#hapticsupport)                                       |
+| `hapticCapabilities()`                                        | Returns the [`HapticCapabilities`](#hapticcapabilities) behind that level                    |
 | `forceHapticsSupportLevel(HapticSupport level)`               | (Android only) Override the detected support level. Intended for testing fallback behavior.  |
 | `enableImpulseCompositionMode(bool state)`                    | (Android only) Enable or disable impulse composition mode                                    |
 | `setRealtimeComposerStrategy(RealtimeComposerStrategy s)`     | (Android only) Set the default [`RealtimeComposerStrategy`](#realtimecomposerstrategy)       |
@@ -903,6 +904,42 @@ final pulsar = Pulsar();
 
 if ((await pulsar.hapticSupport()).index >= HapticSupport.standardSupport.index) {
   await pulsar.getPresets().dogBark();
+}
+```
+
+### HapticCapabilities
+
+The individual platform capabilities behind [`HapticSupport`](#hapticsupport), returned by
+`pulsar.hapticCapabilities()`.
+
+```dart
+class HapticCapabilities {
+  final bool hasAmplitudeControl;
+  final bool hasPrimitiveSupport;
+  final bool isEnvelopeSupported;
+  final bool isFrequencyProfileSupported;
+  final int minControlPointDurationMillis;
+}
+```
+
+On Android each field maps to the corresponding `Vibrator` query. On iOS, Core Haptics exposes
+a single capability and the Taptic Engine renders the full event set uniformly, so
+`hasAmplitudeControl`, `hasPrimitiveSupport` and `isEnvelopeSupported` all mirror haptic
+support; `isFrequencyProfileSupported` is `false` and `minControlPointDurationMillis` is `0`.
+
+The support level is decided by amplitude control (and, on Android 16+, the frequency
+profile). **Primitive support is not part of it**, so a standard-support device can still lack
+composition primitives. If you render your own single-hit patterns, check `hasPrimitiveSupport`
+and fall back to a waveform rather than composing primitives the vibrator will silently drop.
+
+**Example**
+
+```dart
+final pulsar = Pulsar();
+final capabilities = await pulsar.hapticCapabilities();
+
+if (!capabilities.hasPrimitiveSupport) {
+  await pulsar.enableImpulseCompositionMode(false);
 }
 ```
 

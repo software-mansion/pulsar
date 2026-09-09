@@ -13,6 +13,7 @@ import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
 import com.swmansion.pulsar.presets.PresetsWrapper
 import com.swmansion.pulsar.types.CompatibilityMode
+import com.swmansion.pulsar.types.HapticCapabilities
 import com.swmansion.pulsar.types.RealtimeComposerStrategy
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +63,15 @@ open class Pulsar(protected var context: Context) {
     fun hapticSupport(): CompatibilityMode {
         return engine.getRealCompatibilityMode()
     }
+
+    fun hapticCapabilities(): HapticCapabilities =
+        HapticCapabilities(
+            hasAmplitudeControl = engine.isAmplitudeSupported(),
+            hasPrimitiveSupport = engine.hasPrimitiveSupport(),
+            isEnvelopeSupported = engine.isEnvelopeSupported(),
+            isFrequencyProfileSupported = engine.isFrequencyProfileSupported(),
+            minControlPointDurationMillis = engine.getMinControlPointDurationMillis(),
+        )
 
     fun forceHapticsSupportLevel(mode: CompatibilityMode) {
         engine.simulateCompatibilityMode(mode)

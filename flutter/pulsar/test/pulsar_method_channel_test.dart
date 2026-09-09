@@ -18,6 +18,15 @@ void main() {
           if (methodCall.method == 'Pulsar_hapticSupport') {
             return 3;
           }
+          if (methodCall.method == 'Pulsar_hapticCapabilities') {
+            return <String, dynamic>{
+              'hasAmplitudeControl': true,
+              'hasPrimitiveSupport': false,
+              'isEnvelopeSupported': false,
+              'isFrequencyProfileSupported': false,
+              'minControlPointDurationMillis': 35,
+            };
+          }
           return null;
         });
   });
@@ -81,5 +90,26 @@ void main() {
         'AlreadyNormalized',
       ],
     });
+  });
+
+  test('hapticCapabilities decodes the map the platform returns', () async {
+    final capabilities = await platform.hapticCapabilities();
+
+    expect(loggedCalls.single.method, 'Pulsar_hapticCapabilities');
+    expect(capabilities.hasAmplitudeControl, isTrue);
+    expect(capabilities.hasPrimitiveSupport, isFalse);
+    expect(capabilities.isEnvelopeSupported, isFalse);
+    expect(capabilities.isFrequencyProfileSupported, isFalse);
+    expect(capabilities.minControlPointDurationMillis, 35);
+  });
+
+  test('hapticCapabilities falls back to unsupported on a null reply', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (methodCall) async => null);
+
+    final capabilities = await platform.hapticCapabilities();
+
+    expect(capabilities.hasAmplitudeControl, isFalse);
+    expect(capabilities.minControlPointDurationMillis, 0);
   });
 }

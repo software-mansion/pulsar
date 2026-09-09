@@ -819,6 +819,7 @@ Configuration methods available directly on the `Pulsar` instance.
 | `preloadPresets(presetNames: List<String>)`         | Preload presets by name for faster playback |
 | `stopHaptics()`                                     | Stop all currently playing haptics          |
 | `hapticSupport()`                                   | Returns the device's `CompatibilityMode`    |
+| `hapticCapabilities()`                              | Returns the [`HapticCapabilities`](#hapticcapabilities) behind that level |
 | `forceHapticsSupportLevel(mode: CompatibilityMode)` | Override the detected support level         |
 | `enableImpulseCompositionMode(state: Boolean)`      | Enable or disable `VibrationEffect.Composition` for impulse-only presets (enabled by default) |
 
@@ -925,6 +926,33 @@ enum class CompatibilityMode {
   LIMITED_SUPPORT,   // Timing-based waveform vibration (API 26+)
   STANDARD_SUPPORT,  // Amplitude + timing control
   ADVANCED_SUPPORT,  // Envelope + frequency profile (API 36+)
+}
+```
+
+### HapticCapabilities
+
+The individual vibrator capabilities behind `CompatibilityMode`, returned by
+`pulsar.hapticCapabilities()`.
+
+```kotlin
+data class HapticCapabilities(
+  val hasAmplitudeControl: Boolean,          // Intensity control, not on/off only
+  val hasPrimitiveSupport: Boolean,          // Composition primitives (API 30+)
+  val isEnvelopeSupported: Boolean,          // Envelope effects (API 36+)
+  val isFrequencyProfileSupported: Boolean,  // Vendor frequency profile (API 36+)
+  val minControlPointDurationMillis: Long,   // Shortest envelope control point honored
+)
+```
+
+The support level is decided by amplitude control (and, on Android 16+, the frequency
+profile). **Primitive support is not part of it**, so a `STANDARD_SUPPORT` device can still
+lack composition primitives. If you render your own single-hit patterns, check
+`hasPrimitiveSupport` and fall back to a waveform rather than composing primitives the
+vibrator will silently drop.
+
+```kotlin
+if (!pulsar.hapticCapabilities().hasPrimitiveSupport) {
+  pulsar.enableImpulseCompositionMode(false)
 }
 ```
 

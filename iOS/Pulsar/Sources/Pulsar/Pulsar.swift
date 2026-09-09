@@ -62,6 +62,17 @@ import UIKit
     return engine.isHapticsSupported()
   }
 
+  @objc public func hapticCapabilities() -> HapticCapabilities {
+    let coreHapticsSupported = engine.isHapticsSupported()
+    return HapticCapabilities(
+      hasAmplitudeControl: coreHapticsSupported,
+      hasPrimitiveSupport: coreHapticsSupported,
+      isEnvelopeSupported: coreHapticsSupported,
+      isFrequencyProfileSupported: false,
+      minControlPointDurationMillis: 0
+    )
+  }
+
   @objc public func canPlayHaptics() -> Bool {
     return engine.canPlayHaptics()
   }

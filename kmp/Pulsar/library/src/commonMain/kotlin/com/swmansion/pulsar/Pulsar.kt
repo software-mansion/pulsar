@@ -68,6 +68,8 @@ class Pulsar private constructor(
 
     fun hapticSupport(): CompatibilityMode = handle.hapticSupport()
 
+    fun hapticCapabilities(): HapticCapabilities = handle.hapticCapabilities()
+
     fun forceHapticsSupportLevel(mode: CompatibilityMode) {
         handle.forceHapticsSupportLevel(mode)
     }
