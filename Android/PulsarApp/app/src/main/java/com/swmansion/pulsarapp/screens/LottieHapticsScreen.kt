@@ -58,7 +58,7 @@ fun LottieHapticsScreen(pulsar: Pulsar?) {
                     setAnimation(R.raw.verified)
                     repeatCount = 0
                     if (pulsar != null) {
-                        val controller = setHaptics(pulsar, pattern)
+                        val controller = bindHaptics(pulsar, haptics = pattern)
                         controllerRef[0] = controller
                         controller.play()
                     } else {

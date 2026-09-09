@@ -50,7 +50,7 @@
     "!scripts"
   ],
   "scripts": {
-    "example": "npm --prefix ../../PulsarApp run start",
+    "example": "npm --prefix ../PulsarApp run start",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",

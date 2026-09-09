@@ -1,0 +1,117 @@
+---
+title: Pulsar for Figma
+description: Design haptics inside Figma. Bind vibration presets to components, feel them on a real phone while you edit, and hand developers a link with ready-to-use SDK code.
+---
+
+import { LinkCard, CardGrid, Steps, Aside } from '@astrojs/starlight/components';
+import { BASE_PATH } from '../../../../config';
+import Screenshot from '../../../components/Screenshot.astro';
+import Clip from '../../../components/Clip.astro';
+import login from '../assets/figma-plugin/login.png';
+import onboarding from '../assets/figma-plugin/onboarding.png';
+import presetsList from '../assets/figma-plugin/presets-list.png';
+
+The **Pulsar Haptics** plugin brings haptic design into Figma. You attach a
+vibration preset to a component, hear it as you work, feel it on a real phone
+next to you, and hand the developer a link that plays every haptic with the
+code to implement it.
+
+<LinkCard
+  title="Pulsar Haptics on Figma Community"
+  href="https://www.figma.com/community/plugin/1636329411590799509"
+  description="Install the plugin"
+/>
+
+## What you can do with it
+
+<CardGrid>
+  <LinkCard
+    title="Browse the preset library"
+    href={`${BASE_PATH}/figma-plugin/presets/`}
+    description="206 haptics — 151 designed presets plus the iOS and Android built-ins — searchable, tagged and playable."
+  />
+  <LinkCard
+    title="Bind haptics to components"
+    href={`${BASE_PATH}/figma-plugin/binding/`}
+    description="Attach a preset to any layer. It travels with the file and shows up in Dev Mode."
+  />
+  <LinkCard
+    title="Feel it on your phone"
+    href={`${BASE_PATH}/figma-plugin/live-preview/`}
+    description="Pair a device and run your own prototype on it, with real vibration on every bound element."
+  />
+  <LinkCard
+    title="Hand it to a developer"
+    href={`${BASE_PATH}/figma-plugin/sharing/`}
+    description="One link, no Figma access needed — they feel each haptic and copy the SDK call."
+  />
+  <LinkCard
+    title="Use your own patterns"
+    href={`${BASE_PATH}/figma-plugin/studio-patterns/`}
+    description="Anything you draw in Pulsar Studio appears in the plugin, ready to bind."
+  />
+  <LinkCard
+    title="Account & settings"
+    href={`${BASE_PATH}/figma-plugin/settings/`}
+    description="Subscription, the guided tour, privacy switches and the resizable window."
+  />
+</CardGrid>
+
+## Getting started
+
+<Steps>
+
+1. **Install the plugin** from
+   [Figma Community](https://www.figma.com/community/plugin/1636329411590799509),
+   then run it from **Plugins → Pulsar Haptics** in any design file.
+
+2. **Log in.** The plugin uses the same Pulsar account as
+   [Pulsar Studio](/pulsar/studio/overview/) and the mobile app. Signing in
+   happens in
+   your browser — the plugin waits and picks the session up on its own. A free
+   trial starts from here; after that the plugin needs a subscription.
+
+   <Screenshot
+     src={login}
+     alt="The Pulsar plugin login screen inside Figma"
+     caption="Everything in the plugin sits behind this screen. One account covers the plugin, Studio and the app."
+   />
+
+3. **Take the tour.** The first run opens a five-step walkthrough with a short
+   clip for each feature. You can replay it any time from **Account → Take the
+   tour**.
+
+   <Screenshot
+     src={onboarding}
+     alt="The welcome screen of the plugin's guided tour"
+     caption="The tour covers binding, pairing a phone, playing on a device, sharing, and resizing the window."
+   />
+
+</Steps>
+
+## The plugin window
+
+Four tabs, and a plugin window you can resize from its right edge, bottom edge
+or corner grip — Figma windows can't be dragged from their outer edges, so
+those handles are the only way. The size is remembered.
+
+<Screenshot
+  src={presetsList}
+  alt="The Presets tab of the Pulsar plugin"
+  caption="Presets · Live preview · Share · Account. The dot beside Live preview shows whether a paired phone is reachable."
+  width={420}
+/>
+
+| Tab              | What lives there                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| **Presets**      | The preset library, your Studio patterns, and everything you've already bound in this file |
+| **Live preview** | The two-step setup that puts your prototype on a real phone                                |
+| **Share**        | The public link that lets anyone feel the design in a browser                              |
+| **Account**      | Subscription, the tour, FAQ, privacy switches and feedback                                 |
+
+<Clip name="select_preset" caption="The core loop: pick a preset, select a layer, press Add." />
+
+<Aside title="Working on the implementation instead?">
+  If you're the developer reading haptics *out* of a Figma file, go to [Figma →
+  code](/pulsar/figma/) or, for an agent workflow, [Figma MCP](/pulsar/skills/figma-mcp/).
+</Aside>

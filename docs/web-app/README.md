@@ -1,6 +1,6 @@
 # Pulsar Web App
 
-A web clone of the Pulsar mobile app (`/PulsarApp`), shipped alongside the docs
+A web clone of the Pulsar mobile app, shipped alongside the docs
 at **/pulsar/web-app/**. It mirrors four of the app's screens — Presets,
 Playground, Demos and Games — and drives them all with the real
 [`pulsar-haptics`](../../web/Pulsar) web SDK.

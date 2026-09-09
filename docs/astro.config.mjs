@@ -116,26 +116,37 @@ export default defineConfig({
           slug: 'presets-playground',
         },
         {
-          label: 'AI Skills',
+          label: 'Pulsar Studio',
           items: [
-            { label: 'Overview', slug: 'skills' },
-            { label: 'Figma MCP', slug: 'skills/figma-mcp' },
+            { label: 'Overview', slug: 'studio/overview' },
+            { label: 'The editor', slug: 'studio/editor' },
+            { label: 'Playing it back', slug: 'studio/playback' },
+            { label: 'Media', slug: 'studio/media' },
+            { label: 'Generating haptics', slug: 'studio/generating' },
+            { label: 'Tools', slug: 'studio/tools' },
+            { label: 'Projects & files', slug: 'studio/projects' },
+            { label: 'Settings & shortcuts', slug: 'studio/settings' },
+            { label: 'MCP', slug: 'studio/mcp' },
+            {
+              label: 'About Pulsar Studio',
+              link: 'https://docs.swmansion.com/pulsar/studio/',
+            },
           ],
         },
         {
-          label: 'Pulsar Studio',
-          link: 'https://docs.swmansion.com/pulsar/studio/',
+          label: 'Pulsar plugin for Figma',
+          items: [
+            { label: 'Overview', slug: 'figma-plugin' },
+            { label: 'The preset library', slug: 'figma-plugin/presets' },
+            { label: 'Binding haptics', slug: 'figma-plugin/binding' },
+            { label: 'Live preview on a phone', slug: 'figma-plugin/live-preview' },
+            { label: 'Sharing & handoff', slug: 'figma-plugin/sharing' },
+            { label: 'Your own patterns', slug: 'figma-plugin/studio-patterns' },
+            { label: 'Account & settings', slug: 'figma-plugin/settings' },
+          ],
         },
         {
-          label: 'Studio',
-          items: [{ label: 'MCP', slug: 'studio/mcp' }],
-        },
-        // {
-        //   label: 'Figma → code',
-        //   slug: 'figma',
-        // },
-        {
-          label: 'SDK',
+          label: 'Pulsar Haptics SDK',
           items: [
             { label: 'Overview', slug: 'sdk/overview' },
             { label: 'iOS', slug: 'sdk/ios' },
@@ -143,6 +154,17 @@ export default defineConfig({
             { label: 'React Native', slug: 'sdk/react-native' },
             { label: 'Kotlin Multiplatform', slug: 'sdk/kmp' },
             { label: 'Flutter', slug: 'sdk/flutter' },
+          ],
+        },
+        {
+          label: 'Pulsar Lottie SDK',
+          items: [
+            { label: 'Overview', slug: 'lottie/overview' },
+            { label: 'iOS', slug: 'lottie/ios' },
+            { label: 'Android', slug: 'lottie/android' },
+            { label: 'React Native', slug: 'lottie/react-native' },
+            { label: 'Kotlin Multiplatform', slug: 'lottie/kmp' },
+            { label: 'Flutter', slug: 'lottie/flutter' },
           ],
         },
         {
@@ -154,6 +176,13 @@ export default defineConfig({
             // public/web-app/ — nothing of it loads until this link is opened.
             // Starlight prepends `base`, so this stays base-relative.
             { label: 'Pulsar Web App', link: '/web-app/' },
+          ],
+        },
+        {
+          label: 'AI Skills',
+          items: [
+            { label: 'Overview', slug: 'skills' },
+            { label: 'Figma MCP', slug: 'skills/figma-mcp' },
           ],
         },
         {
@@ -191,6 +220,10 @@ export default defineConfig({
       // deployment that actually serves the preview — keep it out of the
       // sitemap so we don't invite Google to index a bounce page.
       filter: (page) => !page.includes('/figma-preview'),
+      // The web app is a standalone Vite bundle emitted into public/web-app/,
+      // so it never passes through Astro's page pipeline and the integration
+      // cannot discover it. It is a real, linked destination — list it here.
+      customPages: ['https://docs.swmansion.com/pulsar/web-app/'],
     }),
   ],
 });

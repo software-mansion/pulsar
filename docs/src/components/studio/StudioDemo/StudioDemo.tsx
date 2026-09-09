@@ -69,7 +69,7 @@ export function StudioDemo() {
               <video
                 ref={videoRef}
                 className={styles.video}
-                src="https://xhxogbcwlfdzhbojhtwe.supabase.co/storage/v1/object/public/pulsar_docs/Pulsar%20Studio.mp4"
+                src="https://assets.puslar.swmansion.com/media/Pulsar_Studio.mp4"
                 poster={`${BASE_PATH}/assets/pulsar-demo-poster.jpg`}
                 controls
                 loop

@@ -19,6 +19,12 @@ const files = [
   'docs/src/content/docs/sdk/kmp.mdx',
   'docs/src/content/docs/sdk/flutter.mdx',
   'docs/src/content/docs/sdk/web.mdx',
+  'docs/src/content/docs/lottie/overview.mdx',
+  'docs/src/content/docs/lottie/ios.mdx',
+  'docs/src/content/docs/lottie/android.mdx',
+  'docs/src/content/docs/lottie/react-native.mdx',
+  'docs/src/content/docs/lottie/kmp.mdx',
+  'docs/src/content/docs/lottie/flutter.mdx',
   'iOS/Pulsar/README.md',
   'Android/Pulsar/README.md',
   'react-native/react-native-pulsar/README.md',
@@ -49,6 +55,7 @@ const markedVersions = [
 const jsonVersions = [
   { file: 'react-native/react-native-pulsar/package.json', version: versions.reactNative.version },
   { file: 'web/Pulsar/package.json', version: versions.web.version },
+  { file: 'tools/pulsar-gen/package.json', version: versions.pulsarGen.version },
 ];
 
 function replaceGeneratedSection(content, key, replacement) {
@@ -157,6 +164,59 @@ dependencies:
 \`\`\``;
 }
 
+function getLottieOverviewBlock() {
+  return `## Latest available version
+
+| Platform | Package | Version |
+| --- | --- | --- |
+| iOS | Swift Package / \`PulsarLottie\` (CocoaPods) | \`${versions.iosLottie.version}\` |
+| Android | \`${versions.androidLottie.mavenCoordinate}\` (Maven) | \`${versions.androidLottie.version}\` |
+| React Native | \`${versions.reactNativeLottie.packageName}\` (npm) | \`${versions.reactNativeLottie.version}\` |
+| Kotlin Multiplatform | \`${versions.kmpLottie.mavenCoordinate}\` (Maven) | \`${versions.kmpLottie.version}\` |
+| Flutter | \`${versions.flutterLottie.packageName}\` (pub.dev) | \`${versions.flutterLottie.version}\` |`;
+}
+
+function getVersionLine(version) {
+  return `Latest available version: \`${version}\``;
+}
+
+function getIosLottieSnippet() {
+  return `\`\`\`swift
+dependencies: [
+  .package(url: "${versions.iosLottie.swiftPackageUrl}", from: "${versions.iosLottie.version}")
+]
+\`\`\``;
+}
+
+function getIosLottieCocoaPodsSnippet() {
+  return `\`\`\`ruby
+pod 'PulsarLottie', '~> ${versions.iosLottie.version}'
+\`\`\``;
+}
+
+function getAndroidLottieSnippet() {
+  return `\`\`\`kotlin
+dependencies {
+  implementation("${versions.androidLottie.mavenCoordinate}:${versions.androidLottie.version}")
+}
+\`\`\``;
+}
+
+function getKmpLottieSnippet() {
+  return `\`\`\`kotlin
+commonMain.dependencies {
+  implementation("${versions.kmpLottie.mavenCoordinate}:${versions.kmpLottie.version}")
+}
+\`\`\``;
+}
+
+function getFlutterLottieSnippet() {
+  return `\`\`\`yaml
+dependencies:
+  ${versions.flutterLottie.packageName}: ^${versions.flutterLottie.version}
+\`\`\``;
+}
+
 function syncMarkedVersion(content, key, version, label) {
   const marker = `pulsar-sync:${key}`;
   const semver = /\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?/;
@@ -245,6 +305,35 @@ for (const relativeFile of files) {
     relativeFile === 'README.md'
   ) {
     content = replaceGeneratedSection(content, 'WEB_VERSION', getWebVersionLine());
+  }
+
+  if (relativeFile === 'docs/src/content/docs/lottie/overview.mdx') {
+    content = replaceGeneratedSection(content, 'LOTTIE_OVERVIEW_VERSIONS', getLottieOverviewBlock());
+  }
+
+  if (relativeFile === 'docs/src/content/docs/lottie/ios.mdx') {
+    content = replaceGeneratedSection(content, 'IOS_LOTTIE_VERSION', getVersionLine(versions.iosLottie.version));
+    content = replaceGeneratedSection(content, 'IOS_LOTTIE_INSTALL_SNIPPET', getIosLottieSnippet());
+    content = replaceGeneratedSection(content, 'IOS_LOTTIE_COCOAPODS_INSTALL_SNIPPET', getIosLottieCocoaPodsSnippet());
+  }
+
+  if (relativeFile === 'docs/src/content/docs/lottie/android.mdx') {
+    content = replaceGeneratedSection(content, 'ANDROID_LOTTIE_VERSION', getVersionLine(versions.androidLottie.version));
+    content = replaceGeneratedSection(content, 'ANDROID_LOTTIE_INSTALL_SNIPPET', getAndroidLottieSnippet());
+  }
+
+  if (relativeFile === 'docs/src/content/docs/lottie/react-native.mdx') {
+    content = replaceGeneratedSection(content, 'REACT_NATIVE_LOTTIE_VERSION', getVersionLine(versions.reactNativeLottie.version));
+  }
+
+  if (relativeFile === 'docs/src/content/docs/lottie/kmp.mdx') {
+    content = replaceGeneratedSection(content, 'KMP_LOTTIE_VERSION', getVersionLine(versions.kmpLottie.version));
+    content = replaceGeneratedSection(content, 'KMP_LOTTIE_INSTALL_SNIPPET', getKmpLottieSnippet());
+  }
+
+  if (relativeFile === 'docs/src/content/docs/lottie/flutter.mdx') {
+    content = replaceGeneratedSection(content, 'FLUTTER_LOTTIE_VERSION', getVersionLine(versions.flutterLottie.version));
+    content = replaceGeneratedSection(content, 'FLUTTER_LOTTIE_INSTALL_SNIPPET', getFlutterLottieSnippet());
   }
 
   await fs.writeFile(absoluteFile, content);

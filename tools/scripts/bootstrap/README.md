@@ -13,9 +13,6 @@ npm run bootstrap -- <framework> [options]
 
 Frameworks: `web` · `react-native` (`rn`) · `flutter` · `ios` · `android` · `kmp`
 
-> The root Expo showcase app (`PulsarApp/`) is intentionally **not** bootstrapped — it is
-> maintained directly, not regenerated.
-
 ## The model
 
 Every example app is three layers:

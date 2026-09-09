@@ -116,10 +116,10 @@ realtime.stop()
 
 ## Documentation
 
-Full API reference and guides are available at the [documentation site](https://docs.swmansion.com/pulsar).
+Full API reference and guides are available at the [documentation site](https://docs.swmansion.com/pulsar/).
 
-- [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview) - Core concepts: types of haptics, preloading, and caching
-- [iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios) - Swift API reference
+- [SDK Overview](https://docs.swmansion.com/pulsar/sdk/overview/) - Core concepts: types of haptics, preloading, and caching
+- [iOS SDK](https://docs.swmansion.com/pulsar/sdk/ios/) - Swift API reference
 
 ## AI Skills
 

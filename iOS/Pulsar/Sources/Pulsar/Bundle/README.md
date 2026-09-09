@@ -12,7 +12,7 @@ autocomplete.
 
 ```swift
 let pulsar = Pulsar()
-let bundle = try pulsar.loadBundle(AcmePack.descriptor)   // AcmePack is generated
+let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)   // AcmePack is generated
 bundle.heartbeatV2.play()                          // ← autocompletes
 bundle.explosion.stop()
 
@@ -22,8 +22,9 @@ if let anim = bundle.heartbeatV2.animation {
 }
 ```
 
-`loadBundle(_:strict:)` — pass `strict: true` to assert the loaded bundle's content hash matches
-the generated types (fails loudly on a stale bundle/types mismatch instead of a silent surprise).
+`loadBundleSync(_:strict:)` asserts the loaded bundle's content hash matches the generated types,
+failing loudly on a stale bundle/types mismatch instead of a silent surprise. Pass `strict: false`
+to skip it.
 
 ## Zero-manual codegen (build plugin)
 
@@ -38,7 +39,7 @@ regenerates on every build (like Xcode 15 asset symbols):
 ```
 
 The plugin runs the self-contained `pulsar-gen-swift` host tool — no Node or network in the build.
-CocoaPods consumers (React Native / Flutter) instead run `@swmansion/pulsar-gen` in a script phase.
+CocoaPods consumers (React Native / Flutter) instead run `pulsar-gen` in a script phase.
 
 ## Bridge surface (React Native / Flutter)
 

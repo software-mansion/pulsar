@@ -358,19 +358,29 @@ you can call anywhere:
 npx pulsar-gen-rn assets
 ```
 
-That scans `./assets` for `*.pulsar` files and writes a `*.bundle.json` next to each — that
-generated file is what your app imports. On Expo, add the config plugin instead and it regenerates
-on every prebuild:
+That scans `./assets` for `*.pulsar` files and writes a `*.bundle.ts` next to each — that
+generated module is what your app imports. On Expo, add the config plugin instead and it
+regenerates on every prebuild:
 
 ```json
 { "expo": { "plugins": [["react-native-pulsar", { "bundleDirs": ["assets"] }]] } }
 ```
 
-```ts
-import { createBundle } from 'react-native-pulsar';
-import myPack from '@/assets/my-pack.bundle.json';
+The generated module statically requires its own `.pulsar`, so register the extension with Metro
+once:
 
-export const Haptics = createBundle(myPack);
+```js
+// metro.config.js
+const { withPulsar } = require('react-native-pulsar/metro');
+module.exports = withPulsar(getDefaultConfig(__dirname));
+```
+
+Each generated module exports exactly two loaders:
+
+```ts
+import { loadBundleSync } from '@/assets/my-pack.bundle';
+
+export const Haptics = loadBundleSync();
 ```
 
 ```ts
@@ -402,40 +412,39 @@ import { HapticLottieView } from 'react-native-pulsar-lottie';
 <HapticLottieView preset={Haptics.celebration} autoPlay />
 ```
 
-`createBundle` is synchronous and needs no Metro configuration. Preset names autocomplete and a
-typo is a compile error — the types come from the generated file itself, so renaming a preset in
-Studio and re-generating turns every stale reference red.
+`loadBundleSync()` is synchronous and never touches the `.pulsar` binary — it plays the patterns
+embedded in the generated module, parsing each lazily on first `play()`. Preset names autocomplete
+and a typo is a compile error: the types come from the generated module itself, so renaming a preset
+in Studio and re-generating turns every stale reference red.
 
 Use `Haptics.get(id)` when the preset id is only known at runtime; it returns `undefined` for an
 unknown id rather than throwing.
 
 ### Presets that need the .pulsar file
 
-Two kinds of preset cannot be served by the generated file alone: one with **synced audio**, and one
-whose animation was exported as a **dotLottie** (`.lottie`) rather than JSON. The generator warns
-about both, and `hasAudio` / `hasAnimation` identify them at runtime — such a preset still plays,
-but only its haptics.
+Two kinds of preset cannot be served by the embedded patterns alone: one with **synced audio**, and
+one whose animation was exported as a **dotLottie** (`.lottie`) rather than JSON. The generator warns
+about both, and `hasAudio` / `hasAnimation` identify them at runtime — such a preset still plays on
+the sync path, but only its haptics.
 
-To get the sound or the dotLottie, ship the `.pulsar` alongside. Register the extension with Metro:
-
-```js
-// metro.config.js
-const { withPulsar } = require('react-native-pulsar/metro');
-module.exports = withPulsar(getDefaultConfig(__dirname));
-```
-
-...then bind the same generated file to it and load:
+To get the sound or the dotLottie, load the binary instead:
 
 ```ts
-import { createBundleFromAsset, loadBundle } from 'react-native-pulsar';
+import { loadBundleAsync } from '@/assets/my-pack.bundle';
 
-const descriptor = createBundleFromAsset(myPack, require('@/assets/my-pack.pulsar'));
-const bundle = await loadBundle(descriptor);
+const bundle = await loadBundleAsync();
 
 bundle.celebration.play();   // haptics + audio
 ```
 
-The generated file drives both paths, so the types are identical either way.
+Native code reads the `.pulsar` before the promise settles; after that, `play()` is synchronous
+either way. `loadBundleSync(true)` reads the binary on the calling thread instead — a local file
+read in release, but a **blocking Metro HTTP round trip in development**, so prefer the async loader
+unless you genuinely cannot await.
+
+One generated module drives both paths, so the types are identical either way. Loading the same pack
+twice gives two independent bundles; `dispose()` on one leaves the other working, and a disposed
+bundle is inert rather than silently re-parsing.
 
 ---
 
@@ -662,6 +671,7 @@ import { Settings } from 'react-native-pulsar';
 | `Settings.stopHaptics()`                         | Stop all currently playing haptics          |
 | `Settings.shutDownEngine()`                      | Shut down the haptic engine                 |
 | `Settings.getHapticsSupportLevel()`              | Returns the device's `HapticSupport` level  |
+| `Settings.getHapticCapabilities()`               | Returns the individual `HapticCapabilities` behind that level |
 | `Settings.forceHapticsSupportLevel(level)`       | (Android only) Override the detected support level. Intended for testing/debugging fallback behavior.         |
 | `Settings.enableImpulseCompositionMode(state: boolean)`       | (Android only) Enable or disable impulse composition mode         |
 | `Settings.setRealtimeComposerStrategy(strategy)`              | (Android only) Set the strategy used by the realtime composer     |
@@ -711,6 +721,52 @@ const support = Settings.getHapticsSupportLevel();
 
 if (support >= HapticSupport.STANDARD_SUPPORT) {
   Presets.dogBark();
+}
+```
+
+---
+
+## HapticCapabilities
+
+`HapticSupport` collapses the hardware into one ordered level, which is the right check for
+"how rich a pattern can this device play". `Settings.getHapticCapabilities()` returns the
+individual platform capabilities behind that level, for the cases where the level is not
+enough.
+
+```ts
+import { Settings } from 'react-native-pulsar';
+
+const caps = Settings.getHapticCapabilities();
+```
+
+| Field                           | Description                                                        |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `hasAmplitudeControl`           | Amplitude (intensity) control, rather than on/off buzzing only     |
+| `hasPrimitiveSupport`           | `VibrationEffect.Composition` primitives (Android API 30+)         |
+| `isEnvelopeSupported`           | Envelope effects (Android API 36+)                                 |
+| `isFrequencyProfileSupported`   | A vendor frequency profile is available (Android API 36+)          |
+| `minControlPointDurationMillis` | Shortest envelope control point the device will honor, in ms       |
+
+The support level is decided by amplitude control (and, on Android 16+, the frequency
+profile). **Primitive support is not part of it**, so a `STANDARD_SUPPORT` device can still
+lack composition primitives. If you render your own single-hit patterns, check
+`hasPrimitiveSupport` and fall back to a waveform rather than composing primitives the
+vibrator will silently drop.
+
+On iOS, Core Haptics exposes a single `supportsHaptics` capability and the Taptic Engine
+renders the full event set uniformly, so `hasAmplitudeControl`, `hasPrimitiveSupport` and
+`isEnvelopeSupported` all mirror it; `isFrequencyProfileSupported` is `false` and
+`minControlPointDurationMillis` is `0`.
+
+### Example
+
+```ts
+import { Settings } from 'react-native-pulsar';
+
+const { hasPrimitiveSupport } = Settings.getHapticCapabilities();
+
+if (!hasPrimitiveSupport) {
+  Settings.enableImpulseCompositionMode(false);
 }
 ```
 

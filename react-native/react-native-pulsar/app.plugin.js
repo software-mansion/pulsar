@@ -1,5 +1,4 @@
-// Expo config plugin: regenerates `.presets.json` sidecars from `.pulsar` bundles on prebuild,
-// so the typed `bundle.presets.<id>` view stays in sync automatically.
+// Expo config plugin: regenerates typed `.bundle.ts` modules from `.pulsar` bundles on prebuild.
 //
 //   // app.json
 //   { "expo": { "plugins": [["react-native-pulsar", { "bundleDirs": ["assets"] }]] } }
@@ -28,7 +27,10 @@ module.exports = function withPulsarBundles(config, options = {}) {
           stdio: 'inherit',
         });
       } catch (e) {
-        console.warn('[react-native-pulsar] sidecar generation failed:', e.message);
+        console.warn(
+          '[react-native-pulsar] bundle module generation failed:',
+          e.message
+        );
       }
       return cfg;
     },

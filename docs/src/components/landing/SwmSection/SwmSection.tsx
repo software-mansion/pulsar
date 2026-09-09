@@ -39,12 +39,20 @@ export function SwmSection({ className }: { className?: string }) {
             <a href="https://swmansion.com/" target="_blank" rel="noopener">
               Software Mansion
             </a>
-            . Read about our{' '}
-            <a href="https://swmansion.com/privacy/policy/ " target="_blank" rel="noopener">
+            . Read the Pulsar{' '}
+            <a href="https://pulsar.swmansion.com/terms/" target="_blank" rel="noopener">
+              Terms of Use
+            </a>{' '}
+            and{' '}
+            <a href="https://pulsar.swmansion.com/privacy/" target="_blank" rel="noopener">
               Privacy Policy
             </a>
-            . We collect anonymous, cookieless usage statistics — no cookies, no tracking
-            across sites.
+            , or Software Mansion&rsquo;s{' '}
+            <a href="https://swmansion.com/privacy/policy/" target="_blank" rel="noopener">
+              company privacy policy
+            </a>
+            . We collect anonymous, cookieless usage statistics — no cookies, no tracking across
+            sites.
           </p>
         </div>
       </BasicLayout>

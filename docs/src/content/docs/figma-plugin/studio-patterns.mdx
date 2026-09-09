@@ -1,0 +1,48 @@
+---
+title: Your own patterns
+description: Draw a haptic in Pulsar Studio and bind it to a Figma component. Every pattern on your Pulsar account shows up in the plugin with full parity.
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+import studioPatterns from '../assets/figma-plugin/presets-studio-patterns.png';
+
+The 151 designed presets cover most interactions. When none of them is right,
+draw your own in [Pulsar Studio](/pulsar/studio/overview/) — it appears in the
+plugin straight away.
+
+**Pulsar Studio Patterns**, at the top of the Presets tab, lists every pattern
+on your Pulsar account, grouped by Studio project.
+
+<Screenshot
+  src={studioPatterns}
+  alt="The Pulsar Studio Patterns panel listing patterns from two projects"
+  caption="Your patterns get the same treatment as the library: play, favourite, open details, copy an SDK snippet, and Add to bind."
+  width={420}
+/>
+
+## Creating one
+
+**+ Create new preset** opens Studio in your browser on a blank pattern. Draw
+the intensity and frequency envelopes, drop in discrete taps, feel it on a real
+device, and save — [The editor](/pulsar/studio/editor/) covers the drawing
+itself. The pattern lands in your account's **Figma Plugin** project.
+
+Back in the plugin, expanding the panel re-fetches the list, so a pattern you
+just saved is one click away. The **⟳** button forces a refresh.
+
+## Editing one
+
+The **✎** button on any of your patterns reopens it in Studio at the right
+project and pattern. Save there and the plugin picks up the new version on its
+next refresh — components already bound to it keep their binding and start
+playing the updated pattern.
+
+## Binding them
+
+Identical to the library: select a layer, press **+ Add**. Custom patterns work
+everywhere a built-in preset does — edit-mode playback, the paired phone, the
+shared preview, and the SDK snippet in the details dialog.
+
+The one difference is on the developer's side. A built-in preset is called by
+name; a custom pattern is sent as data, and its snippet composes the pattern
+rather than naming it. Both are in the details dialog under **Usage**.

@@ -23,6 +23,7 @@
   int nextId;
   NSMutableDictionary<NSNumber*, PatternComposer*> *patternComposersRegistry_;
   NSMutableDictionary<NSString*, LoadedBundle*> *bundlesRegistry_;
+  unsigned long bundleTokenSeq_;
 }
 
 static BOOL RNPulsarIsAppActive(void) {
@@ -62,6 +63,7 @@ RCT_EXPORT_MODULE()
     nextId = 1;
     patternComposersRegistry_ = [NSMutableDictionary new];
     bundlesRegistry_ = [NSMutableDictionary new];
+    bundleTokenSeq_ = 0;
   }
   return self;
 }
@@ -90,41 +92,131 @@ RCT_EXPORT_MODULE()
 
 // Preset bundles ---------------------------------------------------------
 
-- (nonnull NSString *)Pulsar_loadBundle:(nonnull NSString *)base64 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:base64
-                                                     options:NSDataBase64DecodingIgnoreUnknownCharacters];
-  if (!data) {
-    NSLog(@"[RNPulsar] Pulsar_loadBundle: invalid base64");
+- (LoadedBundle *)bundleForToken:(NSString *)token {
+  if (token == nil) {
+    return nil;
+  }
+  @synchronized (bundlesRegistry_) {
+    return bundlesRegistry_[token];
+  }
+}
+
+- (NSString *)registerBundleUnderNewToken:(LoadedBundle *)bundle {
+  if (bundle == nil) {
+    return @"";
+  }
+  @synchronized (bundlesRegistry_) {
+    NSString *token = [NSString stringWithFormat:@"%@#%lu", bundle.id, ++bundleTokenSeq_];
+    bundlesRegistry_[token] = bundle;
+    return token;
+  }
+}
+
+- (LoadedBundle *)takeBundleForToken:(NSString *)token {
+  if (token == nil) {
+    return nil;
+  }
+  @synchronized (bundlesRegistry_) {
+    LoadedBundle *bundle = bundlesRegistry_[token];
+    [bundlesRegistry_ removeObjectForKey:token];
+    return bundle;
+  }
+}
+
+- (NSURL *)bundleURLForUri:(NSString *)uri {
+  NSURL *url = [NSURL URLWithString:uri];
+  if (!url.scheme) {
+    url = [NSURL fileURLWithPath:uri];
+  }
+  return url;
+}
+
+- (NSString *)Pulsar_loadBundleFromUriSync:(nonnull NSString *)uri {
+  NSURL *url = [self bundleURLForUri:uri];
+  if (!url) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundleFromUriSync: invalid URI %@", uri);
     return @"";
   }
   NSError *error = nil;
-  LoadedBundle *bundle = [pulsar_ loadBundleWithData:data error:&error];
-  if (!bundle) {
-    NSLog(@"[RNPulsar] Pulsar_loadBundle failed: %@", error);
+  NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&error];
+  if (!data) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundleFromUriSync: could not read %@: %@", uri, error);
     return @"";
   }
-  bundlesRegistry_[bundle.id] = bundle;
-  return bundle.id;
+  LoadedBundle *bundle = [pulsar_ loadBundleWithData:data error:&error];
+  if (!bundle) {
+    NSLog(@"[RNPulsar] Pulsar_loadBundleFromUriSync: could not load %@: %@", uri, error);
+    return @"";
+  }
+  return [self registerBundleUnderNewToken:bundle];
+}
+
+- (void)Pulsar_loadBundleFromUri:(nonnull NSString *)uri
+                         resolve:(nonnull RCTPromiseResolveBlock)resolve
+                          reject:(nonnull RCTPromiseRejectBlock)reject {
+  NSURL *url = [self bundleURLForUri:uri];
+  if (!url) {
+    reject(@"PULSAR_INVALID_BUNDLE_URI", @"Pulsar: invalid bundle URI", nil);
+    return;
+  }
+
+  void (^loadData)(NSData *) = ^(NSData *data) {
+    NSError *error = nil;
+    LoadedBundle *bundle = [self->pulsar_ loadBundleWithData:data error:&error];
+    if (!bundle) {
+      reject(@"PULSAR_LOAD_BUNDLE_FAILED", @"Pulsar: failed to load bundle", error);
+      return;
+    }
+    resolve([self registerBundleUnderNewToken:bundle]);
+  };
+
+  if (url.isFileURL) {
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+      NSError *error = nil;
+      NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&error];
+      if (!data) {
+        reject(@"PULSAR_READ_BUNDLE_FAILED", @"Pulsar: failed to read bundle URI", error);
+        return;
+      }
+      loadData(data);
+    });
+    return;
+  }
+
+  NSURLSessionDataTask *task = [[NSURLSession sharedSession]
+      dataTaskWithURL:url
+    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+      if (!data || error) {
+        reject(@"PULSAR_READ_BUNDLE_FAILED", @"Pulsar: failed to read bundle URI", error);
+        return;
+      }
+      loadData(data);
+    }];
+  [task resume];
 }
 
 - (void)Pulsar_playBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {
   if (!RNPulsarIsAppActive()) {
     return;
   }
+  LoadedBundle *bundle = [self bundleForToken:token];
   RNPulsarPerformSafely(@"Pulsar_playBundlePreset", ^{
-    [bundlesRegistry_[token] play:presetId];
+    [bundle play:presetId];
   });
 }
 
 - (void)Pulsar_stopBundlePreset:(nonnull NSString *)token presetId:(nonnull NSString *)presetId {
+  LoadedBundle *bundle = [self bundleForToken:token];
   RNPulsarPerformSafely(@"Pulsar_stopBundlePreset", ^{
-    [[bundlesRegistry_[token] handle:presetId] stop];
+    [[bundle handle:presetId] stop];
   });
 }
 
 - (void)Pulsar_disposeBundle:(nonnull NSString *)token {
-  [bundlesRegistry_[token] dispose];
-  [bundlesRegistry_ removeObjectForKey:token];
+  LoadedBundle *bundle = [self takeBundleForToken:token];
+  RNPulsarPerformSafely(@"Pulsar_disposeBundle", ^{
+    [bundle dispose];
+  });
 }
 
 - (void)Pulsar_enableHaptics:(BOOL)state {
@@ -153,6 +245,17 @@ RCT_EXPORT_MODULE()
 
 - (nonnull NSNumber *)Pulsar_hapticSupport {
   return [pulsar_ isHapticsSupported] ? @(3) : @(0);
+}
+
+- (nonnull NSDictionary *)Pulsar_hapticCapabilities {
+  NSNumber *coreHapticsSupported = @([pulsar_ isHapticsSupported]);
+  return @{
+    @"hasAmplitudeControl" : coreHapticsSupported,
+    @"hasPrimitiveSupport" : coreHapticsSupported,
+    @"isEnvelopeSupported" : coreHapticsSupported,
+    @"isFrequencyProfileSupported" : @(NO),
+    @"minControlPointDurationMillis" : @(0),
+  };
 }
 
 - (void)Pulsar_forceHapticsSupportLevel:(double)level {

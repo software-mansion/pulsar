@@ -1,12 +1,12 @@
 import { TurboModuleRegistry, type TurboModule } from 'react-native';
 
 type Pattern = {
-  discretePattern: { time: number, amplitude: number, frequency: number }[],
+  discretePattern: { time: number; amplitude: number; frequency: number }[];
   continuousPattern: {
-    amplitude: { time: number, value: number }[],
-    frequency: { time: number, value: number }[],
-  }
-}
+    amplitude: { time: number; value: number }[];
+    frequency: { time: number; value: number }[];
+  };
+};
 
 export enum HapticSupport {
   NO_SUPPORT = 0,
@@ -22,6 +22,14 @@ export enum RealtimeComposerStrategy {
   ENVELOPE_WITH_DISCRETE_PRIMITIVES = 3,
 }
 
+export type HapticCapabilities = {
+  hasAmplitudeControl: boolean;
+  hasPrimitiveSupport: boolean;
+  isEnvelopeSupported: boolean;
+  isFrequencyProfileSupported: boolean;
+  minControlPointDurationMillis: number;
+};
+
 export interface Spec extends TurboModule {
   Pulsar_play(name: string): void;
   Pulsar_enableHaptics(state: boolean): void;
@@ -32,6 +40,7 @@ export interface Spec extends TurboModule {
   Pulsar_stopHaptics(): void;
   Pulsar_shutDownEngine(): void;
   Pulsar_hapticSupport(): HapticSupport;
+  Pulsar_hapticCapabilities(): HapticCapabilities;
   Pulsar_forceHapticsSupportLevel(level: HapticSupport): void;
   Pulsar_enableImpulseCompositionMode(state: boolean): void;
   Pulsar_setRealtimeComposerStrategy(strategy: RealtimeComposerStrategy): void;
@@ -42,13 +51,21 @@ export interface Spec extends TurboModule {
   RealtimeComposer_playDiscrete(amplitude: number, frequency: number): void;
 
   PatternComposer_parsePattern(data: Pattern): number;
-  PatternComposer_parsePatternWithSound(data: Pattern, uri: string, volume: number, offset: number, start: number, duration: number): number;
+  PatternComposer_parsePatternWithSound(
+    data: Pattern,
+    uri: string,
+    volume: number,
+    offset: number,
+    start: number,
+    duration: number
+  ): number;
   PatternComposer_play(patternId: number): void;
   PatternComposer_stop(patternId: number): void;
   PatternComposer_release(patternId: number): void;
 
-  // Preset bundles: load a base64-encoded .pulsar, then play/stop presets by id.
-  Pulsar_loadBundle(base64: string): string;
+  // Both return an opaque token, or "" on failure. Sync blocks the JS thread on the URI read.
+  Pulsar_loadBundleFromUriSync(uri: string): string;
+  Pulsar_loadBundleFromUri(uri: string): Promise<string>;
   Pulsar_playBundlePreset(token: string, presetId: string): void;
   Pulsar_stopBundlePreset(token: string, presetId: string): void;
   Pulsar_disposeBundle(token: string): void;

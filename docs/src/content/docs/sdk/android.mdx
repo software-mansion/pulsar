@@ -769,18 +769,26 @@ pulsarBundles {
 
 ```kotlin
 val pulsar = Pulsar(context)
-val bundle = pulsar.loadBundle(AcmePack.descriptor, strict = true)
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
 
 bundle.heartbeatV2.play()
 bundle.explosion.stop()
 ```
 
-`strict = true` checks the packaged bundle against the generated types, so a stale APK asset fails
-loudly instead of quietly missing a preset. Omit it and the check is skipped.
+`loadBundleAsync` is the same load as a `suspend` function, reading and decoding on `Dispatchers.IO`:
 
-Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
+```kotlin
+val bundle = pulsar.loadBundleAsync(AcmePack.descriptor)
+```
+
+Both check the packaged bundle's content hash against the generated types, so a stale APK asset
+fails loudly instead of quietly playing the wrong pattern. Pass `strict = false` to skip it.
+
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play()`, `stop()`, and `animation` — the Lottie bytes
 and timing for your own animation view. Pulsar carries and time-aligns the animation; the app
 renders it:
+
+The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that for you — pattern, animation and duration — so you rarely have to unpack it by hand.
 
 ```kotlin
 bundle.heartbeatV2.animation?.let {

@@ -1,0 +1,209 @@
+---
+title: Flutter
+description: Play Pulsar haptics in sync with a Lottie animation in Flutter, with a drop-in widget and an AnimationController-based controller.
+head:
+  - tag: title
+    content: "Flutter Lottie Haptics: Sync Vibration to Animations | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar Lottie SDK for Flutter - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "A Flutter widget and controller that play Pulsar haptics in sync with a Lottie animation."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar Lottie SDK for Flutter - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "A Flutter widget and controller that play Pulsar haptics in sync with a Lottie animation."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+`pulsar_haptics_lottie` plays a Pulsar haptic pattern locked to a Lottie animation in Flutter. It exposes two entry points: the `HapticLottie` widget, and `HapticLottieController` for an `AnimationController` you already drive.
+
+It is a pure-Dart package — no native halves of its own. Both the haptics and the rendering come from packages you already have: [`pulsar_haptics`](https://pub.dev/packages/pulsar_haptics) and [`lottie`](https://pub.dev/packages/lottie).
+
+Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes, timing rules and simulator notes this page assumes.
+
+## Requirements
+
+- Flutter 3.29+, Dart 3.7+
+- Android API 24+ (Android 7.0), iOS 13+
+- The [Pulsar Flutter SDK](/pulsar/sdk/flutter/) (`pulsar_haptics`) and [`lottie`](https://pub.dev/packages/lottie) 3.1+, both pulled in automatically
+
+## Installation
+
+{/* GENERATED:FLUTTER_LOTTIE_VERSION_START */}
+Latest available version: `0.1.0`
+{/* GENERATED:FLUTTER_LOTTIE_VERSION_END */}
+
+Add the package to your `pubspec.yaml`:
+
+{/* GENERATED:FLUTTER_LOTTIE_INSTALL_SNIPPET_START */}
+```yaml
+dependencies:
+  pulsar_haptics_lottie: ^0.1.0
+```
+{/* GENERATED:FLUTTER_LOTTIE_INSTALL_SNIPPET_END */}
+
+Or via the Flutter CLI:
+
+```bash
+flutter pub add pulsar_haptics_lottie
+```
+
+Declare the vibration permission in your Android app's `AndroidManifest.xml`:
+
+```xml
+<manifest ...>
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application ...>
+    ...
+  </application>
+</manifest>
+```
+
+Without `android.permission.VIBRATE`, Android blocks vibration playback. Pulsar logs a warning and skips the vibration instead of crashing. iOS needs nothing beyond `pod install`.
+
+---
+
+## HapticLottie
+
+A drop-in widget that owns its own `AnimationController` and plays a pattern locked to the animation:
+
+```dart
+import 'package:pulsar_haptics/pulsar.dart';
+import 'package:pulsar_haptics_lottie/pulsar_haptics_lottie.dart';
+
+final pattern = PatternData.fromArrays(
+  amplitude: [[0, 0], [400, 1], [800, 0]],
+  frequency: [[0, 0.3], [800, 0.8]],
+  discrete: [[0, 1, 0.5]],
+);
+
+HapticLottie.asset(
+  'assets/success.json',
+  haptics: pattern,
+  autoPlay: true,
+  width: 200,
+  height: 200,
+);
+```
+
+`HapticLottie.network(url, ...)` takes the same arguments and loads from a URL instead.
+
+### From a bundle preset
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the widget takes both — no `src`, no `haptics`:
+
+```dart
+final pack = await pulsar.loadBundleAsync(acmePack); // acmePack is generated
+
+HapticLottie.preset(pack.celebration, autoPlay: true, width: 200, height: 200);
+```
+
+The preset supplies the animation, `haptics` from its `pattern`, and `durationMs` from its authored length — each still overridable on its own. One that carries audio plays that audio too, which is why it starts in `pattern` mode. See [bundle presets](/pulsar/lottie/overview/#bundle-presets).
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `src` | `String` | – | Asset name or URL, passed positionally. Replaced by the preset in `HapticLottie.preset`. |
+| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the animation, pattern and duration. |
+| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; omit both for a plain animation. |
+| `hapticMode` | `HapticMode?` | derived | `realtime`, or `pattern` for a preset carrying audio. |
+| `hapticOffset` | `double` (ms) | `0` | Shift the haptics by ±ms relative to the animation. |
+| `hapticsEnabled` | `bool` | `true` | Turn haptics off without touching the animation. |
+| `durationMs` | `double?` | derived | Clock length in ms. Overrides every derived duration. |
+| `autoPlay` | `bool` | `false` | Start as soon as the animation loads. |
+| `repeat` / `repeatCount` / `repeatReverse` | | | Looping, with `autoPlay`. |
+| `onControllerCreated` | `void Function(HapticLottieController)?` | `null` | Called once with the controller, so you can drive transport. |
+| `width` / `height` / `fit` / `alignment` | | | Forwarded to the underlying `Lottie` widget. |
+
+The widget sets the controller's duration from the loaded composition and disposes both it and the haptics on unmount.
+
+<Aside type="note" title="Grab the controller">
+  The widget has no imperative handle of its own. Capture the `HapticLottieController` from `onControllerCreated` when you need to replay, pause or seek later.
+</Aside>
+
+---
+
+## HapticLottieController
+
+Attaches haptics to an `AnimationController` you already pass to `Lottie`, and becomes the transport for both:
+
+```dart
+final anim = AnimationController(vsync: this);
+
+final haptic = HapticLottieController(
+  animationController: anim,
+  preset: pack.celebration,
+);
+
+Lottie.asset('assets/success.json', controller: anim,
+  onLoaded: (composition) => anim.duration = composition.duration);
+
+haptic.play();
+haptic.setTimestamp(1200);
+haptic.pause();
+```
+
+It takes the same arguments as the widget — `preset`, `haptics`, `hapticMode`, `hapticOffset`, `hapticsEnabled`, `durationMs` — plus `animationController` and an optional `pulsar`.
+
+| Method | Description |
+| --- | --- |
+| `play()` | Rewind to the start and play animation and haptics together. |
+| `pause()` | Pause both. In `pattern` mode the haptic stops rather than suspending. |
+| `resume()` | Resume from the current position. |
+| `stop()` / `reset()` | Reset the animation to the start and stop the haptics. |
+| `setTimestamp(double ms)` | Seek both to `ms` from the start. |
+| `setLoop(bool loop, {int? count, bool reverse})` | Loop the animation. In `pattern` mode the pattern fires once at the start, not per iteration. |
+| `durationMsResolved` | The clock length actually in use. |
+| `dispose()` | Detach and release the haptic resources. |
+
+The transport methods return `Future<void>` — `await` them when ordering matters.
+
+<Aside type="caution" title="Dispose, but not the AnimationController">
+  `dispose()` removes the listener and releases the composers. It deliberately does **not** dispose `animationController` — that one is yours, so dispose it in `State.dispose`, after the haptic controller.
+</Aside>
+
+---
+
+## Reading a preset yourself
+
+`PresetHandle` carries everything the widget reads:
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `double` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `realtime` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data` (ready for `Lottie.memory`), `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `bool` | What the preset was authored with. |
+| `play()` / `stop()` | – | Play the preset natively: haptics, plus its synced audio. |
+
+The animation bytes cross the platform channel once, when the bundle loads; pass `includeAnimations: false` to `loadBundleAsync` to skip that when nothing will render them. A preset with no animation renders an empty box.
+
+See the [Flutter SDK page](/pulsar/sdk/flutter/) for how bundles are loaded.

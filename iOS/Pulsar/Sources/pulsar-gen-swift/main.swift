@@ -74,7 +74,7 @@ struct Manifest: Codable {
   struct Preset: Codable { let id: String; let name: String }
 }
 
-// MARK: - Emit (matches @swmansion/pulsar-gen swift target)
+// MARK: - Emit (matches pulsar-gen swift target)
 
 func pascalCase(_ s: String) -> String {
   let parts = s.split { !$0.isLetter && !$0.isNumber }
