@@ -14,7 +14,7 @@ import {
 import { type PresetHandle } from 'react-native-pulsar';
 import {
   loadBundleSync,
-  loadBundleWithAssetsAsync,
+  loadBundleAsync,
 } from '../../assets/hapticsBundle.bundle';
 
 // Regenerate with `npm run pulsar-gen` after every Studio export.
@@ -75,7 +75,7 @@ export default function BundlesScreen() {
 
         <Text style={styles.section}>Preset with audio</Text>
         <Text style={styles.body}>
-          `loadBundleWithAssetsAsync()` hands the .pulsar to native code before
+          `loadBundleAsync()` hands the .pulsar to native code before
           it resolves, so the same preset plays its authored sound. After that,
           play() is synchronous on both paths.
         </Text>
@@ -93,7 +93,7 @@ function AudioPresetDemo() {
     let cancelled = false;
     let loaded: HapticsBundle | undefined;
 
-    loadBundleWithAssetsAsync()
+    loadBundleAsync()
       .then(withAssets => {
         loaded = withAssets;
         if (cancelled) {

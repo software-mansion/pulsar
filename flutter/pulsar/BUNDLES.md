@@ -29,7 +29,7 @@ import 'package:pulsar_haptics/pulsar_haptics.dart';
 import 'bundles/acme_pack.bundle.dart';
 
 final pulsar = Pulsar();
-final bundle = await pulsar.loadBundleWithAssetsAsync(acmePack); // acmePack is generated
+final bundle = await pulsar.loadBundleAsync(acmePack); // acmePack is generated
 bundle.heartbeatV2.play();                 // ← autocompletes
 bundle.explosion.stop();
 ```

@@ -103,7 +103,7 @@ function mockBundle(definition) {
 
 const defineBundle = jest.fn((definition) => ({
   loadBundleSync: jest.fn(() => mockBundle(definition)),
-  loadBundleWithAssetsAsync: jest.fn(async () => mockBundle(definition)),
+  loadBundleAsync: jest.fn(async () => mockBundle(definition)),
 }));
 
 module.exports = {

@@ -74,7 +74,7 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
     warnings.push(
       `presets ${withAudio.join(', ')} carry audio, which is decoded natively and cannot be inlined — ` +
         '`loadBundleSync()` plays their haptics only. Use `loadBundleSync(true)` or ' +
-        '`loadBundleWithAssetsAsync()` for the sound.',
+        '`loadBundleAsync()` for the sound.',
     );
   }
   const droppedAnimation = manifest.presets.filter((p) => p.animation && !animations[p.id]).map((p) => p.id);
@@ -95,7 +95,7 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
       `// prettier-ignore\n` +
       `import { defineBundle } from 'react-native-pulsar';\n\n` +
       `// prettier-ignore\n` +
-      `export const { loadBundleSync, loadBundleWithAssetsAsync } = defineBundle(${definition});\n` +
+      `export const { loadBundleSync, loadBundleAsync } = defineBundle(${definition});\n` +
       `// prettier-ignore\n` +
       `export type { PresetHandle } from 'react-native-pulsar';\n`,
     ...(warnings.length > 0 ? { warnings } : {}),

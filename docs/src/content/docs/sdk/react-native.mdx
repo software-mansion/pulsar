@@ -430,9 +430,9 @@ the sync path, but only its haptics.
 To get the sound or the dotLottie, load the binary instead:
 
 ```ts
-import { loadBundleWithAssetsAsync } from '@/assets/my-pack.bundle';
+import { loadBundleAsync } from '@/assets/my-pack.bundle';
 
-const bundle = await loadBundleWithAssetsAsync();
+const bundle = await loadBundleAsync();
 
 bundle.celebration.play();   // haptics + audio
 ```

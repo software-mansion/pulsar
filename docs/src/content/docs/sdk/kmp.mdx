@@ -668,6 +668,12 @@ LaunchedEffect(Unit) {
 bundle?.heartbeatV2?.play()
 ```
 
+`loadBundleAsync` is the `suspend` equivalent, decoding on `Dispatchers.Default`:
+
+```kotlin
+bundle = pulsar.loadBundleAsync(AcmePack.descriptor, bytes, strict = true)
+```
+
 `strict = true` checks the loaded bundle against the generated types.
 
 Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes

@@ -670,6 +670,12 @@ bundle.heartbeatV2.play()
 bundle.explosion.stop()
 ```
 
+`loadBundleAsync` is the same load with the file read off the calling thread:
+
+```swift
+let bundle = try await pulsar.loadBundleAsync(AcmePack.descriptor, strict: true)
+```
+
 The descriptor finds the `.pulsar` in the app's main bundle. `strict: true` checks the shipped
 bundle against the generated types, failing loudly on a stale copy.
 

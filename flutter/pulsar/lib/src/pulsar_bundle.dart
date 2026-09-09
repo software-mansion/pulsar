@@ -51,7 +51,7 @@ class BundleDescriptor<P> {
   final P Function(BundleResolver resolver) build;
 }
 
-/// The typed bundle returned by [PulsarBundleLoader.loadBundleWithAssetsAsync].
+/// The typed bundle returned by [PulsarBundleLoader.loadBundleAsync].
 // It returns the generated presets class itself: Dart cannot forward typed members through a
 // wrapper, so the generator emits the bundle-level members onto it.
 
@@ -60,10 +60,10 @@ extension PulsarBundleLoader on Pulsar {
   /// Load a `.pulsar` bundle asset and return its typed presets view.
   ///
   /// ```dart
-  /// final bundle = await pulsar.loadBundleWithAssetsAsync(acmePack); // acmePack is generated
+  /// final bundle = await pulsar.loadBundleAsync(acmePack); // acmePack is generated
   /// bundle.heartbeatV2.play();
   /// ```
-  Future<P> loadBundleWithAssetsAsync<P>(
+  Future<P> loadBundleAsync<P>(
     BundleDescriptor<P> descriptor, {
     bool strict = false,
   }) async {

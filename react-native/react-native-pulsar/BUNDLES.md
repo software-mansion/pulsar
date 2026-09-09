@@ -56,9 +56,9 @@ played on this path.
 To get the authored audio, load the binary:
 
 ```ts
-import { loadBundleWithAssetsAsync } from './assets/hapticsBundle.bundle';
+import { loadBundleAsync } from './assets/hapticsBundle.bundle';
 
-const Haptics = await loadBundleWithAssetsAsync();
+const Haptics = await loadBundleAsync();
 
 Haptics.fanfare.play(); // still synchronous after the load
 ```
@@ -68,7 +68,7 @@ through JavaScript as base64. After the load, `play()` is synchronous either way
 
 `loadBundleSync(true)` reads the binary too, but on the calling thread. In release that is a
 local file read; in development it is a **blocking HTTP round trip to Metro**, so prefer
-`loadBundleWithAssetsAsync()` unless you genuinely cannot await.
+`loadBundleAsync()` unless you genuinely cannot await.
 
 ## Presets and animations
 
@@ -106,7 +106,6 @@ Re-run `pulsar-gen-rn` after every Studio export so the generated module, conten
 
 ## Other SDKs
 
-The same vocabulary applies across platforms. Swift and Kotlin read the binary synchronously
-(`pulsar.loadBundleSync(AcmePack.descriptor)`); Flutter cannot, so it offers only
-`pulsar.loadBundleWithAssetsAsync(acmePack)`. React Native is the only target with an inline,
+Every SDK offers the same pair — `loadBundleSync` and `loadBundleAsync` — except Flutter, which
+crosses a platform channel and so is async only. React Native is the only target with an inline,
 no-binary path, because only it can embed the patterns in the app's JS bundle.

@@ -5,6 +5,8 @@ import com.swmansion.pulsar.kmp.bundle.BundleLoaderImpl
 import com.swmansion.pulsar.kmp.bundle.BundleResolver
 import com.swmansion.pulsar.kmp.bundle.LoadedBundle
 import com.swmansion.pulsar.kmp.bundle.PulsarBundleException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class Pulsar private constructor(
     private val handle: PulsarPlatformHandle,
@@ -85,6 +87,12 @@ class Pulsar private constructor(
      *     val bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes)
      *     bundle.heartbeatV2.play()
      */
+    suspend fun <P> loadBundleAsync(
+        descriptor: BundleDescriptor<P>,
+        bytes: ByteArray,
+        strict: Boolean = false,
+    ): P = withContext(Dispatchers.Default) { loadBundleSync(descriptor, bytes, strict) }
+
     fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): P {
         val loaded = loadBundle(bytes)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {

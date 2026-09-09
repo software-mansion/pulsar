@@ -15,6 +15,8 @@ import com.swmansion.pulsar.presets.PresetsWrapper
 import com.swmansion.pulsar.types.CompatibilityMode
 import com.swmansion.pulsar.types.RealtimeComposerStrategy
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 open class Pulsar(protected var context: Context) {
     protected val engine = HapticEngineWrapper(context)
@@ -112,6 +114,9 @@ open class Pulsar(protected var context: Context) {
      *     val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
      *     bundle.heartbeatV2.play()
      */
+    suspend fun <P> loadBundleAsync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P =
+        withContext(Dispatchers.IO) { loadBundleSync(descriptor, strict) }
+
     fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P {
         val loaded = loadBundleFromAsset(descriptor.assetName)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {

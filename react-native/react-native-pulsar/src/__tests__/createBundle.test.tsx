@@ -70,7 +70,7 @@ describe('defineBundle', () => {
     const loaders = defineBundle(definition);
 
     expect(loaders.loadBundleSync).toEqual(expect.any(Function));
-    expect(loaders.loadBundleWithAssetsAsync).toEqual(expect.any(Function));
+    expect(loaders.loadBundleAsync).toEqual(expect.any(Function));
     expect(native.Pulsar_loadBundleFromUriSync).not.toHaveBeenCalled();
     expect(native.Pulsar_loadBundleFromUri).not.toHaveBeenCalled();
     expect(native.PatternComposer_parsePattern).not.toHaveBeenCalled();
@@ -143,9 +143,9 @@ describe('loadBundleSync', () => {
   });
 });
 
-describe('loadBundleWithAssetsAsync', () => {
+describe('loadBundleAsync', () => {
   it('loads the Metro URI before returning an asset-backed bundle', async () => {
-    const pending = defineBundle(definition).loadBundleWithAssetsAsync();
+    const pending = defineBundle(definition).loadBundleAsync();
     expect(pending).toHaveProperty('then');
     const bundle = await pending;
 
@@ -163,7 +163,7 @@ describe('loadBundleWithAssetsAsync', () => {
   });
 
   it('still carries the inline pattern and animation for the Lottie view', async () => {
-    const bundle = await defineBundle(definition).loadBundleWithAssetsAsync();
+    const bundle = await defineBundle(definition).loadBundleAsync();
 
     expect(bundle.heartbeatV2.pattern).toEqual(
       definition.presets.heartbeatV2.pattern
@@ -175,7 +175,7 @@ describe('loadBundleWithAssetsAsync', () => {
     jest.spyOn(Image, 'resolveAssetSource').mockReturnValue(undefined as never);
 
     await expect(
-      defineBundle(definition).loadBundleWithAssetsAsync()
+      defineBundle(definition).loadBundleAsync()
     ).rejects.toThrow(/withPulsar/);
   });
 
@@ -185,7 +185,7 @@ describe('loadBundleWithAssetsAsync', () => {
     );
 
     await expect(
-      defineBundle(definition).loadBundleWithAssetsAsync()
+      defineBundle(definition).loadBundleAsync()
     ).rejects.toThrow('could not read asset');
   });
 });
@@ -201,7 +201,7 @@ describe('dispose', () => {
   });
 
   it('releases the native bundle exactly once', async () => {
-    const bundle = await defineBundle(definition).loadBundleWithAssetsAsync();
+    const bundle = await defineBundle(definition).loadBundleAsync();
 
     bundle.dispose();
     bundle.dispose();
@@ -215,7 +215,7 @@ describe('dispose', () => {
   it('leaves both paths inert afterwards', async () => {
     const inline = defineBundle(definition).loadBundleSync();
     const withAssets =
-      await defineBundle(definition).loadBundleWithAssetsAsync();
+      await defineBundle(definition).loadBundleAsync();
 
     inline.dispose();
     withAssets.dispose();

@@ -23,7 +23,7 @@ Targets: `swift` (`enum` + `BundleDescriptor`), `kotlin` (`object` + `BundleDesc
 
 The RN module **inlines each preset's device pattern** and statically requires the sibling
 `.pulsar` asset, and exports two loaders. `loadBundleSync()` is synchronous and uses only the
-inline patterns; `loadBundleWithAssetsAsync()` returns a Promise and loads the binary natively
+inline patterns; `loadBundleAsync()` returns a Promise and loads the binary natively
 for authored audio. JSON Lottie animations are inlined too when you pass `animations`, since
 they are rendered in JS.
 

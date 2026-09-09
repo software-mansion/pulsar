@@ -122,7 +122,7 @@ for (const dir of dirs) {
         '// prettier-ignore\n' +
         "import { defineBundle } from 'react-native-pulsar';\n\n" +
         '// prettier-ignore\n' +
-        `export const { loadBundleSync, loadBundleWithAssetsAsync } = defineBundle(${definition});\n` +
+        `export const { loadBundleSync, loadBundleAsync } = defineBundle(${definition});\n` +
         '// prettier-ignore\n' +
         "export type { PresetHandle } from 'react-native-pulsar';\n"
     );
@@ -132,7 +132,7 @@ for (const dir of dirs) {
       process.stderr.write(
         `pulsar-gen-rn: warning: presets ${withAudio.join(', ')} carry audio, which is decoded ` +
           'natively and cannot be inlined — `loadBundleSync()` plays their haptics only. Use ' +
-          '`loadBundleSync(true)` or `loadBundleWithAssetsAsync()` for the sound.\n'
+          '`loadBundleSync(true)` or `loadBundleAsync()` for the sound.\n'
       );
     }
     if (droppedAnimation.length > 0) {

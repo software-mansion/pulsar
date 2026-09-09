@@ -62,7 +62,7 @@ type LoadedBundle<M extends BundleDefinition> = Bundle<PresetsOf<M>>;
 export interface BundleLoaders<M extends BundleDefinition> {
   /** `includeAssets` reads the `.pulsar` on the calling thread — in dev, that blocks on Metro. */
   loadBundleSync(includeAssets?: boolean): LoadedBundle<M>;
-  loadBundleWithAssetsAsync(): Promise<LoadedBundle<M>>;
+  loadBundleAsync(): Promise<LoadedBundle<M>>;
 }
 
 function assertDefinition(definition: BundleDefinition | undefined): void {
@@ -119,7 +119,7 @@ export function defineBundle<M extends BundleDefinition>(
       const token = Pulsar.Pulsar_loadBundleFromUriSync(uri);
       return createLoadedBundle(definition, assertToken(token, definition));
     },
-    loadBundleWithAssetsAsync: async () => {
+    loadBundleAsync: async () => {
       const uri = resolveAssetUri(definition);
       const token = await Pulsar.Pulsar_loadBundleFromUri(uri);
       return createLoadedBundle(definition, assertToken(token, definition));
