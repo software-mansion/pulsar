@@ -14,7 +14,7 @@
       "react-native": "./src/index.tsx",
       "default": "./lib/module/index.js"
     },
-    "./src/NativeRNPulsar": {
+    "./unstable/NativeRNPulsar": {
       "types": "./lib/typescript/src/NativeRNPulsar.d.ts",
       "source": "./src/NativeRNPulsar.ts",
       "react-native": "./src/NativeRNPulsar.ts",
