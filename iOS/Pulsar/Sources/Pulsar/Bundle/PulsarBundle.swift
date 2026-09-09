@@ -157,7 +157,7 @@ public struct BundleDescriptor<Presets> {
   }
 }
 
-/// The typed bundle returned by `pulsar.loadBundle(SomeBundle.descriptor)`.
+/// The typed bundle returned by `pulsar.loadBundleSync(SomeBundle.descriptor)`.
 /// (Named `PulsarBundle` to avoid colliding with `Foundation.Bundle`.)
 /// Presets are reachable directly (`bundle.heartbeatV2.play()`); `presets` exposes the struct.
 @dynamicMemberLookup

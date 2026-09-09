@@ -28,7 +28,7 @@ export function resolvePreset(props: HapticLottieProps): ResolvedProps | null {
       preset.id,
       preset.hasAnimation
         ? `preset "${preset.id}" has an animation, but it is not carried in JS — it is either a ` +
-            'dotLottie or came from loadBundle(). Pass "source" explicitly.'
+            'dotLottie. Pass "source" explicitly.'
         : `preset "${preset.id}" has no animation. Pass "source" explicitly, or use a preset ` +
             'that was authored with one.'
     );

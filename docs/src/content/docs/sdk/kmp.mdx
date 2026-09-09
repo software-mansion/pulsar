@@ -662,13 +662,30 @@ var bundle by remember { mutableStateOf<AcmePack.Presets?>(null) }
 
 LaunchedEffect(Unit) {
     val bytes = Res.readBytes("files/acme-pack.pulsar")
-    bundle = pulsar.loadBundle(AcmePack.descriptor, bytes, strict = true)
+    bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes)
 }
 
 bundle?.heartbeatV2?.play()
 ```
 
-`strict = true` checks the loaded bundle against the generated types.
+`loadBundleAsync` is the `suspend` equivalent, decoding on `Dispatchers.Default`:
+
+```kotlin
+bundle = pulsar.loadBundleAsync(AcmePack.descriptor, bytes)
+```
+
+If the `.pulsar` ships as a platform asset — `src/androidMain/assets/` on Android, the app bundle
+on iOS — the descriptor resolves it by name and no byte-reading is needed:
+
+```kotlin
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
+```
+
+Compose Resources stores files under its own directory rather than the platform asset location, so
+a bundle kept there uses the `bytes` overload above.
+
+The loaded bundle's content hash is checked against the generated types; pass `strict = false`
+to skip it.
 
 Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
 and timing for your own animation view.

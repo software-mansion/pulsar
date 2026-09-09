@@ -47,7 +47,7 @@ struct BundlesView: View {
     private func load() {
         guard bundle == nil else { return }
         do {
-            bundle = try pulsar.loadBundle(HapticsBundle.descriptor, strict: true)
+            bundle = try pulsar.loadBundleSync(HapticsBundle.descriptor)
         } catch {
             loadError = "Failed to load bundle: \(error)"
         }

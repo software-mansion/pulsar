@@ -10,7 +10,7 @@ const pattern = {
 
 const lottie = { v: '5.7.4', fr: 30, ip: 0, op: 60 };
 
-/** A preset as `createBundle` builds it. `id` must be unique per test — warnings fire once per id. */
+/** A generated bundle preset. `id` must be unique per test — warnings fire once per id. */
 function preset(id: string, over: Record<string, unknown> = {}) {
   return {
     id,

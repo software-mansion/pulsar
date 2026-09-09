@@ -60,13 +60,33 @@ extension Pulsar {
   /// Typed load for native Swift consumers, using a `pulsar-gen`-generated descriptor.
   /// Resolves `<assetName>.pulsar` from the app's main bundle.
   ///
-  ///     let bundle = try pulsar.loadBundle(AcmePack.descriptor)
+  ///     let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)
   ///     bundle.heartbeatV2.play()
-  public func loadBundle<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = false) throws -> PulsarBundle<P> {
+  public func loadBundleSync<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = true) throws -> PulsarBundle<P> {
+    try makeBundle(descriptor, data: try Data(contentsOf: bundleURL(for: descriptor)), strict: strict)
+  }
+
+  /// Reads the asset off the calling thread; decoding still happens where you await.
+  ///
+  ///     let bundle = try await pulsar.loadBundleAsync(AcmePack.descriptor)
+  ///     bundle.heartbeatV2.play()
+  public func loadBundleAsync<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = true) async throws -> PulsarBundle<P> {
+    let url = try bundleURL(for: descriptor)
+    let data = try await Task.detached(priority: .userInitiated) {
+      try Data(contentsOf: url)
+    }.value
+    return try makeBundle(descriptor, data: data, strict: strict)
+  }
+
+  private func bundleURL<P>(for descriptor: BundleDescriptor<P>) throws -> URL {
     guard let url = Foundation.Bundle.main.url(forResource: descriptor.assetName, withExtension: "pulsar") else {
       throw PulsarBundleError.resourceNotFound(descriptor.assetName)
     }
-    let loaded = try loadBundle(path: url.path)
+    return url
+  }
+
+  private func makeBundle<P>(_ descriptor: BundleDescriptor<P>, data: Data, strict: Bool) throws -> PulsarBundle<P> {
+    let loaded = try loadBundle(data: data)
 
     if strict, !descriptor.contentHash.isEmpty, loaded.contentHash != descriptor.contentHash {
       throw PulsarBundleError.hashMismatch(expected: descriptor.contentHash, actual: loaded.contentHash)
@@ -75,8 +95,7 @@ extension Pulsar {
     let missing = descriptor.presetIds.filter { loaded.handle($0) == nil }
     guard missing.isEmpty else { throw PulsarBundleError.missingPresets(missing) }
 
-    let presets = descriptor.build(BundleResolver(loaded))
-    return PulsarBundle(loaded: loaded, presets: presets)
+    return PulsarBundle(loaded: loaded, presets: descriptor.build(BundleResolver(loaded)))
   }
 
   private static func bundleMediaDir(for bundleId: String) throws -> URL {

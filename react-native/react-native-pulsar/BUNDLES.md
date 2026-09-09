@@ -1,107 +1,111 @@
 # Preset bundles (React Native)
 
-Load a `.pulsar` bundle authored in Pulsar Studio and play its presets with full autocomplete — no
-`.d.ts` codegen.
+Generate one typed module from a `.pulsar` bundle, import it, then choose whether to
+load the binary assets. Preset names autocomplete and unknown names are TypeScript errors.
 
 ## Setup
 
-Generate the sidecar. It carries the haptic patterns inline, so it is the only file your app
-imports — there is no binary asset to resolve, and nothing to configure in Metro.
+Generate a `*.bundle.ts` module next to every `.pulsar` file:
 
 ```bash
-npx pulsar-gen-rn assets        # scans ./assets for *.pulsar → *.bundle.json
+npx pulsar-gen-rn assets
 ```
 
-Expo — regenerate on every prebuild instead:
+The generated module embeds haptic patterns and JSON Lottie animations. It also contains a
+static `require('./name.pulsar')`, so the application does not import the binary separately —
+which also means the `.pulsar` ships in the app even if you only ever call `loadBundleSync()`.
+Do not edit generated modules.
+
+Expo can regenerate them on every prebuild:
 
 ```json
-{ "expo": { "plugins": [["react-native-pulsar", { "bundleDirs": ["assets"] }]] } }
+{
+  "expo": { "plugins": [["react-native-pulsar", { "bundleDirs": ["assets"] }]] }
+}
+```
+
+Register the binary extension with Metro once:
+
+```js
+// metro.config.js
+const { getDefaultConfig } = require('@react-native/metro-config');
+const { withPulsar } = require('react-native-pulsar/metro');
+module.exports = withPulsar(getDefaultConfig(__dirname));
 ```
 
 ## Usage
 
-```ts
-import hapticsBundle from './assets/hapticsBundle.bundle.json';
-import { createBundle } from 'react-native-pulsar';
+The generated file is the only Pulsar bundle import the application needs:
 
-export const Haptics = createBundle(hapticsBundle);
-export type PresetName = keyof typeof hapticsBundle.presets;
-```
+Each generated module exports exactly two loaders:
 
 ```ts
-Haptics.fanfare.play();   // ← autocompletes; unknown ids are a compile error
+import { loadBundleSync } from './assets/hapticsBundle.bundle';
+
+const Haptics = loadBundleSync();
+
+Haptics.fanfare.play();
 Haptics.fanfare.stop();
-
-Haptics.get(someRuntimeId)?.play();   // dynamic escape hatch → PresetHandle | undefined
+Haptics.get(someRuntimeId)?.play();
 ```
 
-Presets are direct members of the bundle. The bundle's own members — `id`, `contentHash`, `get`,
-`dispose` — sit alongside them without ambiguity: `pulsar-gen` rejects a manifest that names a
-preset after one of them. They are also non-enumerable, so `Object.keys(Haptics)` is exactly the
-preset ids, which is handy for rendering a list of everything in a pack.
+`loadBundleSync()` does not read the `.pulsar` binary at all — it plays the patterns embedded
+in the generated module, parsing each one lazily on its first `play()`. Authored audio is not
+played on this path.
 
-Each preset handle carries `id`, `name`, `duration`, `play()`, `stop()`, the raw `pattern`, and:
+To get the authored audio, load the binary:
 
 ```ts
-Haptics.fanfare.hasAudio       // authored with a synced sound
-Haptics.fanfare.hasAnimation   // authored with a Lottie animation
-Haptics.fanfare.animation      // the Lottie itself, when carried in JS (see below)
+import { loadBundleAsync } from './assets/hapticsBundle.bundle';
+
+const Haptics = await loadBundleAsync();
+
+Haptics.fanfare.play(); // still synchronous after the load
 ```
 
-### Rendering a preset's animation
+Native code reads the `.pulsar` before the promise settles — the binary no longer travels
+through JavaScript as base64. After the load, `play()` is synchronous either way.
 
-A JSON Lottie is inlined into the sidecar, because `lottie-react-native` renders it in JS anyway.
-`react-native-pulsar-lottie` takes the preset directly and plays the animation and the haptics
-together:
+`loadBundleSync(true)` reads the binary too, but on the calling thread. In release that is a
+local file read; in development it is a **blocking HTTP round trip to Metro**, so prefer
+`loadBundleAsync()` unless you genuinely cannot await.
+
+## Presets and animations
+
+Each preset handle carries `id`, `name`, `duration`, `play()`, `stop()`, the raw `pattern`,
+and media metadata:
+
+```ts
+Haptics.fanfare.hasAudio;
+Haptics.fanfare.hasAnimation;
+Haptics.fanfare.animation;
+```
+
+`play()` does not render animations. A JSON Lottie is embedded in the generated module and
+can be passed to `react-native-pulsar-lottie`:
 
 ```tsx
 import { HapticLottieView } from 'react-native-pulsar-lottie';
 
-<HapticLottieView preset={Haptics.celebration} autoPlay />
+<HapticLottieView preset={Haptics.celebration} autoPlay />;
 ```
 
-Or drive your own Lottie view from `preset.animation.source`. A dotLottie (`.lottie`) is binary and
-is not inlined — `pulsar-gen-rn` warns, `hasAnimation` stays true, and `animation` is `undefined`.
+A binary dotLottie (`.lottie`) cannot be embedded in TypeScript; codegen warns and leaves
+`animation` undefined while preserving `hasAnimation: true`.
 
-`createBundle` is synchronous and free — each pattern is handed to the native composer lazily, on
-its first `play()`. Types come from `keyof` inference over the imported JSON (the same trick as
-nano-icons' glyphmaps), so renaming a preset and re-exporting turns every stale reference into a
-compile error.
+The bundle metadata members `id`, `contentHash`, `get`, and `dispose` are non-enumerable.
+Therefore `Object.values(Haptics)` contains only preset handles.
 
-Call `dispose()` if you are done with a bundle and want its native patterns released early; a bundle
-that lives for the life of the app does not need it. Playing a preset after `dispose()` re-parses
-it, so a disposed bundle stays usable.
+Call `dispose()` when a loaded bundle is no longer needed. A disposed bundle is inert: further
+`play()` / `stop()` calls are ignored (and warn once in `__DEV__`) rather than silently
+re-parsing. Loading the same pack twice gives two independent bundles, so disposing one does
+not disturb the other.
 
-## Bundles with audio or animation
+Re-run `pulsar-gen-rn` after every Studio export so the generated module, content hash, and
+`.pulsar` asset stay in sync.
 
-Audio is decoded natively, so it can never be inlined: a preset with a sound plays its haptics
-alone on this path, and `pulsar-gen-rn` warns. (Animations are different — they render in JS, so
-JSON ones are carried, as above.) To get the audio, ship the `.pulsar` itself:
+## Other SDKs
 
-1. Register the extension with Metro:
-
-   ```js
-   // metro.config.js
-   const { getDefaultConfig } = require('@react-native/metro-config');
-   const { withPulsar } = require('react-native-pulsar/metro');
-   module.exports = withPulsar(getDefaultConfig(__dirname));
-   ```
-
-2. Bind the same sidecar to the binary and load it:
-
-   ```ts
-   import { createBundleFromAsset, loadBundle } from 'react-native-pulsar';
-
-   const Descriptor = createBundleFromAsset(hapticsBundle, require('./assets/hapticsBundle.pulsar'));
-   const bundle = await loadBundle(Descriptor);   // async: reads the asset, hands bytes to native
-   bundle.arcadeBonusAlert.play();                // haptics + audio
-   bundle.dispose();
-   ```
-
-One sidecar drives both paths — the types are identical either way.
-
-## Regenerating
-
-Re-run `pulsar-gen-rn` after every Studio export. The sidecar embeds the bundle's `contentHash`, and
-a file left over from the pre-inline format (`*.presets.json`) is rejected by `createBundle` with a
-message telling you to regenerate rather than silently playing nothing.
+Every SDK offers the same pair — `loadBundleSync` and `loadBundleAsync` — except Flutter, which
+crosses a platform channel and so is async only. React Native is the only target with an inline,
+no-binary path, because only it can embed the patterns in the app's JS bundle.

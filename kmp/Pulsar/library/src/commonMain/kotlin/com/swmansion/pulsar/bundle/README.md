@@ -17,20 +17,33 @@ npx @swmansion/pulsar-gen acme-pack.pulsar --target kotlin \
 
 ## Usage
 
-KMP has no shared asset API, so the app supplies the bytes — with Compose Resources, that means a
-suspending read:
+If the `.pulsar` ships as a platform asset — `src/androidMain/assets/` on Android, the app bundle on
+iOS — the descriptor resolves it by name:
 
 ```kotlin
 val pulsar = Pulsar.create()
-val bytes = Res.readBytes("files/acme-pack.pulsar")
-val bundle = pulsar.loadBundle(AcmePack.descriptor, bytes, strict = true)
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
 
 bundle.heartbeatV2.play()
 bundle.explosion.stop()
 ```
 
-`strict = true` asserts the loaded bundle's content hash matches the generated types, failing loudly
-on a stale bundle/types mismatch.
+`loadBundleAsync(AcmePack.descriptor)` is the `suspend` equivalent, and `loadBundleFromPath(path)` /
+`loadBundleFromAsset(name)` are the untyped forms.
+
+Anywhere else the bytes come from — Compose Resources, a download, your own resource loader — pass
+them yourself:
+
+```kotlin
+val bytes = Res.readBytes("files/acme-pack.pulsar")
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes)
+```
+
+Compose Resources packages files under its own directory rather than the platform asset location, so
+a bundle stored there always takes the `bytes` overload — which is what the example app does.
+
+The loaded bundle's content hash is asserted against the generated types, failing loudly on a stale
+bundle/types mismatch. Pass `strict = false` to skip it.
 
 ## Limits
 

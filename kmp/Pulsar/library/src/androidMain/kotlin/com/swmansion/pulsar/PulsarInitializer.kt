@@ -39,6 +39,6 @@ class PulsarInitializer : ContentProvider() {
 
 }
 
-private object PulsarInitializerState {
+internal object PulsarInitializerState {
     var applicationContext: android.content.Context? = null
 }

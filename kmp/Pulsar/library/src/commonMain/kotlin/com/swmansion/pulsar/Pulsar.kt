@@ -1,10 +1,14 @@
 package com.swmansion.pulsar.kmp
 
 import com.swmansion.pulsar.kmp.bundle.BundleDescriptor
+import com.swmansion.pulsar.kmp.bundle.readBundleAsset
+import com.swmansion.pulsar.kmp.bundle.readBundleFile
 import com.swmansion.pulsar.kmp.bundle.BundleLoaderImpl
 import com.swmansion.pulsar.kmp.bundle.BundleResolver
 import com.swmansion.pulsar.kmp.bundle.LoadedBundle
 import com.swmansion.pulsar.kmp.bundle.PulsarBundleException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class Pulsar private constructor(
     private val handle: PulsarPlatformHandle,
@@ -79,13 +83,35 @@ class Pulsar private constructor(
      */
     fun loadBundle(bytes: ByteArray): LoadedBundle = BundleLoaderImpl.load(this, bytes)
 
+    /** Load a `.pulsar` bundle from a file path. */
+    fun loadBundleFromPath(path: String): LoadedBundle = loadBundle(readBundleFile(path))
+
+    /**
+     * Load a `.pulsar` bundle shipped with the app — `src/main/assets` on Android, the main
+     * bundle on iOS.
+     */
+    fun loadBundleFromAsset(assetName: String): LoadedBundle = loadBundle(readBundleAsset(assetName))
+
     /**
      * Typed load using a `pulsar-gen`-generated descriptor:
      *
-     *     val bundle = pulsar.loadBundle(AcmePack.descriptor, bytes)
+     *     val bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes)
      *     bundle.heartbeatV2.play()
      */
-    fun <P> loadBundle(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): P {
+    suspend fun <P> loadBundleAsync(
+        descriptor: BundleDescriptor<P>,
+        bytes: ByteArray,
+        strict: Boolean = true,
+    ): P = withContext(Dispatchers.Default) { loadBundleSync(descriptor, bytes, strict) }
+
+    /** Resolves `descriptor.assetName` against the app's own assets. */
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = true): P =
+        loadBundleSync(descriptor, readBundleAsset(descriptor.assetName), strict)
+
+    suspend fun <P> loadBundleAsync(descriptor: BundleDescriptor<P>, strict: Boolean = true): P =
+        withContext(Dispatchers.Default) { loadBundleSync(descriptor, strict) }
+
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = true): P {
         val loaded = loadBundle(bytes)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {
             throw PulsarBundleException(

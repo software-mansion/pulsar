@@ -714,14 +714,15 @@ import 'package:pulsar_haptics/pulsar_haptics.dart';
 import 'bundles/acme_pack.bundle.dart';
 
 final pulsar = Pulsar();
-final bundle = await pulsar.loadBundle(acmePack, strict: true);
+final bundle = await pulsar.loadBundleAsync(acmePack);
 
 bundle.heartbeatV2.play();
 bundle.explosion.stop();
 ```
 
 The generated descriptor already knows the asset path, so `loadBundle` finds and loads it.
-`strict: true` checks the shipped bundle against the generated types.
+The shipped bundle's content hash is checked against the generated types; pass `strict: false`
+to skip it.
 
 Audio authored into a preset plays through the native iOS/Android path alongside the haptics, and
 animation bytes are carried for your own Lottie view.
