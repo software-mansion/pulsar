@@ -3,10 +3,8 @@ import Pulsar
 
 /// Reads a Pulsar ``PatternData`` into per-frame `RealtimeComposer` inputs.
 ///
-/// The core's `PatternData` exposes a public initializer but keeps its stored
-/// properties `internal`, so we read it through its public `Codable`
-/// conformance (encode → decode into a local mirror). No UIKit/CoreHaptics
-/// dependencies here, so it is trivially unit-testable.
+/// Flattening the pattern once up front keeps the display-link step to plain arithmetic over
+/// plain arrays. No UIKit/CoreHaptics dependencies here, so it is trivially unit-testable.
 
 /// A single point on a continuous envelope.
 struct EnvPoint {
@@ -30,37 +28,12 @@ struct SampledPattern {
     var hasContinuous: Bool { !amplitude.isEmpty && !frequency.isEmpty }
 }
 
-private struct PatternMirror: Decodable {
-    struct Value: Decodable {
-        let time: Double
-        let value: Float
-    }
-    struct Continuous: Decodable {
-        let amplitude: [Value]
-        let frequency: [Value]
-    }
-    struct Discrete: Decodable {
-        let time: Double
-        let amplitude: Float
-        let frequency: Float
-    }
-    let continuousPattern: Continuous
-    let discretePattern: [Discrete]
-}
-
-/// Flatten a `PatternData` into a ``SampledPattern`` via its `Codable` form.
-/// Returns `nil` only if encoding/decoding unexpectedly fails.
-func sampledPattern(from pattern: PatternData) -> SampledPattern? {
-    guard
-        let data = try? JSONEncoder().encode(pattern),
-        let mirror = try? JSONDecoder().decode(PatternMirror.self, from: data)
-    else {
-        return nil
-    }
-    return SampledPattern(
-        amplitude: mirror.continuousPattern.amplitude.map { EnvPoint(time: $0.time, value: $0.value) },
-        frequency: mirror.continuousPattern.frequency.map { EnvPoint(time: $0.time, value: $0.value) },
-        discrete: mirror.discretePattern.map { DiscEvent(time: $0.time, amplitude: $0.amplitude, frequency: $0.frequency) }
+/// Flatten a `PatternData` into a ``SampledPattern``.
+func sampledPattern(from pattern: PatternData) -> SampledPattern {
+    SampledPattern(
+        amplitude: pattern.continuousPattern.amplitude.map { EnvPoint(time: $0.time, value: $0.value) },
+        frequency: pattern.continuousPattern.frequency.map { EnvPoint(time: $0.time, value: $0.value) },
+        discrete: pattern.discretePattern.map { DiscEvent(time: $0.time, amplitude: $0.amplitude, frequency: $0.frequency) }
     )
 }
 

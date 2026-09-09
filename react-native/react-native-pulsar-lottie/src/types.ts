@@ -31,7 +31,7 @@ export interface HapticConfig {
   preset?: PresetHandle;
   /** Haptic content to sync with the animation. Omit for a plain `LottieView`. */
   haptics?: HapticSource;
-  /** Engine mode. Defaults to `realtime`. */
+  /** Engine mode. Defaults to `realtime`, or to `pattern` for a `preset` that carries audio. */
   hapticMode?: HapticMode;
   /** Device tuning: shift haptics by ±ms relative to the animation. Default 0. */
   hapticOffset?: number;

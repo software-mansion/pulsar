@@ -31,6 +31,16 @@ HapticLottie.asset(
 );
 ```
 
+## Usage — from a bundle preset
+
+A `.pulsar` bundle preset carries its animation, pattern, duration and any synced audio, so the widget needs nothing else:
+
+```dart
+final pack = await pulsar.loadBundleAsync(acmePack);
+
+HapticLottie.preset(pack.celebration, autoPlay: true);
+```
+
 ## Usage — attach to your own `AnimationController`
 
 If you already drive Lottie with an `AnimationController`, wrap it:
@@ -55,16 +65,20 @@ haptic.pause();
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `haptics` | `PatternData?` | – | Pattern to sync. Omit for a plain animation. |
-| `mode` | `HapticMode` | `realtime` | `realtime` (progress-driven) or `pattern` (aligned-start). |
+| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the animation, pattern and authored duration. |
+| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; omit both for a plain animation. |
+| `hapticMode` | `HapticMode?` | `realtime` | `realtime` (progress-driven) or `pattern` (aligned-start). |
 | `hapticOffset` | `double` (ms) | `0` | Shift haptics ± relative to the animation. |
 | `hapticsEnabled` | `bool` | `true` | Turn haptics off without touching the animation. |
+| `durationMs` | `double?` | `null` | Clock length in ms. Overrides every derived duration. |
 | `autoPlay` / `repeat` / `repeatCount` / `repeatReverse` | | | Standard Lottie steering. |
 
 ## Engine modes
 
 - **`realtime`** (default) — the `AnimationController` is the master clock; the pattern is sampled every frame into `RealtimeComposer.set` / `playDiscrete`. Honours pause / `setTimestamp` / loop. Continuous fidelity is realtime-grade (coarser on Android).
-- **`pattern`** — the pre-parsed pattern plays whole via `PatternComposer`, aligned to the start (best native fidelity). Seek/pause on the haptic side are best-effort.
+- **`pattern`** — the pre-parsed pattern plays whole via `PatternComposer`, aligned to the start (best native fidelity), and the only mode that plays a preset's synced audio. Seek/pause on the haptic side are best-effort.
+
+`hapticMode` defaults to `realtime`, except for a preset that carries audio, which starts in `pattern` so that audio plays.
 
 There is **no playback-speed control** — the haptic timeline can't be rate-shifted coherently, so the animation runs at its authored speed.
 

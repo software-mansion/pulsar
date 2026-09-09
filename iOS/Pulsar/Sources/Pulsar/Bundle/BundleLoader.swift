@@ -35,6 +35,7 @@ extension Pulsar {
 
       handles[preset.id] = PresetHandle(
         id: preset.id,
+        name: preset.name,
         duration: preset.duration ?? 0,
         pulsar: self,
         pattern: pattern,

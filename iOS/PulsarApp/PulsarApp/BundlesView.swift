@@ -1,5 +1,6 @@
 import SwiftUI
 import Pulsar
+import PulsarLottie
 
 /// Plays presets from `hapticsBundle.pulsar`, which Xcode's synchronized group copies into the app
 /// bundle. `HapticsBundle.swift` alongside it is committed `pulsar-gen --target swift` output.
@@ -8,6 +9,7 @@ struct BundlesView: View {
 
     @State private var bundle: PulsarBundle<HapticsBundle.Presets>?
     @State private var loadError: String?
+    @State private var lottieRunId = 0
 
     var body: some View {
         NavigationStack {
@@ -21,13 +23,16 @@ struct BundlesView: View {
                         PresetRow(title: "Lottie", preset: bundle.lottie, note: "with animation")
                     }
 
-                    Section("Animation bytes") {
-                        // Pulsar carries and times the Lottie; the app renders it.
+                    Section("Animation from a preset") {
+                        HapticLottieView(preset: bundle.lottie)
+                            .frame(height: 160)
+                            .frame(maxWidth: .infinity)
+                            .id(lottieRunId)
+                        Button("▶ Replay animation") { lottieRunId += 1 }
                         if let animation = bundle.lottie.animation {
                             Text("\(animation.data.count) bytes at \(Int(animation.frameRate)) fps, \(animation.totalFrames) frames")
                                 .font(.footnote)
-                        } else {
-                            Text("No animation carried for this preset.").font(.footnote)
+                                .foregroundStyle(.secondary)
                         }
                     }
 

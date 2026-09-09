@@ -59,20 +59,24 @@ function Celebration() {
 The preset fills in three things, each still overridable on its own: `source` from its Lottie,
 `haptics` from its pattern, and `durationMs` from its authored length.
 
+A preset authored with **audio** plays that audio too, through its own native handle. That needs
+`pattern` mode, so such a preset defaults to `hapticMode="pattern"` instead of `realtime`; passing
+`hapticMode` yourself always wins. The sound only reaches the device on the asset-backed load path
+(`loadBundleSync(true)` or `loadBundleAsync()`).
+
 Only JSON Lotties are embedded in the generated TypeScript module. A preset authored as a
 dotLottie reports `hasAnimation: true` but carries no `animation` — pass `source` yourself there.
 If neither is available the view renders nothing and warns once, rather than crashing.
 
-For the hook API, a preset works today without any extra option:
-`useHapticLottie({ haptics: preset.pattern })`.
+For the hook API, a preset is its own option: `useHapticLottie({ preset })`.
 
 ## Haptic props
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `preset` | `PresetHandle` | – | A bundle preset supplying `source` + `haptics` + `durationMs` at once. |
-| `haptics` | `Pattern \| () => void` | – | Pattern to sync, or a preset trigger fn (`pattern` mode only). |
-| `hapticMode` | `'realtime' \| 'pattern'` | `'realtime'` | Engine mode — see below. |
+| `haptics` | `Pattern \| () => void` | – | Pattern to sync, or a preset trigger fn (`pattern` mode only). Overrides the preset's pattern. |
+| `hapticMode` | `'realtime' \| 'pattern'` | derived | Engine mode — `'realtime'`, or `'pattern'` for a preset with audio. See below. |
 | `hapticOffset` | `number` (ms) | `0` | Shift haptics ± relative to the animation (device tuning). |
 | `hapticsEnabled` | `boolean` | `true` | Turn haptics off without touching the animation. |
 | `durationMs` | `number` | derived | `realtime` clock length. Derived from the preset's duration, else the Lottie JSON (`fr`/`ip`/`op`), else the pattern. |
@@ -80,7 +84,7 @@ For the hook API, a preset works today without any extra option:
 ## Engine modes
 
 - **`realtime`** (default) — the animation timeline is the master clock. A Reanimated frame callback drives the Lottie `progress` on the UI thread and samples your pattern into `RealtimeComposer` events. Honours `pause`, `setTimestamp`, `loop`, and segments coherently. Requires a `Pattern` source. Continuous fidelity is realtime-grade (coarser on Android). **No playback-speed control** — the haptic timeline can't be rate-shifted coherently, so the animation runs at its authored speed.
-- **`pattern`** — the pattern (or a preset) plays whole via `PatternComposer`, aligned to the animation start (best native fidelity). Limitations: `pause` stops the haptic, and there is no mid-pattern seek. Best for short, mostly start-aligned animations.
+- **`pattern`** — the pattern (or a preset) plays whole via `PatternComposer`, aligned to the animation start (best native fidelity), and it is the only mode that plays a preset's synced audio. Limitations: `pause` stops the haptic, and there is no mid-pattern seek. Best for short, mostly start-aligned animations.
 
 ## Imperative control
 
@@ -99,6 +103,7 @@ If you'd rather not swap the component, `useHapticLottie` fires a pattern/preset
 
 ```tsx
 const haptics = useHapticLottie({ haptics: pattern });
+// …or straight from a bundle preset, audio included: useHapticLottie({ preset: Pack.celebration })
 // call haptics.play() next to your lottieRef.play(); haptics.stop() on pause.
 ```
 

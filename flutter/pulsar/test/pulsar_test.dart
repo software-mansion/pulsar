@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pulsar_haptics/pulsar.dart';
@@ -111,6 +113,31 @@ class MockPulsarPlatform
 
   @override
   Future<void> stopHaptics() async {}
+
+  @override
+  Future<String> loadBundle(Uint8List bytes) async => 'bundle-token';
+
+  @override
+  Future<List<Map<dynamic, dynamic>>> bundlePresets(
+    String token, {
+    bool includeAnimations = true,
+  }) async => const [];
+
+  @override
+  Future<void> playBundlePreset(String token, String presetId) async {}
+
+  @override
+  Future<void> stopBundlePreset(String token, String presetId) async {}
+
+  @override
+  Future<void> disposeBundle(String token) async {}
+
+  @override
+  Future<int> patternParsePatternWithSound(
+    PatternData data,
+    Sound sound, {
+    int? composerId,
+  }) async => nextComposerId++;
 }
 
 void main() {

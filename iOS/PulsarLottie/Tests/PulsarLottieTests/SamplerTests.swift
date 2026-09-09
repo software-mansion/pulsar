@@ -27,8 +27,6 @@ final class SamplerTests: XCTestCase {
         XCTAssertEqual(sampleEnvelope([], 100), 0, accuracy: 1e-6)
     }
 
-    /// Verifies the Codable round-trip that reads a core `PatternData` whose
-    /// stored properties are `internal`.
     func testSampledPatternExtractsFromPatternData() {
         let pattern = PatternData(
             continuousPattern: ContinuousPattern(
@@ -41,8 +39,6 @@ final class SamplerTests: XCTestCase {
             ]
         )
         let s = sampledPattern(from: pattern)
-        XCTAssertNotNil(s)
-        guard let s else { return }
         XCTAssertEqual(s.amplitude.count, 2)
         XCTAssertEqual(s.amplitude[1].time, 800, accuracy: 1e-6)
         XCTAssertEqual(s.amplitude[1].value, 1, accuracy: 1e-6)

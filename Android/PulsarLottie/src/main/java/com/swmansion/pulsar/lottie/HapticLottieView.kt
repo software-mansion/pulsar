@@ -4,13 +4,15 @@ import android.content.Context
 import android.util.AttributeSet
 import com.airbnb.lottie.LottieAnimationView
 import com.swmansion.pulsar.Pulsar
+import com.swmansion.pulsar.bundle.PresetHandle
 import com.swmansion.pulsar.types.PatternData
 
 /**
  * A [LottieAnimationView] subclass that plays Pulsar haptics in sync.
  *
- * A drop-in replacement for `LottieAnimationView`: with no haptics set it
- * behaves identically. Call [setHaptics] to attach a pattern and drive transport
+ * A drop-in replacement for `LottieAnimationView`: with no haptics bound it
+ * behaves identically. Call [bindHaptics] to attach a pattern — or a whole bundle
+ * preset, whose Lottie animation this view renders for you — and drive transport
  * through the returned [HapticLottieController].
  */
 class HapticLottieView @JvmOverloads constructor(
@@ -21,20 +23,40 @@ class HapticLottieView @JvmOverloads constructor(
 
     private var controller: HapticLottieController? = null
 
-    /** Attach [haptics] and return the controller that steers animation + haptics. */
+    /**
+     * Bind haptics and return the controller that steers animation + haptics.
+     *
+     * A bundle [preset] supplies all three of the animation, the pattern and the
+     * authored duration; each is still overridable on its own. An explicit [haptics]
+     * wins over the preset's pattern, and an animation already set on this view is
+     * kept rather than replaced.
+     */
     @JvmOverloads
-    fun setHaptics(
+    fun bindHaptics(
         pulsar: Pulsar,
-        haptics: PatternData,
-        mode: HapticMode = HapticMode.REALTIME,
-        offsetMs: Long = 0L,
-        enabled: Boolean = true,
+        preset: PresetHandle? = null,
+        haptics: PatternData? = null,
+        hapticMode: HapticMode? = null,
+        hapticOffset: Long = 0L,
+        hapticsEnabled: Boolean = true,
+        durationMs: Long? = null,
     ): HapticLottieController {
         controller?.release()
-        return HapticLottieController(this, pulsar, haptics, mode, offsetMs, enabled)
-            .also { controller = it }
+        preset?.animation?.let { animation ->
+            if (composition == null) setAnimation(animation.data.inputStream(), preset.id)
+        }
+        return HapticLottieController(
+            this,
+            pulsar,
+            preset,
+            haptics,
+            hapticMode,
+            hapticOffset,
+            hapticsEnabled,
+            durationMs,
+        ).also { controller = it }
     }
 
-    /** The current controller, or `null` if [setHaptics] hasn't been called. */
+    /** The current controller, or `null` if [bindHaptics] hasn't been called. */
     fun hapticController(): HapticLottieController? = controller
 }

@@ -15,12 +15,24 @@ class BundleAnimation internal constructor(
 /** A single playable preset from a loaded bundle. Parses its pattern lazily on first play. */
 class PresetHandle internal constructor(
     val id: String,
+    /** Human label the preset was authored under. */
+    val name: String,
     val duration: Long,
     val animation: BundleAnimation?,
+    /**
+     * The authored pattern. Read it to drive a timeline yourself — the Lottie SDK samples it per
+     * frame in realtime mode. [play] stays the pre-parsed, engine-native route.
+     */
+    val pattern: PatternData,
     private val haptics: Pulsar,
-    private val pattern: PatternData,
     private val sound: SoundData?,
 ) {
+    /** Whether the preset carries a synced audio track, which [play] plays alongside the haptics. */
+    val hasAudio: Boolean get() = sound != null
+
+    /** Whether the preset carries a Lottie animation, exposed as [animation]. */
+    val hasAnimation: Boolean get() = animation != null
+
     private var composer: PatternComposer? = null
 
     private fun ensureParsed() {

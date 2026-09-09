@@ -30,83 +30,119 @@ enum HapticMode {
 class HapticLottieController {
   /// Creates a controller bound to [animationController].
   ///
-  /// Pass [haptics] (a [PatternData]) to enable haptics; omit it for a plain
-  /// animation. The [pulsar] instance is created internally if not supplied.
+  /// A bundle [preset] supplies the pattern and authored duration; an explicit
+  /// [haptics] overrides it, and omitting both leaves a plain animation.
+  /// [hapticMode] defaults to [HapticMode.realtime], or to [HapticMode.pattern]
+  /// for a preset carrying audio, which only sounds there. A [pulsar] instance is
+  /// created internally if not supplied.
   HapticLottieController({
     required this.animationController,
+    this.preset,
     this.haptics,
-    this.mode = HapticMode.realtime,
-    this.offsetMs = 0,
-    this.enabled = true,
+    HapticMode? hapticMode,
+    this.hapticOffset = 0,
+    this.hapticsEnabled = true,
+    this.durationMs,
     Pulsar? pulsar,
-  }) : _pulsar = pulsar ?? Pulsar() {
+  }) : _pulsar = pulsar ?? Pulsar(),
+       _playsOwnAudio = haptics == null && (preset?.hasAudio ?? false),
+       hapticMode =
+           hapticMode ??
+           (haptics == null && (preset?.hasAudio ?? false)
+               ? HapticMode.pattern
+               : HapticMode.realtime) {
     _attach();
   }
 
   /// The Lottie animation clock this controller follows and steers.
   final AnimationController animationController;
 
-  /// Pattern to sync with the animation. `null` ⇒ animation only.
+  /// Bundle preset supplying the pattern and the authored duration. `null` ⇒ none.
+  final PresetHandle? preset;
+
+  /// Pattern to sync with the animation. Overrides [preset]'s own pattern.
   final PatternData? haptics;
 
-  /// Engine mode. Defaults to [HapticMode.realtime].
-  final HapticMode mode;
+  /// Engine mode. Defaults to [HapticMode.realtime], or to [HapticMode.pattern]
+  /// for a [preset] that carries audio.
+  final HapticMode hapticMode;
 
   /// Device tuning: shift haptics by ±ms relative to the animation.
-  final double offsetMs;
+  final double hapticOffset;
 
   /// When `false`, the animation still plays but no haptics are emitted.
-  final bool enabled;
+  final bool hapticsEnabled;
+
+  /// Explicit clock length in ms. Overrides every derived duration.
+  final double? durationMs;
 
   final Pulsar _pulsar;
+  final bool _playsOwnAudio;
   PulsarRealtimeComposer? _realtime;
   PulsarPatternComposer? _pattern;
   double _lastT = 0;
   bool _disposed = false;
 
-  bool get _useRealtime => mode == HapticMode.realtime && haptics != null;
+  /// The pattern actually driving the haptics: an explicit one, else the preset's.
+  PatternData? get _resolvedPattern => haptics ?? preset?.pattern;
 
-  bool get _hasContinuous =>
-      haptics != null &&
-      haptics!.continuousPattern.amplitude.isNotEmpty &&
-      haptics!.continuousPattern.frequency.isNotEmpty;
+  bool get _useRealtime =>
+      hapticMode == HapticMode.realtime && _resolvedPattern != null;
 
-  /// Effective clock length in ms: the Lottie composition duration once loaded,
-  /// else the pattern's length.
-  double get durationMs {
+  bool get _hasContinuous {
+    final pattern = _resolvedPattern;
+    return pattern != null &&
+        pattern.continuousPattern.amplitude.isNotEmpty &&
+        pattern.continuousPattern.frequency.isNotEmpty;
+  }
+
+  /// Effective clock length in ms: an explicit [durationMs], else the preset's
+  /// authored duration, else the Lottie composition once loaded, else the
+  /// pattern's own length.
+  double get durationMsResolved {
+    final explicit = durationMs;
+    if (explicit != null && explicit > 0) {
+      return explicit;
+    }
+    final authored = preset?.duration;
+    if (authored != null && authored > 0) {
+      return authored;
+    }
     final d = animationController.duration;
     if (d != null && d.inMicroseconds > 0) {
       return d.inMicroseconds / 1000.0;
     }
-    return haptics != null ? patternDurationMs(haptics!) : 0;
+    final pattern = _resolvedPattern;
+    return pattern != null ? patternDurationMs(pattern) : 0;
   }
 
   void _attach() {
-    if (haptics == null || !enabled) {
+    if (_resolvedPattern == null || !hapticsEnabled) {
       return;
     }
     if (_useRealtime) {
       _realtime = _pulsar.getRealtimeComposer();
       animationController.addListener(_onTick);
-    } else {
+    } else if (!_playsOwnAudio) {
       _pattern = _pulsar.getPatternComposer();
       // Pre-parse so the engine is warm and play() fires without delay.
-      unawaited(_pattern!.parsePattern(haptics!));
+      unawaited(_pattern!.parsePattern(_resolvedPattern!));
     }
   }
 
   void _onTick() {
-    if (_disposed || !enabled || !_useRealtime) {
+    final pattern = _resolvedPattern;
+    if (_disposed || !hapticsEnabled || !_useRealtime || pattern == null) {
       return;
     }
-    final dur = durationMs;
+    final dur = durationMsResolved;
     final t = animationController.value * dur;
-    final ht = t + offsetMs;
+    final ht = t + hapticOffset;
     if (_hasContinuous) {
       unawaited(
         _realtime!.set(
-          clamp01(sampleEnvelope(haptics!.continuousPattern.amplitude, ht)),
-          clamp01(sampleEnvelope(haptics!.continuousPattern.frequency, ht)),
+          clamp01(sampleEnvelope(pattern.continuousPattern.amplitude, ht)),
+          clamp01(sampleEnvelope(pattern.continuousPattern.frequency, ht)),
         ),
       );
     }
@@ -114,20 +150,24 @@ class HapticLottieController {
     if (t < prev) {
       prev = 0; // wrapped on loop
     }
-    for (final e in haptics!.discretePattern) {
+    for (final e in pattern.discretePattern) {
       if (e.time > prev && e.time <= t) {
-        unawaited(_realtime!.playDiscrete(clamp01(e.amplitude), clamp01(e.frequency)));
+        unawaited(
+          _realtime!.playDiscrete(clamp01(e.amplitude), clamp01(e.frequency)),
+        );
       }
     }
     _lastT = t;
   }
 
   Future<void> _fireHaptics() async {
-    if (!enabled || haptics == null) {
+    if (!hapticsEnabled || _resolvedPattern == null) {
       return;
     }
     if (_useRealtime) {
       _lastT = 0;
+    } else if (_playsOwnAudio) {
+      preset!.play();
     } else {
       await _pattern?.play();
     }
@@ -139,6 +179,8 @@ class HapticLottieController {
       if (_hasContinuous) {
         await _realtime?.stop();
       }
+    } else if (_playsOwnAudio) {
+      preset?.stop();
     } else {
       await _pattern?.stop();
     }
@@ -178,7 +220,7 @@ class HapticLottieController {
 
   /// Seek both animation and haptics to [ms] from the start.
   void setTimestamp(double ms) {
-    final dur = durationMs;
+    final dur = durationMsResolved;
     if (dur > 0) {
       animationController.value = clamp01(ms / dur);
     }

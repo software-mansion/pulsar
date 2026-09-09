@@ -40,9 +40,9 @@ head:
 
 import { Aside } from '@astrojs/starlight/components';
 
-`PulsarLottie` plays a Pulsar haptic pattern locked to a Lottie animation on iOS. It exposes two entry points: `HapticLottieView` for SwiftUI, and `HapticLottieController` for a `LottieAnimationView` you already own.
+`PulsarLottie` plays a Pulsar haptic pattern locked to a Lottie animation on iOS: `HapticLottieView` for SwiftUI, and `HapticLottieController` for a `LottieAnimationView` you already own.
 
-Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes and timing rules this page assumes.
+Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes, timing rules and simulator notes this page assumes.
 
 ## Requirements
 
@@ -81,7 +81,7 @@ Both `PulsarHaptics` and `lottie-ios` come along as dependencies — you do not 
 
 ## HapticLottieView
 
-A SwiftUI view that renders a bundled Lottie animation and plays a pattern locked to its timeline.
+A SwiftUI view that renders a Lottie animation and plays a pattern locked to its timeline.
 
 ```swift
 import Pulsar
@@ -89,160 +89,101 @@ import PulsarLottie
 
 let pattern = PatternData(
   continuousPattern: ContinuousPattern(
-    amplitude: [
-      ValuePoint(time: 0, value: 0),
-      ValuePoint(time: 400, value: 1),
-      ValuePoint(time: 800, value: 0),
-    ],
-    frequency: [
-      ValuePoint(time: 0, value: 0.3),
-      ValuePoint(time: 800, value: 0.8),
-    ]
+    amplitude: [ValuePoint(time: 0, value: 0), ValuePoint(time: 800, value: 1)],
+    frequency: [ValuePoint(time: 0, value: 0.3)]
   ),
-  discretePattern: [
-    DiscretePoint(time: 0, amplitude: 1, frequency: 0.5)
-  ]
+  discretePattern: [DiscretePoint(time: 0, amplitude: 1, frequency: 0.5)]
 )
 
-struct SuccessBadge: View {
-  var body: some View {
-    HapticLottieView("success", haptics: pattern, autoPlay: true)
-      .frame(width: 200, height: 200)
-  }
-}
+HapticLottieView("success", haptics: pattern)
+  .frame(width: 200, height: 200)
 ```
+
+### From a bundle preset
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the view takes both — no `name`, no `haptics`:
+
+```swift
+let pack = try pulsar.loadBundleSync(AcmePack.descriptor)
+
+HapticLottieView(preset: pack.celebration)
+  .frame(width: 200, height: 200)
+```
+
+The preset supplies the animation, `haptics` from its `pattern`, and `durationMs` from its authored length — each still overridable on its own. One that carries audio plays that audio too, which is why it starts in `.pattern` mode. See [bundle presets](/pulsar/lottie/overview/#bundle-presets).
 
 ### Parameters
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
-| `name` | `String` | – | Name of the Lottie animation to load, passed positionally. |
+| `name` | `String` | – | Lottie animation to load, passed positionally. Replaced by `preset:` in the second initializer. |
 | `bundle` | `Bundle` | `.main` | Bundle the animation is loaded from. |
-| `haptics` | `PatternData?` | `nil` | Pattern to sync. `nil` renders a plain animation. |
-| `mode` | `HapticMode` | `.realtime` | Engine mode — see [Engine modes](#engine-modes). |
+| `preset` | `PresetHandle?` | `nil` | Bundle preset supplying the animation, pattern and duration. |
+| `haptics` | `PatternData?` | `nil` | Pattern to sync. Overrides the preset's pattern; `nil` with no preset renders a plain animation. |
+| `hapticMode` | `HapticMode?` | derived | `.realtime`, or `.pattern` for a preset carrying audio. |
 | `hapticOffset` | `Double` | `0` | Shift the haptics by ±ms relative to the animation. |
 | `hapticsEnabled` | `Bool` | `true` | Turn haptics off without touching the animation. |
+| `durationMs` | `Double?` | derived | Clock length in ms. Overrides every derived duration. |
 | `autoPlay` | `Bool` | `true` | Play as soon as the view is created. |
 | `loopMode` | `LottieLoopMode` | `.playOnce` | Loop behaviour of the underlying `LottieAnimationView`. |
 
-The view creates and owns a `Pulsar` instance and a `HapticLottieController` for its lifetime, and sets `contentMode` to `.scaleAspectFit`.
+The view owns a `Pulsar` instance and a `HapticLottieController` for its lifetime, and sets `contentMode` to `.scaleAspectFit`.
 
 <Aside type="caution" title="Transport from SwiftUI">
-  The view does not expose its controller, so there is no way to call `play()` or `setTimestamp(_:)` on it from SwiftUI. To replay, force a remount by changing the view's identity:
+  The view does not expose its controller. To replay, force a remount by changing the view's identity — `HapticLottieView(preset: pack.celebration).id(runId)`. For real transport control, use [`HapticLottieController`](#hapticlottiecontroller).
 
-  ```swift
-  HapticLottieView("success", haptics: pattern, autoPlay: true)
-    .id(runId)
-  ```
-
-  When you need real transport control, use [`HapticLottieController`](#hapticlottiecontroller) with your own `LottieAnimationView` instead.
-</Aside>
-
-<Aside type="note" title="loopMode and realtime">
-  `loopMode` configures the underlying `LottieAnimationView`, which only drives its own playback in `.pattern` mode. In the default `.realtime` mode the controller advances the animation itself, so looping comes from `setLoop(_:count:reverse:)` on the controller — another reason to reach for the controller when the animation loops.
+  `loopMode` only drives playback in `.pattern` mode; in `.realtime` the controller advances the animation itself, so looping comes from `setLoop(_:count:reverse:)` on the controller.
 </Aside>
 
 ---
 
 ## HapticLottieController
 
-Attaches haptics to a `LottieAnimationView` you already have, and becomes the transport for both.
+Attaches haptics to a `LottieAnimationView` you already have, and becomes the transport for both. It binds haptics only — the view keeps whatever animation you gave it.
 
 ```swift
-import Lottie
-import Pulsar
-import PulsarLottie
-
-let pulsar = Pulsar()
-let animationView = LottieAnimationView(name: "success")
-
-let controller = PulsarLottie.bind(animationView, pulsar: pulsar, haptics: pattern)
+let controller = PulsarLottie.bind(animationView, pulsar: pulsar, preset: pack.celebration)
 
 controller.play()
 controller.setTimestamp(1200) // seek both animation and haptics to 1.2s
 controller.pause()
 ```
 
-`PulsarLottie.bind(_:pulsar:haptics:mode:offsetMs:enabled:)` is a convenience over the initializer. Call the initializer directly when the pattern is optional:
-
-```swift
-let controller = HapticLottieController(
-  animationView: animationView,
-  pulsar: pulsar,
-  haptics: pattern,   // optional — nil plays the animation alone
-  mode: .realtime,
-  offsetMs: 0,
-  enabled: true
-)
-```
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `animationView` | `LottieAnimationView` | – | The view to drive. Held for the controller's lifetime. |
-| `pulsar` | `Pulsar` | – | The Pulsar instance the composers come from. |
-| `haptics` | `PatternData?` | `nil` | Pattern to sync. `nil` leaves the animation without haptics. |
-| `mode` | `HapticMode` | `.realtime` | Engine mode. |
-| `offsetMs` | `Double` | `0` | Shift the haptics by ±ms relative to the animation. |
-| `enabled` | `Bool` | `true` | When `false`, the animation plays and no haptics are emitted. |
-
-In `.pattern` mode the pattern is parsed in the initializer, so the engine is warm and the first `play()` fires without the usual first-play latency.
-
-### Transport
+`bind` is a convenience over the initializer, which takes the same arguments as the view — `preset`, `haptics`, `hapticMode`, `hapticOffset`, `hapticsEnabled`, `durationMs` — plus `animationView` and `pulsar`.
 
 | Method | Description |
 | --- | --- |
 | `play()` | Rewind to the start and play animation and haptics together. |
 | `pause()` | Pause both. In `.pattern` mode the haptic stops rather than suspending. |
 | `resume()` | Resume from the current position. |
-| `stop()` | Stop and rewind to the start. |
-| `reset()` | Alias of `stop()`. |
-| `setTimestamp(_ ms: Double)` | Seek both animation and haptics to `ms` from the start. |
+| `stop()` / `reset()` | Stop and rewind to the start. |
+| `setTimestamp(_ ms: Double)` | Seek both to `ms` from the start. |
 | `setLoop(_ loop: Bool, count: Int?, reverse: Bool)` | Loop the animation. `count` limits iterations (`nil` loops forever); `reverse` plays a boomerang. |
 
 `setTimestamp(_:)` clamps into `0 ... duration` and repositions the discrete-event window, so seeking backwards re-fires the events you seek past. In `.pattern` mode it moves the animation only — a buffered pattern cannot be repositioned mid-flight.
 
-### Lifetime
-
-The controller retains the animation view and installs a `CADisplayLink` on the main run loop while playing. The display link is invalidated when playback ends and on `deinit`, so the only thing you have to get right is **keeping a strong reference to the controller** for as long as the view is on screen. A controller that is deallocated stops driving the animation.
+The controller installs a `CADisplayLink` while playing and invalidates it on `deinit`, so **keep a strong reference to it** for as long as the view is on screen.
 
 ---
 
-## Engine modes
+## Reading a preset yourself
 
-```swift
-public enum HapticMode {
-  case realtime
-  case pattern
-}
-```
-
-- **`.realtime`** (default) — a `CADisplayLink` makes the animation timeline the master clock, driving `currentProgress` and sampling the pattern into `RealtimeComposer.set` and `playDiscrete`. Honours pause, `setTimestamp(_:)` and loop.
-- **`.pattern`** — the pre-parsed pattern plays whole through `PatternComposer`, aligned to the animation start, which gives the best native fidelity at the cost of seeking.
-
-Passing `.realtime` without a pattern falls back to `.pattern` behaviour, because there is nothing to sample.
-
-See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
-
----
-
-## Bundle presets
-
-A preset from a `.pulsar` bundle carries the Lottie bytes it was authored against, on `PresetHandle.animation`:
+`PresetHandle` carries everything the view reads, so you can drive your own `LottieAnimationView`:
 
 ```swift
 if let animation = preset.animation {
-  let lottieAnimation = try? LottieAnimation.from(data: animation.data)
-  let animationView = LottieAnimationView(animation: lottieAnimation)
-  // animation.frameRate and animation.totalFrames describe the authored timing
+  let animationView = LottieAnimationView(animation: try? LottieAnimation.from(data: animation.data))
+  let controller = PulsarLottie.bind(animationView, pulsar: pulsar, preset: preset)
 }
 ```
 
-`PresetHandle` plays its own haptics through `play()` and `stop()`, which is the aligned-start `.pattern` behaviour. It does not expose its `PatternData`, so a bundle preset cannot currently drive `HapticLottieController` in `.realtime` mode — pass the pattern yourself when you need per-frame sync. See the [bundle format](/pulsar/sdk/ios/) notes on the iOS SDK page for how bundles are loaded.
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `Double` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `.realtime` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data`, `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `Bool` | What the preset was authored with. |
+| `play()` / `stop()` | – | Play the preset natively: haptics, plus its synced audio. |
 
----
-
-## Testing on the simulator
-
-Core Haptics is unavailable on the iOS Simulator. Debug builds of Pulsar play an audio rendering of the pattern instead, so the timing against the animation is still verifiable there — but run on a device before shipping to judge how it feels. See [testing haptics on simulators](/pulsar/sdk/overview/#testing-haptics-on-simulators).
+A preset with no animation renders nothing through `HapticLottieView(preset:)` — check `hasAnimation`, or use the `name:` initializer and pass the preset alongside it. See the [iOS SDK page](/pulsar/sdk/ios/) for how bundles are loaded.

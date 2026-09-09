@@ -34,6 +34,14 @@ abstract class PulsarPlatform extends PlatformInterface {
   Future<String> loadBundle(Uint8List bytes) =>
       throw UnimplementedError('loadBundle() not implemented');
 
+  /// Metadata for every preset in a loaded bundle: `id`, `name`, `duration`,
+  /// `hasAudio`, the authored `pattern`, and (when [includeAnimations]) the
+  /// Lottie bytes each preset was authored against.
+  Future<List<Map<dynamic, dynamic>>> bundlePresets(
+    String token, {
+    bool includeAnimations = true,
+  }) => throw UnimplementedError('bundlePresets() not implemented');
+
   Future<void> playBundlePreset(String token, String presetId) =>
       throw UnimplementedError('playBundlePreset() not implemented');
 
