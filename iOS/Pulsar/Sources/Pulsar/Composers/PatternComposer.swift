@@ -52,6 +52,7 @@ public class PatternComposer: NSObject {
   }
 
   private func parse(hapticsData: PatternData, audioEvent: CHHapticEvent?) {
+    releasePlayers()
     discreteLine.reset()
     continuousLine.reset()
     hasSound = audioEvent != nil
@@ -162,6 +163,15 @@ public class PatternComposer: NSObject {
     }
   }
 
+  private func releasePlayers() {
+    if let id = continuousPlayerId { engine.removePlayer(id: id) }
+    if let id = discretePlayerId { engine.removePlayer(id: id) }
+    continuousPlayerId = nil
+    discretePlayerId = nil
+    continuousPattern = nil
+    discretePattern = nil
+  }
+
   private func releaseAudio() {
     if let id = audioResourceID {
       engine.unregisterAudioResource(id)
@@ -202,12 +212,7 @@ public class PatternComposer: NSObject {
 
   @objc public func dispose() {
     stop()
-    if let id = continuousPlayerId { engine.removePlayer(id: id) }
-    if let id = discretePlayerId { engine.removePlayer(id: id) }
-    continuousPlayerId = nil
-    discretePlayerId = nil
-    continuousPattern = nil
-    discretePattern = nil
+    releasePlayers()
     audioBuffer = nil
     hasSound = false
     releaseAudio()

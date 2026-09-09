@@ -67,6 +67,24 @@ struct CoreHapticsMockTests {
         #expect(HapticMockRecorder.shared.playerStops >= 1)
     }
 
+    @Test func playingAfterAStopBuildsAFreshPlayer() {
+        CoreHapticsMock.install()
+        defer { CoreHapticsMock.uninstall() }
+
+        let engine = activeEngine()
+        let pattern = makePattern()
+        let created = engine.createPlayer(pattern: pattern)
+        #expect(created != nil)
+        guard let id = created else { return }
+
+        engine.playPlayer(id: id, pattern: pattern)
+        engine.stopPlayer(id: id)
+        engine.playPlayer(id: id, pattern: pattern)
+
+        #expect(HapticMockRecorder.shared.playersCreated == 2)
+        #expect(HapticMockRecorder.shared.playerStarts == 2)
+    }
+
     @Test func stopHapticsStopsEveryRegisteredPlayer() {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
