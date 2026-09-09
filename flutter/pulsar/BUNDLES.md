@@ -17,7 +17,7 @@ autocomplete.
 2. Generate the typed accessor (`*.bundle.dart`) with `pulsar-gen`:
 
    ```bash
-   npx @swmansion/pulsar-gen assets/pulsar/acme-pack.pulsar --target dart --out lib/bundles/
+   npx pulsar-gen assets/pulsar/acme-pack.pulsar --target dart --out lib/bundles/
    ```
 
    (A `build_runner` builder wrapping this is a planned convenience; the CLI is the source of truth.)

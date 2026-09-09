@@ -39,7 +39,7 @@ regenerates on every build (like Xcode 15 asset symbols):
 ```
 
 The plugin runs the self-contained `pulsar-gen-swift` host tool — no Node or network in the build.
-CocoaPods consumers (React Native / Flutter) instead run `@swmansion/pulsar-gen` in a script phase.
+CocoaPods consumers (React Native / Flutter) instead run `pulsar-gen` in a script phase.
 
 ## Bridge surface (React Native / Flutter)
 

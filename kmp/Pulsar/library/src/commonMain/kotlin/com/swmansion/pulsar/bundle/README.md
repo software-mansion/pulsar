@@ -9,7 +9,7 @@ KMP ships this API under `com.swmansion.pulsar.kmp.bundle`, not the Android SDK'
 `com.swmansion.pulsar.bundle`, so the generator needs to be told:
 
 ```bash
-npx @swmansion/pulsar-gen acme-pack.pulsar --target kotlin \
+npx pulsar-gen acme-pack.pulsar --target kotlin \
   --package com.example.app.bundles \
   --runtime-package com.swmansion.pulsar.kmp.bundle \
   --out composeApp/src/commonMain/kotlin/com/example/app/bundles/

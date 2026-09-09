@@ -62,7 +62,7 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
   if (!opts.patterns) {
     throw new Error(
       'rn target requires `patterns` (the inlined haptics). Build them with ' +
-        '`extractPatterns(manifest, entries)` from @swmansion/pulsar-gen.',
+        '`extractPatterns(manifest, entries)` from pulsar-gen.',
     );
   }
   const animations = opts.animations ?? {};
