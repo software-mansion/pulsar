@@ -714,17 +714,27 @@ import 'package:pulsar_haptics/pulsar_haptics.dart';
 import 'bundles/acme_pack.bundle.dart';
 
 final pulsar = Pulsar();
-final bundle = await pulsar.loadBundle(acmePack, strict: true);
+final bundle = await pulsar.loadBundleAsync(acmePack);
 
 bundle.heartbeatV2.play();
 bundle.explosion.stop();
 ```
 
 The generated descriptor already knows the asset path, so `loadBundle` finds and loads it.
-`strict: true` checks the shipped bundle against the generated types.
+The shipped bundle's content hash is checked against the generated types; pass `strict: false`
+to skip it.
 
 Audio authored into a preset plays through the native iOS/Android path alongside the haptics, and
 animation bytes are carried for your own Lottie view.
+
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`,
+`play()`, `stop()`, and `animation` — the Lottie `data`, `frameRate` and `totalFrames`, ready for
+`Lottie.memory`. That metadata is read back from the native bundle when it loads; pass
+`includeAnimations: false` to `loadBundleAsync` to skip the animation bytes when nothing will
+render them.
+
+The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that
+for you — pattern, animation and duration — so you rarely have to unpack it by hand.
 
 For an id only known at runtime, `bundle.get(id)` returns a handle or `null`. Call `bundle.dispose()`
 when you are done with a bundle.

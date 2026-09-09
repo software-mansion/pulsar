@@ -76,6 +76,12 @@ class ValuePoint {
   /// Creates a [ValuePoint] with the given [time] (ms) and [value] (0.0–1.0).
   const ValuePoint({required this.time, required this.value});
 
+  /// Rebuilds a [ValuePoint] from its [toMap] shape.
+  factory ValuePoint.fromMap(Map<dynamic, dynamic> map) => ValuePoint(
+    time: (map['time'] as num).toDouble(),
+    value: (map['value'] as num).toDouble(),
+  );
+
   /// Time offset in milliseconds from the start of the pattern.
   final double time;
 
@@ -94,6 +100,13 @@ class DiscretePoint {
     required this.amplitude,
     required this.frequency,
   });
+
+  /// Rebuilds a [DiscretePoint] from its [toMap] shape.
+  factory DiscretePoint.fromMap(Map<dynamic, dynamic> map) => DiscretePoint(
+    time: (map['time'] as num).toDouble(),
+    amplitude: (map['amplitude'] as num).toDouble(),
+    frequency: (map['frequency'] as num).toDouble(),
+  );
 
   /// Time offset in milliseconds from the start of the pattern.
   final double time;
@@ -116,6 +129,18 @@ class ContinuousPattern {
   /// Creates a [ContinuousPattern] with the given [amplitude] and [frequency] curves.
   const ContinuousPattern({required this.amplitude, required this.frequency});
 
+  /// Rebuilds a [ContinuousPattern] from its [toMap] shape.
+  factory ContinuousPattern.fromMap(Map<dynamic, dynamic> map) =>
+      ContinuousPattern(
+        amplitude: _pointsFromList(map['amplitude']),
+        frequency: _pointsFromList(map['frequency']),
+      );
+
+  static List<ValuePoint> _pointsFromList(Object? raw) =>
+      (raw as List<dynamic>? ?? const [])
+          .map((p) => ValuePoint.fromMap(p as Map<dynamic, dynamic>))
+          .toList();
+
   /// Amplitude curve: list of [ValuePoint] controlling intensity over time.
   final List<ValuePoint> amplitude;
 
@@ -135,6 +160,18 @@ class PatternData {
     required this.continuousPattern,
     required this.discretePattern,
   });
+
+  /// Rebuilds a [PatternData] from its [toMap] shape — the wire form the native
+  /// side sends back for a bundle preset's authored pattern.
+  factory PatternData.fromMap(Map<dynamic, dynamic> map) => PatternData(
+    continuousPattern: ContinuousPattern.fromMap(
+      (map['continuousPattern'] as Map<dynamic, dynamic>?) ?? const {},
+    ),
+    discretePattern:
+        (map['discretePattern'] as List<dynamic>? ?? const [])
+            .map((p) => DiscretePoint.fromMap(p as Map<dynamic, dynamic>))
+            .toList(),
+  );
 
   /// Raw array constructor matching the native iOS/Android shorthand:
   ///

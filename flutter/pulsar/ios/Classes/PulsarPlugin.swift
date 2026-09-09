@@ -19,6 +19,19 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
+  /// Wire shape for a preset's authored pattern — mirrors Dart's `PatternData.toMap()`.
+  private static func patternMap(_ pattern: PatternData) -> [String: Any] {
+    [
+      "continuousPattern": [
+        "amplitude": pattern.continuousPattern.amplitude.map { ["time": $0.time, "value": $0.value] },
+        "frequency": pattern.continuousPattern.frequency.map { ["time": $0.time, "value": $0.value] },
+      ],
+      "discretePattern": pattern.discretePattern.map {
+        ["time": $0.time, "amplitude": $0.amplitude, "frequency": $0.frequency]
+      },
+    ]
+  }
+
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     let args = call.arguments as? [String: Any]
     switch call.method {
@@ -45,6 +58,32 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
       } catch {
         result(FlutterError(code: "LOAD_BUNDLE_FAILED", message: "\(error)", details: nil))
       }
+
+    case "Pulsar_bundlePresets":
+      guard let token = args?["token"] as? String, let bundle = bundles[token] else {
+        result(FlutterError(code: "INVALID_ARGS", message: "unknown bundle token", details: nil))
+        return
+      }
+      let includeAnimations = args?["includeAnimations"] as? Bool ?? true
+      result(bundle.presetIds.compactMap { id -> [String: Any]? in
+        guard let preset = bundle.handle(id) else { return nil }
+        var map: [String: Any] = [
+          "id": preset.id,
+          "name": preset.name,
+          "duration": preset.duration,
+          "hasAudio": preset.hasAudio,
+          "hasAnimation": preset.hasAnimation,
+          "pattern": Self.patternMap(preset.pattern),
+        ]
+        if includeAnimations, let animation = preset.animation {
+          map["animation"] = [
+            "data": FlutterStandardTypedData(bytes: animation.data),
+            "frameRate": animation.frameRate,
+            "totalFrames": animation.totalFrames,
+          ]
+        }
+        return map
+      })
 
     case "Pulsar_playBundlePreset":
       guard let token = args?["token"] as? String, let presetId = args?["presetId"] as? String else {

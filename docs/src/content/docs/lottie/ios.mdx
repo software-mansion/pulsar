@@ -1,0 +1,189 @@
+---
+title: iOS
+description: Play Pulsar haptics in sync with a Lottie animation on iOS, with a SwiftUI view and a UIKit controller built on lottie-ios.
+head:
+  - tag: title
+    content: "iOS Lottie Haptics: Sync Vibration to Animations | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar Lottie SDK for iOS - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "A SwiftUI view and a UIKit controller that play Pulsar haptics in sync with a Lottie animation."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar Lottie SDK for iOS - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "A SwiftUI view and a UIKit controller that play Pulsar haptics in sync with a Lottie animation."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+`PulsarLottie` plays a Pulsar haptic pattern locked to a Lottie animation on iOS: `HapticLottieView` for SwiftUI, and `HapticLottieController` for a `LottieAnimationView` you already own.
+
+Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes, timing rules and simulator notes this page assumes.
+
+## Requirements
+
+- iOS 13.0+
+- Swift 5.9+
+- [`lottie-ios`](https://github.com/airbnb/lottie-ios) 4.5+
+- The [Pulsar iOS SDK](/pulsar/sdk/ios/) (`PulsarHaptics`), pulled in automatically
+
+## Installation
+
+{/* GENERATED:IOS_LOTTIE_VERSION_START */}
+Latest available version: `0.1.0`
+{/* GENERATED:IOS_LOTTIE_VERSION_END */}
+
+Add the package in Xcode via **File > Add Package Dependencies...** and depend on the `PulsarLottie` library product, or declare it in `Package.swift`:
+
+{/* GENERATED:IOS_LOTTIE_INSTALL_SNIPPET_START */}
+```swift
+dependencies: [
+  .package(url: "https://github.com/software-mansion-labs/pulsar-lottie-ios", from: "0.1.0")
+]
+```
+{/* GENERATED:IOS_LOTTIE_INSTALL_SNIPPET_END */}
+
+With CocoaPods:
+
+{/* GENERATED:IOS_LOTTIE_COCOAPODS_INSTALL_SNIPPET_START */}
+```ruby
+pod 'PulsarLottie', '~> 0.1.0'
+```
+{/* GENERATED:IOS_LOTTIE_COCOAPODS_INSTALL_SNIPPET_END */}
+
+Both `PulsarHaptics` and `lottie-ios` come along as dependencies — you do not need to add them separately, though nothing stops you from pinning them yourself.
+
+---
+
+## HapticLottieView
+
+A SwiftUI view that renders a Lottie animation and plays a pattern locked to its timeline.
+
+```swift
+import Pulsar
+import PulsarLottie
+
+let pattern = PatternData(
+  continuousPattern: ContinuousPattern(
+    amplitude: [ValuePoint(time: 0, value: 0), ValuePoint(time: 800, value: 1)],
+    frequency: [ValuePoint(time: 0, value: 0.3)]
+  ),
+  discretePattern: [DiscretePoint(time: 0, amplitude: 1, frequency: 0.5)]
+)
+
+HapticLottieView("success", haptics: pattern)
+  .frame(width: 200, height: 200)
+```
+
+### From a bundle preset
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the view takes both — no `name`, no `haptics`:
+
+```swift
+let pack = try pulsar.loadBundleSync(AcmePack.descriptor)
+
+HapticLottieView(preset: pack.celebration)
+  .frame(width: 200, height: 200)
+```
+
+The preset supplies the animation, `haptics` from its `pattern`, and `durationMs` from its authored length — each still overridable on its own. One that carries audio plays that audio too, which is why it starts in `.pattern` mode. See [bundle presets](/pulsar/lottie/overview/#bundle-presets).
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `name` | `String` | – | Lottie animation to load, passed positionally. Replaced by `preset:` in the second initializer. |
+| `bundle` | `Bundle` | `.main` | Bundle the animation is loaded from. |
+| `preset` | `PresetHandle?` | `nil` | Bundle preset supplying the animation, pattern and duration. |
+| `haptics` | `PatternData?` | `nil` | Pattern to sync. Overrides the preset's pattern; `nil` with no preset renders a plain animation. |
+| `hapticMode` | `HapticMode?` | derived | `.realtime`, or `.pattern` for a preset carrying audio. |
+| `hapticOffset` | `Double` | `0` | Shift the haptics by ±ms relative to the animation. |
+| `hapticsEnabled` | `Bool` | `true` | Turn haptics off without touching the animation. |
+| `durationMs` | `Double?` | derived | Clock length in ms. Overrides every derived duration. |
+| `autoPlay` | `Bool` | `true` | Play as soon as the view is created. |
+| `loopMode` | `LottieLoopMode` | `.playOnce` | Loop behaviour of the underlying `LottieAnimationView`. |
+
+The view owns a `Pulsar` instance and a `HapticLottieController` for its lifetime, and sets `contentMode` to `.scaleAspectFit`.
+
+<Aside type="caution" title="Transport from SwiftUI">
+  The view does not expose its controller. To replay, force a remount by changing the view's identity — `HapticLottieView(preset: pack.celebration).id(runId)`. For real transport control, use [`HapticLottieController`](#hapticlottiecontroller).
+
+  `loopMode` only drives playback in `.pattern` mode; in `.realtime` the controller advances the animation itself, so looping comes from `setLoop(_:count:reverse:)` on the controller.
+</Aside>
+
+---
+
+## HapticLottieController
+
+Attaches haptics to a `LottieAnimationView` you already have, and becomes the transport for both. It binds haptics only — the view keeps whatever animation you gave it.
+
+```swift
+let controller = PulsarLottie.bind(animationView, pulsar: pulsar, preset: pack.celebration)
+
+controller.play()
+controller.setTimestamp(1200) // seek both animation and haptics to 1.2s
+controller.pause()
+```
+
+`bind` is a convenience over the initializer, which takes the same arguments as the view — `preset`, `haptics`, `hapticMode`, `hapticOffset`, `hapticsEnabled`, `durationMs` — plus `animationView` and `pulsar`.
+
+| Method | Description |
+| --- | --- |
+| `play()` | Rewind to the start and play animation and haptics together. |
+| `pause()` | Pause both. In `.pattern` mode the haptic stops rather than suspending. |
+| `resume()` | Resume from the current position. |
+| `stop()` / `reset()` | Stop and rewind to the start. |
+| `setTimestamp(_ ms: Double)` | Seek both to `ms` from the start. |
+| `setLoop(_ loop: Bool, count: Int?, reverse: Bool)` | Loop the animation. `count` limits iterations (`nil` loops forever); `reverse` plays a boomerang. |
+
+`setTimestamp(_:)` clamps into `0 ... duration` and repositions the discrete-event window, so seeking backwards re-fires the events you seek past. In `.pattern` mode it moves the animation only — a buffered pattern cannot be repositioned mid-flight.
+
+The controller installs a `CADisplayLink` while playing and invalidates it on `deinit`, so **keep a strong reference to it** for as long as the view is on screen.
+
+---
+
+## Reading a preset yourself
+
+`PresetHandle` carries everything the view reads, so you can drive your own `LottieAnimationView`:
+
+```swift
+if let animation = preset.animation {
+  let animationView = LottieAnimationView(animation: try? LottieAnimation.from(data: animation.data))
+  let controller = PulsarLottie.bind(animationView, pulsar: pulsar, preset: preset)
+}
+```
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `Double` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `.realtime` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data`, `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `Bool` | What the preset was authored with. |
+| `play()` / `stop()` | – | Play the preset natively: haptics, plus its synced audio. |
+
+A preset with no animation renders nothing through `HapticLottieView(preset:)` — check `hasAnimation`, or use the `name:` initializer and pass the preset alongside it. See the [iOS SDK page](/pulsar/sdk/ios/) for how bundles are loaded.

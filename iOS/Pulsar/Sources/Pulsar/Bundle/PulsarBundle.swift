@@ -57,16 +57,25 @@ struct ResolvedSound {
 /// A single playable preset from a loaded bundle. Parses its pattern lazily on first play.
 @objc public final class PresetHandle: NSObject {
   @objc public let id: String
+  /// Human label the preset was authored under.
+  @objc public let name: String
   @objc public let duration: Double
   @objc public let animation: BundleAnimation?
+  /// The authored pattern. Read it to drive a timeline yourself — the Lottie SDK samples it per
+  /// frame in realtime mode. ``play()`` stays the pre-parsed, engine-native route.
+  @objc public let pattern: PatternData
+  /// Whether the preset carries a synced audio track, which ``play()`` plays alongside the haptics.
+  @objc public var hasAudio: Bool { sound != nil }
+  /// Whether the preset carries a Lottie animation, exposed as ``animation``.
+  @objc public var hasAnimation: Bool { animation != nil }
 
   private weak var pulsar: Pulsar?
-  private let pattern: PatternData
   private let sound: ResolvedSound?
   private var composer: PatternComposer?
 
-  init(id: String, duration: Double, pulsar: Pulsar, pattern: PatternData, sound: ResolvedSound?, animation: BundleAnimation?) {
+  init(id: String, name: String, duration: Double, pulsar: Pulsar, pattern: PatternData, sound: ResolvedSound?, animation: BundleAnimation?) {
     self.id = id
+    self.name = name
     self.duration = duration
     self.pulsar = pulsar
     self.pattern = pattern
@@ -157,7 +166,7 @@ public struct BundleDescriptor<Presets> {
   }
 }
 
-/// The typed bundle returned by `pulsar.loadBundle(SomeBundle.descriptor)`.
+/// The typed bundle returned by `pulsar.loadBundleSync(SomeBundle.descriptor)`.
 /// (Named `PulsarBundle` to avoid colliding with `Foundation.Bundle`.)
 /// Presets are reachable directly (`bundle.heartbeatV2.play()`); `presets` exposes the struct.
 @dynamicMemberLookup

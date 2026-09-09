@@ -35,6 +35,11 @@ android {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
         }
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -44,6 +49,7 @@ dependencies {
     implementation(libs.lottie)
     implementation(libs.androidx.core.ktx)
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }
 
 group = "com.swmansion"

@@ -1,0 +1,119 @@
+---
+title: The preset library
+description: Browse 206 haptic presets in Figma — search, filter by tag, play them, and read the ready-made SDK snippet for every platform.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Screenshot from '../../../components/Screenshot.astro';
+import presetsList from '../assets/figma-plugin/presets-list.png';
+import presetsCompact from '../assets/figma-plugin/presets-compact.png';
+import presetsFilters from '../assets/figma-plugin/presets-filters.png';
+import presetsSystem from '../assets/figma-plugin/presets-system.png';
+import tagsGuide from '../assets/figma-plugin/tags-guide.png';
+import presetDetail from '../assets/figma-plugin/preset-detail.png';
+
+The **Presets** tab carries **206 haptics**: 151 designed Pulsar presets plus
+the 55 platform built-ins (9 iOS, 46 Android). Each card shows the pattern's
+shape, its duration and its tags, and every one of them plays.
+
+<Screenshot
+  src={presetsList}
+  alt="The preset list with full cards showing waveform previews"
+  caption="Each card previews the pattern as a waveform: continuous envelopes as filled curves, single taps as vertical strokes."
+  width={420}
+/>
+
+## Playing a preset
+
+The **▷ Play** button renders the pattern as audio inside Figma — there is no
+vibration API in a plugin window, so sound is what you get while editing. Pair
+a phone and the same button also fires the real haptic on the device, which is
+the only honest way to choose one. See
+[Live preview](/pulsar/figma-plugin/live-preview/).
+
+The **Sound** switch above the list controls something different: whether
+selecting an already-bound layer on the canvas replays its haptic automatically.
+
+## Finding the right one
+
+**Search** matches a preset's name and its description. **Filters** narrow the
+list by tag, and the count beside the header shows how many are active.
+
+<Screenshot
+  src={presetsFilters}
+  alt="The filters panel with Bold, Rigid and Short selected"
+  caption="Tags come in four groups. Inside a group the choices are OR'd; across groups they're AND'ed — Bold + Rigid + Short means all three."
+  width={420}
+/>
+
+Tags describe a haptic along four dimensions:
+
+| Group         | Tags                                                   |
+| ------------- | ------------------------------------------------------ |
+| **Intensity** | Gentle · Substantial · Bold                            |
+| **Sharpness** | Soft · Flexible · Rigid                                |
+| **Shape**     | Peak · Impulses · Solid · Bumps · Saw · Pattern · Ramp |
+| **Duration**  | Impulse · Short · Extended · Long                      |
+
+**Learn more about tags** opens a guide with what each tag means and the
+situations it suits.
+
+<Screenshot
+  src={tagsGuide}
+  alt="The tags guide explaining the Intensity group"
+  caption="The same tag reference as the docs' preset playground, inside the plugin."
+  width={420}
+/>
+
+The **★** on any card adds it to your favourites, and **Favourites only** in the
+filters cuts the list to those.
+
+### Platform built-ins
+
+The **System presets** filters swap the list over to the vibrations the OS
+itself provides — iOS, or Android Primitives, Effects and Vendor effects. These
+are addressed by name on the device rather than composed from a pattern, so
+they have no waveform to draw and can't be opened in Studio.
+
+<Screenshot
+  src={presetsSystem}
+  alt="The iOS system presets in compact layout"
+  caption="System presets in compact rows — the same actions in a row a third the height."
+  width={420}
+/>
+
+## Two layouts
+
+The **Layout** buttons switch between full cards and compact rows. Compact
+strips the waveform and fits roughly three times as many presets on screen,
+which is what you want once you know the library.
+
+<Screenshot
+  src={presetsCompact}
+  alt="The preset list in compact row layout"
+  caption="Compact rows keep Play, favourite, Edit in Studio and Add."
+  width={420}
+/>
+
+## Preset details
+
+The **ⓘ** icon on a card opens the full view: tags, the waveform, the
+description, and a **copy-pastable snippet for six SDKs** — Swift, Android,
+Kotlin Multiplatform, React Native, Flutter and Web. **Raw pattern data**
+expands the underlying JSON.
+
+<Screenshot
+  src={presetDetail}
+  alt="The preset detail dialog for Applause, showing the Swift snippet and raw JSON"
+  caption="Play, Edit in Studio, and Add are all here too — so you can audition, tweak and bind without leaving the dialog."
+  width={420}
+/>
+
+<Aside>
+  The snippets are the same calls documented on the [SDK pages](/pulsar/sdk/overview/). Copying one
+  from the plugin and pasting it into the app is the whole implementation for a built-in preset.
+</Aside>
+
+**Edit in Studio** opens the pattern in [Pulsar Studio](/pulsar/studio/editor/),
+the visual editor where haptics are drawn — see
+[Your own patterns](/pulsar/figma-plugin/studio-patterns/).

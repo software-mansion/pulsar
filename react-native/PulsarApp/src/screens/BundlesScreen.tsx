@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,27 +8,20 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {
-  createBundle,
-  createBundleFromAsset,
-  loadBundle,
-  type PresetHandle,
-} from 'react-native-pulsar';
-import { HapticLottieView, type HapticLottieRef } from 'react-native-pulsar-lottie';
-import hapticsBundle from '../../assets/hapticsBundle.bundle.json';
+  HapticLottieView,
+  type HapticLottieRef,
+} from 'react-native-pulsar-lottie';
+import { type PresetHandle } from 'react-native-pulsar';
+import {
+  loadBundleSync,
+  loadBundleAsync,
+} from '../../assets/hapticsBundle.bundle';
 
 // Regenerate with `npm run pulsar-gen` after every Studio export.
-const Haptics = createBundle(hapticsBundle);
+const Haptics = loadBundleSync();
+type HapticsBundle = typeof Haptics;
 
-// Only presets are enumerable, so this is exactly the pack's contents.
-const presetIds = Object.keys(Haptics) as (keyof typeof hapticsBundle.presets)[];
-
-// The same sidecar, bound to the binary — the only path that carries the authored audio.
-const withAudioDescriptor = createBundleFromAsset(
-  hapticsBundle,
-  require('../../assets/hapticsBundle.pulsar'),
-);
-const loadWithAudio = () => loadBundle(withAudioDescriptor);
-type WithAudioBundle = Awaited<ReturnType<typeof loadWithAudio>>;
+const presets = Object.values(Haptics) as PresetHandle[];
 
 export default function BundlesScreen() {
   const lottieRef = React.useRef<HapticLottieRef>(null);
@@ -39,12 +32,12 @@ export default function BundlesScreen() {
         <Text style={styles.title}>Preset bundles</Text>
         <Text style={styles.body}>
           A .pulsar bundle authored in Pulsar Studio, loaded from its generated
-          sidecar. Preset names autocomplete and a typo is a compile error.
+          module. Preset names autocomplete and a typo is a compile error.
         </Text>
 
         <Text style={styles.section}>Play a preset</Text>
-        {presetIds.map(id => (
-          <PresetRow key={id} preset={Haptics[id]} />
+        {presets.map(preset => (
+          <PresetRow key={preset.id} preset={preset} />
         ))}
 
         <Text style={styles.section}>Animation from a preset</Text>
@@ -67,17 +60,83 @@ export default function BundlesScreen() {
           <Text style={styles.buttonText}>▶ Replay animation</Text>
         </TouchableOpacity>
 
-        <Text style={styles.section}>Presets with audio</Text>
+        <Text style={styles.section}>Preset without audio</Text>
+        <Text style={styles.body}>
+          `loadBundleSync()` never reads the .pulsar binary — it plays the
+          pattern embedded in the generated module. "
+          {Haptics.arcadeBonusAlert.name}" was authored with a sound, so on this
+          path it plays haptics only.
+        </Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => Haptics.arcadeBonusAlert.play()}>
+          <Text style={styles.buttonText}>Play haptics only</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.section}>Preset with audio</Text>
+        <Text style={styles.body}>
+          `loadBundleAsync()` hands the .pulsar to native code before
+          it resolves, so the same preset plays its authored sound. After that,
+          play() is synchronous on both paths.
+        </Text>
         <AudioPresetDemo />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function AudioPresetDemo() {
+  const [bundle, setBundle] = React.useState<HapticsBundle>();
+  const [error, setError] = React.useState<string>();
+
+  React.useEffect(() => {
+    let cancelled = false;
+    let loaded: HapticsBundle | undefined;
+
+    loadBundleAsync()
+      .then(withAssets => {
+        loaded = withAssets;
+        if (cancelled) {
+          withAssets.dispose();
+          return;
+        }
+        setBundle(withAssets);
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      loaded?.dispose();
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <Text style={styles.body}>Failed to load audio bundle: {error}</Text>
+    );
+  }
+
+  if (!bundle) {
+    return <Text style={styles.body}>Loading audio bundle…</Text>;
+  }
+
+  return (
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => bundle.arcadeBonusAlert.play()}>
+      <Text style={styles.buttonText}>Play haptics + audio</Text>
+    </TouchableOpacity>
+  );
+}
+
 function PresetRow({ preset }: { preset: PresetHandle }) {
   return (
     <View style={styles.row}>
-      <View style={styles.rowText}>
+      <View style={styles.flex}>
         <Text style={styles.rowTitle}>{preset.name}</Text>
         <Text style={styles.rowMeta}>
           {preset.duration ? `${preset.duration} ms` : 'no duration'}
@@ -92,80 +151,38 @@ function PresetRow({ preset }: { preset: PresetHandle }) {
   );
 }
 
-/** Contrasts the two paths: the sidecar plays haptics alone, the binary brings the sound. */
-function AudioPresetDemo() {
-  const [withAudio, setWithAudio] = useState<WithAudioBundle | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const play = async () => {
-    try {
-      const bundle = withAudio ?? (await loadWithAudio());
-      if (!withAudio) {
-        setWithAudio(bundle);
-      }
-      bundle.arcadeBonusAlert.play();
-    } catch (e) {
-      setError(String(e));
-    }
-  };
-
-  return (
-    <>
-      <Text style={styles.body}>
-        "{Haptics.arcadeBonusAlert.name}" was authored with a sound. From the
-        sidecar it plays haptics only; the same sidecar bound to the .pulsar
-        binary plays both.
-      </Text>
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={[styles.button, styles.flex]}
-          onPress={() => Haptics.arcadeBonusAlert.play()}>
-          <Text style={styles.buttonText}>Haptics only</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.flex]} onPress={play}>
-          <Text style={styles.buttonText}>With audio</Text>
-        </TouchableOpacity>
-      </View>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-    </>
-  );
-}
-
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f5f5f5' },
   content: { padding: 20, paddingBottom: 40 },
-  title: { fontSize: 28, fontWeight: '700', color: '#111' },
-  section: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111',
-    marginTop: 28,
-    marginBottom: 8,
-  },
-  body: { fontSize: 14, lineHeight: 20, color: '#555', marginTop: 8 },
+  title: { fontSize: 24, fontWeight: '700', marginBottom: 8 },
+  section: { fontSize: 17, fontWeight: '600', marginTop: 24, marginBottom: 8 },
+  body: { fontSize: 14, color: '#444', lineHeight: 20 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 14,
-    marginTop: 10,
+    marginTop: 8,
   },
-  rowText: { flex: 1 },
-  rowTitle: { fontSize: 16, fontWeight: '600', color: '#111' },
+  flex: { flex: 1 },
+  rowTitle: { fontSize: 15, fontWeight: '600' },
   rowMeta: { fontSize: 12, color: '#888', marginTop: 2 },
+  smallButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
   canvas: {
-    marginTop: 12,
-    height: 200,
-    borderRadius: 10,
     backgroundColor: 'white',
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 12,
     overflow: 'hidden',
   },
   lottie: { width: 180, height: 180 },
-  buttonRow: { flexDirection: 'row', gap: 12 },
-  flex: { flex: 1 },
   button: {
     backgroundColor: '#007AFF',
     borderRadius: 10,
@@ -173,12 +190,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
   },
-  smallButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
   buttonText: { color: 'white', fontSize: 15, fontWeight: '600' },
-  error: { color: '#c00', fontSize: 12, marginTop: 8 },
 });

@@ -3,18 +3,23 @@ package com.swmansion.pulsarapp.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swmansion.pulsar.Pulsar
 import com.swmansion.pulsar.bundle.PresetHandle
+import com.swmansion.pulsar.lottie.HapticLottieController
+import com.swmansion.pulsar.lottie.HapticLottieView
 import com.swmansion.pulsarapp.bundles.HapticsBundle
 
 /**
@@ -24,7 +29,7 @@ import com.swmansion.pulsarapp.bundles.HapticsBundle
 @Composable
 fun BundlesScreen(pulsar: Pulsar?) {
     val bundle: HapticsBundle.Presets? = remember(pulsar) {
-        runCatching { pulsar?.loadBundle(HapticsBundle.descriptor, strict = true) }.getOrNull()
+        runCatching { pulsar?.loadBundleSync(HapticsBundle.descriptor) }.getOrNull()
     }
 
     Column(
@@ -54,16 +59,34 @@ fun BundlesScreen(pulsar: Pulsar?) {
         // Carries Lottie bytes: Pulsar times them, the app renders them.
         PresetButton("Lottie", bundle.lottie)
 
-        val animation = bundle.lottie.animation
+        Text("Animation from a preset", fontSize = 18.sp)
         Text(
-            if (animation != null) {
-                "The Lottie preset also carries ${animation.data.size} bytes of animation at " +
-                    "${animation.frameRate} fps — hand them to your own Lottie view."
-            } else {
-                "This build carries no animation bytes for the Lottie preset."
-            },
-            fontSize = 12.sp,
+            "The Lottie preset carries its animation as well as its pattern, so HapticLottieView " +
+                "needs neither an animation nor a haptics argument.",
+            fontSize = 14.sp,
         )
+
+        val controllerRef = remember { arrayOfNulls<HapticLottieController>(1) }
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            factory = { ctx ->
+                HapticLottieView(ctx).apply {
+                    repeatCount = 0
+                    if (pulsar != null) {
+                        controllerRef[0] = bindHaptics(pulsar, preset = bundle.lottie)
+                            .also { it.play() }
+                    }
+                }
+            },
+        )
+        OutlinedButton(
+            onClick = { controllerRef[0]?.play() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("▶ Replay animation")
+        }
 
         Text(
             "Ids are also reachable at runtime: ${HapticsBundle.descriptor.presetIds.joinToString()}",

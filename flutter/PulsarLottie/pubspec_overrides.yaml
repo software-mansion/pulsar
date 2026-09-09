@@ -1,0 +1,3 @@
+dependency_overrides:
+  pulsar_haptics:
+    path: ../pulsar

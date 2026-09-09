@@ -1,0 +1,216 @@
+---
+title: Android
+description: Play Pulsar haptics in sync with a Lottie animation on Android, with a drop-in LottieAnimationView subclass and a controller.
+head:
+  - tag: title
+    content: "Android Lottie Haptics: Sync Vibration to Animations | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar Lottie SDK for Android - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "A LottieAnimationView subclass and a controller that play Pulsar haptics in sync with a Lottie animation."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar Lottie SDK for Android - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "A LottieAnimationView subclass and a controller that play Pulsar haptics in sync with a Lottie animation."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+`pulsar-lottie` plays a Pulsar haptic pattern locked to a Lottie animation on Android. It exposes two entry points: `HapticLottieView`, a drop-in `LottieAnimationView` subclass, and `HapticLottieController`, which attaches to a `LottieAnimationView` you already have.
+
+Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes, timing rules and emulator notes this page assumes.
+
+## Requirements
+
+- Android API 24+ (Android 7.0)
+- Kotlin 1.9+, Java 11
+- [`com.airbnb.android:lottie`](https://github.com/airbnb/lottie-android)
+- The [Pulsar Android SDK](/pulsar/sdk/android/) (`com.swmansion:pulsar`), pulled in automatically
+
+## Installation
+
+{/* GENERATED:ANDROID_LOTTIE_VERSION_START */}
+Latest available version: `0.1.0`
+{/* GENERATED:ANDROID_LOTTIE_VERSION_END */}
+
+Add the dependency alongside Lottie itself:
+
+{/* GENERATED:ANDROID_LOTTIE_INSTALL_SNIPPET_START */}
+```kotlin
+dependencies {
+  implementation("com.swmansion:pulsar-lottie:0.1.0")
+}
+```
+{/* GENERATED:ANDROID_LOTTIE_INSTALL_SNIPPET_END */}
+
+```kotlin
+dependencies {
+  implementation("com.airbnb.android:lottie:6.6.0")
+}
+```
+
+The Pulsar core is exposed transitively, so `com.swmansion:pulsar` needs no separate entry — its `PatternData` types are part of this library's public API. Lottie is **not** exposed transitively: declare it yourself, since your code touches `LottieAnimationView` directly.
+
+Declare the vibration permission in your app's `AndroidManifest.xml`:
+
+```xml
+<manifest ...>
+  <uses-permission android:name="android.permission.VIBRATE" />
+
+  <application ...>
+    ...
+  </application>
+</manifest>
+```
+
+Without `android.permission.VIBRATE`, Android blocks vibration playback. Pulsar logs a warning and skips the vibration instead of crashing.
+
+---
+
+## HapticLottieView
+
+A `LottieAnimationView` subclass that plays Pulsar haptics in sync. With no haptics bound it behaves identically, so it is a drop-in replacement.
+
+```kotlin
+val pattern = PatternData(
+  continuousPattern = ContinuousPattern(
+    amplitude = listOf(ValuePoint(time = 0, value = 0f), ValuePoint(time = 800, value = 1f)),
+    frequency = listOf(ValuePoint(time = 0, value = 0.3f)),
+  ),
+  discretePattern = listOf(ConfigPoint(time = 0, amplitude = 1f, frequency = 0.5f)),
+)
+
+val view = HapticLottieView(context).apply { setAnimation(R.raw.success) }
+view.bindHaptics(pulsar, haptics = pattern).play()
+```
+
+In XML it is used exactly like `LottieAnimationView`:
+
+```xml
+<com.swmansion.pulsar.lottie.HapticLottieView
+    android:id="@+id/success"
+    android:layout_width="200dp"
+    android:layout_height="200dp"
+    app:lottie_rawRes="@raw/success" />
+```
+
+### From a bundle preset
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the view takes both — no `setAnimation`, no `haptics`:
+
+```kotlin
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
+
+val view = HapticLottieView(context)
+view.bindHaptics(pulsar, preset = bundle.celebration).play()
+```
+
+The preset supplies the animation, `haptics` from its `pattern`, and `durationMs` from its authored length — each still overridable on its own. One that carries audio plays that audio too, which is why it starts in `PATTERN` mode. See [bundle presets](/pulsar/lottie/overview/#bundle-presets).
+
+`bindHaptics` only sets the preset's animation when the view has none, so an animation you set yourself is never replaced.
+
+### Methods
+
+| Method | Description |
+| --- | --- |
+| `bindHaptics(pulsar, preset, haptics, hapticMode, hapticOffset, hapticsEnabled, durationMs)` | Bind haptics and return the [`HapticLottieController`](#hapticlottiecontroller). Releases any previously bound controller. |
+| `hapticController()` | The current controller, or `null` before `bindHaptics` is called. |
+
+Every `LottieAnimationView` member — `setAnimation`, `progress`, `repeatCount`, `playAnimation` — is still available. Drive playback through the returned controller so the haptics stay in step.
+
+### From Compose
+
+Wrap the view with `AndroidView` and keep the controller across recompositions:
+
+```kotlin
+@Composable
+fun Celebration(pulsar: Pulsar, preset: PresetHandle) {
+  val controller = remember { arrayOfNulls<HapticLottieController>(1) }
+
+  AndroidView(
+    modifier = Modifier.size(220.dp),
+    factory = { ctx ->
+      HapticLottieView(ctx).apply {
+        controller[0] = bindHaptics(pulsar, preset = preset).also { it.play() }
+      }
+    },
+  )
+
+  DisposableEffect(Unit) { onDispose { controller[0]?.release() } }
+}
+```
+
+---
+
+## HapticLottieController
+
+Attaches haptics to a `LottieAnimationView` without swapping the view, and becomes the transport for both. The extension binds haptics only — the view keeps whatever animation you gave it.
+
+```kotlin
+import com.swmansion.pulsar.lottie.bindHaptics
+
+val controller = animationView.bindHaptics(pulsar, preset = bundle.celebration)
+
+controller.play()
+controller.setTimestamp(1200) // seek both animation and haptics to 1.2s
+controller.pause()
+controller.release()          // when the view goes away
+```
+
+`bindHaptics` is a convenience over the constructor, which takes the same arguments — `preset`, `haptics`, `hapticMode`, `hapticOffset`, `hapticsEnabled`, `durationMs` — plus `lottieView` and `pulsar`.
+
+| Method | Description |
+| --- | --- |
+| `play()` | Rewind to the start and play animation and haptics together. |
+| `pause()` | Pause both. In `PATTERN` mode the haptic stops rather than suspending. |
+| `resume()` | Resume from the current position. |
+| `stop()` / `reset()` | Stop and rewind to the start. |
+| `setTimestamp(ms: Long)` | Seek both to `ms` from the start. |
+| `setLoop(loop: Boolean, count: Int, reverse: Boolean)` | Loop the animation. `count` defaults to `LottieDrawable.INFINITE`; `reverse` plays a boomerang. |
+| `release()` | Detach the animator listener and stop the haptics. |
+
+Unlike iOS, the animation always plays through the view's own animator in both modes — realtime only *observes* it, so anything that moves the view's `progress`, including your own `playAnimation()` calls, keeps the haptics aligned.
+
+---
+
+## Reading a preset yourself
+
+`PresetHandle` carries everything the view reads, so you can render into a view of your own:
+
+```kotlin
+preset.animation?.let { animationView.setAnimation(it.data.inputStream(), preset.id) }
+val controller = animationView.bindHaptics(pulsar, preset = preset)
+```
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `Long` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `REALTIME` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data`, `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `Boolean` | What the preset was authored with. |
+| `play()` / `stop()` | – | Play the preset natively: haptics, plus its synced audio. |
+
+See the [Android SDK page](/pulsar/sdk/android/) for how bundles are loaded.

@@ -662,16 +662,35 @@ var bundle by remember { mutableStateOf<AcmePack.Presets?>(null) }
 
 LaunchedEffect(Unit) {
     val bytes = Res.readBytes("files/acme-pack.pulsar")
-    bundle = pulsar.loadBundle(AcmePack.descriptor, bytes, strict = true)
+    bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes)
 }
 
 bundle?.heartbeatV2?.play()
 ```
 
-`strict = true` checks the loaded bundle against the generated types.
+`loadBundleAsync` is the `suspend` equivalent, decoding on `Dispatchers.Default`:
 
-Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
+```kotlin
+bundle = pulsar.loadBundleAsync(AcmePack.descriptor, bytes)
+```
+
+If the `.pulsar` ships as a platform asset — `src/androidMain/assets/` on Android, the app bundle
+on iOS — the descriptor resolves it by name and no byte-reading is needed:
+
+```kotlin
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
+```
+
+Compose Resources stores files under its own directory rather than the platform asset location, so
+a bundle kept there uses the `bytes` overload above.
+
+The loaded bundle's content hash is checked against the generated types; pass `strict = false`
+to skip it.
+
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play()`, `stop()`, and `animation` — the Lottie bytes
 and timing for your own animation view.
+
+The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that for you — pattern, animation and duration — so you rarely have to unpack it by hand.
 
 :::caution
 KMP v1 plays a preset's haptics and carries its animation bytes, but **synced bundle audio is not

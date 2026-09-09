@@ -7,7 +7,7 @@ autocomplete.
 
 ```kotlin
 val pulsar = Pulsar(context)
-val bundle = pulsar.loadBundle(AcmePack.descriptor)   // AcmePack is generated
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)   // AcmePack is generated
 bundle.heartbeatV2.play()                      // ← autocompletes
 bundle.explosion.stop()
 
@@ -15,8 +15,8 @@ bundle.explosion.stop()
 bundle.heartbeatV2.animation?.let { myLottieView.setAnimation(it.data.inputStream(), null) }
 ```
 
-`loadBundle(descriptor, strict = true)` asserts the loaded bundle's content hash matches the
-generated types, failing loudly on a stale bundle/types mismatch.
+`loadBundleSync(descriptor)` asserts the loaded bundle's content hash matches the generated types,
+failing loudly on a stale bundle/types mismatch. Pass `strict = false` to skip it.
 
 ## Zero-manual codegen (Gradle plugin)
 

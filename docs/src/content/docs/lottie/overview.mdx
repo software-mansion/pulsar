@@ -1,0 +1,195 @@
+---
+title: Overview
+description: Play Pulsar haptics in sync with a Lottie animation on iOS, Android, React Native, Kotlin Multiplatform and Flutter.
+head:
+  - tag: title
+    content: "Pulsar Lottie SDK: Haptics Synced to Lottie Animations | Pulsar"
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
+  - tag: meta
+    attrs:
+      property: og:title
+      content: "Pulsar Lottie SDK - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      property: og:description
+      content: "Play Pulsar haptics in sync with a Lottie animation on iOS, Android, React Native, Kotlin Multiplatform and Flutter."
+  - tag: meta
+    attrs:
+      property: og:image
+      content: https://docs.swmansion.com/pulsar/og.png
+  - tag: meta
+    attrs:
+      name: twitter:card
+      content: summary_large_image
+  - tag: meta
+    attrs:
+      name: twitter:title
+      content: "Pulsar Lottie SDK - haptics locked to your Lottie timeline"
+  - tag: meta
+    attrs:
+      name: twitter:description
+      content: "Play Pulsar haptics in sync with a Lottie animation on iOS, Android, React Native, Kotlin Multiplatform and Flutter."
+  - tag: meta
+    attrs:
+      name: twitter:image
+      content: https://docs.swmansion.com/pulsar/og.png
+---
+
+The Pulsar Lottie SDK plays a Pulsar haptic pattern **locked to a Lottie animation's timeline**, so the vibration lands exactly when the animation lands. It is a thin layer on top of two things you already have: the [Pulsar haptics SDK](/pulsar/sdk/overview/) for your platform, and that platform's own Lottie renderer. No haptics are reimplemented and no animation is re-rendered — the Lottie SDK only connects the two clocks.
+
+Read the [SDK overview](/pulsar/sdk/overview/) first: patterns, discrete and continuous haptics, presets, caching and preloading all work the same way here.
+
+This page covers the concepts shared by every platform. The platform guides carry the API: [iOS](/pulsar/lottie/ios/), [Android](/pulsar/lottie/android/), [React Native](/pulsar/lottie/react-native/), [Kotlin Multiplatform](/pulsar/lottie/kmp/), [Flutter](/pulsar/lottie/flutter/).
+
+{/* GENERATED:LOTTIE_OVERVIEW_VERSIONS_START */}
+## Latest available version
+
+| Platform | Package | Version |
+| --- | --- | --- |
+| iOS | Swift Package / `PulsarLottie` (CocoaPods) | `0.1.0` |
+| Android | `com.swmansion:pulsar-lottie` (Maven) | `0.1.0` |
+| React Native | `react-native-pulsar-lottie` (npm) | `0.1.0` |
+| Kotlin Multiplatform | `com.swmansion:pulsar-kmp-lottie` (Maven) | `0.1.0` |
+| Flutter | `pulsar_haptics_lottie` (pub.dev) | `0.1.0` |
+{/* GENERATED:LOTTIE_OVERVIEW_VERSIONS_END */}
+
+There is no Web package — the [Web SDK](/pulsar/sdk/web/) has no Lottie integration.
+
+## What each package renders with
+
+Every package builds on the Lottie renderer that is idiomatic for its platform, and depends on the matching Pulsar core:
+
+| Platform | Lottie renderer | Pulsar core |
+| --- | --- | --- |
+| iOS | [`lottie-ios`](https://github.com/airbnb/lottie-ios) | `PulsarHaptics` |
+| Android | [`com.airbnb.android:lottie`](https://github.com/airbnb/lottie-android) | `com.swmansion:pulsar` |
+| React Native | [`lottie-react-native`](https://github.com/lottie-react-native/lottie-react-native) | `react-native-pulsar` |
+| Kotlin Multiplatform | [compottie](https://github.com/alexzhirkevich/compottie) | `com.swmansion:pulsar-kmp` |
+| Flutter | [`lottie`](https://pub.dev/packages/lottie) | `pulsar_haptics` |
+
+`HapticLottie` on Kotlin Multiplatform takes the same `LottieComposition` compottie's own render call takes, so it drops into an existing screen. The package also ships `HapticLottieSync`, which draws nothing and follows a **progress value** you feed it, for apps that render with something else.
+
+## How the sync works
+
+A Pulsar pattern is a timeline of milliseconds — discrete events at fixed times, plus amplitude and frequency envelopes. A Lottie animation is a timeline too. The Lottie SDK makes the **animation the master clock** and reads the pattern against it:
+
+1. Every frame, the current animation position is converted to milliseconds.
+2. The amplitude and frequency envelopes are linearly interpolated at that time and pushed to the `RealtimeComposer`.
+3. Any discrete event whose time falls in the window since the previous frame is fired as a one-shot.
+
+Because the animation drives the pattern rather than the two running side by side, pausing, seeking, replaying or looping the animation keeps the haptics aligned for free.
+
+## The shared API
+
+The five packages are idiomatic for their platform, but the vocabulary is the same everywhere. Every entry point takes the same six haptic arguments, under the same names:
+
+| Argument | Meaning |
+| --- | --- |
+| `preset` | A `.pulsar` bundle preset supplying the animation, the pattern and the duration at once. |
+| `haptics` | A pattern to sync with the animation. Overrides a `preset`'s own pattern. |
+| `hapticMode` | `realtime` or `pattern` — see [Engine modes](#engine-modes). |
+| `hapticOffset` | Shift the haptics by ±ms relative to the animation. |
+| `hapticsEnabled` | Turn haptics off without touching the animation. |
+| `durationMs` | Clock length in ms. Overrides every derived duration. |
+
+The transport is the same too — `play`, `pause`, `resume`, `stop`, `reset` and `setTimestamp(ms)`, plus `setLoop` where the package owns the animation.
+
+| Platform | Drop-in view | Controller | Attach to a view you own |
+| --- | --- | --- | --- |
+| iOS | `HapticLottieView` (SwiftUI) | `HapticLottieController` | `PulsarLottie.bind(_:pulsar:preset:…)` |
+| Android | `HapticLottieView` | `HapticLottieController` | `LottieAnimationView.bindHaptics(pulsar, preset:…)` |
+| React Native | `HapticLottieView` | the `HapticLottieRef` handle | `useHapticLottie({ preset, … })` |
+| Kotlin Multiplatform | `HapticLottie` (composable) | `HapticLottieEngine` | `HapticLottieSync` (composable) |
+| Flutter | `HapticLottie` | `HapticLottieController` | `HapticLottieController(animationController: …)` |
+
+Kotlin Multiplatform is declarative rather than imperative: `isPlaying` and `iterations` stand in for `autoPlay` and `setLoop`, and the lower-level `HapticLottieEngine` transport is `setPlaying` / `onProgress`. Its preset overload loads the animation for you; the composition overload takes one you already loaded.
+
+## Bundle presets
+
+A preset in a [`.pulsar` bundle](/pulsar/sdk/overview/) already pairs a pattern with the animation its author aligned to it, and often a sound as well. Pass the preset and the view takes all of it — no animation source, no pattern, no duration:
+
+| Passing a `preset` supplies | Overridden by |
+| --- | --- |
+| The Lottie animation it was authored against | the platform's own animation argument |
+| Its pattern | `haptics` |
+| Its authored duration | `durationMs` |
+| Its synced audio, played by the engine itself | `hapticMode`, or passing `haptics` |
+
+Because the audio is played by the haptic engine rather than sampled, a preset that carries audio starts in `pattern` mode instead of `realtime`. A preset without audio keeps the `realtime` default. Either way, an explicit `hapticMode` wins.
+
+On Kotlin Multiplatform, `preset.animationJson()` hands the animation to your own Compose renderer when you use `HapticLottieSync` instead of the drop-in.
+
+A preset that carries no animation cannot supply one — pass the animation yourself, or use a preset that was authored with one.
+
+## Engine modes
+
+Every platform exposes the same two modes.
+
+### Realtime (default)
+
+The animation timeline is the master clock and the pattern is sampled per frame into `RealtimeComposer` events.
+
+- Honours pause, seek and loop coherently.
+- Requires an actual pattern — a bare preset trigger has no timeline to sample.
+- Continuous fidelity is realtime-grade, and coarser on Android than on iOS, because Android's vibrator is re-driven per frame rather than following a pre-compiled curve.
+
+### Pattern
+
+The whole pattern is pre-parsed and played once through `PatternComposer`, aligned to the animation start.
+
+- Best native fidelity — the platform haptic engine plays a compiled pattern, exactly as it would outside a Lottie context.
+- Pausing stops the haptic instead of suspending it, and there is no mid-pattern seek.
+- Accepts a preset trigger as well as a pattern, since nothing needs to be sampled.
+- The only mode that plays a bundle preset's **audio**: the sound is a track the engine plays alongside a compiled pattern, and realtime sampling has nothing to play it against.
+
+### Choosing between them
+
+|  | Realtime | Pattern |
+| --- | --- | --- |
+| **Master clock** | Animation timeline | Haptic engine |
+| **Pause / resume** | Follows the animation | Stops the haptic |
+| **Seek** | Animation and haptics move together | Not supported |
+| **Loop** | Re-fires per iteration | Fires once at the start |
+| **Continuous fidelity** | Realtime-grade (coarser on Android) | Native |
+| **Accepts a preset trigger** | No | Yes |
+| **Plays a preset's audio** | No | Yes |
+
+Reach for **realtime** for anything longer than about a second, anything the user can scrub, and anything that loops. Reach for **pattern** for short, start-aligned accents where the sharpest possible feel matters more than seeking.
+
+The default is realtime — except for a preset that was authored with audio, which defaults to pattern so that audio actually plays. Setting the mode yourself always wins.
+
+## Timing and duration
+
+The clock length is resolved in this order, and the first value that is available wins:
+
+1. An explicit duration you pass.
+2. The preset's authored duration, when the haptics came from a bundle preset.
+3. The Lottie composition's own duration, once the animation has loaded.
+4. The pattern's own length — the largest timestamp across its discrete events and both envelopes.
+
+A pattern shorter than the animation simply ends early (its envelopes hold their last value); a longer one is cut off when the animation ends. Authoring both to the same length is the least surprising option.
+
+### Tuning the offset
+
+Perceived haptics lag the visual by a device-dependent few milliseconds. Every platform takes a haptic offset in milliseconds that shifts the haptic timeline relative to the animation — negative fires earlier, positive later. It is a per-device tuning knob, not a design parameter; leave it at `0` until a device tells you otherwise.
+
+### No playback-speed control
+
+None of the packages expose a playback-speed setting. A haptic timeline cannot be rate-shifted coherently — resampling an envelope changes how the vibration feels, not just how fast it goes — so the animation always runs at its authored speed. If you need a faster or slower version, author it that way.
+
+## Where the pattern comes from
+
+Three routes, all producing the same `Pattern` / `PatternData`:
+
+- **Generate it from the animation.** [Pulsar Studio](https://docs.swmansion.com/pulsar/studio/) samples an attached Lottie and derives a pattern from how much the animation is moving, which is the fastest way to a pattern that already matches the motion. See the [Studio guide](https://docs.swmansion.com/pulsar/studio/).
+- **Ship it in a `.pulsar` bundle.** A bundle preset pairs a pattern with the animation it was authored against, so the two can never drift apart, and it drops straight into the view on every platform — see [bundle presets](#bundle-presets) below.
+- **Write it by hand.** A literal pattern is often enough for a short accent — see the platform guides for the shape.
+
+## Testing without a device
+
+Simulators and emulators have no haptic hardware. Pulsar's debug builds play an audio rendering of the pattern instead, so a Lottie animation running in a simulator still tells you whether the haptics land on the right frames. See [testing haptics on simulators](/pulsar/sdk/overview/#testing-haptics-on-simulators) for how to turn that off.
+
+Amplitude and sharpness still need a real device before you ship — the audio preview tells you about timing, not about feel.

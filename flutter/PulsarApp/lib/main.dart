@@ -54,7 +54,7 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
   /// Loads the bundle shipped as a Flutter asset, through committed `pulsar-gen` output.
   Future<void> _loadBundle() async {
     try {
-      final bundle = await _pulsar.loadBundle(haptics_bundle.hapticsBundle, strict: true);
+      final bundle = await _pulsar.loadBundleAsync(haptics_bundle.hapticsBundle);
       if (mounted) setState(() => _bundle = bundle);
     } catch (e) {
       if (mounted) setState(() => _status = 'Bundle failed to load: $e');
@@ -316,6 +316,22 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
               ],
             ),
           const SizedBox(height: 12),
+
+          if (_bundle != null) ...[
+            _SectionHeader('Animation from a preset'),
+            Center(
+              child: SizedBox(
+                width: 200,
+                height: 200,
+                child: HapticLottie.preset(
+                  _bundle!.lottie,
+                  autoPlay: true,
+                  repeat: true,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
 
           // System impacts
           _SectionHeader('System Impacts'),

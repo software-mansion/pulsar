@@ -1,0 +1,43 @@
+---
+import { BASE_PATH } from '../../config';
+
+interface Props {
+  /** File name under `public/figma-plugin/`, without the extension. */
+  name: string;
+  caption?: string;
+  width?: number;
+}
+
+const { name, caption, width = 640 } = Astro.props;
+// The media fragment makes the browser paint a real first frame as the still,
+// instead of leaving the player black until it is played.
+const src = `${BASE_PATH}/figma-plugin/${name}.mp4#t=0.1`;
+---
+
+<figure class="pulsar-clip" style={`--clip-width:${width}px`}>
+  <video src={src} controls loop muted playsinline preload="metadata"></video>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .pulsar-clip {
+    margin: 1.5rem 0;
+  }
+  .pulsar-clip video {
+    display: block;
+    width: 100%;
+    max-width: var(--clip-width);
+    height: auto;
+    border: 2px solid var(--color-blue-50);
+    border-radius: 4px;
+    box-shadow: -3px 3px 0 var(--color-blue-50);
+    background: #000;
+  }
+  .pulsar-clip figcaption {
+    max-width: var(--clip-width);
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--color-blue-60);
+  }
+</style>

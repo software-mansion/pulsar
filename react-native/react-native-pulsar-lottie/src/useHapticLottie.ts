@@ -1,10 +1,12 @@
 import { useCallback } from 'react';
 import { usePatternComposer } from 'react-native-pulsar';
-import type { Pattern } from 'react-native-pulsar';
+import type { PresetHandle } from 'react-native-pulsar';
 import type { HapticSource } from './types';
 
 export interface UseHapticLottieOptions {
-  /** Pattern or preset trigger to fire with the animation. */
+  /** Bundle preset to fire: its pattern, plus its synced audio when it has any. */
+  preset?: PresetHandle;
+  /** Pattern or preset trigger to fire with the animation. Overrides `preset`. */
   haptics?: HapticSource;
   /** Disable firing without unwiring. Default `true`. */
   hapticsEnabled?: boolean;
@@ -29,26 +31,34 @@ export interface HapticLottieHandle {
  * `realtime` sync with seek/loop, use {@link HapticLottieView}.
  */
 export function useHapticLottie(options: UseHapticLottieOptions): HapticLottieHandle {
-  const { haptics, hapticsEnabled = true } = options;
-  const isPattern = typeof haptics === 'object' && haptics !== null;
-  const composer = usePatternComposer(isPattern ? (haptics as Pattern) : undefined);
+  const { preset, hapticsEnabled = true } = options;
+  const haptics = options.haptics ?? preset?.pattern;
+  const audioPreset =
+    options.haptics === undefined && preset?.hasAudio ? preset : undefined;
+  const composedPattern =
+    !audioPreset && typeof haptics === 'object' && haptics !== null ? haptics : undefined;
+  const composer = usePatternComposer(composedPattern);
 
   const play = useCallback(() => {
-    if (!hapticsEnabled || !haptics) {
+    if (!hapticsEnabled) {
       return;
     }
-    if (typeof haptics === 'function') {
+    if (audioPreset) {
+      audioPreset.play();
+    } else if (typeof haptics === 'function') {
       haptics();
-    } else if (composer.isParsed()) {
+    } else if (composedPattern && composer.isParsed()) {
       composer.play();
     }
-  }, [haptics, hapticsEnabled, composer]);
+  }, [haptics, hapticsEnabled, composer, composedPattern, audioPreset]);
 
   const stop = useCallback(() => {
-    if (isPattern) {
+    if (audioPreset) {
+      audioPreset.stop();
+    } else if (composedPattern) {
       composer.stop();
     }
-  }, [isPattern, composer]);
+  }, [composedPattern, composer, audioPreset]);
 
-  return { play, stop, isReady: isPattern ? composer.isParsed() : true };
+  return { play, stop, isReady: composedPattern ? composer.isParsed() : true };
 }

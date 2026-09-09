@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { usePatternComposer, useRealtimeComposer } from 'react-native-pulsar';
 import type { Pattern } from 'react-native-pulsar';
-import type { HapticLottieProps, HapticLottieRef } from './types';
+import type { HapticLottieProps, HapticLottieRef, HapticSource } from './types';
 import { resolvePreset, type ResolvedProps } from './internal/resolvePreset';
 import {
   clamp,
@@ -24,6 +24,11 @@ import {
 } from './internal/sampler';
 
 const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
+
+/** Narrows a {@link HapticSource} to the `Pattern` half — the only one realtime can sample. */
+function asPattern(haptics: HapticSource | undefined): Pattern | undefined {
+  return typeof haptics === 'object' && haptics !== null ? haptics : undefined;
+}
 
 /**
  * `realtime` engine: the animation timeline is the master clock. A Reanimated
@@ -36,6 +41,7 @@ const RealtimeHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
     const {
       haptics,
       preset: _preset,
+      audioPreset: _audioPreset,
       hapticMode: _hapticMode,
       hapticOffset = 0,
       hapticsEnabled = true,
@@ -199,6 +205,7 @@ const PatternHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
     const {
       haptics,
       preset: _preset,
+      audioPreset,
       hapticMode: _hapticMode,
       hapticOffset: _hapticOffset,
       hapticsEnabled = true,
@@ -211,25 +218,29 @@ const PatternHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
     } = props;
 
     const lottieRef = useRef<LottieView>(null);
-    const isPattern = typeof haptics === 'object' && haptics !== null;
-    const composer = usePatternComposer(isPattern ? (haptics as Pattern) : undefined);
+    const composedPattern = audioPreset ? undefined : asPattern(haptics);
+    const composer = usePatternComposer(composedPattern);
 
     const fireHaptics = useCallback(() => {
-      if (!hapticsEnabled || !haptics) {
+      if (!hapticsEnabled) {
         return;
       }
-      if (typeof haptics === 'function') {
+      if (audioPreset) {
+        audioPreset.play();
+      } else if (typeof haptics === 'function') {
         haptics();
-      } else if (composer.isParsed()) {
+      } else if (composedPattern && composer.isParsed()) {
         composer.play();
       }
-    }, [haptics, hapticsEnabled, composer]);
+    }, [haptics, hapticsEnabled, composer, composedPattern, audioPreset]);
 
     const stopHaptics = useCallback(() => {
-      if (isPattern) {
+      if (audioPreset) {
+        audioPreset.stop();
+      } else if (composedPattern) {
         composer.stop();
       }
-    }, [isPattern, composer]);
+    }, [composedPattern, composer, audioPreset]);
 
     useImperativeHandle(
       ref,
@@ -301,9 +312,8 @@ export const HapticLottieView = forwardRef<HapticLottieRef, HapticLottieProps>(
       // A preset with no animation and no explicit source — nothing to render.
       return null;
     }
-    const mode = resolved.hapticMode ?? 'realtime';
-    const isPattern = typeof resolved.haptics === 'object' && resolved.haptics !== null;
-    if (mode !== 'pattern' && isPattern) {
+    const samplable = asPattern(resolved.haptics) !== undefined;
+    if (resolved.hapticMode !== 'pattern' && samplable) {
       return <RealtimeHapticLottie ref={ref} {...resolved} />;
     }
     return <PatternHapticLottie ref={ref} {...resolved} />;

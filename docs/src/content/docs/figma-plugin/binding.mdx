@@ -1,0 +1,90 @@
+---
+title: Binding haptics to components
+description: Attach a Pulsar preset to any Figma layer, review every binding in the file, and understand exactly what the plugin writes into your document.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import Screenshot from '../../../components/Screenshot.astro';
+import Clip from '../../../components/Clip.astro';
+import selectionBound from '../assets/figma-plugin/presets-selection-bound.png';
+import boundPanel from '../assets/figma-plugin/presets-bound-panel.png';
+import onboardingStep from '../assets/figma-plugin/onboarding-step.png';
+
+A **binding** ties one preset to one layer. It lives in the Figma file, so it
+travels with the design — to your teammates, to a shared preview, and into Dev
+Mode for whoever implements it.
+
+## Bind a preset
+
+<Steps>
+
+1. Select a layer, component or instance on the canvas.
+2. Press **+ Add** on any preset in the list — or on the preset's detail dialog.
+
+</Steps>
+
+The strip above the list is the status line for this: it names the next action
+rather than describing the state, and always shows the _component → preset_
+pair you're building.
+
+<Screenshot
+  src={selectionBound}
+  alt="The selection bar showing Checkout button bound to the Thump preset"
+  caption="Once bound: the layer name reveals it on the canvas, the preset name plays it, and Remove unbinds."
+  width={420}
+/>
+
+<Clip name="select_preset" caption="Picking a preset, selecting the component, and pressing Add." />
+
+Selecting a bound layer on the canvas plays its haptic — through audio in
+Figma, and on your phone as well if one is paired. That is the fastest way to
+audit a screen: click through it and listen.
+
+## Everything bound in this file
+
+**Selected presets** lists every binding on the page, grouped by the screen it
+belongs to. Clicking a row plays the preset _and_ reveals the layer on the
+canvas.
+
+<Screenshot
+  src={boundPanel}
+  alt="The Selected presets panel grouped by screen, with six bindings across three frames"
+  caption="Grouped by top-level frame, with a count per screen — a quick read of which screens have haptics and which don't."
+  width={420}
+/>
+
+## Removing one
+
+Select the bound layer and press **Remove** in the selection bar. Unbinding a
+single instance only affects that instance, even when its main component
+carries a binding of its own.
+
+<Aside type="tip" title="Instances inherit">
+  Bind a preset on a main component and every instance of it inherits the binding. Override an
+  individual instance by binding a different preset on it, or clear it there with **Remove**.
+</Aside>
+
+## What the plugin writes into your file
+
+Two things, and nothing else:
+
+- **The binding itself**, stored as plugin data on the layer, plus a relaunch
+  button so the plugin can be reopened from that node.
+- **A Dev Mode annotation** on each screen that has haptics, carrying a count
+  and a link to these docs — so a developer, or a coding agent reading the file
+  through the Figma MCP, discovers them without installing anything.
+
+Annotations are optional: turning **Annotate screens for developers** off under
+**Account → Privacy** removes the ones already added. Nothing else about your
+layers, styles or layout is touched.
+
+<Screenshot
+  src={onboardingStep}
+  alt="The tour step explaining how to connect a preset to a component"
+  caption="The same flow, as the plugin's own guided tour presents it."
+  width={420}
+/>
+
+The binding is written in a form any tool with file access can read. For the
+other side of that — reading it back out and turning it into SDK calls — see
+[Figma → code](/pulsar/figma/).

@@ -52,7 +52,13 @@ void main() {
     final call = loggedCalls.single;
     expect(call.method, 'PatternComposer_parsePatternWithSound');
     final args = call.arguments as Map;
-    expect(args['sound'], {'uri': 'beep', 'volume': 0.5, 'offset': 20});
+    expect(args['sound'], {
+      'uri': 'beep',
+      'volume': 0.5,
+      'offset': 20,
+      'start': 0,
+      'duration': 0,
+    });
     expect(args['data'], isNotNull);
     expect(args.containsKey('composerId'), isFalse);
   });

@@ -7,6 +7,7 @@ vanniktechMavenPublish = "0.34.0"
 androidxCore = "1.18.0"
 kotlinxCoroutines = "1.10.2"
 composeMultiplatform = "1.10.3"
+compottie = "2.0.0-rc04"
 kotlinxSerialization = "1.7.3"
 
 [libraries]
@@ -14,6 +15,8 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 [plugins]

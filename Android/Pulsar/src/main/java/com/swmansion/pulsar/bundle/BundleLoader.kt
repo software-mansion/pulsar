@@ -50,10 +50,11 @@ internal object BundleLoaderImpl {
 
             handles[preset.id] = PresetHandle(
                 id = preset.id,
+                name = preset.name,
                 duration = (preset.duration ?: 0.0).toLong(),
                 animation = animation,
-                haptics = haptics,
                 pattern = pattern,
+                haptics = haptics,
                 sound = sound,
             )
         }

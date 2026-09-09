@@ -87,6 +87,37 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
             }
 
+            "Pulsar_bundlePresets" -> {
+                val token = call.argument<String>("token")
+                val bundle = token?.let { bundles[it] }
+                    ?: return result.error("INVALID_ARGS", "unknown bundle token", null)
+                val includeAnimations = call.argument<Boolean>("includeAnimations") ?: true
+                result.success(
+                    bundle.presetIds.mapNotNull { id ->
+                        val preset = bundle.handle(id) ?: return@mapNotNull null
+                        buildMap<String, Any?> {
+                            put("id", preset.id)
+                            put("name", preset.name)
+                            put("duration", preset.duration.toDouble())
+                            put("hasAudio", preset.hasAudio)
+                            put("hasAnimation", preset.hasAnimation)
+                            put("pattern", patternMap(preset.pattern))
+                            val animation = preset.animation
+                            if (includeAnimations && animation != null) {
+                                put(
+                                    "animation",
+                                    mapOf(
+                                        "data" to animation.data,
+                                        "frameRate" to animation.frameRate,
+                                        "totalFrames" to animation.totalFrames,
+                                    ),
+                                )
+                            }
+                        }
+                    },
+                )
+            }
+
             "Pulsar_playBundlePreset" -> {
                 val token = call.argument<String>("token")
                 val presetId = call.argument<String>("presetId")
@@ -342,6 +373,25 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             else -> result.notImplemented()
         }
     }
+
+    /** Wire shape for a preset's authored pattern — mirrors Dart's `PatternData.toMap()`. */
+    private fun patternMap(pattern: PatternData): Map<String, Any> = mapOf(
+        "continuousPattern" to mapOf(
+            "amplitude" to pattern.continuousPattern.amplitude.map {
+                mapOf("time" to it.time.toDouble(), "value" to it.value.toDouble())
+            },
+            "frequency" to pattern.continuousPattern.frequency.map {
+                mapOf("time" to it.time.toDouble(), "value" to it.value.toDouble())
+            },
+        ),
+        "discretePattern" to pattern.discretePattern.map {
+            mapOf(
+                "time" to it.time.toDouble(),
+                "amplitude" to it.amplitude.toDouble(),
+                "frequency" to it.frequency.toDouble(),
+            )
+        },
+    )
 
     @Suppress("UNCHECKED_CAST")
     private fun parsePatternData(data: Map<String, Any>): PatternData? {

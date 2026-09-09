@@ -1,0 +1,41 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  caption?: string;
+  /** Rendered width in CSS pixels. The plugin window itself is ~380px wide. */
+  width?: number;
+}
+
+const { src, alt, caption, width = 400 } = Astro.props;
+---
+
+<figure class="pulsar-shot" style={`--shot-width:${width}px`}>
+  <Image src={src} alt={alt} widths={[width, width * 2]} sizes={`${width}px`} />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .pulsar-shot {
+    margin: 1.5rem 0;
+  }
+  .pulsar-shot :global(img) {
+    display: block;
+    width: 100%;
+    max-width: var(--shot-width);
+    height: auto;
+    border: 2px solid var(--color-blue-50);
+    border-radius: 4px;
+    box-shadow: -3px 3px 0 var(--color-blue-50);
+    background: #fbfeff;
+  }
+  .pulsar-shot figcaption {
+    max-width: var(--shot-width);
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--color-blue-60);
+  }
+</style>

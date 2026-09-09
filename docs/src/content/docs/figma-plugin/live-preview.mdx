@@ -1,0 +1,105 @@
+---
+title: Live preview on a phone
+description: Pair a phone with the Figma plugin and run your own prototype on it, with real vibration on every element you bound — updating as you edit.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import Screenshot from '../../../components/Screenshot.astro';
+import Clip from '../../../components/Clip.astro';
+import liveStepOne from '../assets/figma-plugin/live-step-one.png';
+import livePairing from '../assets/figma-plugin/live-pairing.png';
+import liveConnected from '../assets/figma-plugin/live-connected.png';
+
+Audio in a plugin window tells you the rhythm of a haptic. Only a phone tells
+you how it _feels_. The **Live preview** tab pairs one, opens your prototype on
+it, and plays the bound haptic whenever you tap an element — while you keep
+editing in Figma.
+
+<Screenshot
+  src={liveStepOne}
+  alt="The Live preview tab showing the two-step setup with step one open"
+  caption="A two-step configurator. The progress bar and the dot on the tab both report where you are."
+  width={420}
+/>
+
+## Step 1 — paste the file link
+
+Figma doesn't hand a plugin the key of the file it is running in, so you paste
+it once. In Figma's top bar open **Share → Copy link** and drop it in; a full
+link or the bare key both work. It's saved with the file.
+
+<Aside type="caution" title="Set link access to “Anyone with the link”">
+  The preview opens your prototype *through* Figma, and Figma can't sign a viewer in. A restricted
+  file shows a login screen instead of your design — on your own phone as much as on anyone else's.
+</Aside>
+
+<Clip name="figma_link" caption="Where to copy the file link from." />
+
+## Step 2 — pair your phone
+
+Scan the QR with the **Pulsar** app ([App Store][ios] · [Google Play][android])
+or type the pairing code. The panel also carries store QR codes if you don't
+have the app yet.
+
+<Screenshot
+  src={livePairing}
+  alt="The pairing step showing a QR code and a pairing code"
+  caption="Scanning opens the live preview inside the Pulsar app."
+  width={420}
+/>
+
+<Clip name="phone_connect" caption="Pairing a phone and opening the prototype on it." />
+
+Once paired, the step turns green and the card reports whether the phone is
+actually reachable. The link survives leaving the tab and closing the panel; it
+ends when you press **Disconnect** or close the plugin.
+
+<Screenshot
+  src={liveConnected}
+  alt="The Live preview tab with both steps complete and the phone connected"
+  caption="Paired and connected. “Synced with server” below means the shared preview matches your current design."
+  width={420}
+/>
+
+## What you get
+
+<Steps>
+
+1. **Tap anything bound, feel it.** Your prototype runs on the phone; tapping an
+   element with a haptic on it fires the real vibration.
+
+2. **Play from the plugin.** Pressing **▷** on any preset in the Presets tab
+   buzzes the paired phone too — choosing by feel instead of by name.
+
+   <Clip name="play_on_device" caption="Auditioning presets on the paired device." />
+
+3. **The phone follows you.** Select a different top-level frame in Figma and
+   the phone jumps to that screen.
+
+4. **Edits arrive on their own.** Bind, rebind or unbind and the change reaches
+   the phone within a couple of seconds — no reload, no re-scan.
+
+</Steps>
+
+## The sync status
+
+The pill at the foot of the tab says whether the shared preview matches your
+current design.
+
+| Status                 | Meaning                                               |
+| ---------------------- | ----------------------------------------------------- |
+| **Not shared yet**     | Nothing has been published for this file              |
+| **Syncing…**           | A change is on its way to the server                  |
+| **Synced with server** | The preview matches your design                       |
+| **Unsynced changes**   | Edits are pending; the refresh button pushes them now |
+| **Sync failed**        | It will retry on its own                              |
+
+## If the phone won't connect
+
+- Check that the pasted link is a real Figma link and that the file is shared as
+  **Anyone with the link**.
+- Make sure the Pulsar app is up to date and the phone has a working connection.
+- Re-scan the QR if pairing timed out, or press **Refresh** on the phone card.
+
+[ios]: https://apps.apple.com/pl/app/haptics-presets-pulsar/id6761362104
+[android]: https://play.google.com/store/apps/details?id=com.swmansion.pulsar.app

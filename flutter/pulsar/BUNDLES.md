@@ -29,11 +29,12 @@ import 'package:pulsar_haptics/pulsar_haptics.dart';
 import 'bundles/acme_pack.bundle.dart';
 
 final pulsar = Pulsar();
-final bundle = await pulsar.loadBundle(acmePack); // acmePack is generated
+final bundle = await pulsar.loadBundleAsync(acmePack); // acmePack is generated
 bundle.heartbeatV2.play();                 // ← autocompletes
 bundle.explosion.stop();
 ```
 
-Pass `strict: true` to assert the loaded bundle's content hash matches the generated types. The app
+The loaded bundle's content hash is asserted against the generated types unless you pass
+`strict: false`. The app
 reads the `.pulsar` asset bytes and hands them to the native SDK, which decodes and plays; synced
 audio uses the native iOS/Android path. Animation bytes are carried for your own Lottie view.
