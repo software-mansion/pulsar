@@ -1,4 +1,4 @@
-name: Publish KMP to Maven
+name: publish-kmp-library
 
 on:
   workflow_dispatch:

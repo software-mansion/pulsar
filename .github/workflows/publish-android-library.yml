@@ -1,4 +1,4 @@
-name: Publish Android to Maven
+name: publish-android-library
 
 on:
   workflow_dispatch:

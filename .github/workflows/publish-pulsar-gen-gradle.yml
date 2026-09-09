@@ -1,4 +1,4 @@
-name: Publish pulsar-gen Gradle plugin to Maven
+name: publish-pulsar-gen-gradle
 
 on:
   workflow_dispatch:
