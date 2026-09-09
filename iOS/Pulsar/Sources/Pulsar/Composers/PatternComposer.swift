@@ -106,7 +106,7 @@ public class PatternComposer: NSObject {
       print("Error playing pattern: \(error.localizedDescription)")
     }
 
-    audioBuffer = audioSimulator.parsePattern(from: hapticsData)
+    audioBuffer = hasSound ? nil : audioSimulator.parsePattern(from: hapticsData)
   }
 
   public func playPattern(hapticsData: PatternData) {
