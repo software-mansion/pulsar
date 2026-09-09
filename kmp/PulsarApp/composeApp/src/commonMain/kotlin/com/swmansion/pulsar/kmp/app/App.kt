@@ -27,7 +27,6 @@ import com.swmansion.pulsar.kmp.SoundData
 import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.ValuePoint
 import com.swmansion.pulsar.kmp.app.bundles.HapticsBundle
-import pulsarapp.composeapp.generated.resources.Res
 import com.swmansion.pulsar.lottie.HapticLottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
@@ -283,10 +282,9 @@ private fun BundleCard(pulsar: Pulsar?, onStatus: (String) -> Unit) {
 
     LaunchedEffect(pulsar) {
         if (pulsar == null) return@LaunchedEffect
-        runCatching {
-            val bytes = Res.readBytes("files/hapticsBundle.pulsar")
-            pulsar.loadBundleSync(HapticsBundle.descriptor, bytes)
-        }.onSuccess { bundle = it }.onFailure { error = it.message ?: "failed to load bundle" }
+        runCatching { pulsar.loadBundleAsync(HapticsBundle.descriptor) }
+            .onSuccess { bundle = it }
+            .onFailure { error = it.message ?: "failed to load bundle" }
     }
 
     Card(modifier = Modifier.fillMaxWidth()) {
