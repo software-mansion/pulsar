@@ -28,6 +28,7 @@ import com.swmansion.pulsar.kmp.ValuePoint
 import com.swmansion.pulsar.kmp.app.bundles.HapticsBundle
 import com.swmansion.pulsar.lottie.HapticLottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
 
 @Composable
 @Preview
@@ -188,9 +189,12 @@ fun App() {
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center,
                     ) {
+                        val composition by rememberLottieComposition {
+                            LottieCompositionSpec.JsonString(VERIFIED_LOTTIE_JSON)
+                        }
                         HapticLottie(
+                            composition,
                             modifier = Modifier.size(160.dp),
-                            animation = LottieCompositionSpec.JsonString(VERIFIED_LOTTIE_JSON),
                             haptics = remember { verifiedLottiePattern() },
                             contentDescription = "Verified",
                             pulsar = pulsar ?: return@Box,

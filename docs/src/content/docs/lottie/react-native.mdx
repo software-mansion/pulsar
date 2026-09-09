@@ -42,7 +42,7 @@ import { Tabs, TabItem, Code, Aside } from '@astrojs/starlight/components';
 
 `react-native-pulsar-lottie` plays a Pulsar haptic pattern locked to a Lottie animation. Its `HapticLottieView` is a **non-breaking superset** of [`lottie-react-native`](https://github.com/lottie-react-native/lottie-react-native)'s `LottieView`: it accepts every prop and ref method you already use and adds haptic-only ones. With `haptics` omitted it behaves exactly like `LottieView`.
 
-Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes and timing rules this page assumes.
+Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes, timing rules and simulator notes this page assumes.
 
 ## Requirements
 
@@ -93,88 +93,53 @@ import type { Pattern } from 'react-native-pulsar';
 const pattern: Pattern = {
   discretePattern: [{ time: 0, amplitude: 1, frequency: 0.5 }],
   continuousPattern: {
-    amplitude: [
-      { time: 0, value: 0 },
-      { time: 400, value: 1 },
-      { time: 800, value: 0 },
-    ],
-    frequency: [
-      { time: 0, value: 0.3 },
-      { time: 800, value: 0.8 },
-    ],
+    amplitude: [{ time: 0, value: 0 }, { time: 400, value: 1 }, { time: 800, value: 0 }],
+    frequency: [{ time: 0, value: 0.3 }, { time: 800, value: 0.8 }],
   },
 };
 
-function Success() {
-  return (
-    <HapticLottieView
-      source={require('./success.json')}
-      haptics={pattern}
-      autoPlay
-      style={{ width: 200, height: 200 }}
-    />
-  );
-}
+<HapticLottieView
+  source={require('./success.json')}
+  haptics={pattern}
+  autoPlay
+  style={{ width: 200, height: 200 }}
+/>
 ```
 
 Everything `LottieView` does still works — `source`, `loop`, `autoPlay`, `style`, `resizeMode`, `onAnimationFinish` and the rest. You only **add** haptics.
+
+### From a bundle preset
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the view takes both — no `source`, no `haptics`:
+
+```tsx
+import { loadBundleSync } from '@/assets/my-pack.bundle';
+
+const Pack = loadBundleSync();
+
+<HapticLottieView preset={Pack.celebration} autoPlay style={{ width: 200, height: 200 }} />
+```
+
+The preset supplies `source` from its Lottie, `haptics` from its pattern, and `durationMs` from its authored length — each still overridable on its own. One that carries audio plays that audio too, which is why it starts in `pattern` mode. See [bundle presets](/pulsar/lottie/overview/#bundle-presets).
+
+The generated module embeds JSON Lotties only, and both loaders carry them. A preset authored as a dotLottie reports `hasAnimation: true` but carries no `animation` — pass `source` yourself there. With neither available the view renders nothing and warns once. Its **audio** only reaches the device on the asset-backed path: `loadBundleSync()` plays the embedded pattern, while `loadBundleSync(true)` and `loadBundleAsync()` hand the `.pulsar` to native code, sound included.
+
+See [preset bundles](/pulsar/sdk/react-native/#preset-bundles) for how bundles are generated and loaded.
 
 ### Haptic props
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `preset` | `PresetHandle` | – | A bundle preset supplying `source`, `haptics` and `durationMs` at once. |
+| `preset` | `PresetHandle` | – | Bundle preset supplying `source`, `haptics` and `durationMs` at once. |
 | `haptics` | `Pattern \| () => void` | – | Pattern to sync, or a preset trigger function (`pattern` mode only). Overrides the preset's pattern. |
-| `hapticMode` | `'realtime' \| 'pattern'` | derived | Engine mode — see [Engine modes](#engine-modes). |
+| `hapticMode` | `'realtime' \| 'pattern'` | derived | `'realtime'`, or `'pattern'` for a preset carrying audio. |
 | `hapticOffset` | `number` (ms) | `0` | Shift the haptics by ±ms relative to the animation. |
 | `hapticsEnabled` | `boolean` | `true` | Turn haptics off without touching the animation. |
-| `durationMs` | `number` | derived | Clock length in `realtime` mode. See [Duration](#duration). |
+| `durationMs` | `number` | derived | Clock length in `realtime` mode. |
 
 `source` is required as usual, unless a `preset` supplies it.
 
-### Duration
-
-In `realtime` mode the view needs to know how long the animation is. It resolves that in order:
-
-1. An explicit `durationMs` prop.
-2. The preset's authored duration, when a `preset` is passed.
-3. The Lottie JSON's own `fr` / `ip` / `op` fields — only readable when `source` is an inline object, such as a `require('./success.json')`.
-4. The pattern's own length.
-
-A remote animation loaded by URL exposes none of that to JS, so pass `durationMs` explicitly when the source is a URI.
-
----
-
-## From a bundle preset
-
-A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the view takes both — no `source`, no `haptics`:
-
-```tsx
-import { HapticLottieView } from 'react-native-pulsar-lottie';
-import { loadBundleSync } from '@/assets/my-pack.bundle';
-
-const Pack = loadBundleSync();
-
-function Celebration() {
-  return (
-    <HapticLottieView
-      preset={Pack.celebration}
-      autoPlay
-      style={{ width: 200, height: 200 }}
-    />
-  );
-}
-```
-
-The preset fills in three things, each still overridable on its own: `source` from its Lottie, `haptics` from its pattern, and `durationMs` from its authored length.
-
-A preset that was authored with **audio** plays that audio too, through its own native handle. That needs `pattern` mode — the sound is a track the engine plays alongside a compiled pattern, and realtime sampling has nothing to play it against — so such a preset defaults to `hapticMode="pattern"` instead of `realtime`. Passing `hapticMode` yourself always wins, and passing your own `haptics` takes the preset out of the picture entirely.
-
-The audio itself only reaches the device on the asset-backed load path: `loadBundleSync()` plays the pattern embedded in the generated module, while `loadBundleSync(true)` and `loadBundleAsync()` hand the `.pulsar` to native code, sound included.
-
-Only JSON Lotties are embedded in the generated module; both loaders carry them, so this works on the asset-backed path too. A preset authored as a dotLottie reports `hasAnimation: true` but carries no `animation` — pass `source` yourself there. When neither is available the view renders nothing and warns once, rather than crashing.
-
-See [preset bundles](/pulsar/sdk/react-native/#preset-bundles) on the React Native SDK page for how bundles are generated and loaded.
+In `realtime` mode the duration resolves as: an explicit `durationMs`, then the preset's authored duration, then the Lottie JSON's own `fr`/`ip`/`op` — readable only when `source` is an inline object such as `require('./success.json')` — then the pattern's length. A remote animation loaded by URL exposes none of that to JS, so pass `durationMs` explicitly there.
 
 ---
 
@@ -183,24 +148,10 @@ See [preset bundles](/pulsar/sdk/react-native/#preset-bundles) on the React Nati
 The ref mirrors `LottieView`'s transport and adds `stop()` and `setTimestamp(ms)`. In `realtime` mode these steer the shared master clock, so the animation and the haptics move together.
 
 ```tsx
-import { useRef } from 'react';
-import { HapticLottieView, type HapticLottieRef } from 'react-native-pulsar-lottie';
+const ref = useRef<HapticLottieRef>(null);
 
-function Success() {
-  const ref = useRef<HapticLottieRef>(null);
-
-  return (
-    <>
-      <HapticLottieView
-        ref={ref}
-        source={require('./success.json')}
-        haptics={pattern}
-        style={{ width: 200, height: 200 }}
-      />
-      <Button title="Replay" onPress={() => ref.current?.play()} />
-    </>
-  );
-}
+<HapticLottieView ref={ref} preset={Pack.celebration} style={{ width: 200, height: 200 }} />
+<Button title="Replay" onPress={() => ref.current?.play()} />
 ```
 
 | Method | Description |
@@ -208,40 +159,14 @@ function Success() {
 | `play(startFrame?, endFrame?)` | Play from the start, or a frame segment. Starts the haptics too. |
 | `pause()` | Pause both animation and haptics. |
 | `resume()` | Resume from the current position. |
-| `stop()` | Stop and rewind to the start. |
-| `reset()` | Rewind to the start and stop the haptics. |
-| `setTimestamp(ms)` | Seek both animation and haptics to `ms` from the start. |
+| `stop()` / `reset()` | Rewind to the start and stop the haptics. |
+| `setTimestamp(ms)` | Seek both to `ms` from the start. |
 
 <Aside type="note" title="Transport in pattern mode">
   `setTimestamp(ms)` is a no-op in `pattern` mode — `lottie-react-native` exposes no imperative seek, and a buffered haptic cannot be repositioned mid-flight. The frame segment arguments to `play()` are likewise a `pattern`-mode feature.
+
+  In `realtime` mode the view owns the clock, so `autoPlay` is an initial-state flag read once on mount, not a live toggle. Call `play()` or `pause()` on the ref instead.
 </Aside>
-
----
-
-## Engine modes
-
-```ts
-type HapticMode = 'realtime' | 'pattern';
-```
-
-### realtime
-
-The default, unless a `preset` carries audio.
-
-
-A Reanimated frame callback drives the Lottie `progress` on the UI thread — no React re-renders — and samples the pattern into `RealtimeComposer` events. It honours `pause`, `setTimestamp`, `loop` and segments coherently. Requires a `Pattern`; a preset trigger function has no timeline to sample.
-
-Because the view owns the clock in this mode, `autoPlay` is an initial-state flag read once on mount, not a live toggle: flipping it later does not start or stop playback — call `play()` or `pause()` on the ref instead.
-
-### pattern
-
-The pattern (or a preset trigger) plays whole through `PatternComposer`, aligned to the animation start, and the animation plays itself. Best native fidelity. `pause` stops the haptic instead of suspending it, and there is no mid-pattern seek — best for short, mostly start-aligned animations.
-
-Passing `hapticMode="realtime"` with a preset trigger function rather than a `Pattern` falls back to the pattern-mode path.
-
-The default, when you do not set `hapticMode`, is `realtime` — except for a `preset` that carries audio, which starts here so that audio plays.
-
-See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
 
 ---
 
@@ -253,43 +178,39 @@ Attach haptics to a `LottieView` you already own, without swapping the component
 import LottieView from 'lottie-react-native';
 import { useHapticLottie } from 'react-native-pulsar-lottie';
 
-function Success() {
-  const lottieRef = useRef<LottieView>(null);
-  const haptics = useHapticLottie({ haptics: pattern });
+const lottieRef = useRef<LottieView>(null);
+const haptics = useHapticLottie({ preset: Pack.celebration });
 
-  const start = () => {
-    lottieRef.current?.play();
-    haptics.play();
-  };
-
-  const pause = () => {
-    lottieRef.current?.pause();
-    haptics.stop();
-  };
-
-  return <LottieView ref={lottieRef} source={require('./success.json')} />;
-}
+const start = () => {
+  lottieRef.current?.play();
+  haptics.play();
+};
 ```
-
-### Options
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `preset` | `PresetHandle` | – | Bundle preset to fire, including its synced audio. |
-| `haptics` | `Pattern \| () => void` | – | Pattern or preset trigger to fire with the animation. Overrides `preset`. |
+| `haptics` | `Pattern \| () => void` | – | Pattern or preset trigger to fire. Overrides `preset`. |
 | `hapticsEnabled` | `boolean` | `true` | Disable firing without unwiring the hook. |
 
-### Returns
-
-| Member | Description |
-| --- | --- |
-| `play()` | Fire the haptic — call alongside your own `play()`. |
-| `stop()` | Stop the haptic — call alongside pause or stop. |
-| `isReady` | `true` once the pattern is parsed. Always `true` for a preset trigger. |
-
-A bundle preset drops in as its own option — `useHapticLottie({ preset })` — and, when it carries audio, plays that audio alongside the haptics rather than replaying the pattern from JS.
+It returns `play()`, `stop()` and `isReady` — `true` once the pattern is parsed, and always `true` for a preset trigger.
 
 For progress-driven `realtime` sync with seek and loop, use [`HapticLottieView`](#hapticlottieview) instead.
+
+---
+
+## Engine modes
+
+```ts
+type HapticMode = 'realtime' | 'pattern';
+```
+
+- **`realtime`** (default) — a Reanimated frame callback drives the Lottie `progress` on the UI thread, with no React re-renders, and samples the pattern into `RealtimeComposer` events. Honours `pause`, `setTimestamp`, `loop` and segments. Requires a `Pattern`.
+- **`pattern`** — the pattern, preset or trigger plays whole through `PatternComposer`, aligned to the animation start. Best native fidelity, and the only mode that plays a preset's audio.
+
+Passing `hapticMode="realtime"` with a preset trigger function rather than a `Pattern` falls back to the pattern-mode path, because there is nothing to sample.
+
+See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
 
 ---
 
@@ -307,10 +228,4 @@ import type {
 } from 'react-native-pulsar-lottie';
 ```
 
-`HapticSource` is `Pattern | (() => void)` — a pattern works in both modes, a preset trigger function in `pattern` mode only. `HapticLottieProps` is `LottieViewProps` plus `HapticConfig`, with `source` required unless a `preset` supplies it.
-
----
-
-## Testing on the simulator
-
-Simulators and emulators have no haptic hardware. Debug builds of Pulsar play an audio rendering of the pattern instead, so the timing against the animation is still verifiable there — but run on a device before shipping to judge how it feels. See [testing haptics on simulators](/pulsar/sdk/overview/#testing-haptics-on-simulators) and the [Jest mock](/pulsar/sdk/react-native/#testing-with-jest) for unit tests.
+`HapticSource` is `Pattern | (() => void)`. `HapticLottieProps` is `LottieViewProps` plus `HapticConfig`, with `source` required unless a `preset` supplies it. See the [Jest mock](/pulsar/sdk/react-native/#testing-with-jest) for unit tests.

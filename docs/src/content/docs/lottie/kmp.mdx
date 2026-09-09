@@ -42,7 +42,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 `pulsar-kmp-lottie` plays a Pulsar haptic pattern locked to a Lottie animation from common Compose Multiplatform code, on Android and iOS targets.
 
-`HapticLottie` renders through [compottie](https://github.com/alexzhirkevich/compottie), so the API matches the other platforms: pass a bundle preset and you get the animation and the haptics together. If you render with something else, [`HapticLottieSync`](#hapticlottiesync) follows a **progress value** you feed it and draws nothing.
+`HapticLottie` renders through [compottie](https://github.com/alexzhirkevich/compottie) and takes the same `LottieComposition` you already hand to `rememberLottiePainter`, so it drops into an existing screen. If you render with something else, [`HapticLottieSync`](#hapticlottiesync) follows a **progress value** you feed it and draws nothing.
 
 Read the [Lottie SDK overview](/pulsar/lottie/overview/) for the engine modes and timing rules this page assumes.
 
@@ -87,38 +87,45 @@ The Android target needs the vibration permission in your app's `AndroidManifest
 
 ## HapticLottie
 
-Renders the animation and plays the haptics locked to its timeline. A bundle preset supplies
-all three of the animation, the pattern and the authored duration:
+Renders a Lottie animation and plays a pattern locked to its timeline. It takes the same
+`LottieComposition` compottie's own `rememberLottiePainter` takes, so an existing screen only
+swaps its `Image`:
 
 ```kotlin
 import com.swmansion.pulsar.lottie.HapticLottie
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
 
 @Composable
-fun Celebration(pack: AcmePack.Presets) {
-  HapticLottie(preset = pack.celebration, modifier = Modifier.size(200.dp))
+fun Success(pattern: PatternData) {
+  val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(json) }
+
+  HapticLottie(composition, haptics = pattern, modifier = Modifier.size(200.dp))
 }
 ```
 
-Bring your own of each with `animation` and `haptics`:
+### From a bundle preset
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and it loads the composition for you — no `rememberLottieComposition`, no `haptics`:
 
 ```kotlin
-import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
 
-HapticLottie(
-  animation = LottieCompositionSpec.JsonString(json),
-  haptics = pattern,
-  modifier = Modifier.size(200.dp),
-)
+HapticLottie(preset = bundle.celebration, modifier = Modifier.size(200.dp))
 ```
+
+The preset supplies the animation, `haptics` from its `pattern`, and `durationMs` from its authored length — each still overridable on its own. See [bundle presets](/pulsar/lottie/overview/#bundle-presets).
 
 ### Parameters
 
+Both overloads take the same arguments; the first is `composition: LottieComposition?`, the second `preset: PresetHandle`.
+
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
+| `composition` | `LottieComposition?` | – | The animation to render, from `rememberLottieComposition`. |
+| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the pattern and authored duration — and, in the preset overload, the animation. |
 | `modifier` | `Modifier` | `Modifier` | Applied to the rendered animation. |
-| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the animation, pattern and duration — see [Bundle presets](#bundle-presets). |
-| `animation` | `LottieCompositionSpec?` | `null` | The animation to render. Overrides the preset's own. |
-| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; omit both to disable haptics. |
+| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; omit both to render without haptics. |
 | `hapticMode` | `HapticMode?` | derived | Engine mode — see [Engine modes](#engine-modes). |
 | `hapticOffset` | `Long` | `0` | Shift the haptics by ±ms relative to the animation. |
 | `hapticsEnabled` | `Boolean` | `true` | Turn haptics off without touching the animation. |
@@ -126,69 +133,46 @@ HapticLottie(
 | `isPlaying` | `Boolean` | `true` | Whether the animation runs. A `false → true` transition starts the haptics. |
 | `iterations` | `Int` | `1` | Loop count. Pass `Compottie.IterateForever` to loop. |
 | `contentDescription` | `String?` | `null` | Accessibility label for the rendered animation. |
-| `contentScale` | `ContentScale` | `Fit` | How the animation fills `modifier`'s bounds. |
+| `alignment` / `contentScale` | | `Center` / `Fit` | Forwarded to the underlying `Image`. |
 | `pulsar` | `Pulsar` | `Pulsar.create()` | Provide your own platform-initialized instance. |
 
 <Aside type="note" title="Pass your own Pulsar instance">
   The default creates a fresh `Pulsar` for the composable. In an app that already holds one — most do, for presets and composers elsewhere — pass it in, so every haptic in the app shares one engine.
 </Aside>
 
-Rendering goes through [compottie](https://github.com/alexzhirkevich/compottie), which this package depends on. A preset with no animation, and no `animation` of its own, renders an empty `Box`.
+The preset overload renders an empty `Box` when the preset carries no animation.
 
 ---
 
 ## HapticLottieSync
 
-Renders nothing and follows a `progress` value you supply — for a renderer other than compottie, or for a progress source Compose is not involved in:
+Renders nothing and follows a `progress` value you supply — for a renderer other than compottie, or to add haptics to an existing screen without touching how it draws:
 
 ```kotlin
-import com.swmansion.pulsar.lottie.HapticLottieSync
+val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(json) }
+val progress by animateLottieCompositionAsState(composition, isPlaying = playing)
 
-@Composable
-fun Success(pattern: PatternData, playing: Boolean) {
-  val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(json) }
-  val progress by animateLottieCompositionAsState(composition, isPlaying = playing)
+Image(rememberLottiePainter(composition, progress = { progress }), contentDescription = null)
 
-  Image(
-    painter = rememberLottiePainter(composition, progress = { progress }),
-    contentDescription = null,
-  )
-
-  HapticLottieSync(
-    progress = progress,
-    isPlaying = playing,
-    haptics = pattern,
-    durationMs = composition?.duration?.inWholeMilliseconds ?: 0L,
-  )
-}
+HapticLottieSync(
+  progress = progress,
+  isPlaying = playing,
+  haptics = pattern,
+  durationMs = composition?.duration?.inWholeMilliseconds ?: 0,
+)
 ```
 
-### Parameters
+It takes `progress` and `isPlaying` in place of `composition`, plus the same haptic arguments as `HapticLottie`. `durationMs` here is the animation's own length; a `preset`'s authored duration takes precedence, and `0` falls back to that, then to the pattern's length.
 
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `progress` | `Float` | – | Current animation progress, `0..1`. |
-| `isPlaying` | `Boolean` | – | Whether the animation is running. A `false → true` transition starts the haptics. |
-| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the pattern and authored duration. |
-| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; omit both to disable haptics. |
-| `hapticMode` | `HapticMode?` | derived | Engine mode — see [Engine modes](#engine-modes). |
-| `hapticOffset` | `Long` | `0` | Shift the haptics by ±ms relative to the animation. |
-| `hapticsEnabled` | `Boolean` | `true` | Turn haptics off without touching the animation. |
-| `durationMs` | `Long` | `0` | The animation's own length in ms. A `preset`'s authored duration takes precedence over it; `0` falls back to that, else to the pattern's own length. |
-| `pulsar` | `Pulsar` | `Pulsar.create()` | Provide your own platform-initialized instance. |
-
-The engine is rebuilt whenever `pulsar`, `preset`, `haptics`, `hapticMode`, `hapticOffset` or `hapticsEnabled` changes, and stopped when the composable leaves the composition. Hoist those values (`remember` the pattern) rather than constructing them inline in the composable body.
+The engine is rebuilt whenever `pulsar`, `preset`, `haptics`, `hapticMode`, `hapticOffset` or `hapticsEnabled` changes, and stopped when the composable leaves the composition. Hoist those values (`remember` the pattern) rather than constructing them inline.
 
 ---
 
 ## HapticLottieEngine
 
-The composable is a thin wrapper around a plain, framework-agnostic engine. Use it directly when the progress comes from somewhere Compose is not involved in, or when you want to own the lifetime yourself:
+The pure, framework-agnostic engine behind both composables. Use it directly when the progress comes from somewhere Compose is not involved in:
 
 ```kotlin
-import com.swmansion.pulsar.lottie.HapticLottieEngine
-import com.swmansion.pulsar.lottie.HapticMode
-
 val engine = HapticLottieEngine(
   pulsar = pulsar,
   preset = pack.celebration, // optional — supplies the pattern and duration
@@ -206,14 +190,12 @@ engine.stop()
 
 | Member | Description |
 | --- | --- |
-| `setPlaying(isPlaying: Boolean)` | Notify a play/pause transition. In `PATTERN` mode a `true` transition fires the buffered pattern; `false` stops the haptics. |
-| `onProgress(progress: Float, durationMs: Long = 0)` | Feed the current position. Pass `0` to use the duration the engine resolved. Ignored unless `REALTIME` mode is active and playing. |
+| `setPlaying(isPlaying: Boolean)` | Notify a play/pause transition. In `PATTERN` mode a `true` transition fires the buffered pattern. |
+| `onProgress(progress: Float, durationMs: Long = 0)` | Feed the current position. `0` uses the duration the engine resolved. |
 | `stop()` | Stop the haptics and reset the discrete-event window. |
-| `resolvedDurationMs` | The clock length the engine resolved, for a caller with no duration of its own. |
+| `resolvedDurationMs` | The clock length the engine resolved. |
 
 `onProgress` handles a wrapped playhead: when the new time is behind the previous one — a loop or a backwards seek — the discrete window restarts from zero, so looping re-fires the events rather than swallowing them.
-
-In `PATTERN` mode the pattern is parsed in the constructor, so the engine is warm and the first play fires without the usual first-play latency.
 
 ---
 
@@ -226,29 +208,15 @@ enum class HapticMode { REALTIME, PATTERN }
 - **`REALTIME`** (default) — the animation progress is the master clock and the pattern is sampled into `RealtimeComposer.set` and `playDiscrete` on every progress update. Honours pause, seek and loop. On Android the vibrator is re-driven per update, so continuous fidelity is coarser there than on iOS.
 - **`PATTERN`** — the pre-parsed pattern plays whole through `PatternComposer`, aligned to the start, which gives the best native fidelity at the cost of seeking.
 
-Because the sampling rate is the rate at which you call `onProgress`, realtime fidelity in this package tracks your renderer's frame rate. A progress value updated on every Compose frame gives the same result as the native SDKs; a throttled one gives coarser haptics.
-
-Passing `REALTIME` without a pattern leaves the animation without haptics, because there is nothing to sample.
-
-`hapticMode` is nullable: leave it out and the mode is `REALTIME`. KMP has no bundle audio yet, so the audio-preset exception described in the [overview](/pulsar/lottie/overview/#engine-modes) never fires here.
+Realtime fidelity tracks how often progress changes, so it follows your renderer's frame rate. KMP has no bundle audio yet, so the audio-preset exception described in the [overview](/pulsar/lottie/overview/#engine-modes) never fires here.
 
 See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
 
 ---
 
-## Bundle presets
+## Reading a preset yourself
 
-A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and `HapticLottie` takes both — no `animation`, no `haptics`:
-
-```kotlin
-val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
-
-HapticLottie(preset = bundle.celebration, modifier = Modifier.size(200.dp))
-```
-
-The preset fills in three things, each still overridable on its own: the animation from its Lottie, `haptics` from its `pattern`, and `durationMs` from its authored length.
-
-Rendering yourself with [`HapticLottieSync`](#hapticlottiesync)? `animationJson()` hands the preset's Lottie to your renderer as a JSON string, and returns `null` when it carries no animation:
+`animationJson()` hands a preset's Lottie to any renderer as a JSON string, and returns `null` when it carries no animation:
 
 ```kotlin
 import com.swmansion.pulsar.lottie.animationJson
@@ -257,8 +225,6 @@ val composition by rememberLottieComposition {
   LottieCompositionSpec.JsonString(preset.animationJson()!!)
 }
 ```
-
-The preset's members are the same as on the native SDKs:
 
 | Member | Type | Description |
 | --- | --- | --- |
@@ -269,8 +235,4 @@ The preset's members are the same as on the native SDKs:
 | `hasAudio` / `hasAnimation` | `Boolean` | What the preset was authored with. `hasAudio` is always `false` on KMP. |
 | `play()` / `stop()` | – | Play the preset natively. |
 
----
-
-## Testing on simulators
-
-Simulators and emulators have no haptic hardware. Debug builds of Pulsar play an audio rendering of the pattern instead, so the timing against the animation is still verifiable there — but run on a device before shipping to judge how it feels. See [testing haptics on simulators](/pulsar/sdk/overview/#testing-haptics-on-simulators).
+See the [KMP SDK page](/pulsar/sdk/kmp/) for how bundles are loaded.

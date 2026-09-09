@@ -70,7 +70,7 @@ Every package builds on the Lottie renderer that is idiomatic for its platform, 
 | Kotlin Multiplatform | [compottie](https://github.com/alexzhirkevich/compottie) | `com.swmansion:pulsar-kmp` |
 | Flutter | [`lottie`](https://pub.dev/packages/lottie) | `pulsar_haptics` |
 
-The Kotlin Multiplatform package also ships `HapticLottieSync`, which draws nothing and follows a **progress value** you feed it, for apps that render with something other than compottie.
+`HapticLottie` on Kotlin Multiplatform takes the same `LottieComposition` compottie's own render call takes, so it drops into an existing screen. The package also ships `HapticLottieSync`, which draws nothing and follows a **progress value** you feed it, for apps that render with something else.
 
 ## How the sync works
 
@@ -105,7 +105,7 @@ The transport is the same too — `play`, `pause`, `resume`, `stop`, `reset` and
 | Kotlin Multiplatform | `HapticLottie` (composable) | `HapticLottieEngine` | `HapticLottieSync` (composable) |
 | Flutter | `HapticLottie` | `HapticLottieController` | `HapticLottieController(animationController: …)` |
 
-Kotlin Multiplatform is declarative rather than imperative: `isPlaying` and `iterations` stand in for `autoPlay` and `setLoop`, and the lower-level `HapticLottieEngine` transport is `setPlaying` / `onProgress`.
+Kotlin Multiplatform is declarative rather than imperative: `isPlaying` and `iterations` stand in for `autoPlay` and `setLoop`, and the lower-level `HapticLottieEngine` transport is `setPlaying` / `onProgress`. Its preset overload loads the animation for you; the composition overload takes one you already loaded.
 
 ## Bundle presets
 

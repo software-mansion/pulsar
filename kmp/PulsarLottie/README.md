@@ -15,8 +15,8 @@ commonMain.dependencies {
 
 ## Usage
 
-A `.pulsar` bundle preset carries its animation, pattern and duration, so `HapticLottie` needs
-nothing else:
+A `.pulsar` bundle preset carries its animation, pattern and duration, so `HapticLottie` loads
+the composition for you:
 
 ```kotlin
 import com.swmansion.pulsar.lottie.HapticLottie
@@ -24,26 +24,24 @@ import com.swmansion.pulsar.lottie.HapticLottie
 HapticLottie(preset = pack.celebration, modifier = Modifier.size(200.dp))
 ```
 
-Bring your own of each with `animation` and `haptics`:
+Otherwise it takes the same `LottieComposition` you already hand to compottie's
+`rememberLottiePainter`, so an existing screen only swaps its `Image`:
 
 ```kotlin
-HapticLottie(
-    animation = LottieCompositionSpec.JsonString(json),
-    haptics = pattern,
-    modifier = Modifier.size(200.dp),
-)
+val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(json) }
+
+HapticLottie(composition, haptics = pattern, modifier = Modifier.size(200.dp))
 ```
 
 ## Rendering with something else
 
-`HapticLottieSync` draws nothing and follows the `progress` you feed it, so it works with any
-Compose Lottie renderer:
+`HapticLottieSync` draws nothing and follows the `progress` you feed it, so it adds haptics to any
+Compose Lottie renderer without touching how it draws:
 
 ```kotlin
-val composition by rememberLottieComposition { LottieCompositionSpec.JsonString(json) }
 val progress by animateLottieCompositionAsState(composition, isPlaying = playing)
 
-Image(painter = rememberLottiePainter(composition, progress = { progress }), contentDescription = null)
+Image(rememberLottiePainter(composition, progress = { progress }), contentDescription = null)
 
 HapticLottieSync(
     progress = progress,
@@ -69,8 +67,9 @@ Both composables take the same haptic arguments:
 | `durationMs` | `Long` | `0` | Clock length in ms; `0` derives it from the preset, composition, then pattern. |
 | `pulsar` | `Pulsar` | `Pulsar.create()` | Provide your platform-initialized instance. |
 
-`HapticLottie` adds `animation`, `modifier`, `isPlaying`, `iterations`, `contentDescription` and
-`contentScale`; `HapticLottieSync` takes `progress` and `isPlaying` instead.
+`HapticLottie` adds `composition` (or `preset`), `modifier`, `isPlaying`, `iterations`,
+`contentDescription`, `alignment` and `contentScale`; `HapticLottieSync` takes `progress` and
+`isPlaying` instead.
 
 Prefer to drive it yourself? `HapticLottieEngine` is the pure, framework-agnostic engine behind
 both (`setPlaying`, `onProgress`, `stop`).
