@@ -122,6 +122,7 @@ public extension HapticEngineWrapper {
   func stopPlayer(id: Int) {
     guard let player = playerRegistry[id] else { return }
     stopPlayer(player, errorPrefix: "Error stopping player")
+    unregisterPlayer(id)
   }
 
   func removePlayer(id: Int) {
@@ -129,8 +130,7 @@ public extension HapticEngineWrapper {
       try? player.stop(atTime: 0)
     }
 
-    playerRegistry.removeValue(forKey: id)
-    playerCreationOrder.removeAll { $0 == id }
+    unregisterPlayer(id)
   }
 }
 
@@ -348,6 +348,11 @@ private extension HapticEngineWrapper {
     evictOldestPlayerIfNeeded()
     playerRegistry[id] = player
     playerCreationOrder.append(id)
+  }
+
+  func unregisterPlayer(_ id: Int) {
+    playerRegistry.removeValue(forKey: id)
+    playerCreationOrder.removeAll { $0 == id }
   }
 
   func evictOldestPlayerIfNeeded() {
