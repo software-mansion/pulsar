@@ -1,6 +1,5 @@
 package com.swmansion.pulsar.kmp.app
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,11 +27,7 @@ import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.ValuePoint
 import com.swmansion.pulsar.kmp.app.bundles.HapticsBundle
 import com.swmansion.pulsar.lottie.HapticLottie
-import com.swmansion.pulsar.lottie.animationJson
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
-import io.github.alexzhirkevich.compottie.rememberLottieComposition
-import io.github.alexzhirkevich.compottie.rememberLottiePainter
 
 @Composable
 @Preview
@@ -189,30 +184,16 @@ fun App() {
                             "the animation drives the haptics (realtime mode).",
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    val composition by rememberLottieComposition {
-                        LottieCompositionSpec.JsonString(VERIFIED_LOTTIE_JSON)
-                    }
-                    val progress by animateLottieCompositionAsState(
-                        composition,
-                        isPlaying = true,
-                    )
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Image(
-                            painter = rememberLottiePainter(composition, progress = { progress }),
-                            contentDescription = "Verified",
-                            modifier = Modifier.size(160.dp),
-                        )
-                    }
-                    if (pulsar != null) {
                         HapticLottie(
-                            progress = progress,
-                            durationMs = composition?.duration?.inWholeMilliseconds ?: 0L,
-                            isPlaying = true,
+                            modifier = Modifier.size(160.dp),
+                            animation = LottieCompositionSpec.JsonString(VERIFIED_LOTTIE_JSON),
                             haptics = remember { verifiedLottiePattern() },
-                            pulsar = pulsar,
+                            contentDescription = "Verified",
+                            pulsar = pulsar ?: return@Box,
                         )
                     }
                 }
@@ -312,32 +293,19 @@ private fun BundleCard(pulsar: Pulsar?, onStatus: (String) -> Unit) {
                         onStatus("Played lottie from ${HapticsBundle.bundleId}")
                     }) { Text("Lottie") }
                 }
-                val animationJson = loaded.lottie.animationJson()
-                if (animationJson == null) {
+                if (!loaded.lottie.hasAnimation) {
                     Text("No animation bytes carried.", style = MaterialTheme.typography.bodySmall)
-                } else {
+                } else if (pulsar != null) {
                     Text(
-                        "The lottie preset carries its animation too. This package renders " +
-                            "nothing itself, so hand the JSON to your Compose Lottie renderer " +
-                            "and pass the preset to HapticLottie.",
+                        "The lottie preset carries its animation as well as its pattern, so " +
+                            "HapticLottie needs nothing else.",
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    val composition by rememberLottieComposition {
-                        LottieCompositionSpec.JsonString(animationJson)
-                    }
-                    val progress by animateLottieCompositionAsState(composition, isPlaying = true)
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Image(
-                            painter = rememberLottiePainter(composition, progress = { progress }),
-                            contentDescription = loaded.lottie.name,
-                            modifier = Modifier.size(160.dp),
-                        )
-                    }
-                    if (pulsar != null) {
                         HapticLottie(
-                            progress = progress,
-                            isPlaying = true,
+                            modifier = Modifier.size(160.dp),
                             preset = loaded.lottie,
+                            contentDescription = loaded.lottie.name,
                             pulsar = pulsar,
                         )
                     }

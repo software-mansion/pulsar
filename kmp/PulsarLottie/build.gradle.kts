@@ -30,6 +30,9 @@ kotlin {
             // the core's PatternData types are visible in this library's public API.
             api(project(":library"))
             implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            // `api` so LottieCompositionSpec is usable in HapticLottie's own signature.
+            api(libs.compottie)
         }
 
         commonTest.dependencies {

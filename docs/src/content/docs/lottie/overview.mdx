@@ -67,10 +67,10 @@ Every package builds on the Lottie renderer that is idiomatic for its platform, 
 | iOS | [`lottie-ios`](https://github.com/airbnb/lottie-ios) | `PulsarHaptics` |
 | Android | [`com.airbnb.android:lottie`](https://github.com/airbnb/lottie-android) | `com.swmansion:pulsar` |
 | React Native | [`lottie-react-native`](https://github.com/lottie-react-native/lottie-react-native) | `react-native-pulsar` |
-| Kotlin Multiplatform | any Compose renderer (e.g. [compottie](https://github.com/alexzhirkevich/compottie)) | `com.swmansion:pulsar-kmp` |
+| Kotlin Multiplatform | [compottie](https://github.com/alexzhirkevich/compottie) | `com.swmansion:pulsar-kmp` |
 | Flutter | [`lottie`](https://pub.dev/packages/lottie) | `pulsar_haptics` |
 
-The Kotlin Multiplatform package is the odd one out: it depends only on `compose-runtime` and follows the **progress value** you feed it, so it works with whichever Compose Lottie renderer you already use.
+The Kotlin Multiplatform package also ships `HapticLottieSync`, which draws nothing and follows a **progress value** you feed it, for apps that render with something other than compottie.
 
 ## How the sync works
 
@@ -102,10 +102,10 @@ The transport is the same too — `play`, `pause`, `resume`, `stop`, `reset` and
 | iOS | `HapticLottieView` (SwiftUI) | `HapticLottieController` | `PulsarLottie.bind(_:pulsar:preset:…)` |
 | Android | `HapticLottieView` | `HapticLottieController` | `LottieAnimationView.bindHaptics(pulsar, preset:…)` |
 | React Native | `HapticLottieView` | the `HapticLottieRef` handle | `useHapticLottie({ preset, … })` |
-| Kotlin Multiplatform | `HapticLottie` (composable) | `HapticLottieEngine` | `HapticLottieEngine` |
+| Kotlin Multiplatform | `HapticLottie` (composable) | `HapticLottieEngine` | `HapticLottieSync` (composable) |
 | Flutter | `HapticLottie` | `HapticLottieController` | `HapticLottieController(animationController: …)` |
 
-Kotlin Multiplatform is the one package that renders nothing: it follows the `progress` you feed it, so it has no `autoPlay` and no `setLoop`, and its transport is `setPlaying` / `onProgress`.
+Kotlin Multiplatform is declarative rather than imperative: `isPlaying` and `iterations` stand in for `autoPlay` and `setLoop`, and the lower-level `HapticLottieEngine` transport is `setPlaying` / `onProgress`.
 
 ## Bundle presets
 
@@ -120,7 +120,7 @@ A preset in a [`.pulsar` bundle](/pulsar/sdk/overview/) already pairs a pattern 
 
 Because the audio is played by the haptic engine rather than sampled, a preset that carries audio starts in `pattern` mode instead of `realtime`. A preset without audio keeps the `realtime` default. Either way, an explicit `hapticMode` wins.
 
-Kotlin Multiplatform renders nothing itself, so there a preset supplies the pattern and duration, and `preset.animationJson()` hands the animation to your own Compose renderer.
+On Kotlin Multiplatform, `preset.animationJson()` hands the animation to your own Compose renderer when you use `HapticLottieSync` instead of the drop-in.
 
 A preset that carries no animation cannot supply one — pass the animation yourself, or use a preset that was authored with one.
 

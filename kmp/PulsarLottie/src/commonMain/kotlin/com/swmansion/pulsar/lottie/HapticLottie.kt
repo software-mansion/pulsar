@@ -1,48 +1,118 @@
 package com.swmansion.pulsar.lottie
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import com.swmansion.pulsar.kmp.PatternData
 import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.bundle.PresetHandle
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.rememberLottieComposition
+import io.github.alexzhirkevich.compottie.rememberLottiePainter
 
 /**
- * Plays Pulsar haptics in sync with a Lottie animation in Compose Multiplatform.
+ * Renders a Lottie animation and plays Pulsar haptics locked to its timeline.
  *
- * Place it next to your Lottie renderer (e.g. compottie's `Image` /
- * `animateLottieCompositionAsState`) and feed it the same [progress],
- * [durationMs], and [isPlaying]:
+ * A bundle [preset] supplies the animation, the pattern and the authored duration at once:
+ *
+ * ```kotlin
+ * HapticLottie(preset = pack.celebration, modifier = Modifier.size(200.dp))
+ * ```
+ *
+ * Pass [animation] and [haptics] instead to bring your own of each:
+ *
+ * ```kotlin
+ * HapticLottie(
+ *     animation = LottieCompositionSpec.JsonString(json),
+ *     haptics = pattern,
+ * )
+ * ```
+ *
+ * Renders through [compottie](https://github.com/alexzhirkevich/compottie). To drive a renderer
+ * of your own, use [HapticLottieSync], which follows a progress value and draws nothing.
+ */
+@Composable
+fun HapticLottie(
+    modifier: Modifier = Modifier,
+    preset: PresetHandle? = null,
+    animation: LottieCompositionSpec? = null,
+    haptics: PatternData? = null,
+    hapticMode: HapticMode? = null,
+    hapticOffset: Long = 0,
+    hapticsEnabled: Boolean = true,
+    durationMs: Long = 0,
+    isPlaying: Boolean = true,
+    iterations: Int = 1,
+    contentDescription: String? = null,
+    contentScale: ContentScale = ContentScale.Fit,
+    pulsar: Pulsar = remember { Pulsar.create() },
+) {
+    val spec = remember(animation, preset) {
+        animation ?: preset?.animationJson()?.let(LottieCompositionSpec::JsonString)
+    }
+    if (spec == null) {
+        Box(modifier)
+        return
+    }
+
+    val composition by rememberLottieComposition(spec) { spec }
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = iterations,
+    )
+
+    Image(
+        painter = rememberLottiePainter(composition, progress = { progress }),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        contentScale = contentScale,
+    )
+
+    HapticLottieSync(
+        progress = progress,
+        isPlaying = isPlaying,
+        preset = preset,
+        haptics = haptics,
+        hapticMode = hapticMode,
+        hapticOffset = hapticOffset,
+        hapticsEnabled = hapticsEnabled,
+        durationMs = if (durationMs > 0) durationMs else composition?.duration?.inWholeMilliseconds ?: 0,
+        pulsar = pulsar,
+    )
+}
+
+/**
+ * Plays Pulsar haptics in sync with a Lottie animation rendered by something else.
+ *
+ * Place it next to your own renderer and feed it the same [progress], [durationMs] and
+ * [isPlaying]:
  *
  * ```kotlin
  * val composition by rememberLottieComposition { /* spec */ }
  * val progress by animateLottieCompositionAsState(composition, isPlaying = playing)
  * Image(painter = rememberLottiePainter(composition, progress = { progress }), null)
- * HapticLottie(
+ * HapticLottieSync(
  *     progress = progress,
- *     durationMs = composition?.durationMillis?.toLong() ?: 0,
  *     isPlaying = playing,
  *     haptics = pattern,
+ *     durationMs = composition?.duration?.inWholeMilliseconds ?: 0,
  * )
  * ```
  *
- * A bundle [preset] supplies the pattern and the authored duration, so only
- * [progress] and [isPlaying] are left to wire. Render its animation with
- * [animationJson] — this package is renderer-agnostic and draws nothing itself:
- *
- * ```kotlin
- * val composition by rememberLottieComposition {
- *     LottieCompositionSpec.JsonString(pack.celebration.animationJson()!!)
- * }
- * HapticLottie(progress = progress, isPlaying = playing, preset = pack.celebration)
- * ```
- *
- * It holds the haptic engine across recompositions and emits as [progress]
- * advances. Pass neither [preset] nor [haptics] to disable.
+ * It emits no UI of its own — it holds the haptic engine across recompositions and reacts to
+ * [progress]. Prefer [HapticLottie] unless you render with something other than compottie.
+ * Pass neither [preset] nor [haptics] to disable.
  */
 @Composable
-fun HapticLottie(
+fun HapticLottieSync(
     progress: Float,
     isPlaying: Boolean,
     preset: PresetHandle? = null,
