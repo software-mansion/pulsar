@@ -20,11 +20,23 @@ class BundleAnimation internal constructor(
  */
 class PresetHandle internal constructor(
     val id: String,
+    /** Human label the preset was authored under. */
+    val name: String,
     val duration: Long,
     val animation: BundleAnimation?,
+    /**
+     * The authored pattern. Read it to drive a timeline yourself — the Lottie SDK samples it per
+     * frame in realtime mode. [play] stays the pre-parsed, engine-native route.
+     */
+    val pattern: PatternData,
     private val haptics: Pulsar,
-    private val pattern: PatternData,
 ) {
+    /** Always `false` on KMP: synced bundle audio is not wired yet (see the class note). */
+    val hasAudio: Boolean get() = false
+
+    /** Whether the preset carries a Lottie animation, exposed as [animation]. */
+    val hasAnimation: Boolean get() = animation != null
+
     private var composer: PatternComposer? = null
 
     private fun ensureParsed() {
@@ -117,10 +129,11 @@ internal object BundleLoaderImpl {
             }
             handles[preset.id] = PresetHandle(
                 id = preset.id,
+                name = preset.name,
                 duration = (preset.duration ?: 0.0).toLong(),
                 animation = animation,
-                haptics = haptics,
                 pattern = pattern,
+                haptics = haptics,
             )
         }
         return LoadedBundle(manifest.id, manifest.hash ?: "", manifest.revision ?: 0, handles)

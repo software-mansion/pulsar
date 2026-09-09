@@ -317,6 +317,24 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
             ),
           const SizedBox(height: 12),
 
+          // The `lottie` preset carries its animation as well as its pattern, so the
+          // widget needs neither an asset nor a haptics argument.
+          if (_bundle != null) ...[
+            _SectionHeader('Animation from a preset'),
+            Center(
+              child: SizedBox(
+                width: 200,
+                height: 200,
+                child: HapticLottie.preset(
+                  _bundle!.lottie,
+                  autoPlay: true,
+                  repeat: true,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
           // System impacts
           _SectionHeader('System Impacts'),
           Wrap(

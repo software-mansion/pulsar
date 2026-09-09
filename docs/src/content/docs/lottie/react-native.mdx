@@ -124,8 +124,8 @@ Everything `LottieView` does still works — `source`, `loop`, `autoPlay`, `styl
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `preset` | `PresetHandle` | – | A bundle preset supplying `source`, `haptics` and `durationMs` at once. |
-| `haptics` | `Pattern \| () => void` | – | Pattern to sync, or a preset trigger function (`pattern` mode only). |
-| `hapticMode` | `'realtime' \| 'pattern'` | `'realtime'` | Engine mode — see [Engine modes](#engine-modes). |
+| `haptics` | `Pattern \| () => void` | – | Pattern to sync, or a preset trigger function (`pattern` mode only). Overrides the preset's pattern. |
+| `hapticMode` | `'realtime' \| 'pattern'` | derived | Engine mode — see [Engine modes](#engine-modes). |
 | `hapticOffset` | `number` (ms) | `0` | Shift the haptics by ±ms relative to the animation. |
 | `hapticsEnabled` | `boolean` | `true` | Turn haptics off without touching the animation. |
 | `durationMs` | `number` | derived | Clock length in `realtime` mode. See [Duration](#duration). |
@@ -167,6 +167,10 @@ function Celebration() {
 ```
 
 The preset fills in three things, each still overridable on its own: `source` from its Lottie, `haptics` from its pattern, and `durationMs` from its authored length.
+
+A preset that was authored with **audio** plays that audio too, through its own native handle. That needs `pattern` mode — the sound is a track the engine plays alongside a compiled pattern, and realtime sampling has nothing to play it against — so such a preset defaults to `hapticMode="pattern"` instead of `realtime`. Passing `hapticMode` yourself always wins, and passing your own `haptics` takes the preset out of the picture entirely.
+
+The audio itself only reaches the device on the asset-backed load path: `loadBundleSync()` plays the pattern embedded in the generated module, while `loadBundleSync(true)` and `loadBundleAsync()` hand the `.pulsar` to native code, sound included.
 
 Only JSON Lotties are embedded in the generated module; both loaders carry them, so this works on the asset-backed path too. A preset authored as a dotLottie reports `hasAnimation: true` but carries no `animation` — pass `source` yourself there. When neither is available the view renders nothing and warns once, rather than crashing.
 
@@ -220,7 +224,10 @@ function Success() {
 type HapticMode = 'realtime' | 'pattern';
 ```
 
-### realtime (default)
+### realtime
+
+The default, unless a `preset` carries audio.
+
 
 A Reanimated frame callback drives the Lottie `progress` on the UI thread — no React re-renders — and samples the pattern into `RealtimeComposer` events. It honours `pause`, `setTimestamp`, `loop` and segments coherently. Requires a `Pattern`; a preset trigger function has no timeline to sample.
 
@@ -231,6 +238,8 @@ Because the view owns the clock in this mode, `autoPlay` is an initial-state fla
 The pattern (or a preset trigger) plays whole through `PatternComposer`, aligned to the animation start, and the animation plays itself. Best native fidelity. `pause` stops the haptic instead of suspending it, and there is no mid-pattern seek — best for short, mostly start-aligned animations.
 
 Passing `hapticMode="realtime"` with a preset trigger function rather than a `Pattern` falls back to the pattern-mode path.
+
+The default, when you do not set `hapticMode`, is `realtime` — except for a `preset` that carries audio, which starts here so that audio plays.
 
 See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
 
@@ -266,7 +275,8 @@ function Success() {
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `haptics` | `Pattern \| () => void` | – | Pattern or preset trigger to fire with the animation. |
+| `preset` | `PresetHandle` | – | Bundle preset to fire, including its synced audio. |
+| `haptics` | `Pattern \| () => void` | – | Pattern or preset trigger to fire with the animation. Overrides `preset`. |
 | `hapticsEnabled` | `boolean` | `true` | Disable firing without unwiring the hook. |
 
 ### Returns
@@ -277,7 +287,7 @@ function Success() {
 | `stop()` | Stop the haptic — call alongside pause or stop. |
 | `isReady` | `true` once the pattern is parsed. Always `true` for a preset trigger. |
 
-A bundle preset works here today with no extra option: `useHapticLottie({ haptics: preset.pattern })`.
+A bundle preset drops in as its own option — `useHapticLottie({ preset })` — and, when it carries audio, plays that audio alongside the haptics rather than replaying the pattern from JS.
 
 For progress-driven `realtime` sync with seek and loop, use [`HapticLottieView`](#hapticlottieview) instead.
 

@@ -113,17 +113,19 @@ HapticLottie.asset(
 );
 ```
 
-`HapticLottie.network(url, ...)` takes the same arguments and loads the animation from a URL instead.
+`HapticLottie.network(url, ...)` takes the same arguments and loads the animation from a URL instead, and `HapticLottie.preset(preset, ...)` drops the `src` and renders a bundle preset's own animation — see [Bundle presets](#bundle-presets).
 
 ### Parameters
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `src` | `String` | – | Asset name or URL, passed positionally. |
-| `haptics` | `PatternData?` | `null` | Pattern to sync. Omit for a plain animation. |
-| `mode` | `HapticMode` | `realtime` | Engine mode — see [Engine modes](#engine-modes). |
+| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the pattern and duration — see [Bundle presets](#bundle-presets). |
+| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; omit both for a plain animation. |
+| `hapticMode` | `HapticMode?` | derived | Engine mode — see [Engine modes](#engine-modes). |
 | `hapticOffset` | `double` (ms) | `0` | Shift the haptics by ±ms relative to the animation. |
 | `hapticsEnabled` | `bool` | `true` | Turn haptics off without touching the animation. |
+| `durationMs` | `double?` | derived | Clock length in ms. Overrides every derived duration. |
 | `autoPlay` | `bool` | `false` | Start as soon as the animation loads. |
 | `repeat` | `bool` | `false` | Loop the animation, with `autoPlay`. |
 | `repeatCount` | `int?` | `null` | Limit the number of loops. `null` loops forever. |
@@ -168,10 +170,12 @@ haptic.pause();
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `animationController` | `AnimationController` | – | The clock this controller follows and steers. Owned by you. |
-| `haptics` | `PatternData?` | `null` | Pattern to sync. `null` leaves the animation without haptics. |
-| `mode` | `HapticMode` | `realtime` | Engine mode. |
-| `offsetMs` | `double` | `0` | Shift the haptics by ±ms relative to the animation. |
-| `enabled` | `bool` | `true` | When `false`, the animation plays and no haptics are emitted. |
+| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the pattern and duration. |
+| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; `null` with no preset leaves the animation without haptics. |
+| `hapticMode` | `HapticMode?` | derived | Engine mode. `realtime`, or `pattern` for a preset that carries audio. |
+| `hapticOffset` | `double` | `0` | Shift the haptics by ±ms relative to the animation. |
+| `hapticsEnabled` | `bool` | `true` | When `false`, the animation plays and no haptics are emitted. |
+| `durationMs` | `double?` | `null` | Clock length in ms. Overrides every derived duration. |
 | `pulsar` | `Pulsar?` | `null` | Provide your own instance; one is created internally otherwise. |
 
 In `pattern` mode the pattern is pre-parsed at construction, so the engine is warm and the first `play()` fires without the usual first-play latency.
@@ -187,7 +191,7 @@ In `pattern` mode the pattern is pre-parsed at construction, so the engine is wa
 | `reset()` | Same as `stop()`. |
 | `setTimestamp(double ms)` | Seek both animation and haptics to `ms` from the start. |
 | `setLoop(bool loop, {int? count, bool reverse})` | Loop the animation. `count` limits iterations (`null` loops forever); `reverse` plays a boomerang. |
-| `durationMs` | Effective clock length: the composition duration once loaded, else the pattern's own length. |
+| `durationMsResolved` | Effective clock length: an explicit `durationMs`, else the preset's authored duration, else the composition duration once loaded, else the pattern's own length. |
 | `dispose()` | Detach from the animation and release the haptic resources. |
 
 The transport methods return `Future<void>` — `await` them when the ordering matters, ignore them otherwise.
@@ -211,7 +215,43 @@ enum HapticMode { realtime, pattern }
 
 Passing `realtime` without a pattern leaves the animation without haptics, because there is nothing to sample.
 
+`hapticMode` is nullable: leave it out and the mode is `realtime`, except for a `preset` that carries audio, which starts in `pattern` so that audio plays. Passing a mode always wins.
+
 See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
+
+---
+
+## Bundle presets
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the widget takes both — no `src`, no `haptics`:
+
+```dart
+final bundle = await pulsar.loadBundleAsync(acmePack); // acmePack is generated
+
+HapticLottie.preset(
+  bundle.celebration,
+  autoPlay: true,
+  width: 200,
+  height: 200,
+);
+```
+
+The preset fills in three things, each still overridable on its own: the animation from its Lottie, `haptics` from its `pattern`, and `durationMs` from its authored length. A preset that carries audio also plays that audio, which is why it starts in `pattern` mode.
+
+`PresetHandle` exposes all of it, so you can also render it yourself and pass the preset to a `HapticLottieController`:
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `double` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `realtime` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data` (ready for `Lottie.memory`), `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `bool` | What the preset was authored with. |
+| `play()` / `stop()` | – | Play the preset natively: haptics, plus its synced audio. |
+
+The animation bytes cross the platform channel once, when the bundle loads. Pass `includeAnimations: false` to `loadBundleAsync` to skip that when nothing will render them.
+
+A preset with no animation renders an empty box — check `hasAnimation`, or use `HapticLottie.asset` and pass the preset alongside it.
 
 ---
 

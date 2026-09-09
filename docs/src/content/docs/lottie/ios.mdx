@@ -118,12 +118,16 @@ struct SuccessBadge: View {
 | --- | --- | --- | --- |
 | `name` | `String` | – | Name of the Lottie animation to load, passed positionally. |
 | `bundle` | `Bundle` | `.main` | Bundle the animation is loaded from. |
+| `preset` | `PresetHandle?` | `nil` | Bundle preset supplying the pattern and duration — see [Bundle presets](#bundle-presets). |
 | `haptics` | `PatternData?` | `nil` | Pattern to sync. `nil` renders a plain animation. |
-| `mode` | `HapticMode` | `.realtime` | Engine mode — see [Engine modes](#engine-modes). |
+| `hapticMode` | `HapticMode?` | derived | Engine mode — see [Engine modes](#engine-modes). |
 | `hapticOffset` | `Double` | `0` | Shift the haptics by ±ms relative to the animation. |
 | `hapticsEnabled` | `Bool` | `true` | Turn haptics off without touching the animation. |
+| `durationMs` | `Double?` | derived | Clock length in ms. See [Timing and duration](/pulsar/lottie/overview/#timing-and-duration). |
 | `autoPlay` | `Bool` | `true` | Play as soon as the view is created. |
 | `loopMode` | `LottieLoopMode` | `.playOnce` | Loop behaviour of the underlying `LottieAnimationView`. |
+
+There is a second initializer, `HapticLottieView(preset:)`, which drops the `name` and `bundle` arguments and renders the preset's own animation.
 
 The view creates and owns a `Pulsar` instance and a `HapticLottieController` for its lifetime, and sets `contentMode` to `.scaleAspectFit`.
 
@@ -163,18 +167,22 @@ controller.setTimestamp(1200) // seek both animation and haptics to 1.2s
 controller.pause()
 ```
 
-`PulsarLottie.bind(_:pulsar:haptics:mode:offsetMs:enabled:)` is a convenience over the initializer. Call the initializer directly when the pattern is optional:
+`PulsarLottie.bind(_:pulsar:preset:haptics:hapticMode:hapticOffset:hapticsEnabled:durationMs:)` is a convenience over the initializer. Call the initializer directly to spell every argument out:
 
 ```swift
 let controller = HapticLottieController(
   animationView: animationView,
   pulsar: pulsar,
-  haptics: pattern,   // optional — nil plays the animation alone
-  mode: .realtime,
-  offsetMs: 0,
-  enabled: true
+  preset: pack.celebration, // optional — supplies the pattern and duration
+  haptics: pattern,         // optional — overrides the preset's pattern
+  hapticMode: .realtime,
+  hapticOffset: 0,
+  hapticsEnabled: true,
+  durationMs: nil
 )
 ```
+
+`bind` attaches haptics only: the animation view keeps whatever animation you gave it. Use `HapticLottieView(preset:)` to have a preset's Lottie rendered for you.
 
 ### Parameters
 
@@ -182,10 +190,12 @@ let controller = HapticLottieController(
 | --- | --- | --- | --- |
 | `animationView` | `LottieAnimationView` | – | The view to drive. Held for the controller's lifetime. |
 | `pulsar` | `Pulsar` | – | The Pulsar instance the composers come from. |
-| `haptics` | `PatternData?` | `nil` | Pattern to sync. `nil` leaves the animation without haptics. |
-| `mode` | `HapticMode` | `.realtime` | Engine mode. |
-| `offsetMs` | `Double` | `0` | Shift the haptics by ±ms relative to the animation. |
-| `enabled` | `Bool` | `true` | When `false`, the animation plays and no haptics are emitted. |
+| `preset` | `PresetHandle?` | `nil` | Bundle preset supplying the pattern and duration. |
+| `haptics` | `PatternData?` | `nil` | Pattern to sync. Overrides the preset's pattern; `nil` with no preset leaves the animation without haptics. |
+| `hapticMode` | `HapticMode?` | derived | Engine mode. `.realtime`, or `.pattern` for a preset that carries audio. |
+| `hapticOffset` | `Double` | `0` | Shift the haptics by ±ms relative to the animation. |
+| `hapticsEnabled` | `Bool` | `true` | When `false`, the animation plays and no haptics are emitted. |
+| `durationMs` | `Double?` | derived | Clock length in ms. Overrides every derived duration. |
 
 In `.pattern` mode the pattern is parsed in the initializer, so the engine is warm and the first `play()` fires without the usual first-play latency.
 
@@ -223,23 +233,52 @@ public enum HapticMode {
 
 Passing `.realtime` without a pattern falls back to `.pattern` behaviour, because there is nothing to sample.
 
+`hapticMode` is optional: leave it out and the mode is `.realtime`, except for a `preset` that carries audio, which starts in `.pattern` so that audio plays. Passing a mode always wins.
+
 See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
 
 ---
 
 ## Bundle presets
 
-A preset from a `.pulsar` bundle carries the Lottie bytes it was authored against, on `PresetHandle.animation`:
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset and the view takes both — no `name`, no `haptics`:
+
+```swift
+let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)
+
+struct Celebration: View {
+  let pack: PulsarBundle<AcmePack.Presets>
+
+  var body: some View {
+    HapticLottieView(preset: pack.celebration)
+      .frame(width: 200, height: 200)
+  }
+}
+```
+
+The preset fills in three things, each still overridable on its own: the animation from its Lottie, `haptics` from its `pattern`, and `durationMs` from its authored length. A preset that carries audio also plays that audio, which is why it starts in `.pattern` mode.
+
+`PresetHandle` exposes all of it, so you can also drive your own view:
 
 ```swift
 if let animation = preset.animation {
   let lottieAnimation = try? LottieAnimation.from(data: animation.data)
   let animationView = LottieAnimationView(animation: lottieAnimation)
   // animation.frameRate and animation.totalFrames describe the authored timing
+  let controller = PulsarLottie.bind(animationView, pulsar: pulsar, preset: preset)
 }
 ```
 
-`PresetHandle` plays its own haptics through `play()` and `stop()`, which is the aligned-start `.pattern` behaviour. It does not expose its `PatternData`, so a bundle preset cannot currently drive `HapticLottieController` in `.realtime` mode — pass the pattern yourself when you need per-frame sync. See the [bundle format](/pulsar/sdk/ios/) notes on the iOS SDK page for how bundles are loaded.
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `Double` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `.realtime` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data`, `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `Bool` | What the preset was authored with. |
+| `play()` / `stop()` | – | Play the preset natively: haptics, plus its synced audio. |
+
+A preset with no animation renders nothing — check `hasAnimation`, or use the `name:` initializer and pass the preset alongside it. See the [bundle format](/pulsar/sdk/ios/) notes on the iOS SDK page for how bundles are loaded.
 
 ---
 

@@ -16,22 +16,26 @@ public enum HapticMode {
 /// Drives Pulsar haptics from a Lottie `LottieAnimationView`.
 ///
 /// Attach it to a `LottieAnimationView` you already use (or via
-/// ``PulsarLottie/bind(_:pulsar:haptics:mode:offsetMs:enabled:)``); the transport
-/// (`play`/`pause`/`resume`/`stop`/`reset`/`setTimestamp`/`setLoop`) steers both
-/// the animation and the haptics. In ``HapticMode/realtime`` a display link
-/// drives `currentProgress` and samples the pattern; in ``HapticMode/pattern`` a
-/// pre-parsed pattern is fired aligned to the start.
+/// ``PulsarLottie/bind(_:pulsar:preset:haptics:hapticMode:hapticOffset:hapticsEnabled:durationMs:)``);
+/// the transport (`play`/`pause`/`resume`/`stop`/`reset`/`setTimestamp`/`setLoop`)
+/// steers both the animation and the haptics. In ``HapticMode/realtime`` a display
+/// link drives `currentProgress` and samples the pattern; in ``HapticMode/pattern``
+/// a pre-parsed pattern is fired aligned to the start.
 public final class HapticLottieController: NSObject {
     private let animationView: LottieAnimationView
     private let sampled: SampledPattern?
     private let mode: HapticMode
-    private let offsetMs: Double
-    private let enabled: Bool
+    private let hapticOffset: Double
+    private let hapticsEnabled: Bool
+    private let explicitDurationMs: Double?
+    private let presetDurationMs: Double?
 
     private let useRealtime: Bool
     private let hasContinuous: Bool
     private let realtime: RealtimeComposer?
     private let pattern: PatternComposer?
+    /// Set when the preset plays itself, so the audio it was authored with plays too.
+    private let presetPlayback: PresetHandle?
 
     private var displayLink: CADisplayLink?
     private var timeMs: Double = 0
@@ -40,25 +44,40 @@ public final class HapticLottieController: NSObject {
     private var loop = false
 
     /// Creates a controller bound to `animationView`.
+    ///
+    /// Pass a bundle `preset` to take its pattern and authored duration, or `haptics`
+    /// for a pattern of your own — an explicit `haptics` wins. A preset that carries
+    /// audio plays through its own handle, which needs ``HapticMode/pattern``, so
+    /// `hapticMode` defaults to `.pattern` for one; pass it yourself to override.
     public init(
         animationView: LottieAnimationView,
         pulsar: Pulsar,
+        preset: PresetHandle? = nil,
         haptics: PatternData? = nil,
-        mode: HapticMode = .realtime,
-        offsetMs: Double = 0,
-        enabled: Bool = true
+        hapticMode: HapticMode? = nil,
+        hapticOffset: Double = 0,
+        hapticsEnabled: Bool = true,
+        durationMs: Double? = nil
     ) {
+        let resolved = haptics ?? preset?.pattern
+        let playsItself = haptics == nil && preset?.hasAudio == true
+        let mode = hapticMode ?? (playsItself ? .pattern : .realtime)
+
         self.animationView = animationView
         self.mode = mode
-        self.offsetMs = offsetMs
-        self.enabled = enabled
-        let realtimeMode = mode == .realtime && haptics != nil
+        self.hapticOffset = hapticOffset
+        self.hapticsEnabled = hapticsEnabled
+        self.explicitDurationMs = durationMs
+        self.presetDurationMs = preset.map { $0.duration }.flatMap { $0 > 0 ? $0 : nil }
+
+        let realtimeMode = mode == .realtime && resolved != nil
         self.useRealtime = realtimeMode
-        let flattened = haptics.flatMap { sampledPattern(from: $0) }
+        let flattened = resolved.map { sampledPattern(from: $0) }
         self.sampled = flattened
         self.hasContinuous = flattened?.hasContinuous ?? false
         self.realtime = realtimeMode ? pulsar.getRealtimeComposer() : nil
-        if !realtimeMode, let h = haptics {
+        self.presetPlayback = realtimeMode ? nil : (playsItself ? preset : nil)
+        if !realtimeMode, !playsItself, let h = resolved {
             let pc = pulsar.getPatternComposer()
             pc.parsePattern(hapticsData: h) // pre-parse / warm
             self.pattern = pc
@@ -72,7 +91,11 @@ public final class HapticLottieController: NSObject {
         displayLink?.invalidate()
     }
 
+    /// Clock length in ms: an explicit duration, else the preset's authored one, else the
+    /// Lottie composition once loaded, else the pattern's own length.
     private var durationMs: Double {
+        if let explicitDurationMs, explicitDurationMs > 0 { return explicitDurationMs }
+        if let presetDurationMs { return presetDurationMs }
         if let d = animationView.animation?.duration, d > 0 {
             return d * 1000.0
         }
@@ -187,8 +210,8 @@ public final class HapticLottieController: NSObject {
         timeMs = t
         if dur > 0 { animationView.currentProgress = CGFloat(t / dur) }
 
-        if enabled {
-            let ht = t + offsetMs
+        if hapticsEnabled {
+            let ht = t + hapticOffset
             if hasContinuous {
                 realtime?.set(
                     amplitude: clamp01(sampleEnvelope(s.amplitude, ht)),
@@ -208,14 +231,16 @@ public final class HapticLottieController: NSObject {
 
         if ended {
             stopDisplayLink()
-            if enabled && hasContinuous { realtime?.stop() }
+            if hapticsEnabled && hasContinuous { realtime?.stop() }
         }
     }
 
     private func fireHaptics() {
-        guard enabled, sampled != nil else { return }
+        guard hapticsEnabled else { return }
         if useRealtime {
             lastT = 0
+        } else if let presetPlayback {
+            presetPlayback.play()
         } else {
             pattern?.play()
         }
@@ -224,7 +249,9 @@ public final class HapticLottieController: NSObject {
     private func stopHaptics() {
         if useRealtime {
             lastT = 0
-            if enabled && hasContinuous { realtime?.stop() }
+            if hapticsEnabled && hasContinuous { realtime?.stop() }
+        } else if let presetPlayback {
+            presetPlayback.stop()
         } else {
             pattern?.stop()
         }
@@ -235,21 +262,27 @@ public final class HapticLottieController: NSObject {
 public enum PulsarLottie {
     /// Attach Pulsar haptics to `animationView` and return the controller that
     /// steers animation + haptics.
+    ///
+    ///     let controller = PulsarLottie.bind(view, pulsar: pulsar, preset: pack.celebration)
     public static func bind(
         _ animationView: LottieAnimationView,
         pulsar: Pulsar,
-        haptics: PatternData,
-        mode: HapticMode = .realtime,
-        offsetMs: Double = 0,
-        enabled: Bool = true
+        preset: PresetHandle? = nil,
+        haptics: PatternData? = nil,
+        hapticMode: HapticMode? = nil,
+        hapticOffset: Double = 0,
+        hapticsEnabled: Bool = true,
+        durationMs: Double? = nil
     ) -> HapticLottieController {
         HapticLottieController(
             animationView: animationView,
             pulsar: pulsar,
+            preset: preset,
             haptics: haptics,
-            mode: mode,
-            offsetMs: offsetMs,
-            enabled: enabled
+            hapticMode: hapticMode,
+            hapticOffset: hapticOffset,
+            hapticsEnabled: hapticsEnabled,
+            durationMs: durationMs
         )
     }
 }

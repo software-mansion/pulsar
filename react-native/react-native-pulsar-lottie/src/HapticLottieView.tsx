@@ -36,6 +36,7 @@ const RealtimeHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
     const {
       haptics,
       preset: _preset,
+      presetPlayback: _presetPlayback,
       hapticMode: _hapticMode,
       hapticOffset = 0,
       hapticsEnabled = true,
@@ -199,6 +200,7 @@ const PatternHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
     const {
       haptics,
       preset: _preset,
+      presetPlayback,
       hapticMode: _hapticMode,
       hapticOffset: _hapticOffset,
       hapticsEnabled = true,
@@ -211,25 +213,31 @@ const PatternHapticLottie = forwardRef<HapticLottieRef, ResolvedProps>(
     } = props;
 
     const lottieRef = useRef<LottieView>(null);
-    const isPattern = typeof haptics === 'object' && haptics !== null;
+    // A preset that plays itself needs no JS composer — the native handle owns its
+    // pattern and the audio authored alongside it.
+    const isPattern = !presetPlayback && typeof haptics === 'object' && haptics !== null;
     const composer = usePatternComposer(isPattern ? (haptics as Pattern) : undefined);
 
     const fireHaptics = useCallback(() => {
-      if (!hapticsEnabled || !haptics) {
+      if (!hapticsEnabled) {
         return;
       }
-      if (typeof haptics === 'function') {
+      if (presetPlayback) {
+        presetPlayback.play();
+      } else if (typeof haptics === 'function') {
         haptics();
-      } else if (composer.isParsed()) {
+      } else if (haptics && composer.isParsed()) {
         composer.play();
       }
-    }, [haptics, hapticsEnabled, composer]);
+    }, [haptics, hapticsEnabled, composer, presetPlayback]);
 
     const stopHaptics = useCallback(() => {
-      if (isPattern) {
+      if (presetPlayback) {
+        presetPlayback.stop();
+      } else if (isPattern) {
         composer.stop();
       }
-    }, [isPattern, composer]);
+    }, [isPattern, composer, presetPlayback]);
 
     useImperativeHandle(
       ref,
@@ -301,9 +309,8 @@ export const HapticLottieView = forwardRef<HapticLottieRef, HapticLottieProps>(
       // A preset with no animation and no explicit source — nothing to render.
       return null;
     }
-    const mode = resolved.hapticMode ?? 'realtime';
     const isPattern = typeof resolved.haptics === 'object' && resolved.haptics !== null;
-    if (mode !== 'pattern' && isPattern) {
+    if (resolved.hapticMode !== 'pattern' && isPattern) {
       return <RealtimeHapticLottie ref={ref} {...resolved} />;
     }
     return <PatternHapticLottie ref={ref} {...resolved} />;

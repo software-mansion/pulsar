@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
 import com.swmansion.pulsar.Pulsar
+import com.swmansion.pulsar.bundle.PresetHandle
 import com.swmansion.pulsar.composers.PatternComposer
 import com.swmansion.pulsar.composers.RealtimeComposer
 import com.swmansion.pulsar.types.PatternData
@@ -33,32 +34,55 @@ enum class HapticMode {
  * animator (the per-frame clock) and samples the pattern; in [HapticMode.PATTERN]
  * it fires a pre-parsed pattern aligned to the start.
  *
+ * Pass a bundle [preset] to take its pattern and authored duration, or [haptics] for
+ * a pattern of your own — an explicit [haptics] wins. A preset that carries audio plays
+ * through its own handle, which needs [HapticMode.PATTERN], so [hapticMode] defaults to
+ * `PATTERN` for one; pass it yourself to override.
+ *
  * Call [release] when done to detach the animator listener and stop haptics.
  */
 class HapticLottieController @JvmOverloads constructor(
     private val lottieView: LottieAnimationView,
     pulsar: Pulsar,
-    private val haptics: PatternData? = null,
-    private val mode: HapticMode = HapticMode.REALTIME,
-    private val offsetMs: Long = 0L,
-    private val enabled: Boolean = true,
+    preset: PresetHandle? = null,
+    haptics: PatternData? = null,
+    hapticMode: HapticMode? = null,
+    private val hapticOffset: Long = 0L,
+    private val hapticsEnabled: Boolean = true,
+    durationMs: Long? = null,
 ) {
-    private val useRealtime = mode == HapticMode.REALTIME && haptics != null
-    private val hasContinuous = haptics != null &&
-        haptics.continuousPattern.amplitude.isNotEmpty() &&
-        haptics.continuousPattern.frequency.isNotEmpty()
+    private val pattern: PatternData? = haptics ?: preset?.pattern
+    private val playsItself = haptics == null && preset?.hasAudio == true
+    private val mode = hapticMode ?: if (playsItself) HapticMode.PATTERN else HapticMode.REALTIME
+
+    private val useRealtime = mode == HapticMode.REALTIME && pattern != null
+    private val hasContinuous = pattern != null &&
+        pattern.continuousPattern.amplitude.isNotEmpty() &&
+        pattern.continuousPattern.frequency.isNotEmpty()
 
     private val realtime: RealtimeComposer? =
         if (useRealtime) pulsar.getRealtimeComposer() else null
-    private val pattern: PatternComposer? =
-        if (!useRealtime && haptics != null) {
+
+    /** Set when the preset plays itself, so the audio it was authored with plays too. */
+    private val presetPlayback: PresetHandle? = if (!useRealtime && playsItself) preset else null
+
+    private val composer: PatternComposer? =
+        if (!useRealtime && !playsItself && pattern != null) {
             // Pre-parse so the engine is warm and play() fires without delay.
-            pulsar.getPatternComposer().apply { parsePattern(haptics) }
+            pulsar.getPatternComposer().apply { parsePattern(pattern) }
         } else {
             null
         }
 
-    private var durationMs: Long = haptics?.let { patternDurationMs(it) } ?: 0L
+    /**
+     * Clock length in ms: an explicit duration, else the preset's authored one, else the
+     * Lottie composition once loaded, else the pattern's own length.
+     */
+    private val fixedDurationMs: Long? =
+        durationMs?.takeIf { it > 0L } ?: preset?.duration?.takeIf { it > 0L }
+    private var resolvedDurationMs: Long = fixedDurationMs
+        ?: pattern?.let { patternDurationMs(it) }
+        ?: 0L
     private var lastT: Long = 0L
 
     private val updateListener = ValueAnimator.AnimatorUpdateListener { anim ->
@@ -66,27 +90,29 @@ class HapticLottieController @JvmOverloads constructor(
     }
 
     init {
-        if (haptics != null && enabled) {
-            lottieView.addLottieOnCompositionLoadedListener { composition ->
-                durationMs = composition.duration.toLong()
+        if (pattern != null && hapticsEnabled) {
+            if (fixedDurationMs == null) {
+                lottieView.addLottieOnCompositionLoadedListener { composition ->
+                    resolvedDurationMs = composition.duration.toLong()
+                }
             }
             if (useRealtime) lottieView.addAnimatorUpdateListener(updateListener)
         }
     }
 
     private fun onTick(fraction: Float) {
-        if (!enabled || !useRealtime || haptics == null) return
-        val t = (fraction * durationMs).toLong()
-        val ht = t + offsetMs
+        if (!hapticsEnabled || !useRealtime || pattern == null) return
+        val t = (fraction * resolvedDurationMs).toLong()
+        val ht = t + hapticOffset
         if (hasContinuous) {
             realtime?.set(
-                clamp01(sampleEnvelope(haptics.continuousPattern.amplitude, ht)),
-                clamp01(sampleEnvelope(haptics.continuousPattern.frequency, ht)),
+                clamp01(sampleEnvelope(pattern.continuousPattern.amplitude, ht)),
+                clamp01(sampleEnvelope(pattern.continuousPattern.frequency, ht)),
             )
         }
         var prev = lastT
         if (t < prev) prev = 0L // wrapped on loop
-        for (e in haptics.discretePattern) {
+        for (e in pattern.discretePattern) {
             if (e.time > prev && e.time <= t) {
                 realtime?.playDiscrete(clamp01(e.amplitude), clamp01(e.frequency))
             }
@@ -95,16 +121,22 @@ class HapticLottieController @JvmOverloads constructor(
     }
 
     private fun fireHaptics() {
-        if (!enabled || haptics == null) return
-        if (useRealtime) lastT = 0L else pattern?.play()
+        if (!hapticsEnabled) return
+        when {
+            useRealtime -> lastT = 0L
+            presetPlayback != null -> presetPlayback.play()
+            else -> composer?.play()
+        }
     }
 
     private fun stopHaptics() {
-        if (useRealtime) {
-            lastT = 0L
-            if (hasContinuous) realtime?.stop()
-        } else {
-            pattern?.stop()
+        when {
+            useRealtime -> {
+                lastT = 0L
+                if (hasContinuous) realtime?.stop()
+            }
+            presetPlayback != null -> presetPlayback.stop()
+            else -> composer?.stop()
         }
     }
 
@@ -140,7 +172,9 @@ class HapticLottieController @JvmOverloads constructor(
 
     /** Seek both animation and haptics to [ms] from the start. */
     fun setTimestamp(ms: Long) {
-        if (durationMs > 0L) lottieView.progress = clamp01(ms.toFloat() / durationMs)
+        if (resolvedDurationMs > 0L) {
+            lottieView.progress = clamp01(ms.toFloat() / resolvedDurationMs)
+        }
         lastT = ms
     }
 
@@ -165,12 +199,26 @@ class HapticLottieController @JvmOverloads constructor(
  * Attach Pulsar haptics to this [LottieAnimationView] without swapping the view.
  * Returns a [HapticLottieController] you drive; call [HapticLottieController.release]
  * when done.
+ *
+ * This binds haptics only — the view keeps whatever animation you gave it. Use
+ * [HapticLottieView.bindHaptics] to have a bundle [preset]'s Lottie rendered for you.
  */
 @JvmOverloads
 fun LottieAnimationView.bindHaptics(
     pulsar: Pulsar,
-    haptics: PatternData,
-    mode: HapticMode = HapticMode.REALTIME,
-    offsetMs: Long = 0L,
-    enabled: Boolean = true,
-): HapticLottieController = HapticLottieController(this, pulsar, haptics, mode, offsetMs, enabled)
+    preset: PresetHandle? = null,
+    haptics: PatternData? = null,
+    hapticMode: HapticMode? = null,
+    hapticOffset: Long = 0L,
+    hapticsEnabled: Boolean = true,
+    durationMs: Long? = null,
+): HapticLottieController = HapticLottieController(
+    this,
+    pulsar,
+    preset,
+    haptics,
+    hapticMode,
+    hapticOffset,
+    hapticsEnabled,
+    durationMs,
+)

@@ -32,6 +32,18 @@ class MethodChannelPulsar extends PulsarPlatform {
   }
 
   @override
+  Future<List<Map<dynamic, dynamic>>> bundlePresets(
+    String token, {
+    bool includeAnimations = true,
+  }) async {
+    final presets = await methodChannel.invokeListMethod<dynamic>(
+      'Pulsar_bundlePresets',
+      {'token': token, 'includeAnimations': includeAnimations},
+    );
+    return (presets ?? const []).cast<Map<dynamic, dynamic>>();
+  }
+
+  @override
   Future<void> playBundlePreset(String token, String presetId) =>
       methodChannel.invokeMethod('Pulsar_playBundlePreset', {
         'token': token,

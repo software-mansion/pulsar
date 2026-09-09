@@ -687,8 +687,10 @@ a bundle kept there uses the `bytes` overload above.
 The loaded bundle's content hash is checked against the generated types; pass `strict = false`
 to skip it.
 
-Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play()`, `stop()`, and `animation` — the Lottie bytes
 and timing for your own animation view.
+
+The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that for you — pattern, animation and duration — so you rarely have to unpack it by hand.
 
 :::caution
 KMP v1 plays a preset's haptics and carries its animation bytes, but **synced bundle audio is not

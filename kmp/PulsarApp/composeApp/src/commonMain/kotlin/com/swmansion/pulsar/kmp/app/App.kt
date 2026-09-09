@@ -28,6 +28,7 @@ import com.swmansion.pulsar.kmp.Pulsar
 import com.swmansion.pulsar.kmp.ValuePoint
 import com.swmansion.pulsar.kmp.app.bundles.HapticsBundle
 import com.swmansion.pulsar.lottie.HapticLottie
+import com.swmansion.pulsar.lottie.animationJson
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -208,7 +209,7 @@ fun App() {
                     if (pulsar != null) {
                         HapticLottie(
                             progress = progress,
-                            durationMillis = composition?.duration?.inWholeMilliseconds ?: 0L,
+                            durationMs = composition?.duration?.inWholeMilliseconds ?: 0L,
                             isPlaying = true,
                             haptics = remember { verifiedLottiePattern() },
                             pulsar = pulsar,
@@ -311,16 +312,36 @@ private fun BundleCard(pulsar: Pulsar?, onStatus: (String) -> Unit) {
                         onStatus("Played lottie from ${HapticsBundle.bundleId}")
                     }) { Text("Lottie") }
                 }
-                val animation = loaded.lottie.animation
-                Text(
-                    if (animation != null) {
-                        "The lottie preset also carries ${animation.data.size} bytes of animation " +
-                            "at ${animation.frameRate} fps for your own Lottie view."
-                    } else {
-                        "No animation bytes carried."
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                val animationJson = loaded.lottie.animationJson()
+                if (animationJson == null) {
+                    Text("No animation bytes carried.", style = MaterialTheme.typography.bodySmall)
+                } else {
+                    Text(
+                        "The lottie preset carries its animation too. This package renders " +
+                            "nothing itself, so hand the JSON to your Compose Lottie renderer " +
+                            "and pass the preset to HapticLottie.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    val composition by rememberLottieComposition {
+                        LottieCompositionSpec.JsonString(animationJson)
+                    }
+                    val progress by animateLottieCompositionAsState(composition, isPlaying = true)
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Image(
+                            painter = rememberLottiePainter(composition, progress = { progress }),
+                            contentDescription = loaded.lottie.name,
+                            modifier = Modifier.size(160.dp),
+                        )
+                    }
+                    if (pulsar != null) {
+                        HapticLottie(
+                            progress = progress,
+                            isPlaying = true,
+                            preset = loaded.lottie,
+                            pulsar = pulsar,
+                        )
+                    }
+                }
             }
         }
     }

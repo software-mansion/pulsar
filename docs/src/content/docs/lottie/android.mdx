@@ -124,7 +124,7 @@ val view = HapticLottieView(context).apply {
   setAnimation(R.raw.success)
   repeatCount = 0
 }
-val controller = view.setHaptics(pulsar, pattern)
+val controller = view.bindHaptics(pulsar, haptics = pattern)
 controller.play()
 ```
 
@@ -142,8 +142,8 @@ In XML it is used exactly like `LottieAnimationView`:
 
 | Method | Description |
 | --- | --- |
-| `setHaptics(pulsar, haptics, mode, offsetMs, enabled)` | Attach a pattern and return the [`HapticLottieController`](#hapticlottiecontroller) that steers animation and haptics. Releases any previously attached controller. |
-| `hapticController()` | The current controller, or `null` before `setHaptics` is called. |
+| `bindHaptics(pulsar, preset, haptics, hapticMode, hapticOffset, hapticsEnabled, durationMs)` | Bind haptics and return the [`HapticLottieController`](#hapticlottiecontroller) that steers animation and haptics. Renders a `preset`'s own animation when the view has none. Releases any previously bound controller. |
+| `hapticController()` | The current controller, or `null` before `bindHaptics` is called. |
 
 Every `LottieAnimationView` member — `setAnimation`, `progress`, `repeatCount`, `playAnimation` and the rest — is still available. Drive playback through the returned controller so the haptics stay in step.
 
@@ -162,7 +162,7 @@ fun SuccessBadge(pulsar: Pulsar, pattern: PatternData) {
       HapticLottieView(ctx).apply {
         setAnimation(R.raw.success)
         repeatCount = 0
-        controller[0] = setHaptics(pulsar, pattern).also { it.play() }
+        controller[0] = bindHaptics(pulsar, haptics = pattern).also { it.play() }
       }
     },
   )
@@ -182,7 +182,7 @@ Attaches haptics to a `LottieAnimationView` without swapping the view, and becom
 ```kotlin
 import com.swmansion.pulsar.lottie.bindHaptics
 
-val controller = animationView.bindHaptics(pulsar, pattern)
+val controller = animationView.bindHaptics(pulsar, haptics = pattern)
 
 controller.play()
 controller.setTimestamp(1200) // seek both animation and haptics to 1.2s
@@ -190,18 +190,22 @@ controller.pause()
 controller.release()          // when the view goes away
 ```
 
-`bindHaptics` is an extension on `LottieAnimationView` and a convenience over the constructor. Construct the controller directly when the pattern is optional:
+`bindHaptics` is an extension on `LottieAnimationView` and a convenience over the constructor. Construct the controller directly to spell every argument out:
 
 ```kotlin
 val controller = HapticLottieController(
   lottieView = animationView,
   pulsar = pulsar,
-  haptics = pattern,          // optional — null plays the animation alone
-  mode = HapticMode.REALTIME,
-  offsetMs = 0L,
-  enabled = true,
+  preset = pack.celebration,  // optional — supplies the pattern and duration
+  haptics = pattern,          // optional — overrides the preset's pattern
+  hapticMode = HapticMode.REALTIME,
+  hapticOffset = 0L,
+  hapticsEnabled = true,
+  durationMs = null,
 )
 ```
+
+The extension binds haptics only: the view keeps whatever animation you gave it. Use [`HapticLottieView.bindHaptics`](#hapticlottieview) to have a preset's Lottie rendered for you.
 
 ### Parameters
 
@@ -209,10 +213,12 @@ val controller = HapticLottieController(
 | --- | --- | --- | --- |
 | `lottieView` | `LottieAnimationView` | – | The view to drive. |
 | `pulsar` | `Pulsar` | – | The Pulsar instance the composers come from. |
-| `haptics` | `PatternData?` | `null` | Pattern to sync. `null` leaves the animation without haptics. |
-| `mode` | `HapticMode` | `REALTIME` | Engine mode — see [Engine modes](#engine-modes). |
-| `offsetMs` | `Long` | `0` | Shift the haptics by ±ms relative to the animation. |
-| `enabled` | `Boolean` | `true` | When `false`, the animation plays and no haptics are emitted. |
+| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the pattern and duration — see [Bundle presets](#bundle-presets). |
+| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; `null` with no preset leaves the animation without haptics. |
+| `hapticMode` | `HapticMode?` | derived | Engine mode — see [Engine modes](#engine-modes). |
+| `hapticOffset` | `Long` | `0` | Shift the haptics by ±ms relative to the animation. |
+| `hapticsEnabled` | `Boolean` | `true` | When `false`, the animation plays and no haptics are emitted. |
+| `durationMs` | `Long?` | derived | Clock length in ms. Overrides every derived duration. |
 
 In `PATTERN` mode the pattern is parsed in the constructor, so the engine is warm and the first `play()` fires without the usual first-play latency.
 
@@ -250,6 +256,8 @@ enum class HapticMode { REALTIME, PATTERN }
 
 Passing `REALTIME` without a pattern falls back to the pattern-mode path, because there is nothing to sample.
 
+`hapticMode` is nullable: leave it out and the mode is `REALTIME`, except for a `preset` that carries audio, which starts in `PATTERN` so that audio plays. Passing a mode always wins.
+
 Unlike iOS, the animation always plays through the view's own animator in both modes — realtime only *observes* it. Anything that moves the view's `progress`, including your own `playAnimation()` calls, keeps the haptics aligned.
 
 See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
@@ -258,17 +266,39 @@ See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for 
 
 ## Bundle presets
 
-A preset from a `.pulsar` bundle carries the Lottie bytes it was authored against, on `PresetHandle.animation`:
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. Pass the preset to `HapticLottieView` and it takes both — no `setAnimation`, no `haptics`:
+
+```kotlin
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
+
+val view = HapticLottieView(context)
+val controller = view.bindHaptics(pulsar, preset = bundle.celebration)
+controller.play()
+```
+
+The preset fills in three things, each still overridable on its own: the animation from its Lottie, `haptics` from its `pattern`, and `durationMs` from its authored length. A preset that carries audio also plays that audio, which is why it starts in `PATTERN` mode.
+
+`PresetHandle` exposes all of it, so you can also render into a view of your own — the `bindHaptics` extension never touches the animation:
 
 ```kotlin
 val animation = preset.animation
 if (animation != null) {
-  view.setAnimation(animation.data.inputStream(), preset.id)
+  animationView.setAnimation(animation.data.inputStream(), preset.id)
   // animation.frameRate and animation.totalFrames describe the authored timing
 }
+val controller = animationView.bindHaptics(pulsar, preset = preset)
 ```
 
-`PresetHandle` plays its own haptics through `play()` and `stop()`, which is the aligned-start `PATTERN` behaviour. It does not expose its `PatternData`, so a bundle preset cannot currently drive `HapticLottieController` in `REALTIME` mode — pass the pattern yourself when you need per-frame sync.
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `Long` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `REALTIME` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data`, `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `Boolean` | What the preset was authored with. |
+| `play()` / `stop()` | – | Play the preset natively: haptics, plus its synced audio. |
+
+`HapticLottieView.bindHaptics` only sets the preset's animation when the view has none, so an animation you set yourself is never replaced.
 
 ---
 

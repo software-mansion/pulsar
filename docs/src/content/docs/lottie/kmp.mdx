@@ -87,7 +87,7 @@ The Android target needs the vibration permission in your app's `AndroidManifest
 
 ## HapticLottie
 
-Render the animation however you like, then place `HapticLottie` next to it and feed it the same `progress`, `durationMillis` and `isPlaying`:
+Render the animation however you like, then place `HapticLottie` next to it and feed it the same `progress`, `durationMs` and `isPlaying`:
 
 ```kotlin
 import com.swmansion.pulsar.kmp.PatternData
@@ -109,7 +109,7 @@ fun Success(pattern: PatternData, playing: Boolean) {
 
   HapticLottie(
     progress = progress,
-    durationMillis = composition?.duration?.inWholeMilliseconds ?: 0L,
+    durationMs = composition?.duration?.inWholeMilliseconds ?: 0L,
     isPlaying = playing,
     haptics = pattern,
   )
@@ -123,19 +123,20 @@ fun Success(pattern: PatternData, playing: Boolean) {
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `progress` | `Float` | – | Current animation progress, `0..1`. |
-| `durationMillis` | `Long` | – | Total animation length in ms. |
 | `isPlaying` | `Boolean` | – | Whether the animation is running. A `false → true` transition starts the haptics. |
-| `haptics` | `PatternData?` | – | Pattern to sync. `null` disables haptics. |
-| `mode` | `HapticMode` | `Realtime` | Engine mode — see [Engine modes](#engine-modes). |
-| `hapticOffsetMs` | `Long` | `0` | Shift the haptics by ±ms relative to the animation. |
+| `preset` | `PresetHandle?` | `null` | Bundle preset supplying the pattern and duration — see [Bundle presets](#bundle-presets). |
+| `haptics` | `PatternData?` | `null` | Pattern to sync. Overrides the preset's pattern; omit both to disable haptics. |
+| `hapticMode` | `HapticMode?` | derived | Engine mode — see [Engine modes](#engine-modes). |
+| `hapticOffset` | `Long` | `0` | Shift the haptics by ±ms relative to the animation. |
 | `hapticsEnabled` | `Boolean` | `true` | Turn haptics off without touching the animation. |
+| `durationMs` | `Long` | `0` | The animation's own length in ms — the composition-duration slot. A `preset`'s authored duration takes precedence over it; `0` falls back to that, else to the pattern's own length. |
 | `pulsar` | `Pulsar` | `Pulsar.create()` | Provide your own platform-initialized instance. |
 
 <Aside type="note" title="Pass your own Pulsar instance">
   The default creates a fresh `Pulsar` for the composable. In an app that already holds one — most do, for presets and composers elsewhere — pass it in, so every haptic in the app shares one engine.
 </Aside>
 
-The engine is rebuilt whenever `pulsar`, `haptics`, `mode`, `hapticOffsetMs` or `hapticsEnabled` changes, and stopped when the composable leaves the composition. Hoist those values (`remember` the pattern) rather than constructing them inline in the composable body.
+The engine is rebuilt whenever `pulsar`, `preset`, `haptics`, `hapticMode`, `hapticOffset` or `hapticsEnabled` changes, and stopped when the composable leaves the composition. Hoist those values (`remember` the pattern) rather than constructing them inline in the composable body.
 
 ---
 
@@ -149,10 +150,12 @@ import com.swmansion.pulsar.lottie.HapticMode
 
 val engine = HapticLottieEngine(
   pulsar = pulsar,
-  haptics = pattern,
-  mode = HapticMode.Realtime,
-  offsetMs = 0,
-  enabled = true,
+  preset = pack.celebration, // optional — supplies the pattern and duration
+  haptics = pattern,         // optional — overrides the preset's pattern
+  hapticMode = HapticMode.REALTIME,
+  hapticOffset = 0,
+  hapticsEnabled = true,
+  durationMs = null,
 )
 
 engine.setPlaying(true)
@@ -162,30 +165,70 @@ engine.stop()
 
 | Member | Description |
 | --- | --- |
-| `setPlaying(isPlaying: Boolean)` | Notify a play/pause transition. In `Pattern` mode a `true` transition fires the buffered pattern; `false` stops the haptics. |
-| `onProgress(progress: Float, durationMs: Long)` | Feed the current position. Ignored unless `Realtime` mode is active and playing. |
+| `setPlaying(isPlaying: Boolean)` | Notify a play/pause transition. In `PATTERN` mode a `true` transition fires the buffered pattern; `false` stops the haptics. |
+| `onProgress(progress: Float, durationMs: Long = 0)` | Feed the current position. Pass `0` to use the duration the engine resolved. Ignored unless `REALTIME` mode is active and playing. |
 | `stop()` | Stop the haptics and reset the discrete-event window. |
+| `resolvedDurationMs` | The clock length the engine resolved, for a caller with no duration of its own. |
 
 `onProgress` handles a wrapped playhead: when the new time is behind the previous one — a loop or a backwards seek — the discrete window restarts from zero, so looping re-fires the events rather than swallowing them.
 
-In `Pattern` mode the pattern is parsed in the constructor, so the engine is warm and the first play fires without the usual first-play latency.
+In `PATTERN` mode the pattern is parsed in the constructor, so the engine is warm and the first play fires without the usual first-play latency.
 
 ---
 
 ## Engine modes
 
 ```kotlin
-enum class HapticMode { Realtime, Pattern }
+enum class HapticMode { REALTIME, PATTERN }
 ```
 
-- **`Realtime`** (default) — the animation progress is the master clock and the pattern is sampled into `RealtimeComposer.set` and `playDiscrete` on every progress update. Honours pause, seek and loop. On Android the vibrator is re-driven per update, so continuous fidelity is coarser there than on iOS.
-- **`Pattern`** — the pre-parsed pattern plays whole through `PatternComposer`, aligned to the start, which gives the best native fidelity at the cost of seeking.
+- **`REALTIME`** (default) — the animation progress is the master clock and the pattern is sampled into `RealtimeComposer.set` and `playDiscrete` on every progress update. Honours pause, seek and loop. On Android the vibrator is re-driven per update, so continuous fidelity is coarser there than on iOS.
+- **`PATTERN`** — the pre-parsed pattern plays whole through `PatternComposer`, aligned to the start, which gives the best native fidelity at the cost of seeking.
 
 Because the sampling rate is the rate at which you call `onProgress`, realtime fidelity in this package tracks your renderer's frame rate. A progress value updated on every Compose frame gives the same result as the native SDKs; a throttled one gives coarser haptics.
 
-Passing `Realtime` without a pattern leaves the animation without haptics, because there is nothing to sample.
+Passing `REALTIME` without a pattern leaves the animation without haptics, because there is nothing to sample.
+
+`hapticMode` is nullable: leave it out and the mode is `REALTIME`. KMP has no bundle audio yet, so the audio-preset exception described in the [overview](/pulsar/lottie/overview/#engine-modes) never fires here.
 
 See [Choosing between them](/pulsar/lottie/overview/#choosing-between-them) for the trade-offs.
+
+---
+
+## Bundle presets
+
+A preset in a `.pulsar` bundle already pairs an animation with the pattern its author aligned to it. This package renders nothing itself, so a preset supplies the pattern and the duration to `HapticLottie`, and `animationJson()` hands the animation to your own renderer:
+
+```kotlin
+import com.swmansion.pulsar.lottie.animationJson
+
+@Composable
+fun Celebration(pack: AcmePack.Presets, playing: Boolean) {
+  val preset = pack.celebration
+  val composition by rememberLottieComposition {
+    LottieCompositionSpec.JsonString(preset.animationJson()!!)
+  }
+  val progress by animateLottieCompositionAsState(composition, isPlaying = playing)
+
+  Image(
+    painter = rememberLottiePainter(composition, progress = { progress }),
+    contentDescription = preset.name,
+  )
+
+  HapticLottie(progress = progress, isPlaying = playing, preset = preset)
+}
+```
+
+`animationJson()` returns `null` when the preset carries no animation. The preset's other members are the same as on the native SDKs:
+
+| Member | Type | Description |
+| --- | --- | --- |
+| `id` / `name` | `String` | Code-safe id, and the human label it was authored under. |
+| `duration` | `Long` | Authored length in ms, or `0` when the bundle carries no hint. |
+| `pattern` | `PatternData` | The authored pattern — what `REALTIME` samples. |
+| `animation` | `BundleAnimation?` | Lottie `data`, `frameRate` and `totalFrames`. |
+| `hasAudio` / `hasAnimation` | `Boolean` | What the preset was authored with. `hasAudio` is always `false` on KMP. |
+| `play()` / `stop()` | – | Play the preset natively. |
 
 ---
 

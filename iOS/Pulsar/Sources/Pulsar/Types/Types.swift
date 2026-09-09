@@ -4,8 +4,8 @@ import Foundation
 /// - time: Time in milliseconds (ms)
 /// - value: Normalized value between 0.0 and 1.0
 @objc public class ValuePoint: NSObject, Codable {
-  let time: Double
-  let value: Float
+  @objc public let time: Double
+  @objc public let value: Float
   @objc public init(time: Double, value: Float) {
     self.time = time
     self.value = value
@@ -17,9 +17,9 @@ import Foundation
 /// - amplitude: Intensity of the haptic (0.0 - 1.0)
 /// - frequency: Sharpness of the haptic (0.0 - 1.0)
 @objc public class DiscretePoint: NSObject, Codable {
-  let time: Double
-  let amplitude: Float
-  let frequency: Float
+  @objc public let time: Double
+  @objc public let amplitude: Float
+  @objc public let frequency: Float
   @objc public init(time: Double, amplitude: Float, frequency: Float) {
     self.time = time
     self.amplitude = amplitude
@@ -28,8 +28,8 @@ import Foundation
 }
 
 @objc public class ContinuousPattern: NSObject, Codable {
-  let amplitude: [ValuePoint]
-  let frequency: [ValuePoint]
+  @objc public let amplitude: [ValuePoint]
+  @objc public let frequency: [ValuePoint]
   @objc public init(amplitude: [ValuePoint], frequency: [ValuePoint]) {
     self.amplitude = amplitude
     self.frequency = frequency
@@ -37,8 +37,8 @@ import Foundation
 }
 
 @objc public class PatternData: NSObject, Codable {
-  let continuousPattern: ContinuousPattern
-  let discretePattern: [DiscretePoint]
+  @objc public let continuousPattern: ContinuousPattern
+  @objc public let discretePattern: [DiscretePoint]
   @objc public init(continuousPattern: ContinuousPattern, discretePattern: [DiscretePoint]) {
     self.continuousPattern = continuousPattern
     self.discretePattern = discretePattern

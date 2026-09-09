@@ -1,10 +1,15 @@
 import { useCallback } from 'react';
 import { usePatternComposer } from 'react-native-pulsar';
-import type { Pattern } from 'react-native-pulsar';
+import type { Pattern, PresetHandle } from 'react-native-pulsar';
 import type { HapticSource } from './types';
 
 export interface UseHapticLottieOptions {
-  /** Pattern or preset trigger to fire with the animation. */
+  /**
+   * A bundle preset to fire with the animation. Supplies `haptics` from its pattern, and
+   * plays its synced audio too when it was authored with any.
+   */
+  preset?: PresetHandle;
+  /** Pattern or preset trigger to fire with the animation. Overrides `preset`. */
   haptics?: HapticSource;
   /** Disable firing without unwiring. Default `true`. */
   hapticsEnabled?: boolean;
@@ -29,26 +34,34 @@ export interface HapticLottieHandle {
  * `realtime` sync with seek/loop, use {@link HapticLottieView}.
  */
 export function useHapticLottie(options: UseHapticLottieOptions): HapticLottieHandle {
-  const { haptics, hapticsEnabled = true } = options;
-  const isPattern = typeof haptics === 'object' && haptics !== null;
+  const { preset, hapticsEnabled = true } = options;
+  const haptics = options.haptics ?? preset?.pattern;
+  // An audio preset the caller did not override plays through its own handle, so the native
+  // engine drives the haptics and the synced audio together.
+  const usePresetPlayback = options.haptics === undefined && !!preset?.hasAudio;
+  const isPattern = !usePresetPlayback && typeof haptics === 'object' && haptics !== null;
   const composer = usePatternComposer(isPattern ? (haptics as Pattern) : undefined);
 
   const play = useCallback(() => {
-    if (!hapticsEnabled || !haptics) {
+    if (!hapticsEnabled) {
       return;
     }
-    if (typeof haptics === 'function') {
+    if (usePresetPlayback) {
+      preset?.play();
+    } else if (typeof haptics === 'function') {
       haptics();
-    } else if (composer.isParsed()) {
+    } else if (haptics && composer.isParsed()) {
       composer.play();
     }
-  }, [haptics, hapticsEnabled, composer]);
+  }, [haptics, hapticsEnabled, composer, preset, usePresetPlayback]);
 
   const stop = useCallback(() => {
-    if (isPattern) {
+    if (usePresetPlayback) {
+      preset?.stop();
+    } else if (isPattern) {
       composer.stop();
     }
-  }, [isPattern, composer]);
+  }, [isPattern, composer, preset, usePresetPlayback]);
 
   return { play, stop, isReady: isPattern ? composer.isParsed() : true };
 }
