@@ -1,25 +1,45 @@
 {
-  "name": "@swmansion/pulsar-gen",
-  "version": "0.1.0",
+  "name": "pulsar-gen",
+  "version": "0.1.1",
   "description": "Generate typed accessors (Swift/Kotlin/Dart) and RN sidecars for Pulsar .pulsar bundles.",
   "type": "module",
-  "engines": { "node": ">=23.6" },
-  "bin": { "pulsar-gen": "src/cli.ts" },
+  "engines": { "node": ">=20.0.0" },
+  "bin": { "pulsar-gen": "dist/cli.js" },
   "exports": {
-    ".": "./src/index.ts",
-    "./read": "./src/read.ts",
-    "./zip": "./src/zip.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./read": {
+      "types": "./dist/read.d.ts",
+      "default": "./dist/read.js"
+    },
+    "./zip": {
+      "types": "./dist/zip.d.ts",
+      "default": "./dist/zip.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "build:fixture": "node fixtures/build-fixture.ts",
     "test": "node --test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
   },
-  "files": ["src", "README.md"],
+  "files": ["dist", "src", "README.md"],
   "keywords": ["pulsar", "haptics", "codegen", "bundle"],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/software-mansion/pulsar.git",
+    "directory": "tools/pulsar-gen"
+  },
+  "homepage": "https://github.com/software-mansion/pulsar/tree/main/tools/pulsar-gen",
+  "bugs": { "url": "https://github.com/software-mansion/pulsar/issues" },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.7.0"
   }
 }
