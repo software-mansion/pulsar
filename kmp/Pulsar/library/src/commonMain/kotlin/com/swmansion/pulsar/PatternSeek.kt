@@ -55,4 +55,21 @@ internal object PatternSeek {
                 .map { it.copy(time = it.time - fromMs) },
         )
     }
+
+    /**
+     * Where the audio file and the haptics line up after a seek.
+     *
+     * A sound offset by `offset` ms is at file position `t - offset` when the haptics are at `t`,
+     * so seeking to [fromMs] either advances into the file or eats into the lead-in.
+     */
+    fun soundFrom(sound: SoundData, fromMs: Long): SoundData {
+        val lead = maxOf(0L, sound.offset)
+        val intoFile = maxOf(0L, fromMs - lead)
+        return sound.copy(
+            offset = maxOf(0L, lead - fromMs),
+            startMs = sound.startMs + intoFile,
+            // A zero duration means "to the end of the file", so only an authored window shrinks.
+            durationMs = if (sound.durationMs > 0L) maxOf(0L, sound.durationMs - intoFile) else 0L,
+        )
+    }
 }

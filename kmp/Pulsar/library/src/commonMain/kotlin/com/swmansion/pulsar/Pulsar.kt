@@ -78,8 +78,8 @@ class Pulsar private constructor(
 
     /**
      * Load a `.pulsar` bundle from raw bytes. The app supplies the bytes (e.g. from its own
-     * resource loader); KMP does not resolve platform assets. Plays haptics and exposes animation
-     * bytes; synced bundle audio is handled by the native iOS/Android SDKs.
+     * resource loader); KMP does not resolve platform assets. Plays a preset's haptics and its
+     * synced audio, and exposes animation bytes for the host app's own Lottie view.
      */
     fun loadBundle(bytes: ByteArray): LoadedBundle = BundleLoaderImpl.load(this, bytes)
 

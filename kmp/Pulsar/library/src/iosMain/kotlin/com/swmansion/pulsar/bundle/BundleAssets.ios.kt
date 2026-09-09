@@ -4,8 +4,14 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSBundle
+import platform.Foundation.NSCachesDirectory
 import platform.Foundation.NSData
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSUserDomainMask
+import platform.Foundation.create
 import platform.Foundation.dataWithContentsOfFile
+import platform.Foundation.writeToFile
 import platform.posix.memcpy
 
 internal actual fun readBundleFile(path: String): ByteArray {
@@ -29,4 +35,19 @@ private fun NSData.toByteArray(): ByteArray {
     return ByteArray(size).also { out ->
         out.usePinned { memcpy(it.addressOf(0), bytes, length) }
     }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+internal actual fun writeBundleMedia(bundleId: String, name: String, bytes: ByteArray): String {
+    val caches = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
+        .firstOrNull() as? String
+        ?: throw PulsarBundleException("Could not resolve the caches directory")
+    val dir = "$caches/PulsarBundles/$bundleId"
+    NSFileManager.defaultManager.createDirectoryAtPath(dir, true, null, null)
+    val path = "$dir/$name"
+    val data = bytes.usePinned { NSData.create(bytes = it.addressOf(0), length = bytes.size.toULong()) }
+    if (!data.writeToFile(path, true)) {
+        throw PulsarBundleException("Could not write bundle media to \"$path\"")
+    }
+    return path
 }

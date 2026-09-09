@@ -4,6 +4,7 @@ import com.swmansion.pulsar.kmp.PatternComposer
 import com.swmansion.pulsar.kmp.PatternData
 import com.swmansion.pulsar.kmp.PatternSeek
 import com.swmansion.pulsar.kmp.Pulsar
+import com.swmansion.pulsar.kmp.SoundData
 import kotlinx.serialization.json.Json
 
 /** Lottie bytes + timing for a preset's animation; the host app's own Lottie view renders it. */
@@ -13,12 +14,7 @@ class BundleAnimation internal constructor(
     val totalFrames: Int,
 )
 
-/**
- * A single playable preset from a loaded bundle. Parses its pattern lazily on first play.
- *
- * NOTE: KMP v1 plays haptics and exposes animation bytes; synced bundle audio is not yet wired
- * (it needs platform temp-file extraction) — use the native iOS/Android SDKs for audio-synced packs.
- */
+/** A single playable preset from a loaded bundle. Parses its pattern lazily on first play. */
 class PresetHandle internal constructor(
     val id: String,
     /** Human label the preset was authored under. */
@@ -31,9 +27,10 @@ class PresetHandle internal constructor(
      */
     val pattern: PatternData,
     private val haptics: Pulsar,
+    private val sound: SoundData?,
 ) {
-    /** Always `false` on KMP: synced bundle audio is not wired yet (see the class note). */
-    val hasAudio: Boolean get() = false
+    /** Whether the preset carries a synced audio track, which [play] plays alongside the haptics. */
+    val hasAudio: Boolean get() = sound != null
 
     /** Whether the preset carries a Lottie animation, exposed as [animation]. */
     val hasAnimation: Boolean get() = animation != null
@@ -50,7 +47,12 @@ class PresetHandle internal constructor(
     private fun ensureParsed(fromMs: Long) {
         if (composer != null && parsedFromMs == fromMs) return
         val c = composer ?: haptics.getPatternComposer()
-        c.parsePattern(PatternSeek.patternFrom(pattern, fromMs))
+        val seeked = PatternSeek.patternFrom(pattern, fromMs)
+        if (sound != null) {
+            c.parsePatternWithSound(seeked, PatternSeek.soundFrom(sound, fromMs))
+        } else {
+            c.parsePattern(seeked)
+        }
         composer = c
         parsedFromMs = fromMs
     }
@@ -144,6 +146,18 @@ internal object BundleLoaderImpl {
             val animation = preset.animation?.let { anim ->
                 files[anim.src]?.let { BundleAnimation(it, anim.frameRate ?: 0.0, anim.totalFrames ?: 0) }
             }
+            val sound = preset.audio?.let { audio ->
+                files[audio.src]?.let { data ->
+                    SoundData(
+                        uri = writeBundleMedia(manifest.id, audio.src.substringAfterLast('/'), data),
+                        volume = audio.volume ?: 1f,
+                        offset = (audio.offset ?: 0.0).toLong(),
+                        // Bundle audio is plain music: always play Pulsar's own haptics alongside it.
+                        hapticChannels = false,
+                    )
+                }
+            }
+
             handles[preset.id] = PresetHandle(
                 id = preset.id,
                 name = preset.name,
@@ -151,6 +165,7 @@ internal object BundleLoaderImpl {
                 animation = animation,
                 pattern = pattern,
                 haptics = haptics,
+                sound = sound,
             )
         }
         return LoadedBundle(manifest.id, manifest.hash ?: "", manifest.revision ?: 0, handles)

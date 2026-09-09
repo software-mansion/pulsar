@@ -25,6 +25,7 @@ import platform.CoreHaptics.CHHapticEventParameter
 import platform.CoreHaptics.CHHapticEventParameterIDAudioVolume
 import platform.CoreHaptics.CHHapticEventParameterIDHapticIntensity
 import platform.CoreHaptics.CHHapticEventParameterIDHapticSharpness
+import platform.CoreHaptics.CHHapticAudioResourceID
 import platform.CoreHaptics.CHHapticEventTypeHapticContinuous
 import platform.CoreHaptics.CHHapticPattern
 import platform.Foundation.NSBundle
@@ -48,13 +49,16 @@ internal class IOSPatternComposerHandle(
     // Haptics registers an audio resource by URL only, so a windowed clip is sliced to a
     // file first). Removed on the next parse and on dispose.
     private var tempAudioURL: NSURL? = null
+    // The engine-side resource the current audio event plays, released alongside that temp file.
+    private var audioResourceId: CHHapticAudioResourceID? = null
 
     override fun parsePattern(pattern: PatternData) {
+        releaseAudio()
         parse(pattern, audioEvent = null)
     }
 
     override fun parsePatternWithSound(pattern: PatternData, sound: SoundData) {
-        removeTempAudio()
+        releaseAudio()
         parse(pattern, audioEvent = makeAudioEvent(sound))
     }
 
@@ -133,6 +137,7 @@ internal class IOSPatternComposerHandle(
             sourceUrl
         }
         val resourceId = engine.registerAudioResource(url) ?: return null
+        audioResourceId = resourceId
         return CHHapticEvent(
             audioResourceID = resourceId,
             parameters = listOf(
@@ -174,7 +179,9 @@ internal class IOSPatternComposerHandle(
         }.onFailure { log("could not slice audio window: ${it.message}") }.getOrNull()
     }
 
-    private fun removeTempAudio() {
+    private fun releaseAudio() {
+        audioResourceId?.let { engine.unregisterAudioResource(it) }
+        audioResourceId = null
         tempAudioURL?.path?.let { path ->
             runCatching { NSFileManager.defaultManager.removeItemAtPath(path, null) }
         }
@@ -221,6 +228,6 @@ internal class IOSPatternComposerHandle(
         discretePattern = null
         audioBuffer = null
         hasSound = false
-        removeTempAudio()
+        releaseAudio()
     }
 }

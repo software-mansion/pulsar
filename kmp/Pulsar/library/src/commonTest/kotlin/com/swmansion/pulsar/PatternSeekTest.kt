@@ -57,6 +57,27 @@ class PatternSeekTest {
     }
 
     @Test
+    fun soundSeeksIntoTheFileByTheSameAmount() {
+        val seeked = PatternSeek.soundFrom(SoundData(uri = "clip.wav"), 300L)
+        assertEquals(0L, seeked.offset)
+        assertEquals(300L, seeked.startMs)
+        assertEquals(0L, seeked.durationMs)
+    }
+
+    @Test
+    fun soundEatsIntoTheLeadInBeforeItTouchesTheFile() {
+        // 200ms into a 500ms lead-in: the audio has not begun, so only the wait shortens.
+        val early = PatternSeek.soundFrom(SoundData(uri = "clip.wav", offset = 500L), 200L)
+        assertEquals(300L, early.offset)
+        assertEquals(0L, early.startMs)
+
+        // Past the lead-in, the remainder is a seek into the file.
+        val late = PatternSeek.soundFrom(SoundData(uri = "clip.wav", offset = 500L), 800L)
+        assertEquals(0L, late.offset)
+        assertEquals(300L, late.startMs)
+    }
+
+    @Test
     fun anEmptyEnvelopeStaysEmpty() {
         val noFrequency = PatternData(
             ContinuousPattern(ramp.continuousPattern.amplitude, emptyList()),
