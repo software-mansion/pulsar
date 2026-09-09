@@ -674,6 +674,16 @@ bundle?.heartbeatV2?.play()
 bundle = pulsar.loadBundleAsync(AcmePack.descriptor, bytes)
 ```
 
+If the `.pulsar` ships as a platform asset — `src/androidMain/assets/` on Android, the app bundle
+on iOS — the descriptor resolves it by name and no byte-reading is needed:
+
+```kotlin
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
+```
+
+Compose Resources stores files under its own directory rather than the platform asset location, so
+a bundle kept there uses the `bytes` overload above.
+
 The loaded bundle's content hash is checked against the generated types; pass `strict = false`
 to skip it.
 

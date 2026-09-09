@@ -1,6 +1,8 @@
 package com.swmansion.pulsar.kmp
 
 import com.swmansion.pulsar.kmp.bundle.BundleDescriptor
+import com.swmansion.pulsar.kmp.bundle.readBundleAsset
+import com.swmansion.pulsar.kmp.bundle.readBundleFile
 import com.swmansion.pulsar.kmp.bundle.BundleLoaderImpl
 import com.swmansion.pulsar.kmp.bundle.BundleResolver
 import com.swmansion.pulsar.kmp.bundle.LoadedBundle
@@ -81,6 +83,15 @@ class Pulsar private constructor(
      */
     fun loadBundle(bytes: ByteArray): LoadedBundle = BundleLoaderImpl.load(this, bytes)
 
+    /** Load a `.pulsar` bundle from a file path. */
+    fun loadBundleFromPath(path: String): LoadedBundle = loadBundle(readBundleFile(path))
+
+    /**
+     * Load a `.pulsar` bundle shipped with the app — `src/main/assets` on Android, the main
+     * bundle on iOS.
+     */
+    fun loadBundleFromAsset(assetName: String): LoadedBundle = loadBundle(readBundleAsset(assetName))
+
     /**
      * Typed load using a `pulsar-gen`-generated descriptor:
      *
@@ -92,6 +103,13 @@ class Pulsar private constructor(
         bytes: ByteArray,
         strict: Boolean = true,
     ): P = withContext(Dispatchers.Default) { loadBundleSync(descriptor, bytes, strict) }
+
+    /** Resolves `descriptor.assetName` against the app's own assets. */
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = true): P =
+        loadBundleSync(descriptor, readBundleAsset(descriptor.assetName), strict)
+
+    suspend fun <P> loadBundleAsync(descriptor: BundleDescriptor<P>, strict: Boolean = true): P =
+        withContext(Dispatchers.Default) { loadBundleSync(descriptor, strict) }
 
     fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = true): P {
         val loaded = loadBundle(bytes)
