@@ -111,9 +111,6 @@ open class Pulsar(protected var context: Context) {
      *
      *     val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
      *     bundle.heartbeatV2.play()
-     *
-     * Named for symmetry with the other SDKs: `loadBundleSync` everywhere it can be synchronous,
-     * `loadBundleWithAssetsAsync` where it cannot (Flutter, and React Native's async path).
      */
     fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P {
         val loaded = loadBundleFromAsset(descriptor.assetName)

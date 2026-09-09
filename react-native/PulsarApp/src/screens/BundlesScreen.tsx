@@ -21,7 +21,6 @@ import {
 const Haptics = loadBundleSync();
 type HapticsBundle = typeof Haptics;
 
-// Bundle metadata is non-enumerable, so these are exactly the preset handles.
 const presets = Object.values(Haptics) as PresetHandle[];
 
 export default function BundlesScreen() {

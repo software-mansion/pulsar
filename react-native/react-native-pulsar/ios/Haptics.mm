@@ -92,10 +92,6 @@ RCT_EXPORT_MODULE()
 
 // Preset bundles ---------------------------------------------------------
 
-// `methodQueue` is the main queue because RNPulsarIsAppActive() reads UIApplication, so most
-// members touch bundlesRegistry_ there. Loading runs off-main (unzipping and decoding a bundle
-// has no business on the frame thread), so every access goes through these three.
-
 - (LoadedBundle *)bundleForToken:(NSString *)token {
   if (token == nil) {
     return nil;
@@ -105,9 +101,7 @@ RCT_EXPORT_MODULE()
   }
 }
 
-// One token per load, not per bundle id: two callers loading the same pack must get independent
-// handles, or disposing either one silently kills the other's playback.
-- (NSString *)storeBundle:(LoadedBundle *)bundle {
+- (NSString *)registerBundleUnderNewToken:(LoadedBundle *)bundle {
   if (bundle == nil) {
     return @"";
   }
@@ -129,8 +123,6 @@ RCT_EXPORT_MODULE()
   }
 }
 
-// `dataWithContentsOfURL:` reads file:// and http(s):// alike, which is all the Metro-resolved
-// URI is ever going to be: a dev-server URL in debug, a file inside the .app in release.
 - (NSURL *)bundleURLForUri:(NSString *)uri {
   NSURL *url = [NSURL URLWithString:uri];
   if (!url.scheme) {
@@ -156,7 +148,7 @@ RCT_EXPORT_MODULE()
     NSLog(@"[RNPulsar] Pulsar_loadBundleFromUriSync: could not load %@: %@", uri, error);
     return @"";
   }
-  return [self storeBundle:bundle];
+  return [self registerBundleUnderNewToken:bundle];
 }
 
 - (void)Pulsar_loadBundleFromUri:(nonnull NSString *)uri
@@ -175,7 +167,7 @@ RCT_EXPORT_MODULE()
       reject(@"PULSAR_LOAD_BUNDLE_FAILED", @"Pulsar: failed to load bundle", error);
       return;
     }
-    resolve([self storeBundle:bundle]);
+    resolve([self registerBundleUnderNewToken:bundle]);
   };
 
   if (url.isFileURL) {

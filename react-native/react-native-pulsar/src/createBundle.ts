@@ -59,15 +59,9 @@ type PresetsOf<M extends BundleDefinition> = {
 
 type LoadedBundle<M extends BundleDefinition> = Bundle<PresetsOf<M>>;
 
-/** The two loaders a generated `*.bundle.ts` module re-exports. */
 export interface BundleLoaders<M extends BundleDefinition> {
-  /**
-   * `includeAssets: false` (the default) plays the patterns embedded in the generated module —
-   * no `.pulsar` read, no authored audio. `true` reads the binary on the calling thread, which
-   * in dev is a blocking Metro HTTP round trip; `loadBundleWithAssetsAsync` avoids that.
-   */
+  /** `includeAssets` reads the `.pulsar` on the calling thread — in dev, that blocks on Metro. */
   loadBundleSync(includeAssets?: boolean): LoadedBundle<M>;
-  /** Reads the `.pulsar` natively, so authored audio plays. */
   loadBundleWithAssetsAsync(): Promise<LoadedBundle<M>>;
 }
 
@@ -112,10 +106,7 @@ function assertToken(token: string, definition: BundleDefinition): string {
   return token;
 }
 
-/**
- * Called by a generated `*.bundle.ts` module, which re-exports the two loaders. Applications
- * import those from the generated module rather than calling this directly.
- */
+/** Called by a generated `*.bundle.ts` module, which re-exports the two loaders. */
 export function defineBundle<M extends BundleDefinition>(
   definition: M
 ): BundleLoaders<M> {
@@ -144,8 +135,6 @@ function createLoadedBundle<M extends BundleDefinition>(
   const presets: Record<string, PresetHandle> = {};
   let disposed = false;
 
-  // A disposed bundle stays inert on both paths: the native token is gone, and re-parsing the
-  // inline pattern would silently resurrect a bundle the caller said it was done with.
   const warnDisposed = (action: string, id: string) => {
     if (__DEV__) {
       console.warn(

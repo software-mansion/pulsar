@@ -212,8 +212,6 @@ describe('dispose', () => {
     );
   });
 
-  // Before this, play() on a disposed asset-backed bundle still called native with a dead
-  // token while stop() went silent, and a disposed inline bundle quietly re-parsed itself.
   it('leaves both paths inert afterwards', async () => {
     const inline = defineBundle(definition).loadBundleSync();
     const withAssets =

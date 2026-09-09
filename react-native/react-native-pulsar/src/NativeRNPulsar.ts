@@ -54,9 +54,7 @@ export interface Spec extends TurboModule {
   PatternComposer_stop(patternId: number): void;
   PatternComposer_release(patternId: number): void;
 
-  // Preset bundles: load a Metro-resolved .pulsar URI, then play/stop presets by id.
-  // Both return an opaque token, or "" on failure. The sync variant blocks the JS thread while
-  // it reads the URI, which in dev is a Metro HTTP round trip; prefer the async one.
+  // Both return an opaque token, or "" on failure. Sync blocks the JS thread on the URI read.
   Pulsar_loadBundleFromUriSync(uri: string): string;
   Pulsar_loadBundleFromUri(uri: string): Promise<string>;
   Pulsar_playBundlePreset(token: string, presetId: string): void;

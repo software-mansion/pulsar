@@ -62,9 +62,6 @@ extension Pulsar {
   ///
   ///     let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)
   ///     bundle.heartbeatV2.play()
-  ///
-  /// Named for symmetry with the other SDKs: `loadBundleSync` everywhere it can be synchronous,
-  /// `loadBundleWithAssetsAsync` where it cannot (Flutter, and React Native's async path).
   public func loadBundleSync<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = false) throws -> PulsarBundle<P> {
     guard let url = Foundation.Bundle.main.url(forResource: descriptor.assetName, withExtension: "pulsar") else {
       throw PulsarBundleError.resourceNotFound(descriptor.assetName)

@@ -63,9 +63,6 @@ extension PulsarBundleLoader on Pulsar {
   /// final bundle = await pulsar.loadBundleWithAssetsAsync(acmePack); // acmePack is generated
   /// bundle.heartbeatV2.play();
   /// ```
-  ///
-  /// Named for symmetry with the other SDKs. Flutter has no synchronous counterpart: the bundle
-  /// crosses a platform channel, so there is no `loadBundleSync` here.
   Future<P> loadBundleWithAssetsAsync<P>(
     BundleDescriptor<P> descriptor, {
     bool strict = false,

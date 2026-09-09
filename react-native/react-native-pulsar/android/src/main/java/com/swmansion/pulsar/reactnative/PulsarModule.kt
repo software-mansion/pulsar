@@ -255,9 +255,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
 
   // Preset bundles -----------------------------------------------------------------
 
-  // One token per load, not per bundle id: two callers loading the same pack must get independent
-  // handles, or disposing either one silently kills the other's playback.
-  private fun storeBundle(bundle: LoadedBundle): String {
+  private fun registerBundleUnderNewToken(bundle: LoadedBundle): String {
     val token = "${bundle.id}#${bundleTokenSeq.incrementAndGet()}"
     bundlesRegistry[token] = bundle
     return token
@@ -266,7 +264,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
   override fun Pulsar_loadBundleFromUriSync(uri: String?): String {
     if (uri == null) return ""
     return try {
-      storeBundle(pulsar.loadBundle(readBundleUri(uri)))
+      registerBundleUnderNewToken(pulsar.loadBundle(readBundleUri(uri)))
     } catch (e: Exception) {
       android.util.Log.e(NAME, "Pulsar_loadBundleFromUriSync failed", e)
       ""
@@ -283,7 +281,7 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     }
     Thread {
       try {
-        promise.resolve(storeBundle(pulsar.loadBundle(readBundleUri(uri))))
+        promise.resolve(registerBundleUnderNewToken(pulsar.loadBundle(readBundleUri(uri))))
       } catch (e: Exception) {
         android.util.Log.e(NAME, "Pulsar_loadBundleFromUri failed", e)
         promise.reject(
@@ -321,18 +319,18 @@ class PulsarModule(reactContext: ReactApplicationContext) :
         }
       }
 
-      else -> {
-        // Metro packages non-image assets into res/raw for Android release builds and
-        // resolveAssetSource returns the resource identifier without an extension.
-        val resourceId =
-          reactApplicationContext.resources.getIdentifier(uriString, "raw", reactApplicationContext.packageName)
-        if (resourceId != 0) {
-          reactApplicationContext.resources.openRawResource(resourceId).use { it.readBytes() }
-        } else {
-          File(uriString).readBytes()
-        }
-      }
+      else -> readRawResource(uriString) ?: File(uriString).readBytes()
     }
+  }
+
+  private fun readRawResource(resourceName: String): ByteArray? {
+    val resourceId = reactApplicationContext.resources.getIdentifier(
+      resourceName,
+      "raw",
+      reactApplicationContext.packageName,
+    )
+    if (resourceId == 0) return null
+    return reactApplicationContext.resources.openRawResource(resourceId).use { it.readBytes() }
   }
 
   override fun Pulsar_playBundlePreset(token: String?, presetId: String?) {
