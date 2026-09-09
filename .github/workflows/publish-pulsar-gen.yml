@@ -1,0 +1,99 @@
+name: Publish pulsar-gen to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'npm tag to publish under'
+        required: false
+        type: choice
+        options:
+          - latest
+          - rc
+          - beta
+        default: 'latest'
+      dry-run:
+        description: 'Dry run'
+        required: false
+        type: boolean
+        default: 'true'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: tools/pulsar-gen
+        run: npm ci
+
+      - name: Run tests
+        working-directory: tools/pulsar-gen
+        run: npm test
+
+      - name: Typecheck
+        working-directory: tools/pulsar-gen
+        run: npm run typecheck
+
+      # `prepack` builds dist/ during `npm pack`, but a broken build there would
+      # surface as a confusing pack failure — fail here instead, with tsc's own output.
+      - name: Build
+        working-directory: tools/pulsar-gen
+        run: npm run build
+
+      # The published `bin` must be runnable from node_modules: Node refuses to
+      # type-strip files under node_modules, so a package pointing at a .ts entry
+      # installs fine and then fails for every consumer. Catch that here, not on npm.
+      - name: Verify the packed CLI runs as an installed dependency
+        working-directory: tools/pulsar-gen
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARBALL="$(npm pack --silent --pack-destination "$RUNNER_TEMP")"
+          CONSUMER="$RUNNER_TEMP/consumer"
+          mkdir -p "$CONSUMER"
+          cd "$CONSUMER"
+          echo '{"name":"consumer","version":"1.0.0","private":true}' > package.json
+          npm install --no-audit --no-fund "$RUNNER_TEMP/$TARBALL"
+          npx pulsar-gen "$GITHUB_WORKSPACE/tools/pulsar-gen/fixtures/acme-pack.pulsar" \
+            --target swift,kotlin,dart,rn --out ./gen
+          for f in AcmePack.swift AcmePack.kt acme_pack.bundle.dart acme-pack.bundle.ts; do
+            diff "gen/$f" "$GITHUB_WORKSPACE/tools/pulsar-gen/fixtures/golden/$f"
+          done
+          echo "Packed CLI runs from node_modules and matches the goldens."
+
+      - name: Resolve release version
+        id: release
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./sdk-versions.json').pulsarGen.version")"
+
+          if [[ -z "$VERSION" ]]; then
+            echo "Release version could not be determined from sdk-versions.json." >&2
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing version $VERSION (from sdk-versions.json)"
+
+      - name: Publish stable
+        uses: software-mansion/npm-package-publish@1bb885ec49bed729c8c1ec95a11a285d89f1bf45
+        with:
+          package-name: pulsar-gen
+          package-json-path: tools/pulsar-gen/package.json
+          release-type: stable
+          version: ${{ steps.release.outputs.version }}
+          tag: ${{ github.event.inputs.tag || 'latest' }}
+          dry-run: ${{ github.event.inputs.dry-run || 'true' }}
+          install-dependencies-command: npm ci

@@ -55,6 +55,7 @@ const markedVersions = [
 const jsonVersions = [
   { file: 'react-native/react-native-pulsar/package.json', version: versions.reactNative.version },
   { file: 'web/Pulsar/package.json', version: versions.web.version },
+  { file: 'tools/pulsar-gen/package.json', version: versions.pulsarGen.version },
 ];
 
 function replaceGeneratedSection(content, key, replacement) {
