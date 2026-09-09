@@ -22,6 +22,14 @@ export enum RealtimeComposerStrategy {
   ENVELOPE_WITH_DISCRETE_PRIMITIVES = 3,
 }
 
+export type HapticCapabilities = {
+  hasAmplitudeControl: boolean;
+  hasPrimitiveSupport: boolean;
+  isEnvelopeSupported: boolean;
+  isFrequencyProfileSupported: boolean;
+  minControlPointDurationMillis: number;
+};
+
 export interface Spec extends TurboModule {
   Pulsar_play(name: string): void;
   Pulsar_enableHaptics(state: boolean): void;
@@ -32,6 +40,7 @@ export interface Spec extends TurboModule {
   Pulsar_stopHaptics(): void;
   Pulsar_shutDownEngine(): void;
   Pulsar_hapticSupport(): HapticSupport;
+  Pulsar_hapticCapabilities(): HapticCapabilities;
   Pulsar_forceHapticsSupportLevel(level: HapticSupport): void;
   Pulsar_enableImpulseCompositionMode(state: boolean): void;
   Pulsar_setRealtimeComposerStrategy(strategy: RealtimeComposerStrategy): void;

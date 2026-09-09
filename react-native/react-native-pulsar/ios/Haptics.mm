@@ -247,6 +247,17 @@ RCT_EXPORT_MODULE()
   return [pulsar_ isHapticsSupported] ? @(3) : @(0);
 }
 
+- (nonnull NSDictionary *)Pulsar_hapticCapabilities {
+  NSNumber *coreHapticsSupported = @([pulsar_ isHapticsSupported]);
+  return @{
+    @"hasAmplitudeControl" : coreHapticsSupported,
+    @"hasPrimitiveSupport" : coreHapticsSupported,
+    @"isEnvelopeSupported" : coreHapticsSupported,
+    @"isFrequencyProfileSupported" : @(NO),
+    @"minControlPointDurationMillis" : @(0),
+  };
+}
+
 - (void)Pulsar_forceHapticsSupportLevel:(double)level {
   // do nothing on iOS
 }

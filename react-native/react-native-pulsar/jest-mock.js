@@ -56,6 +56,13 @@ const Settings = {
   stopHaptics: jest.fn(),
   shutDownEngine: jest.fn(),
   getHapticsSupportLevel: jest.fn(() => HapticSupport.ADVANCED_SUPPORT),
+  getHapticCapabilities: jest.fn(() => ({
+    hasAmplitudeControl: true,
+    hasPrimitiveSupport: true,
+    isEnvelopeSupported: true,
+    isFrequencyProfileSupported: true,
+    minControlPointDurationMillis: 0,
+  })),
   forceHapticsSupportLevel: jest.fn(),
   enableImpulseCompositionMode: jest.fn(),
   setRealtimeComposerStrategy: jest.fn(),

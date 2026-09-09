@@ -1,10 +1,12 @@
 package com.swmansion.pulsar.reactnative
 
 import android.net.Uri
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.swmansion.pulsar.bundle.LoadedBundle
 import com.swmansion.pulsar.composers.PatternComposer
@@ -56,6 +58,17 @@ class PulsarModule(reactContext: ReactApplicationContext) :
         CompatibilityMode.LIMITED_SUPPORT -> { 1.toDouble() }
         CompatibilityMode.STANDARD_SUPPORT -> { 2.toDouble() }
         else -> { 3.toDouble() }
+    }
+  }
+
+  override fun Pulsar_hapticCapabilities(): WritableMap {
+    val capabilities = pulsar.hapticCapabilities()
+    return Arguments.createMap().apply {
+      putBoolean("hasAmplitudeControl", capabilities.hasAmplitudeControl)
+      putBoolean("hasPrimitiveSupport", capabilities.hasPrimitiveSupport)
+      putBoolean("isEnvelopeSupported", capabilities.isEnvelopeSupported)
+      putBoolean("isFrequencyProfileSupported", capabilities.isFrequencyProfileSupported)
+      putDouble("minControlPointDurationMillis", capabilities.minControlPointDurationMillis.toDouble())
     }
   }
 

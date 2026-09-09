@@ -31,6 +31,13 @@ describe('react-native-pulsar/jest-mock', () => {
     expect(Settings.getHapticsSupportLevel()).toBe(
       HapticSupport.ADVANCED_SUPPORT
     );
+    expect(Settings.getHapticCapabilities()).toEqual({
+      hasAmplitudeControl: true,
+      hasPrimitiveSupport: true,
+      isEnvelopeSupported: true,
+      isFrequencyProfileSupported: true,
+      minControlPointDurationMillis: 0,
+    });
   });
 
   it('mocks the hooks and the composers they return', () => {

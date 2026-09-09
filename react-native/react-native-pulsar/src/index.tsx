@@ -30,4 +30,5 @@ export type {
   PresetAnimation,
 } from './createBundle';
 export { HapticSupport, RealtimeComposerStrategy } from './NativeRNPulsar';
+export type { HapticCapabilities } from './NativeRNPulsar';
 export type { RealtimeComposer } from './useRealtimeComposer';
