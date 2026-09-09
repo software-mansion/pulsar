@@ -13,11 +13,6 @@ on:
           - legacy
           - rc
         default: 'auto'
-      dry-run:
-        description: 'Dry run'
-        required: false
-        type: boolean
-        default: 'true'
 
 jobs:
   publish:
@@ -57,5 +52,5 @@ jobs:
           version: ${{ steps.release.outputs.version }}
           npm-tag: ${{ github.event.inputs.tag != 'auto' && github.event.inputs.tag || '' }}
           release-mode: stage
-          dry-run: ${{ github.event.inputs.dry-run || 'true' }}
+          dry-run: 'false'
           install-dependencies-command: npm install
