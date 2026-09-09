@@ -14,6 +14,12 @@
       "react-native": "./src/index.tsx",
       "default": "./lib/module/index.js"
     },
+    "./light": {
+      "types": "./lib/typescript/src/light.d.ts",
+      "source": "./src/light.ts",
+      "react-native": "./src/light.ts",
+      "default": "./lib/module/light.js"
+    },
     "./unstable/NativeRNPulsar": {
       "types": "./lib/typescript/src/NativeRNPulsar.d.ts",
       "source": "./src/NativeRNPulsar.ts",
