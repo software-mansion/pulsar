@@ -5,7 +5,6 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Re-anchoring an authored pattern so it can be replayed from a seek position. */
 class PatternSeekTest {
 
     private val ramp = PatternData(
@@ -22,9 +21,9 @@ class PatternSeekTest {
 
     @Test
     fun `duration is the last timestamp across both lines`() {
-        assertEquals(1000L, PatternSeek.durationOf(ramp))
+        assertEquals(1000L, PatternSeek.lastTimestampOf(ramp))
         val empty = PatternData(ContinuousPattern(emptyList(), emptyList()), emptyList())
-        assertEquals(0L, PatternSeek.durationOf(empty))
+        assertEquals(0L, PatternSeek.lastTimestampOf(empty))
     }
 
     @Test
@@ -47,10 +46,6 @@ class PatternSeekTest {
         assertEquals(listOf(0.25f, 1f), seeked.continuousPattern.amplitude.map { it.value })
     }
 
-    /**
-     * Emptying it instead would silence BOTH channels, since the composer only builds the
-     * continuous line when amplitude and frequency are each non-empty.
-     */
     @Test
     fun `an envelope entirely before the seek holds its last value`() {
         val seeked = PatternSeek.patternFrom(ramp, 800L)
@@ -84,12 +79,10 @@ class PatternSeekTest {
 
     @Test
     fun `sound eats into the lead-in before it touches the file`() {
-        // 200ms into a 500ms lead-in: the audio has not begun, so only the wait shortens.
         val early = PatternSeek.soundFrom(SoundData(uri = "clip.wav", offset = 500L), 200L)
         assertEquals(300L, early.offset)
         assertEquals(0L, early.startMs)
 
-        // Past the lead-in, the remainder is a seek into the file.
         val late = PatternSeek.soundFrom(SoundData(uri = "clip.wav", offset = 500L), 800L)
         assertEquals(0L, late.offset)
         assertEquals(300L, late.startMs)

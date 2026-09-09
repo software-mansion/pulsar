@@ -493,8 +493,10 @@ let composer = pulsar.getPatternComposer()
 Parses a `PatternData` object and prepares it for playback.
 
 ```swift
-func parsePattern(hapticsData: PatternData)
+func parsePattern(hapticsData: PatternData, fromMs: Double = 0)
 ```
+
+`fromMs` starts the pattern that far into its own timeline. The engine can only play a parsed pattern from zero, so Pulsar re-anchors it instead: discrete events before the seek are dropped and the rest rebased, and each continuous envelope is re-anchored on its value at that instant.
 
 #### `parsePatternWithSound(hapticsData:uri:volume:offset:start:duration:)`
 
@@ -511,13 +513,16 @@ func parsePatternWithSound(
   volume: Float = 1,
   offset: Double = 0,
   start: Double = 0,
-  duration: Double = 0
+  duration: Double = 0,
+  fromMs: Double = 0
 )
 ```
 
 `uri` must resolve to a **local** file — an absolute path, a `file://` URL, or the name of a resource bundled in the app. When no extension is given it defaults to `.wav`, so a bare name like `"beep"` resolves `beep.wav` from the app bundle (add the file to your target's **Copy Bundle Resources**). Requires a real device — Core Haptics is unavailable on the simulator — and a missing or unregisterable file degrades gracefully to haptics-only.
 
 `start` and `duration` (both in milliseconds) trim the clip: `start` is where playback begins in the source file, `duration` is how much of it to play (`0` plays to the end). Core Haptics registers an audio resource by URL only, so when either is set the file is sliced to a temporary `.caf` first — the temp file is cleaned up on the next parse and on dispose.
+
+`fromMs` is a different thing: it seeks the whole preset, re-anchoring the haptics and advancing into the file so both move together. A preset authored with an audio `offset` keeps its lead-in until the seek passes it.
 
 #### `playPattern(hapticsData:)`
 
@@ -679,9 +684,17 @@ let bundle = try await pulsar.loadBundleAsync(AcmePack.descriptor)
 The descriptor finds the `.pulsar` in the app's main bundle, and its content hash is checked
 against the generated types so a stale copy fails loudly. Pass `strict: false` to skip that.
 
-Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play()`, `stop()`, and `animation` — the Lottie bytes
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play()` / `play(fromMs:)`, `stop()`, and `animation` — the Lottie bytes
 and timing for your own animation view. Pulsar carries and time-aligns the animation; the app
 renders it:
+
+Pass `fromMs` to start a preset that far into its own timeline — audio and haptics seek together, so a progress bar can scrub it:
+
+```swift
+bundle.heartbeatV2.play(fromMs: 2500)
+```
+
+Every non-zero seek re-parses the preset; playing from the start reuses the cached parse.
 
 The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that for you — pattern, animation and duration — so you rarely have to unpack it by hand.
 

@@ -60,4 +60,5 @@ host app's own Lottie view.
 val loaded = pulsar.loadBundle(bytes)   // no descriptor
 loaded.presetIds                        // -> List<String>
 loaded.play("heartbeatV2")              // -> Boolean
+loaded.play("heartbeatV2", fromMs = 2500)   // seeks audio + haptics
 ```

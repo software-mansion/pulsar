@@ -36,27 +36,18 @@ class PresetHandle internal constructor(
 
     private var composer: PatternComposer? = null
 
-    /** The seek position [composer] is currently parsed at, or null while unparsed. */
     private var parsedFromMs: Long? = null
 
-    /**
-     * Parses at [fromMs], reusing the cached parse when the position has not moved. A preset
-     * played only from the start therefore still parses exactly once, as it always has.
-     */
     private fun ensureParsed(fromMs: Long) {
-        if (composer != null && parsedFromMs == fromMs) return
+        val alreadyParsedHere = composer != null && parsedFromMs == fromMs
+        if (alreadyParsedHere) return
         val c = composer ?: haptics.getPatternComposer()
         if (sound != null) c.parsePatternWithSound(pattern, sound, fromMs) else c.parsePattern(pattern, fromMs)
         composer = c
         parsedFromMs = fromMs
     }
 
-    /**
-     * Plays the preset from [fromMs] into its timeline. Defaults to the start of the preset.
-     *
-     * The pattern is re-anchored and re-parsed on every non-zero seek; `play()` keeps the parse
-     * cached, so repeat plays from the start cost nothing extra.
-     */
+    /** Plays the preset from [fromMs] into its timeline, audio and haptics together. */
     fun play(fromMs: Long = 0L) {
         ensureParsed(maxOf(0L, fromMs))
         composer?.play()

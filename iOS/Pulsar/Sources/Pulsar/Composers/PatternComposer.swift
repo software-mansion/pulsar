@@ -18,7 +18,6 @@ public class PatternComposer: NSObject {
   // (Core Haptics registers an audio resource by URL only, so a windowed clip has to be
   // sliced to a file first). Removed on the next parse and on dispose.
   private var tempAudioURL: URL?
-  // The engine-side resource the current audio event plays, released alongside that temp file.
   private var audioResourceID: CHHapticAudioResourceID?
 
   public convenience init(engine: HapticEngineWrapper, audioSimulator: AudioSimulator) {
@@ -31,15 +30,14 @@ public class PatternComposer: NSObject {
     dispose()
   }
 
-  /// Parses a pattern for playback. `fromMs` starts it that far into its own timeline: the
-  /// engine can only play a parsed pattern from zero, so the pattern is re-anchored instead.
+  /// `fromMs` starts the pattern that far into its own timeline.
   @objc public func parsePattern(hapticsData: PatternData, fromMs: Double = 0) {
     releaseAudio()
     parse(hapticsData: PatternSeek.pattern(hapticsData, from: fromMs), audioEvent: nil)
   }
 
-  /// As ``parsePattern(hapticsData:fromMs:)``, with a synced audio track. `start`/`duration` are
-  /// the authored trim window in the file; `fromMs` seeks the whole preset, moving both together.
+  /// `start`/`duration` are the authored trim window in the file; `fromMs` seeks the whole
+  /// preset, moving audio and haptics together.
   @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0, fromMs: Double = 0) {
     releaseAudio()
     let window = PatternSeek.soundWindow(offset: offset, start: start, duration: duration, from: fromMs)

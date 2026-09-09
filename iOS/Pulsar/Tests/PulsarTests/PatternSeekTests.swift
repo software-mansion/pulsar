@@ -2,7 +2,6 @@ import Testing
 import Foundation
 @testable import Pulsar
 
-/// Re-anchoring an authored pattern so it can be replayed from a seek position.
 @Suite struct PatternSeekTests {
 
   private let ramp = PatternData(
@@ -18,12 +17,12 @@ import Foundation
   )
 
   @Test func durationIsTheLastTimestampAcrossBothLines() {
-    #expect(PatternSeek.duration(of: ramp) == 1000)
+    #expect(PatternSeek.lastTimestamp(of: ramp) == 1000)
     let empty = PatternData(
       continuousPattern: ContinuousPattern(amplitude: [], frequency: []),
       discretePattern: []
     )
-    #expect(PatternSeek.duration(of: empty) == 0)
+    #expect(PatternSeek.lastTimestamp(of: empty) == 0)
   }
 
   @Test func seekingToZeroReturnsTheSamePattern() {
@@ -46,8 +45,6 @@ import Foundation
     #expect(seeked.continuousPattern.amplitude.map { $0.value } == [0.25, 1])
   }
 
-  /// Emptying it instead would silence BOTH channels, since the composer only builds the
-  /// continuous line when amplitude and frequency are each non-empty.
   @Test func anEnvelopeEntirelyBeforeTheSeekHoldsItsLastValue() {
     let seeked = PatternSeek.pattern(ramp, from: 800)
     #expect(seeked.continuousPattern.frequency.map { $0.time } == [0, 200])
@@ -80,12 +77,10 @@ import Foundation
   }
 
   @Test func soundEatsIntoTheLeadInBeforeItTouchesTheFile() {
-    // 200ms into a 500ms lead-in: the audio has not begun, so only the wait shortens.
     let early = PatternSeek.soundWindow(offset: 500, start: 0, duration: 0, from: 200)
     #expect(early.start == 0)
     #expect(early.offset == 300)
 
-    // Past the lead-in, the remainder is a seek into the file.
     let late = PatternSeek.soundWindow(offset: 500, start: 0, duration: 0, from: 800)
     #expect(late.start == 300)
     #expect(late.offset == 0)

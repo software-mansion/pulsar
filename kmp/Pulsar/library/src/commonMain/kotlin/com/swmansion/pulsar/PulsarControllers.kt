@@ -825,17 +825,14 @@ class PulsarPreset internal constructor(
 class PatternComposer internal constructor(
     private val handle: PatternComposerHandle,
 ) {
-    /**
-     * Parses a pattern for playback. [fromMs] starts it that far into its own timeline: the
-     * engine can only play a parsed pattern from zero, so the pattern is re-anchored instead.
-     */
+    /** [fromMs] starts the pattern that far into its own timeline. */
     fun parsePattern(pattern: PatternData, fromMs: Long = 0L) {
         handle.parsePattern(pattern, fromMs)
     }
 
     /**
-     * As [parsePattern], with a synced audio track. The sound's own `startMs`/`durationMs` are
-     * the authored trim window in the file; [fromMs] seeks the whole preset, moving both together.
+     * The sound's own `startMs`/`durationMs` are the authored trim window in the file; [fromMs]
+     * seeks the whole preset, moving audio and haptics together.
      */
     fun parsePatternWithSound(pattern: PatternData, sound: SoundData, fromMs: Long = 0L) {
         handle.parsePatternWithSound(pattern, sound, fromMs)

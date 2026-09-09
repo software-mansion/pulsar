@@ -72,7 +72,6 @@ struct ResolvedSound {
   private weak var pulsar: Pulsar?
   private let sound: ResolvedSound?
   private var composer: PatternComposer?
-  /// The seek position the cached ``composer`` is currently parsed at, or nil while unparsed.
   private var parsedFromMs: Double?
 
   init(id: String, name: String, duration: Double, pulsar: Pulsar, pattern: PatternData, sound: ResolvedSound?, animation: BundleAnimation?) {
@@ -85,10 +84,9 @@ struct ResolvedSound {
     self.animation = animation
   }
 
-  /// Parses at `fromMs`, reusing the cached parse when the position has not moved. A preset
-  /// played only from the start therefore still parses exactly once, as it always has.
   private func ensureParsed(fromMs: Double) {
-    guard composer == nil || parsedFromMs != fromMs, let pulsar = pulsar else { return }
+    let alreadyParsedHere = composer != nil && parsedFromMs == fromMs
+    guard !alreadyParsedHere, let pulsar = pulsar else { return }
     let c = composer ?? pulsar.getPatternComposer()
     if let s = sound {
       c.parsePatternWithSound(
@@ -107,15 +105,11 @@ struct ResolvedSound {
     parsedFromMs = fromMs
   }
 
-  /// Plays the preset from its start — haptics plus its synced audio, if it has one.
   @objc public func play() {
     play(fromMs: 0)
   }
 
   /// Plays the preset from `fromMs` into its timeline, audio and haptics together.
-  ///
-  /// The pattern is re-anchored and re-parsed on every non-zero seek; `fromMs: 0` keeps the
-  /// parse cached, so repeat plays from the start cost nothing extra.
   @objc public func play(fromMs: Double) {
     ensureParsed(fromMs: max(0, fromMs))
     composer?.play()

@@ -115,7 +115,6 @@ describe('loadBundleSync', () => {
     bundle.heartbeatV2.play(600);
 
     expect(native.PatternComposer_parsePattern).toHaveBeenCalledTimes(2);
-    // The authored pattern goes over untouched — the native side re-anchors it.
     expect(native.PatternComposer_parsePattern).toHaveBeenNthCalledWith(
       1,
       definition.presets.heartbeatV2.pattern,
@@ -126,7 +125,6 @@ describe('loadBundleSync', () => {
       definition.presets.heartbeatV2.pattern,
       600
     );
-    // The parse anchored at zero is freed once the seek replaces it.
     expect(native.PatternComposer_release).toHaveBeenCalledWith(100);
     expect(native.PatternComposer_play).toHaveBeenLastCalledWith(101);
   });

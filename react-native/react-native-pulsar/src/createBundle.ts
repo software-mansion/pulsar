@@ -21,13 +21,7 @@ export type PresetHandle = {
   readonly animation?: PresetAnimation;
   readonly hasAudio: boolean;
   readonly hasAnimation: boolean;
-  /**
-   * Plays the preset — haptics plus its synced audio, if it has one. Pass `fromMs` to start
-   * that far into the preset's timeline: the pattern is re-anchored and the audio seeks to
-   * match. Defaults to the start.
-   *
-   * Every non-zero seek re-parses; playing from the start reuses the cached parse.
-   */
+  /** Plays the preset from `fromMs` into its timeline — haptics plus its synced audio. */
   play: (fromMs?: number) => void;
   stop: () => void;
 };
@@ -139,7 +133,6 @@ function createLoadedBundle<M extends BundleDefinition>(
   bundleToken?: string
 ): Bundle<PresetsOf<M>> {
   const parsedIds = new Map<string, number>();
-  // What each cached parse is anchored at, so a repeat play from the same position reuses it.
   const parsedFrom = new Map<string, number>();
   const presets: Record<string, PresetHandle> = {};
   let disposed = false;
@@ -154,15 +147,12 @@ function createLoadedBundle<M extends BundleDefinition>(
 
   for (const [id, preset] of Object.entries(definition.presets)) {
     const parseAt = (fromMs: number) => {
-      const alreadyParsed = parsedIds.get(id);
-      if (alreadyParsed !== undefined && parsedFrom.get(id) === fromMs) {
-        return alreadyParsed;
-      }
-      if (alreadyParsed !== undefined) {
-        Pulsar.PatternComposer_release(alreadyParsed);
-      }
+      const previousId = parsedIds.get(id);
+      const alreadyParsedHere =
+        previousId !== undefined && parsedFrom.get(id) === fromMs;
+      if (alreadyParsedHere) return previousId;
+      if (previousId !== undefined) Pulsar.PatternComposer_release(previousId);
 
-      // The native composer re-anchors the pattern, the same way the bundle path does.
       const parsedId = Pulsar.PatternComposer_parsePattern(
         preset.pattern,
         fromMs

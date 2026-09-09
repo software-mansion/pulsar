@@ -9,6 +9,7 @@ autocomplete.
 val pulsar = Pulsar(context)
 val bundle = pulsar.loadBundleSync(AcmePack.descriptor)   // AcmePack is generated
 bundle.heartbeatV2.play()                      // ← autocompletes
+bundle.heartbeatV2.play(fromMs = 2500)         // starts 2.5s in
 bundle.explosion.stop()
 
 // Animation bytes for the app's own Lottie view (Pulsar times, the app renders):
@@ -41,4 +42,5 @@ pulsarBundles {
 val loaded = pulsar.loadBundle(bytes)   // or loadBundle(path) / loadBundleFromAsset("pulsar/acme-pack.pulsar")
 loaded.presetIds                        // -> List<String>
 loaded.play("heartbeatV2")              // -> Boolean
+loaded.play("heartbeatV2", fromMs = 2500)   // seeks audio + haptics
 ```

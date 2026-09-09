@@ -80,10 +80,13 @@ Haptics.fanfare.play(2500); // start 2.5s in
 Haptics.fanfare.play();     // ...and from the top, as before
 ```
 
-Audio and haptics move together: the pattern is re-anchored — discrete events before the seek
-are dropped, the rest rebased, and the continuous envelopes re-anchored on their value at that
-instant — and the audio seeks to the matching position in the file. A preset authored with an
+The native side re-anchors the pattern — discrete events before the seek are dropped, the rest
+rebased, and the continuous envelopes re-anchored on their value at that instant — and seeks the
+audio to the matching position in the file, so both move together. A preset authored with an
 audio `offset` keeps its lead-in until the seek passes it.
+
+`loadBundleSync()` without the binary carries no audio at all, so a seek there scrubs the
+haptics alone.
 
 Each non-zero `fromMs` re-parses the preset; `play()` from the start reuses the cached parse, so
 plain playback costs exactly what it always did.

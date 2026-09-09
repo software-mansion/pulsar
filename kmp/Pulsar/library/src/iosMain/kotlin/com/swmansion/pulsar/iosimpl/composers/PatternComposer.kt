@@ -50,7 +50,6 @@ internal class IOSPatternComposerHandle(
     // Haptics registers an audio resource by URL only, so a windowed clip is sliced to a
     // file first). Removed on the next parse and on dispose.
     private var tempAudioURL: NSURL? = null
-    // The engine-side resource the current audio event plays, released alongside that temp file.
     private var audioResourceId: CHHapticAudioResourceID? = null
 
     override fun parsePattern(pattern: PatternData, fromMs: Long) {

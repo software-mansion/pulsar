@@ -14,6 +14,7 @@ autocomplete.
 let pulsar = Pulsar()
 let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)   // AcmePack is generated
 bundle.heartbeatV2.play()                          // ← autocompletes
+bundle.heartbeatV2.play(fromMs: 2500)              // starts 2.5s in
 bundle.explosion.stop()
 
 // Animation bytes for the app's own Lottie view (Pulsar times, the app renders):
@@ -49,4 +50,5 @@ The wrappers use the untyped, string-keyed surface:
 let loaded = try pulsar.loadBundle(path: bundlePath)   // or loadBundle(data:)
 loaded.presetIds                                       // -> [String]
 loaded.play("heartbeatV2")                             // -> Bool
+loaded.play("heartbeatV2", fromMs: 2500)               // seeks audio + haptics
 ```

@@ -89,10 +89,6 @@ internal class IOSHapticEngineWrapper {
         return if (id == null || id.toLong() == 0L) null else id
     }
 
-    /**
-     * Releases a resource obtained from [registerAudioResource]. Re-parsing a sounded pattern
-     * registers a fresh one, so the replaced resource has to be handed back.
-     */
     fun unregisterAudioResource(id: CHHapticAudioResourceID) {
         runCatching { engine?.unregisterAudioResource(id, null) }
             .onFailure { log("Error unregistering audio resource: ${it.message}") }
