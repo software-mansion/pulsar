@@ -65,7 +65,7 @@ extension PulsarBundleLoader on Pulsar {
   /// ```
   Future<P> loadBundleAsync<P>(
     BundleDescriptor<P> descriptor, {
-    bool strict = false,
+    bool strict = true,
   }) async {
     final data = await rootBundle.load(descriptor.assetName);
     final bytes = Uint8List.view(

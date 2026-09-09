@@ -114,10 +114,10 @@ open class Pulsar(protected var context: Context) {
      *     val bundle = pulsar.loadBundleSync(AcmePack.descriptor)
      *     bundle.heartbeatV2.play()
      */
-    suspend fun <P> loadBundleAsync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P =
+    suspend fun <P> loadBundleAsync(descriptor: BundleDescriptor<P>, strict: Boolean = true): P =
         withContext(Dispatchers.IO) { loadBundleSync(descriptor, strict) }
 
-    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P {
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = true): P {
         val loaded = loadBundleFromAsset(descriptor.assetName)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {
             throw PulsarBundleException(

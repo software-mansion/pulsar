@@ -285,7 +285,7 @@ private fun BundleCard(pulsar: Pulsar?, onStatus: (String) -> Unit) {
         if (pulsar == null) return@LaunchedEffect
         runCatching {
             val bytes = Res.readBytes("files/hapticsBundle.pulsar")
-            pulsar.loadBundleSync(HapticsBundle.descriptor, bytes, strict = true)
+            pulsar.loadBundleSync(HapticsBundle.descriptor, bytes)
         }.onSuccess { bundle = it }.onFailure { error = it.message ?: "failed to load bundle" }
     }
 

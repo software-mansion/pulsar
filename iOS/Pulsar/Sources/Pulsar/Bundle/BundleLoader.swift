@@ -62,7 +62,7 @@ extension Pulsar {
   ///
   ///     let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)
   ///     bundle.heartbeatV2.play()
-  public func loadBundleSync<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = false) throws -> PulsarBundle<P> {
+  public func loadBundleSync<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = true) throws -> PulsarBundle<P> {
     try makeBundle(descriptor, data: try Data(contentsOf: bundleURL(for: descriptor)), strict: strict)
   }
 
@@ -70,7 +70,7 @@ extension Pulsar {
   ///
   ///     let bundle = try await pulsar.loadBundleAsync(AcmePack.descriptor)
   ///     bundle.heartbeatV2.play()
-  public func loadBundleAsync<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = false) async throws -> PulsarBundle<P> {
+  public func loadBundleAsync<P>(_ descriptor: BundleDescriptor<P>, strict: Bool = true) async throws -> PulsarBundle<P> {
     let url = try bundleURL(for: descriptor)
     let data = try await Task.detached(priority: .userInitiated) {
       try Data(contentsOf: url)

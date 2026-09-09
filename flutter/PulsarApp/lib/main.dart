@@ -54,7 +54,7 @@ class _PulsarDemoScreenState extends State<PulsarDemoScreen> {
   /// Loads the bundle shipped as a Flutter asset, through committed `pulsar-gen` output.
   Future<void> _loadBundle() async {
     try {
-      final bundle = await _pulsar.loadBundleAsync(haptics_bundle.hapticsBundle, strict: true);
+      final bundle = await _pulsar.loadBundleAsync(haptics_bundle.hapticsBundle);
       if (mounted) setState(() => _bundle = bundle);
     } catch (e) {
       if (mounted) setState(() => _status = 'Bundle failed to load: $e');

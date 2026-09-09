@@ -34,6 +34,7 @@ bundle.heartbeatV2.play();                 // ← autocompletes
 bundle.explosion.stop();
 ```
 
-Pass `strict: true` to assert the loaded bundle's content hash matches the generated types. The app
+The loaded bundle's content hash is asserted against the generated types unless you pass
+`strict: false`. The app
 reads the `.pulsar` asset bytes and hands them to the native SDK, which decodes and plays; synced
 audio uses the native iOS/Android path. Animation bytes are carried for your own Lottie view.

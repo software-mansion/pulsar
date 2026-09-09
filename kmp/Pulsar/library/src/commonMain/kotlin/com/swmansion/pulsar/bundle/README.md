@@ -23,14 +23,14 @@ suspending read:
 ```kotlin
 val pulsar = Pulsar.create()
 val bytes = Res.readBytes("files/acme-pack.pulsar")
-val bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes, strict = true)
+val bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes)
 
 bundle.heartbeatV2.play()
 bundle.explosion.stop()
 ```
 
-`strict = true` asserts the loaded bundle's content hash matches the generated types, failing loudly
-on a stale bundle/types mismatch.
+The loaded bundle's content hash is asserted against the generated types, failing loudly on a stale
+bundle/types mismatch. Pass `strict = false` to skip it.
 
 ## Limits
 

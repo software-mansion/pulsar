@@ -90,10 +90,10 @@ class Pulsar private constructor(
     suspend fun <P> loadBundleAsync(
         descriptor: BundleDescriptor<P>,
         bytes: ByteArray,
-        strict: Boolean = false,
+        strict: Boolean = true,
     ): P = withContext(Dispatchers.Default) { loadBundleSync(descriptor, bytes, strict) }
 
-    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): P {
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = true): P {
         val loaded = loadBundle(bytes)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {
             throw PulsarBundleException(

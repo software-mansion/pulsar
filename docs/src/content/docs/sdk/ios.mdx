@@ -664,7 +664,7 @@ npx @swmansion/pulsar-gen acme-pack.pulsar --target swift --out Sources/MyApp/
 
 ```swift
 let pulsar = Pulsar()
-let bundle = try pulsar.loadBundleSync(AcmePack.descriptor, strict: true)
+let bundle = try pulsar.loadBundleSync(AcmePack.descriptor)
 
 bundle.heartbeatV2.play()
 bundle.explosion.stop()
@@ -673,11 +673,11 @@ bundle.explosion.stop()
 `loadBundleAsync` is the same load with the file read off the calling thread:
 
 ```swift
-let bundle = try await pulsar.loadBundleAsync(AcmePack.descriptor, strict: true)
+let bundle = try await pulsar.loadBundleAsync(AcmePack.descriptor)
 ```
 
-The descriptor finds the `.pulsar` in the app's main bundle. `strict: true` checks the shipped
-bundle against the generated types, failing loudly on a stale copy.
+The descriptor finds the `.pulsar` in the app's main bundle, and its content hash is checked
+against the generated types so a stale copy fails loudly. Pass `strict: false` to skip that.
 
 Each `PresetHandle` exposes `id`, `duration`, `play()`, `stop()`, and `animation` — the Lottie bytes
 and timing for your own animation view. Pulsar carries and time-aligns the animation; the app
