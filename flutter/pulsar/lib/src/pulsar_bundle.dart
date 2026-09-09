@@ -69,13 +69,6 @@ extension PulsarBundleLoader on Pulsar {
   Future<P> loadBundleWithAssetsAsync<P>(
     BundleDescriptor<P> descriptor, {
     bool strict = false,
-  }) =>
-      loadBundle(descriptor, strict: strict);
-
-  @Deprecated('Renamed to loadBundleWithAssetsAsync for cross-SDK symmetry')
-  Future<P> loadBundle<P>(
-    BundleDescriptor<P> descriptor, {
-    bool strict = false,
   }) async {
     final data = await rootBundle.load(descriptor.assetName);
     final bytes = Uint8List.view(

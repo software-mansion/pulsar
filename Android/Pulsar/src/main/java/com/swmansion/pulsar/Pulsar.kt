@@ -115,14 +115,7 @@ open class Pulsar(protected var context: Context) {
      * Named for symmetry with the other SDKs: `loadBundleSync` everywhere it can be synchronous,
      * `loadBundleWithAssetsAsync` where it cannot (Flutter, and React Native's async path).
      */
-    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P =
-        loadBundle(descriptor, strict)
-
-    @Deprecated(
-        "Renamed for cross-SDK symmetry",
-        ReplaceWith("loadBundleSync(descriptor, strict)"),
-    )
-    fun <P> loadBundle(descriptor: BundleDescriptor<P>, strict: Boolean = false): P {
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, strict: Boolean = false): P {
         val loaded = loadBundleFromAsset(descriptor.assetName)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {
             throw PulsarBundleException(

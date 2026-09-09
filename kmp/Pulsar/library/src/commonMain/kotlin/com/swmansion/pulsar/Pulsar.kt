@@ -85,14 +85,7 @@ class Pulsar private constructor(
      *     val bundle = pulsar.loadBundleSync(AcmePack.descriptor, bytes)
      *     bundle.heartbeatV2.play()
      */
-    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): P =
-        loadBundle(descriptor, bytes, strict)
-
-    @Deprecated(
-        "Renamed for cross-SDK symmetry",
-        ReplaceWith("loadBundleSync(descriptor, bytes, strict)"),
-    )
-    fun <P> loadBundle(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): P {
+    fun <P> loadBundleSync(descriptor: BundleDescriptor<P>, bytes: ByteArray, strict: Boolean = false): P {
         val loaded = loadBundle(bytes)
         if (strict && descriptor.contentHash.isNotEmpty() && loaded.contentHash != descriptor.contentHash) {
             throw PulsarBundleException(

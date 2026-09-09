@@ -15,7 +15,7 @@ bundle.explosion.stop()
 bundle.heartbeatV2.animation?.let { myLottieView.setAnimation(it.data.inputStream(), null) }
 ```
 
-`loadBundle(descriptor, strict = true)` asserts the loaded bundle's content hash matches the
+`loadBundleSync(descriptor, strict = true)` asserts the loaded bundle's content hash matches the
 generated types, failing loudly on a stale bundle/types mismatch.
 
 ## Zero-manual codegen (Gradle plugin)
