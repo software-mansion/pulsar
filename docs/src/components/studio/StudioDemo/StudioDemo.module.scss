@@ -82,3 +82,13 @@
   width: 100%;
   height: auto;
 }
+
+.cta {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    margin-top: 28px;
+  }
+}

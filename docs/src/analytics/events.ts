@@ -16,19 +16,15 @@ export const EVENTS = {
   sdk_section_viewed: 'The SDK section was expanded',
   sdk_logo_clicked: 'A platform logo in the SDK section was clicked',
   app_showcase_store_clicked: 'An App Store / Google Play badge was clicked',
-  studio_section_waitlist_clicked: 'The Studio teaser on the landing page led to the waitlist',
+  studio_section_learn_more_clicked: 'The Studio teaser led to the Studio landing page',
+  studio_section_open_studio_clicked: 'The Studio teaser led straight into the Studio app',
 
   // --- Studio landing page (/studio/) --------------------------------------
-  studio_landing_cta_clicked: 'A "Join the waitlist" CTA was clicked',
+  studio_landing_cta_clicked: 'An "Open Pulsar Studio" CTA was clicked (which one, as `location`)',
   studio_landing_haptic_played: 'A hero emoji tile played its haptic',
   studio_landing_demo_played: 'The product demo video started playing',
   studio_landing_demo_progress: 'The demo video passed 25 / 50 / 75 / 100% for the first time',
-  studio_landing_docs_link_clicked: 'The "Why Pulsar" section sent the visitor into the docs',
-  studio_landing_waitlist_started: 'The first waitlist field was filled in',
-  studio_landing_waitlist_submitted: 'The waitlist form was submitted',
-  studio_landing_waitlist_succeeded: 'The waitlist submission was accepted by the server',
-  studio_landing_waitlist_failed: 'The waitlist submission was rejected or threw',
-  studio_landing_waitlist_consent_blocked: 'Submission was blocked by the unchecked consent box',
+  studio_landing_docs_link_clicked: 'The page sent the visitor into the docs',
 
   // --- presets playground (docs) -------------------------------------------
   preset_played: 'A preset was previewed in the browser',

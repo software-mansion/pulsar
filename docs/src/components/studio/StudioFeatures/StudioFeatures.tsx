@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import styles from './StudioFeatures.module.scss';
 import { BasicLayout } from '../../landing/Layouts/BasicLayout';
+import { Button } from '../../landing/Button/Button';
+import { STUDIO_URL } from '../../../content/docs/components/config';
+import { track } from '../../../analytics/analytics';
 
 // ── Inline, animatable icons ────────────────────────────────────────────────
 // Same navy line-art as the Figma icons, inlined so their parts can be animated.
@@ -251,6 +254,15 @@ export function StudioFeatures() {
               </div>
             );
           })}
+        </div>
+
+        <div className={styles.cta}>
+          <Button
+            label="Open Pulsar Studio"
+            variant="filled"
+            url={STUDIO_URL}
+            onClick={() => track('studio_landing_cta_clicked', { location: 'features' })}
+          />
         </div>
       </BasicLayout>
     </section>

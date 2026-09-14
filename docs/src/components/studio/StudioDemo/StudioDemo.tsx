@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import styles from './StudioDemo.module.scss';
 import { BasicLayout } from '../../landing/Layouts/BasicLayout';
+import { Button } from '../../landing/Button/Button';
+import { STUDIO_URL } from '../../../content/docs/components/config';
 import { BASE_PATH } from '../../../../config';
 import { track, trackFirstTimeOnly } from '../../../analytics/analytics';
 
-// A looping product demo, framed in the Pulsar "window" card. Sits right above
-// the waitlist so visitors can see Studio in action before signing up.
 export function StudioDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -78,6 +78,15 @@ export function StudioDemo() {
                 preload="metadata"
               />
             </div>
+          </div>
+
+          <div className={styles.cta}>
+            <Button
+              label="Open Pulsar Studio"
+              variant="filled"
+              url={STUDIO_URL}
+              onClick={() => track('studio_landing_cta_clicked', { location: 'demo' })}
+            />
           </div>
         </div>
       </BasicLayout>

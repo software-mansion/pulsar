@@ -5,7 +5,7 @@ import { SwmSection } from '../components/landing/SwmSection/SwmSection';
 import { StudioHero } from '../components/studio/StudioHero/StudioHero';
 import { StudioFeatures } from '../components/studio/StudioFeatures/StudioFeatures';
 import { StudioDemo } from '../components/studio/StudioDemo/StudioDemo';
-import { StudioWaitlist } from '../components/studio/StudioWaitlist/StudioWaitlist';
+import { StudioCta } from '../components/studio/StudioCta/StudioCta';
 import { StudioWhyPulsar } from '../components/studio/StudioWhyPulsar/StudioWhyPulsar';
 import '../styles/index.css';
 import commonStyle from '../components/landing/common.module.scss';
@@ -33,7 +33,7 @@ import starIcon from '../assets/landing-page/star.svg';
     />
     <meta
       name="description"
-      content="Pulsar Haptics Studio is an all-in-one tool for designing, modifying, and deploying custom haptics for iOS, Android, and React Native. Join the waitlist for early access."
+      content="Pulsar Haptics Studio is an all-in-one tool for designing, modifying, and deploying custom haptics for iOS, Android, and React Native. Open it in your browser and start designing."
     />
     <meta
       name="keywords"
@@ -54,7 +54,7 @@ import starIcon from '../assets/landing-page/star.svg';
     />
     <meta
       property="og:description"
-      content="An all-in-one tool for designing, modifying, and deploying custom haptics is coming soon. Join the waitlist."
+      content="An all-in-one tool for designing, modifying, and deploying custom haptics — open Pulsar Studio in your browser and start designing."
     />
     <meta property="og:image" content="https://docs.swmansion.com/pulsar/og-studio.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -64,7 +64,7 @@ import starIcon from '../assets/landing-page/star.svg';
     />
     <meta
       name="twitter:description"
-      content="An all-in-one tool for designing, modifying, and deploying custom haptics is coming soon. Join the waitlist."
+      content="An all-in-one tool for designing, modifying, and deploying custom haptics — open Pulsar Studio in your browser and start designing."
     />
     <meta name="twitter:image" content="https://docs.swmansion.com/pulsar/og-studio.png" />
     <GTMHead />
@@ -81,7 +81,7 @@ import starIcon from '../assets/landing-page/star.svg';
     <StudioHero client:load />
     <StudioFeatures client:visible />
     <StudioDemo client:visible />
-    <StudioWaitlist client:load />
+    <StudioCta client:visible />
     <StudioWhyPulsar />
     <SwmSection />
   </body>

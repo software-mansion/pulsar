@@ -2,9 +2,9 @@ import { Button } from '../Button/Button';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
 import styles from './StudioSection.module.scss';
 import { BASE_PATH } from '../../../../config';
+import { STUDIO_URL } from '../../../content/docs/components/config';
 import { track } from '../../../analytics/analytics';
 
-// What Studio lets you do — short labels echoing the Studio landing feature grid.
 const highlights = [
   'Design patterns from scratch',
   'Tweak existing presets',
@@ -14,7 +14,6 @@ const highlights = [
   'Export production-ready code',
 ];
 
-// Studio in action: a looping product demo framed in the Pulsar "window" card.
 function StudioPreview() {
   return (
     <div className={styles.preview}>
@@ -47,7 +46,7 @@ export function StudioSection({ className }: { className?: string }) {
       <div className={styles.left}>
         <SectionHeader
           title="Design your own with Pulsar&nbsp;Studio"
-          subtitle="An all-in-one tool for designing, tweaking, and generating custom haptics - then exporting production-ready code. Currently in development."
+          subtitle="An all-in-one tool for designing, tweaking, and generating custom haptics - then exporting production-ready code. Available now, right in your browser."
           align="center"
         />
         <ul className={styles.highlights}>
@@ -57,10 +56,15 @@ export function StudioSection({ className }: { className?: string }) {
         </ul>
         <div className={styles.actions}>
           <Button
-            label="Join the waitlist"
+            label="Learn more"
+            url={`${BASE_PATH}/studio/`}
+            onClick={() => track('studio_section_learn_more_clicked')}
+          />
+          <Button
+            label="Open Pulsar Studio"
             variant="filled"
-            url={`${BASE_PATH}/studio/#waitlist`}
-            onClick={() => track('studio_section_waitlist_clicked')}
+            url={STUDIO_URL}
+            onClick={() => track('studio_section_open_studio_clicked')}
           />
         </div>
       </div>

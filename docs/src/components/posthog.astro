@@ -63,9 +63,13 @@ const enabledForThisBuild = import.meta.env.PROD && Boolean(POSTHOG_CONFIG.apiKe
         persistence: 'memory',
         person_profiles: 'never',
         autocapture: false,
+        capture_dead_clicks: false,
+        capture_heatmaps: false,
+        capture_performance: false,
         property_denylist: PROPERTIES_READ_FROM_THE_DEVICE.concat(PROPERTIES_ALREADY_KNOWN),
         disable_session_recording: true,
         disable_surveys: true,
+        advanced_disable_feature_flags: true,
         sanitize_properties: withoutQueryStrings,
       });
 

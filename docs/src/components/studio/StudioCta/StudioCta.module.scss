@@ -28,14 +28,10 @@
   }
 }
 
-// Two sizes, mirrored left/right — matching the Figma layout (bigger star upper
-// and closer to the form, smaller star lower and further out).
 .star {
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  // Gentle vertical float. Uses transform so it never fights the top/left
-  // positioning; per-star duration/delay/amplitude keep them out of sync.
   animation: studioStarFloat var(--float-dur, 4.5s) ease-in-out var(--float-delay, 0s) infinite;
   will-change: transform;
 }
@@ -52,7 +48,7 @@
 
 .starTopLeft {
   width: 122px;
-  top: 145px;
+  top: 48px;
   left: calc(40% - 275px);
   --float-amp: -12px;
   --float-dur: 4.6s;
@@ -60,7 +56,7 @@
 }
 .starBottomLeft {
   width: 101px;
-  top: 232px;
+  top: 135px;
   left: calc(40% - 349px);
   --float-amp: -8px;
   --float-dur: 5.4s;
@@ -68,7 +64,7 @@
 }
 .starTopRight {
   width: 122px;
-  top: 145px;
+  top: 48px;
   left: calc(60% + 153px);
   --float-amp: -10px;
   --float-dur: 5s;
@@ -76,7 +72,7 @@
 }
 .starBottomRight {
   width: 101px;
-  top: 232px;
+  top: 135px;
   left: calc(60% + 247px);
   --float-amp: -7px;
   --float-dur: 4.2s;
@@ -92,22 +88,22 @@
 @media (max-width: 768px) {
   .starTopLeft {
     width: 92px;
-    top: 118px;
+    top: 40px;
     left: calc(40% - 210px);
   }
   .starBottomLeft {
     width: 76px;
-    top: 188px;
+    top: 110px;
     left: calc(40% - 262px);
   }
   .starTopRight {
     width: 92px;
-    top: 118px;
+    top: 40px;
     left: calc(60% + 118px);
   }
   .starBottomRight {
     width: 76px;
-    top: 188px;
+    top: 110px;
     left: calc(60% + 186px);
   }
 }
@@ -121,7 +117,7 @@
 .inner {
   position: relative;
   z-index: 2;
-  max-width: 522px;
+  max-width: 560px;
   margin: 0 auto;
   padding: 0 20px;
   box-sizing: border-box;
@@ -137,101 +133,23 @@
 
 .subtitle {
   margin: 16px auto 0;
-  max-width: 420px;
+  max-width: 440px;
   font-size: var(--font-size-md);
   line-height: 1.5;
   color: var(--color-primary);
 }
 
-.form {
+.actions {
   margin-top: 32px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  text-align: left;
-}
-
-.input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 16px 18px;
-  border: 2px solid var(--color-blue-30);
-  border-radius: 4px;
-  background-color: #ffffff;
-  color: var(--color-primary);
-  font-family: inherit;
-  font-size: var(--font-size-md);
-  line-height: 1.2;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-  &::placeholder {
-    color: #7a93b3;
-  }
-
-  &:focus {
-    border-color: var(--color-blue-50);
-    box-shadow: 0 0 0 3px rgba(56, 172, 221, 0.2);
-  }
-}
-
-.checkboxRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: var(--font-size-2xs);
-  line-height: 1.4;
-  color: var(--color-primary);
-  cursor: pointer;
-
-  &:first-of-type {
-    margin-top: 8px;
-  }
-
-  input {
-    margin: 1px 0 0;
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    accent-color: var(--color-blue-50);
-    cursor: pointer;
-  }
-}
-
-.fineprint {
-  margin: 8px 0 0;
-  font-size: var(--font-size-2xs);
-  line-height: 1.5;
-  color: #6b83a3;
-
-  a {
-    color: #6b83a3;
-    text-decoration: underline;
-  }
-}
-
-.submitRow {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
-
-  button:disabled {
-    opacity: 0.65;
-    cursor: progress;
-  }
+  justify-content: center;
+  gap: 16px;
 }
 
-.thanks {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-blue-60);
-}
-
-.error {
-  margin: 0;
-  font-size: var(--font-size-2xs);
-  color: var(--color-pink-100, #ff6259);
+.priceHint {
+  margin: 20px 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-blue-100);
 }

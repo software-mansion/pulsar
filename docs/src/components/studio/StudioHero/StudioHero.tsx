@@ -3,6 +3,7 @@ import styles from './StudioHero.module.scss';
 import { Button } from '../../landing/Button/Button';
 import { HeroChart } from './HeroChart';
 import { AudioPatternUtility } from '../../../content/docs/components/Preset/audio-player';
+import { STUDIO_URL } from '../../../content/docs/components/config';
 import type { PatternData } from '../../../content/docs/components/Preset/types';
 
 import pulsarLogo from '../../../assets/logo.svg';
@@ -236,14 +237,14 @@ export function StudioHero() {
           </div>
 
           <p className={styles.subtitle}>
-            An all-in-one tool for designing, modifying, and deploying custom haptics is
-            coming soon.
+            An all-in-one tool for designing, modifying, and deploying custom haptics —
+            open it in your browser and start designing.
           </p>
 
           <div className={styles.ctaRow}>
             <Button
-              label="Join the waitlist"
-              url="#waitlist"
+              label="Open Pulsar Studio"
+              url={STUDIO_URL}
               onClick={() => track('studio_landing_cta_clicked', { location: 'hero' })}
             />
             <span className={styles.priceHint}>with pricing starting from <b style={{ fontSize: '22px' }}>9$</b>/month</span>

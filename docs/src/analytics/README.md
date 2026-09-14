@@ -35,18 +35,28 @@ So `posthog.init` is configured:
 | `persistence: 'memory'`                        | The belt to that brace — SDK state lives in a variable that dies with the tab.                                                                        |
 | `person_profiles: 'never'`                     | Events never accumulate against a person profile.                                                                                                     |
 | `autocapture: false`                           | We send named events from the catalogue, never every DOM click and its text.                                                                          |
+| `capture_dead_clicks: false`                   | Documented default `true` — it survives `autocapture: false` and reports click coordinates plus the element's own text.                               |
+| `capture_heatmaps: false`                      | No click coordinates relative to a viewport we do not otherwise measure.                                                                              |
+| `capture_performance: false`                   | No web vitals / network timing — the Performance API is the device answering, not the request.                                                        |
 | `disable_session_recording`, `disable_surveys` | No replay, no injected UI.                                                                                                                            |
+| `advanced_disable_feature_flags: true`         | The site evaluates no flags, so it makes no `/flags` call and sends no properties to be matched against.                                              |
 | `property_denylist`                            | Drops everything the SDK reads _from the device_ — see below.                                                                                         |
 | `sanitize_properties`                          | Every URL PostHog attaches is reduced to origin + path.                                                                                               |
 | no `identify()`                                | Events are anonymous.                                                                                                                                 |
 
+Dead clicks, heatmaps and performance capture are turned off **in code** rather
+than left to the project settings, because an explicit client option beats remote
+config: nobody can switch them back on from the PostHog UI and quietly put
+device-read data into the payload.
+
 Verified in a browser against a stubbed ingestion host (see below): after loading
-the landing page, the Studio landing page and a docs page, and exercising the
-waitlist form, `document.cookie` held nothing from PostHog and neither storage
-held a PostHog key. Every event carried `$cookieless_mode: true`,
-`distinct_id: "$posthog_cookieless"`, `$device_id: null` and
-`$process_person_profile: false`, and **no denylisted property at all** — no
-screen or viewport size, no timezone, no raw user agent.
+the landing page, the Studio landing page and a docs page, `document.cookie` held
+nothing from PostHog and neither storage held a PostHog key. Every event carried
+`$cookieless_mode: true`, `distinct_id: "$posthog_cookieless"`, `$device_id: null`
+and `$process_person_profile: false`, and **no denylisted property at all** — no
+screen or viewport size, no timezone, no raw user agent. (That run predates the
+three capture opt-outs above, which only subtract from the payload; they have not
+been re-checked in a browser.)
 
 This puts the site in the same position as Plausible, Fathom and a
 CNIL-exempt Matomo configuration: an audience measurement that produces only
@@ -69,6 +79,11 @@ true:
    cookieless usage statistics are collected, and name PostHog as the processor.
 2. Nothing a visitor typed may ever be sent (see below).
 
+Since the waitlist form was removed the site collects **no personal data of its
+own at all** — there is nothing left to ask for, store, or forward to MailerLite.
+Anything a visitor types now happens inside Pulsar Studio, under Studio's own
+policy, not this site's.
+
 PostHog computes the cookieless hash at ingestion from
 `hash(team_id, daily_salt, ip, user_agent, hostname)` — all of it from the
 request, none of it from the client — so the denylist below cannot break it.
@@ -80,10 +95,9 @@ setting runs after the hash rather than before.
 ### What is deliberately NOT sent
 
 - **No identity.** No email, no name, no `identify()`, no person profiles.
-- **Nothing typed.** Not the waitlist form's name / email / company / position,
-  and not the docs search query — `docs_search_opened` counts the _act_ of
-  searching, and the waitlist reports only the shape of the submission
-  (`newsletter: true|false`, and an HTTP status when it fails).
+- **Nothing typed.** The site has no form left to submit — the Studio waitlist
+  went away with Studio's public release — and the docs search query is not sent
+  either: `docs_search_opened` counts the _act_ of searching, never the words.
 - **No query strings.** `sanitize_properties` strips them from `$current_url`,
   `$initial_current_url`, `$referrer` and `$initial_referrer`. `$current_url`
   rides on _every_ event, not just pageviews, and the playground's share links
@@ -196,10 +210,6 @@ never loads and nothing is exercised). Log the POSTs to `/e/`: each body is
 base64'd gzip JSON with a `batch` of events. Then confirm in the console that
 `document.cookie` holds no PostHog key and that both storages are empty.
 
-Two things will bite during a manual check:
-
-- PostHog defers its initial `$pageview` until `document.visibilityState` is
-  `visible`. A headless or backgrounded tab sends `$pageleave` but no
-  `$pageview`.
-- The waitlist form posts to the real server. Stub `window.fetch` before
-  submitting, or a test run becomes a real subscriber.
+One thing will bite during a manual check: PostHog defers its initial
+`$pageview` until `document.visibilityState` is `visible`, so a headless or
+backgrounded tab sends `$pageleave` but no `$pageview`.
