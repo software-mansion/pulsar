@@ -33,7 +33,15 @@ export default function usePatternComposer(pattern?: Pattern): PatternComposer {
     }
   }, []);
 
+  const release = useCallback(() => {
+    const id = patternId.get();
+    if (id === -1) return;
+    Pulsar.PatternComposer_release(id);
+    patternId.set(-1);
+  }, []);
+
   const parse = useCallback((pattern: Pattern) => {
+    release();
     const resolvedUri = pattern.sound ? resolveSoundUri(pattern.sound.uri) : undefined;
     let newPatternId: number;
     if (pattern.sound && resolvedUri) {
@@ -54,12 +62,7 @@ export default function usePatternComposer(pattern?: Pattern): PatternComposer {
       parse(pattern);
     }
 
-    return () => {
-      const id = patternId.get();
-      if (id !== -1) {
-        Pulsar.PatternComposer_release(id);
-      }
-    };
+    return release;
   }, [pattern]);
 
   return { play, stop, parse, isParsed };
