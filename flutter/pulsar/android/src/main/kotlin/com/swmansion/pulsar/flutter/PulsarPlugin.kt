@@ -46,7 +46,7 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onDetachedFromActivityForConfigChanges() {
         activity = null
         pulsar = null
-        patternComposers.clear()
+        releaseComposers()
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -57,6 +57,14 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onDetachedFromActivity() {
         activity = null
         pulsar = null
+        releaseComposers()
+    }
+
+    private fun releaseComposers() {
+        patternComposers.values.forEach {
+            it.stop()
+            it.release()
+        }
         patternComposers.clear()
     }
 
@@ -380,7 +388,10 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "PatternComposer_release" -> {
                 val composerId = call.argument<Int>("composerId")
                     ?: return result.error("INVALID_ARGS", "composerId required", null)
-                patternComposers.remove(composerId)?.stop()
+                patternComposers.remove(composerId)?.let {
+                    it.stop()
+                    it.release()
+                }
                 result.success(null)
             }
 
