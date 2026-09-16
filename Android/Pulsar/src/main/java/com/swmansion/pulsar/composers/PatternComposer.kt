@@ -26,12 +26,14 @@ class PatternComposer(
     private var vibrationEffect: VibrationEffect? = null
     private var audioBuffer: ByteArray? = null
 
-    private var soundPlayer: AudioHapticPlayer? = null
+    internal var soundPlayer: AudioHapticPlayer? = null
+        private set
     private var useCoupledHaptics = false
 
     /** [fromMs] starts the pattern that far into its own timeline. */
     @JvmOverloads
     fun parsePattern(hapticsData: PatternData, fromMs: Long = 0L) {
+        releaseSound()
         val seekedPattern = PatternSeek.patternFrom(hapticsData, fromMs)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrationEffect = try {
@@ -59,7 +61,6 @@ class PatternComposer(
         parsePattern(hapticsData, fromMs)
 
         val seekedSound = PatternSeek.soundFrom(sound, fromMs)
-        soundPlayer?.release()
 
         useCoupledHaptics =
             seekedSound.hapticChannels && isOggUri(seekedSound.uri) && engine.supportsAudioCoupledHaptics()
@@ -100,8 +101,13 @@ class PatternComposer(
     }
 
     fun release() {
+        releaseSound()
+    }
+
+    private fun releaseSound() {
         soundPlayer?.release()
         soundPlayer = null
+        useCoupledHaptics = false
     }
 
     private fun summarizePattern(hapticsData: PatternData): String {
