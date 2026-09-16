@@ -22,11 +22,11 @@ and event count they would produce.
 | **RMS envelope** | Loudness over time, smoothed |
 | **Perceptual loudness** | Loudness weighted the way hearing actually works |
 | **Impact follower** | Instant attack, slow release - the waveform tracked sample by sample |
-| **Transient taps** | Spectral-flux onsets, laid down as discrete taps |
+| **Transient taps** | Note attacks found by phase prediction, laid down as discrete taps |
 | **Beat grid** | A tempo estimate, quantized to the beat |
 | **Percussive / harmonic split** | Percussion → taps, tone → envelope |
 | **Multiband split** | Separate bands driving intensity and frequency |
-| **Melodic transcode** | Pitch into the frequency layer |
+| **Melodic transcode** | Melodic contour into the frequency layer - shape, not intervals |
 | **Filter-chain transcode (Android)** | Android's own audio-to-haptics filter chain |
 
 Clicking one puts it on the chart, replacing **all three layers** - so trying another
