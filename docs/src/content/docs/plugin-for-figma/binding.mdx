@@ -11,7 +11,7 @@ import boundPanel from '../assets/figma-plugin/presets-bound-panel.png';
 import onboardingStep from '../assets/figma-plugin/onboarding-step.png';
 
 A **binding** ties one preset to one layer. It lives in the Figma file, so it
-travels with the design — to your teammates, to a shared preview, and into Dev
+travels with the design - to your teammates, to a shared preview, and into Dev
 Mode for whoever implements it.
 
 ## Bind a preset
@@ -19,7 +19,7 @@ Mode for whoever implements it.
 <Steps>
 
 1. Select a layer, component or instance on the canvas.
-2. Press **+ Add** on any preset in the list — or on the preset's detail dialog.
+2. Press **+ Add** on any preset in the list - or on the preset's detail dialog.
 
 </Steps>
 
@@ -36,7 +36,7 @@ pair you're building.
 
 <Clip name="select_preset" caption="Picking a preset, selecting the component, and pressing Add." />
 
-Selecting a bound layer on the canvas plays its haptic — through audio in
+Selecting a bound layer on the canvas plays its haptic - through audio in
 Figma, and on your phone as well if one is paired. That is the fastest way to
 audit a screen: click through it and listen.
 
@@ -49,7 +49,7 @@ canvas.
 <Screenshot
   src={boundPanel}
   alt="The Selected presets panel grouped by screen, with six bindings across three frames"
-  caption="Grouped by top-level frame, with a count per screen — a quick read of which screens have haptics and which don't."
+  caption="Grouped by top-level frame, with a count per screen - a quick read of which screens have haptics and which don't."
   width={420}
 />
 
@@ -71,7 +71,7 @@ Two things, and nothing else:
 - **The binding itself**, stored as plugin data on the layer, plus a relaunch
   button so the plugin can be reopened from that node.
 - **A Dev Mode annotation** on each screen that has haptics, carrying a count
-  and a link to these docs — so a developer, or a coding agent reading the file
+  and a link to these docs - so a developer, or a coding agent reading the file
   through the Figma MCP, discovers them without installing anything.
 
 Annotations are optional: turning **Annotate screens for developers** off under
@@ -86,5 +86,5 @@ layers, styles or layout is touched.
 />
 
 The binding is written in a form any tool with file access can read. For the
-other side of that — reading it back out and turning it into SDK calls — see
+other side of that - reading it back out and turning it into SDK calls - see
 [Figma → code](/pulsar/figma/).
