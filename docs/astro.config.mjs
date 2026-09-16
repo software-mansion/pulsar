@@ -46,6 +46,15 @@ export default defineConfig({
     // The Studio page used to live under /pulsar-studio/ as a docs entry; it is
     // now the standalone /studio/ landing page. Keep the old URL working.
     '/pulsar-studio': '/pulsar/studio/',
+    // The plugin's section was `figma-plugin` until its pages were renamed after
+    // the plugin itself, Pulsar Plugin for Figma. Every page keeps its old URL.
+    '/figma-plugin': '/pulsar/plugin-for-figma/',
+    '/figma-plugin/presets': '/pulsar/plugin-for-figma/presets/',
+    '/figma-plugin/binding': '/pulsar/plugin-for-figma/binding/',
+    '/figma-plugin/live-preview': '/pulsar/plugin-for-figma/live-preview/',
+    '/figma-plugin/sharing': '/pulsar/plugin-for-figma/sharing/',
+    '/figma-plugin/studio-patterns': '/pulsar/plugin-for-figma/studio-patterns/',
+    '/figma-plugin/settings': '/pulsar/plugin-for-figma/settings/',
   },
   vite: {
     css: {
@@ -136,13 +145,13 @@ export default defineConfig({
         {
           label: 'Pulsar plugin for Figma',
           items: [
-            { label: 'Overview', slug: 'figma-plugin' },
-            { label: 'The preset library', slug: 'figma-plugin/presets' },
-            { label: 'Binding haptics', slug: 'figma-plugin/binding' },
-            { label: 'Live preview on a phone', slug: 'figma-plugin/live-preview' },
-            { label: 'Sharing & handoff', slug: 'figma-plugin/sharing' },
-            { label: 'Your own patterns', slug: 'figma-plugin/studio-patterns' },
-            { label: 'Account & settings', slug: 'figma-plugin/settings' },
+            { label: 'Overview', slug: 'plugin-for-figma' },
+            { label: 'The preset library', slug: 'plugin-for-figma/presets' },
+            { label: 'Binding haptics', slug: 'plugin-for-figma/binding' },
+            { label: 'Live preview on a phone', slug: 'plugin-for-figma/live-preview' },
+            { label: 'Sharing & handoff', slug: 'plugin-for-figma/sharing' },
+            { label: 'Your own patterns', slug: 'plugin-for-figma/studio-patterns' },
+            { label: 'Account & settings', slug: 'plugin-for-figma/settings' },
           ],
         },
         {
