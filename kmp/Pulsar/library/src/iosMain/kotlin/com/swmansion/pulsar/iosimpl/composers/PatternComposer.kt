@@ -53,12 +53,12 @@ internal class IOSPatternComposerHandle(
     private var audioResourceId: CHHapticAudioResourceID? = null
 
     override fun parsePattern(pattern: PatternData, fromMs: Long) {
-        releaseAudio()
+        releaseCurrentPattern()
         parse(PatternSeek.patternFrom(pattern, fromMs), audioEvent = null)
     }
 
     override fun parsePatternWithSound(pattern: PatternData, sound: SoundData, fromMs: Long) {
-        releaseAudio()
+        releaseCurrentPattern()
         parse(
             PatternSeek.patternFrom(pattern, fromMs),
             audioEvent = makeAudioEvent(PatternSeek.soundFrom(sound, fromMs)),
@@ -182,7 +182,14 @@ internal class IOSPatternComposerHandle(
         }.onFailure { log("could not slice audio window: ${it.message}") }.getOrNull()
     }
 
-    private fun releaseAudio() {
+    private fun releaseCurrentPattern() {
+        continuousPlayerId?.let(engine::removePlayer)
+        discretePlayerId?.let(engine::removePlayer)
+        continuousPlayerId = null
+        discretePlayerId = null
+        continuousPattern = null
+        discretePattern = null
+
         audioResourceId?.let { engine.unregisterAudioResource(it) }
         audioResourceId = null
         tempAudioURL?.path?.let { path ->
@@ -223,14 +230,8 @@ internal class IOSPatternComposerHandle(
 
     override fun dispose() {
         stop()
-        continuousPlayerId?.let(engine::removePlayer)
-        discretePlayerId?.let(engine::removePlayer)
-        continuousPlayerId = null
-        discretePlayerId = null
-        continuousPattern = null
-        discretePattern = null
+        releaseCurrentPattern()
         audioBuffer = null
         hasSound = false
-        releaseAudio()
     }
 }

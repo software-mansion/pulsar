@@ -27,11 +27,11 @@ private class AndroidPulsarHandle(
     private val nativePulsar: AndroidPulsar,
 ) : PulsarPlatformHandle {
     private val presetsHandle by lazy { AndroidPresetsHandle(nativePulsar.getPresets()) }
-    private val patternComposerHandle by lazy { AndroidPatternComposerHandle(nativePulsar.getPatternComposer()) }
 
     override fun presets(): PulsarPresetsHandle = presetsHandle
 
-    override fun patternComposer(): PatternComposerHandle = patternComposerHandle
+    override fun patternComposer(): PatternComposerHandle =
+        AndroidPatternComposerHandle(nativePulsar.getPatternComposer())
 
     override fun realtimeComposer(): RealtimeComposerHandle =
         AndroidRealtimeComposerHandle(nativePulsar.getRealtimeComposer())
@@ -362,6 +362,8 @@ private class AndroidPatternComposerHandle(
     override fun playAudioOnly() = composer.playAudioOnly()
 
     override fun stop() = composer.stop()
+
+    override fun dispose() = composer.release()
 }
 
 private class AndroidRealtimeComposerHandle(
