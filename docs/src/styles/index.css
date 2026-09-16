@@ -97,3 +97,12 @@ body {
     margin-top: -50px;
   }
 }
+
+.sl-markdown-content p > img {
+  display: block;
+  height: auto;
+  border: 2px solid var(--color-blue-50);
+  border-radius: 4px;
+  box-shadow: -3px 3px 0 var(--color-blue-50);
+  background: #fbfeff;
+}

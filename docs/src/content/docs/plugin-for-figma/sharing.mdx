@@ -28,8 +28,8 @@ account required.
 The shared page embeds your Figma prototype and overlays the elements that have
 haptics on them. Tapping one plays it. A side list of every haptic element lets
 them jump between screens, and opening a preset shows its waveform, its
-description and the same **six SDK snippets** — Swift, Android, Kotlin
-Multiplatform, React Native, Flutter and Web — that the plugin shows you.
+description and the same **six SDK snippets** - Swift, Android, Kotlin
+Multiplatform, React Native, Flutter and Web - that the plugin shows you.
 
 Open the same link inside the **Pulsar** mobile app and the taps become real
 vibration rather than sound.
@@ -44,7 +44,7 @@ vibration rather than sound.
 ## Controlling access
 
 The toggle above the buttons switches the link between public and private.
-Turning it off revokes the link without discarding it — sharing again re-opens
+Turning it off revokes the link without discarding it - sharing again re-opens
 access, and anyone holding the old URL stays locked out.
 
 <Aside title="Your own paired phone is unaffected">
@@ -55,7 +55,7 @@ access, and anyone holding the old URL stays locked out.
 ## What gets uploaded
 
 Sharing (or pairing a phone) uploads the page's bindings: the bound layers'
-names, their position and size, and the file's key — enough to line the haptics
+names, their position and size, and the file's key - enough to line the haptics
 up with your prototype. Nothing is uploaded until you share or pair, and the
 prototype itself is served by Figma, not by Pulsar.
 
@@ -68,10 +68,10 @@ prototype itself is served by Figma, not by Pulsar.
 
 Beyond the link, the bindings are readable straight out of the Figma file.
 Every bound layer carries its preset as shared plugin data, and every screen
-with haptics gets a Dev Mode annotation pointing at it — so a coding agent
+with haptics gets a Dev Mode annotation pointing at it - so a coding agent
 working from the file finds them without the plugin installed.
 
-- [**Figma → code**](/pulsar/figma/) — the data contract, and how a preset name
+- [**Figma → code**](/pulsar/figma/) - the data contract, and how a preset name
   becomes an SDK call on each platform.
-- [**Figma MCP**](/pulsar/skills/figma-mcp/) — the same thing written up as an
+- [**Figma MCP**](/pulsar/skills/figma-mcp/) - the same thing written up as an
   agent workflow, with the `pulsar-figma-haptics` skill.
