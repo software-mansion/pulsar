@@ -113,6 +113,24 @@ struct CoreHapticsMockTests {
         #expect(last?.sharpness == 0.0)   // clamped low-bound
     }
 
+    @Test func reparsingAPatternComposerReleasesItsPreviousPlayers() {
+        CoreHapticsMock.install()
+        defer { CoreHapticsMock.uninstall() }
+
+        let engine = activeEngine()
+        let composer = PatternComposer(engine: engine, audioSimulator: AudioSimulator())
+        let data = PatternData(line: [[[0, 1.0], [100, 0.0]], [[0, 0.5]]], bar: [[0, 1.0, 0.3]])
+
+        composer.parsePattern(hapticsData: data)
+        let perParse = HapticMockRecorder.shared.playersCreated
+        #expect(perParse >= 1)
+
+        composer.parsePattern(hapticsData: data)
+
+        #expect(HapticMockRecorder.shared.playersCreated == perParse * 2)
+        #expect(HapticMockRecorder.shared.playerStops >= perParse)
+    }
+
     @Test func stopDeactivatesTheRealtimeComposer() {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }

@@ -32,14 +32,14 @@ public class PatternComposer: NSObject {
 
   /// `fromMs` starts the pattern that far into its own timeline.
   @objc public func parsePattern(hapticsData: PatternData, fromMs: Double = 0) {
-    releaseAudio()
+    releaseCurrentPattern()
     parse(hapticsData: PatternSeek.pattern(hapticsData, from: fromMs), audioEvent: nil)
   }
 
   /// `start`/`duration` are the authored trim window in the file; `fromMs` seeks the whole
   /// preset, moving audio and haptics together.
   @objc public func parsePatternWithSound(hapticsData: PatternData, uri: String, volume: Float = 1, offset: Double = 0, start: Double = 0, duration: Double = 0, fromMs: Double = 0) {
-    releaseAudio()
+    releaseCurrentPattern()
     let window = PatternSeek.soundWindow(offset: offset, start: start, duration: duration, from: fromMs)
     let audioEvent = makeAudioEvent(
       uri: uri,
@@ -162,7 +162,14 @@ public class PatternComposer: NSObject {
     }
   }
 
-  private func releaseAudio() {
+  private func releaseCurrentPattern() {
+    if let id = continuousPlayerId { engine.removePlayer(id: id) }
+    if let id = discretePlayerId { engine.removePlayer(id: id) }
+    continuousPlayerId = nil
+    discretePlayerId = nil
+    continuousPattern = nil
+    discretePattern = nil
+
     if let id = audioResourceID {
       engine.unregisterAudioResource(id)
       audioResourceID = nil
@@ -202,14 +209,8 @@ public class PatternComposer: NSObject {
 
   @objc public func dispose() {
     stop()
-    if let id = continuousPlayerId { engine.removePlayer(id: id) }
-    if let id = discretePlayerId { engine.removePlayer(id: id) }
-    continuousPlayerId = nil
-    discretePlayerId = nil
-    continuousPattern = nil
-    discretePattern = nil
+    releaseCurrentPattern()
     audioBuffer = nil
     hasSound = false
-    releaseAudio()
   }
 }
