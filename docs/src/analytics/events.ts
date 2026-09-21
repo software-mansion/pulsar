@@ -26,6 +26,15 @@ export const EVENTS = {
   studio_landing_demo_progress: 'The demo video passed 25 / 50 / 75 / 100% for the first time',
   studio_landing_docs_link_clicked: 'The page sent the visitor into the docs',
 
+  // --- Figma plugin landing page (/plugin-for-figma/) ----------------------
+  figma_landing_cta_clicked:
+    'An "Install from Figma Community" CTA was clicked (which one, as `location`)',
+  figma_landing_how_it_works_clicked: 'The hero CTA jumped down to the how-it-works steps',
+  figma_landing_demo_played: 'The plugin demo video started playing',
+  figma_landing_demo_progress: 'The demo video passed 25 / 50 / 75 / 100% for the first time',
+  figma_landing_app_store_clicked: 'A companion-app store link was clicked (`store`)',
+  figma_landing_docs_link_clicked: 'The page sent the visitor into the plugin docs',
+
   // --- presets playground (docs) -------------------------------------------
   preset_played: 'A preset was previewed in the browser',
   preset_played_on_device: 'A preset was sent to a connected phone',

@@ -1,0 +1,243 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  background-color: #e1f3fa;
+  border-bottom: 1px solid var(--color-blue-50);
+}
+
+// Soft halo behind the plugin window, as in the design.
+.orb {
+  position: absolute;
+  top: -180px;
+  right: -160px;
+  width: 760px;
+  height: 760px;
+  border-radius: 50%;
+  background-color: rgba(181, 225, 241, 0.55);
+  pointer-events: none;
+
+  @media (max-width: 960px) {
+    display: none;
+  }
+}
+
+.star {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.starBig {
+  top: 48px;
+  right: 74px;
+  width: 78px;
+
+  @media (max-width: 960px) {
+    top: 24px;
+    right: 24px;
+    width: 54px;
+  }
+}
+
+.starSmall {
+  top: 122px;
+  right: 30px;
+  width: 44px;
+
+  @media (max-width: 960px) {
+    top: 76px;
+    right: 4px;
+    width: 30px;
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 88px 40px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 48px;
+  box-sizing: border-box;
+
+  @media (max-width: 960px) {
+    flex-direction: column;
+    padding: 64px 24px 0;
+    gap: 40px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 48px 16px 0;
+  }
+}
+
+.left {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 600px;
+  padding-bottom: 96px;
+
+  @media (max-width: 960px) {
+    padding-bottom: 0;
+  }
+}
+
+.createdBy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+
+  img {
+    height: 34px;
+    width: auto;
+  }
+}
+
+.title {
+  margin: 32px 0 0;
+  font-size: clamp(30px, 3.6vw, 48px);
+  line-height: 1.14;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
+  // Wraps as "Design your haptics right" / "where you design your UI".
+  max-width: 26ch;
+
+  @media (max-width: 960px) {
+    max-width: none;
+  }
+}
+
+.subtitle {
+  margin: 28px 0 0;
+  max-width: 480px;
+  font-size: var(--font-size-lg);
+  line-height: var(--font-line-height-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-primary);
+}
+
+.ctaRow {
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    margin-top: 28px;
+    gap: 12px;
+  }
+}
+
+.footnote {
+  margin: 28px 0 0;
+  max-width: 420px;
+  font-size: var(--font-size-2xs);
+  line-height: 1.5;
+  color: var(--color-blue-60);
+}
+
+.right {
+  position: relative;
+  flex-shrink: 0;
+  width: 430px;
+  max-width: 100%;
+  // The window is cut off by the hero's bottom border, the way the design has it.
+  align-self: stretch;
+
+  @media (max-width: 960px) {
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+}
+
+// Card edges peeking out from behind the plugin window.
+.ghost {
+  position: absolute;
+  top: 56px;
+  left: 56px;
+  right: -46px;
+  bottom: 120px;
+  border: 2px solid var(--color-blue-50);
+  border-radius: 4px;
+  background-color: #fbfeff;
+  opacity: 0.75;
+
+  @media (max-width: 600px) {
+    display: none;
+  }
+}
+
+.ghostFar {
+  top: 180px;
+  right: -86px;
+  bottom: 30px;
+  opacity: 0.5;
+}
+
+.shot {
+  position: relative;
+  z-index: 1;
+  border: 2px solid var(--color-blue-50);
+  border-radius: 6px 6px 0 0;
+  background-color: #fbfeff;
+  box-shadow: -4px 4px 0 var(--color-blue-50);
+  // The screenshot is a tall plugin window; show its top and let the rest run
+  // off the bottom of the hero rather than scaling the whole thing down.
+  min-height: 100%;
+  max-height: 560px;
+  overflow: hidden;
+
+  @media (max-width: 960px) {
+    max-height: 420px;
+  }
+
+  @media (max-width: 480px) {
+    max-height: 340px;
+  }
+}
+
+.shotBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-blue-20);
+  background-color: #ffffff;
+}
+
+// Stand-in for the Figma plugin chrome's app icon.
+.shotMark {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background-color: var(--color-primary);
+}
+
+.shotName {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+.shotClose {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-blue-60);
+}
+
+.shotImage {
+  display: block;
+  width: 100%;
+  height: auto;
+}

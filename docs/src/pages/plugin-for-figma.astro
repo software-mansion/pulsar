@@ -1,0 +1,77 @@
+---
+import { BasicLayout } from '../components/landing/Layouts/BasicLayout';
+import { TopBar } from '../components/landing/TopBar/TopBar';
+import { SwmSection } from '../components/landing/SwmSection/SwmSection';
+import { FigmaHero } from '../components/figma/FigmaHero/FigmaHero';
+import { FigmaStats } from '../components/figma/FigmaStats/FigmaStats';
+import { FigmaSteps } from '../components/figma/FigmaSteps/FigmaSteps';
+import { FigmaDemo } from '../components/figma/FigmaDemo/FigmaDemo';
+import { FigmaStart } from '../components/figma/FigmaStart/FigmaStart';
+import '../styles/index.css';
+import commonStyle from '../components/landing/common.module.scss';
+import GTMBody from '../components/gtm-body.astro';
+import GTMHead from '../components/gtm-head.astro';
+import PostHog from '../components/posthog.astro';
+import { BASE_PATH } from '../../config';
+import swmLogo from '../assets/swm-logo.svg';
+import starIcon from '../assets/landing-page/star.svg';
+
+const title = 'Pulsar for Figma: Design Your Haptics Right Where You Design Your UI';
+const description =
+  'Pulsar brings haptics into Figma: bind a preset to any design element, hear it as you edit, feel it on a real phone, share an interactive preview, and hand developers ready-to-use SDK code.';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {/* Load DM Sans / DM Mono via <link> (not a CSS @import): bundled @import
+        rules get reordered below other declarations in the production build and
+        are then ignored, dropping the font back to the system default. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+    />
+    <meta name="description" content={description} />
+    <meta
+      name="keywords"
+      content="figma haptics, figma plugin, haptic design, design haptics in figma, haptic prototyping, ios haptics, android haptics, haptic feedback plugin"
+    />
+    <title>{title}</title>
+    {/* Self-referencing canonical so tracking-param variants consolidate to the
+        clean URL. Starlight pages get this automatically; this hand-rolled page
+        needs it set explicitly. */}
+    <link rel="canonical" href={new URL(`${BASE_PATH}/plugin-for-figma/`, Astro.site).href} />
+    <link rel="icon" type="image/svg+xml" href={`${BASE_PATH}/logo.svg`} />
+    <link rel="preload" as="image" type="image/svg+xml" href={swmLogo.src} />
+    <link rel="preload" as="image" type="image/svg+xml" href={starIcon.src} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="https://docs.swmansion.com/pulsar/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="https://docs.swmansion.com/pulsar/og.png" />
+    <GTMHead />
+    <PostHog />
+  </head>
+  <body>
+    <GTMBody />
+    <div class={commonStyle.bottomBorder}>
+      <BasicLayout>
+        <TopBar client:load />
+      </BasicLayout>
+    </div>
+
+    <FigmaHero />
+    <FigmaStats />
+    <FigmaSteps />
+    <FigmaDemo client:visible />
+    <FigmaStart />
+    <SwmSection />
+  </body>
+</html>

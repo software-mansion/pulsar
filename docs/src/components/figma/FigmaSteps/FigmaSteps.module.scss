@@ -1,0 +1,149 @@
+// Width of the gap each card leaves for the timeline running down the middle.
+$gutter: 56px;
+// How far each card is pulled up into the previous one. The two columns never
+// share horizontal space, so overlapping them vertically can't collide.
+$stagger: 72px;
+
+.section {
+  background-color: #ffffff;
+  padding: 80px 0 100px;
+
+  @media (max-width: 768px) {
+    padding: 56px 0 64px;
+  }
+}
+
+.heading {
+  margin: 0 0 64px;
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px;
+  }
+}
+
+.timeline {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  // The line the steps hang off.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    margin-left: -1px;
+    background-color: var(--color-blue-30);
+
+    @media (max-width: 760px) {
+      left: 7px;
+    }
+  }
+}
+
+.step {
+  position: relative;
+  display: flex;
+
+  // Steps alternate columns, starting on the left.
+  &:nth-child(even) {
+    justify-content: flex-end;
+  }
+
+  & + .step {
+    margin-top: -$stagger;
+  }
+
+  @media (max-width: 760px) {
+    justify-content: flex-start;
+
+    &:nth-child(even) {
+      justify-content: flex-start;
+    }
+
+    & + .step {
+      margin-top: 24px;
+    }
+  }
+}
+
+.dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border: 2px solid var(--color-blue-30);
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-sizing: border-box;
+
+  @media (max-width: 760px) {
+    top: 30px;
+    left: 8px;
+  }
+}
+
+// The entry point of the flow gets the heavier marker from the design.
+.dotFirst {
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border-color: var(--color-blue-20);
+  border-width: 6px;
+  background-color: var(--color-blue-50);
+  background-clip: content-box;
+
+  @media (max-width: 760px) {
+    margin-top: -14px;
+  }
+}
+
+.card {
+  box-sizing: border-box;
+  width: calc(50% - #{$gutter});
+  padding: 24px 28px 28px;
+  border: 2px solid var(--color-blue-50);
+  border-radius: 4px;
+  background-color: #e8f5fb;
+  box-shadow: -4px 4px 0 var(--color-blue-50);
+
+  @media (max-width: 760px) {
+    width: calc(100% - 44px);
+    margin-left: 44px;
+    padding: 20px 22px 24px;
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background-color: var(--color-blue-20);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+}
+
+.title {
+  margin: 18px 0 0;
+  font-size: var(--font-size-xl);
+  line-height: 1.25;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.body {
+  margin: 12px 0 0;
+  font-size: var(--font-size-md);
+  line-height: 1.55;
+  color: var(--color-primary);
+}

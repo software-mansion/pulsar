@@ -38,6 +38,9 @@ export function TopBar() {
             Studio
             <span className={styles.newDot} aria-hidden="true" />
           </a>
+          <a href={`${BASE_PATH}/plugin-for-figma/`} {...nav('figma-plugin', 'topbar')}>
+            Plugin for Figma
+          </a>
           <a href={`${BASE_PATH}/presets-playground/`} {...nav('presets', 'topbar')}>
             Presets
           </a>
@@ -81,6 +84,13 @@ export function TopBar() {
               >
                 Studio
                 <span className={styles.newDot} aria-hidden="true" />
+              </a>
+              <a
+                href={`${BASE_PATH}/plugin-for-figma/`}
+                onClick={closeMenu}
+                {...nav('figma-plugin', 'mobile-menu')}
+              >
+                Plugin for Figma
               </a>
               <a
                 href={`${BASE_PATH}/presets-playground/`}
