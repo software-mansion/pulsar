@@ -30,6 +30,7 @@ export const EVENTS = {
   figma_landing_cta_clicked:
     'An "Install from Figma Community" CTA was clicked (which one, as `location`)',
   figma_landing_how_it_works_clicked: 'The hero CTA jumped down to the how-it-works steps',
+  figma_landing_haptic_played: 'A hero emoji tile played its haptic',
   figma_landing_demo_played: 'The plugin demo video started playing',
   figma_landing_demo_progress: 'The demo video passed 25 / 50 / 75 / 100% for the first time',
   figma_landing_app_store_clicked: 'A companion-app store link was clicked (`store`)',
