@@ -31,6 +31,7 @@ export const EVENTS = {
     'An "Install from Figma Community" CTA was clicked (which one, as `location`)',
   figma_landing_how_it_works_clicked: 'The hero CTA jumped down to the how-it-works steps',
   figma_landing_haptic_played: 'A hero emoji tile played its haptic',
+  figma_landing_feature_selected: 'A panel was chosen in the closer-look switcher',
   figma_landing_app_store_clicked: 'A companion-app store link was clicked (`store`)',
   figma_landing_docs_link_clicked: 'The page sent the visitor into the plugin docs',
 
