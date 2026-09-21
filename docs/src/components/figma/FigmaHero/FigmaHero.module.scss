@@ -18,34 +18,20 @@
   background-color: #b1dfd0;
 }
 
-.halo {
+.rings {
   position: absolute;
-  top: -180px;
-  right: -160px;
-  width: 760px;
-  height: 760px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.45);
-  pointer-events: none;
+  top: 50%;
+  left: 58%;
+  width: 900px;
+  height: 900px;
+  margin: -450px 0 0;
+  z-index: 0;
 
   @media (max-width: 960px) {
-    display: none;
-  }
-}
-
-.haloPulse {
-  animation: haloPulse 0.8s ease-out;
-}
-
-@keyframes haloPulse {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.06);
-  }
-  100% {
-    transform: scale(1);
+    left: 50%;
+    width: 760px;
+    height: 760px;
+    margin: -380px 0 0 -380px;
   }
 }
 
@@ -310,8 +296,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shake,
-  .haloPulse {
+  .shake {
     animation: none;
   }
 

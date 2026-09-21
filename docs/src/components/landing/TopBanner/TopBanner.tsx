@@ -9,18 +9,25 @@ import arrowIcon from '../../../assets/landing-page/arrow.svg';
 import { Button } from '../Button/Button';
 import { EmojiButton } from '../EmojiButton/EmojiButton';
 import { SoundBar } from '../SoundBar/SoundBar';
+import { HapticRings, type RingsAnimation, type RingsColor } from '../HapticRings/HapticRings';
 import { Presets } from 'pulsar-haptics';
 import { useRef, useState } from 'react';
 import { track } from '../../../analytics/analytics';
 
+const bannerBackground: Record<RingsColor, string> = {
+  blue: '',
+  yellow: styles.yellow,
+  red: styles.red,
+  green: styles.green,
+};
 
 export function TopBanner() {
-  const [colorClass, setColorClass] = useState('');
+  const [color, setColor] = useState<RingsColor>('blue');
   const [showStars, setShowStars] = useState(false);
   const [showAngels, setShowAngels] = useState(false);
   const [showClouds, setShowClouds] = useState(false);
   const [confettiInstances, setConfettiInstances] = useState<number[]>([]);
-  const [backgroundAnimation, setBackgroundAnimation] = useState(styles.wave);
+  const [ringsAnimation, setRingsAnimation] = useState<RingsAnimation>('wave');
   const [showDecorativeIcons, setShowDecorativeIcons] = useState(true);
   const phoneRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +72,7 @@ export function TopBanner() {
   };
 
   return (
-    <div className={`${styles.banner} ${colorClass}`}>
+    <div className={`${styles.banner} ${bannerBackground[color]}`}>
       <div className={styles.leftBar}>
         <div className={styles.authors}>
           <span>Created by</span>
@@ -124,8 +131,8 @@ export function TopBanner() {
                   onClick={() => {
                     Presets.sway();
                     triggerVibration();
-                    setColorClass('');
-                    setBackgroundAnimation(styles.wave);
+                    setColor('blue');
+                    setRingsAnimation('wave');
                     handleAnimationEffect('');
                     track('haptics_demo_interacted', {
                       emoji: 'emoji1',
@@ -138,8 +145,8 @@ export function TopBanner() {
                   onClick={() => {
                     Presets.trill();
                     triggerVibration();
-                    setColorClass(styles.yellow);
-                    setBackgroundAnimation(styles.sonar);
+                    setColor('yellow');
+                    setRingsAnimation('sonar');
                     handleAnimationEffect('stars');
                     track('haptics_demo_interacted', {
                       emoji: 'emoji2',
@@ -155,8 +162,8 @@ export function TopBanner() {
                   onClick={() => {
                     Presets.smash();
                     triggerVibration();
-                    setColorClass(styles.red);
-                    setBackgroundAnimation(styles.quake);
+                    setColor('red');
+                    setRingsAnimation('quake');
                     handleAnimationEffect('confetti');
                     track('haptics_demo_interacted', {
                       emoji: 'emoji3',
@@ -169,8 +176,8 @@ export function TopBanner() {
                   onClick={() => {
                     Presets.heartbeat();
                     triggerVibration();
-                    setColorClass(styles.green);
-                    setBackgroundAnimation(styles.heartbeat);
+                    setColor('green');
+                    setRingsAnimation('heartbeat');
                     handleAnimationEffect('angels');
                     track('haptics_demo_interacted', {
                       emoji: 'emoji4',
@@ -183,32 +190,7 @@ export function TopBanner() {
           </div>
         </div>
 
-        <div
-          className={`${styles.svgWave} ${colorClass} ${backgroundAnimation}`}
-          aria-hidden="true"
-        >
-          {[500, 400, 300, 200, 100].map((r) => (
-            <svg
-              key={r}
-              className={styles.ring}
-              width="1000"
-              height="1000"
-              viewBox="0 0 1200 1200"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="600"
-                cy="600"
-                r={r}
-                fill="#87CCE8"
-                stroke="#2B85AB"
-                strokeMiterlimit="16"
-                strokeDasharray="8 8"
-              />
-            </svg>
-          ))}
-        </div>
+        <HapticRings animation={ringsAnimation} color={color} className={styles.svgWave} />
       </div>
 
       <SoundBar />
@@ -268,10 +250,18 @@ function CloudSvg({ size }: { size: number }) {
 function CloudEffect() {
   return (
     <div className={styles.cloudContainer}>
-      <div><CloudSvg size={90} /></div>
-      <div><CloudSvg size={55} /></div>
-      <div><CloudSvg size={72} /></div>
-      <div><CloudSvg size={48} /></div>
+      <div>
+        <CloudSvg size={90} />
+      </div>
+      <div>
+        <CloudSvg size={55} />
+      </div>
+      <div>
+        <CloudSvg size={72} />
+      </div>
+      <div>
+        <CloudSvg size={48} />
+      </div>
     </div>
   );
 }
@@ -279,10 +269,18 @@ function CloudEffect() {
 function AngelEffect() {
   return (
     <div className={styles.angelContainer}>
-      <div><img src={angelIcon.src} /></div>
-      <div><img src={angelIcon.src} /></div>
-      <div><img src={angelIcon.src} /></div>
-      <div><img src={angelIcon.src} /></div>
+      <div>
+        <img src={angelIcon.src} />
+      </div>
+      <div>
+        <img src={angelIcon.src} />
+      </div>
+      <div>
+        <img src={angelIcon.src} />
+      </div>
+      <div>
+        <img src={angelIcon.src} />
+      </div>
     </div>
   );
 }

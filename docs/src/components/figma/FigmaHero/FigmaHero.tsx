@@ -3,6 +3,11 @@ import { Presets } from 'pulsar-haptics';
 import styles from './FigmaHero.module.scss';
 import { Button } from '../../landing/Button/Button';
 import { EmojiButton } from '../../landing/EmojiButton/EmojiButton';
+import {
+  HapticRings,
+  type RingsAnimation,
+  type RingsColor,
+} from '../../landing/HapticRings/HapticRings';
 import { FIGMA_COMMUNITY_URL } from '../figmaLinks';
 import { track, trackingAttributes } from '../../../analytics/analytics';
 
@@ -13,15 +18,28 @@ import pluginWindow from '../../../content/docs/assets/figma-plugin/presets-filt
 interface Mood {
   emoji: string;
   playHaptic: () => void;
-  background: string;
+  color: RingsColor;
+  animation: RingsAnimation;
 }
 
 const moods: Mood[] = [
-  { emoji: 'emoji1', playHaptic: () => Presets.sway(), background: '' },
-  { emoji: 'emoji2', playHaptic: () => Presets.trill(), background: styles.yellow },
-  { emoji: 'emoji3', playHaptic: () => Presets.smash(), background: styles.red },
-  { emoji: 'emoji4', playHaptic: () => Presets.heartbeat(), background: styles.green },
+  { emoji: 'emoji1', playHaptic: () => Presets.sway(), color: 'blue', animation: 'wave' },
+  { emoji: 'emoji2', playHaptic: () => Presets.trill(), color: 'yellow', animation: 'sonar' },
+  { emoji: 'emoji3', playHaptic: () => Presets.smash(), color: 'red', animation: 'quake' },
+  {
+    emoji: 'emoji4',
+    playHaptic: () => Presets.heartbeat(),
+    color: 'green',
+    animation: 'heartbeat',
+  },
 ];
+
+const heroBackground: Record<RingsColor, string> = {
+  blue: '',
+  yellow: styles.yellow,
+  red: styles.red,
+  green: styles.green,
+};
 
 const AUTO_ADVANCE_MS = 3600;
 
@@ -49,33 +67,38 @@ function usePrefersReducedMotion() {
 }
 
 export function FigmaHero() {
-  const [background, setBackground] = useState('');
   const [activeMoodIndex, setActiveMoodIndex] = useState(0);
   const pluginWindowRef = useRef<HTMLDivElement>(null);
-  const haloRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const activeMood = moods[activeMoodIndex];
+
+  const selectMood = (index: number) => {
+    setActiveMoodIndex(index);
+    restartAnimation(pluginWindowRef.current, styles.shake);
+  };
 
   useEffect(() => {
     if (prefersReducedMotion) return;
     const advance = setTimeout(
-      () => setActiveMoodIndex((index) => (index + 1) % moods.length),
+      () => selectMood((activeMoodIndex + 1) % moods.length),
       AUTO_ADVANCE_MS,
     );
     return () => clearTimeout(advance);
   }, [activeMoodIndex, prefersReducedMotion]);
 
   const playMood = (mood: Mood, index: number) => {
-    setActiveMoodIndex(index);
+    selectMood(index);
     mood.playHaptic();
-    setBackground(mood.background);
-    restartAnimation(pluginWindowRef.current, styles.shake);
-    restartAnimation(haloRef.current, styles.haloPulse);
     track('figma_landing_haptic_played', { emoji: mood.emoji });
   };
 
   return (
-    <section className={`${styles.hero} ${background}`}>
-      <div ref={haloRef} className={styles.halo} aria-hidden="true" />
+    <section className={`${styles.hero} ${heroBackground[activeMood.color]}`}>
+      <HapticRings
+        animation={activeMood.animation}
+        color={activeMood.color}
+        className={styles.rings}
+      />
       <img
         className={`${styles.star} ${styles.starBig}`}
         src={star.src}
