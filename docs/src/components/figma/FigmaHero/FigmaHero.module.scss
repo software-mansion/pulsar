@@ -173,24 +173,26 @@
 .right {
   position: relative;
   flex-shrink: 0;
-  width: 500px;
+  width: 504px;
   max-width: 100%;
   align-self: stretch;
   display: flex;
 
   @media (max-width: 960px) {
     width: 100%;
-    max-width: 500px;
+    max-width: 504px;
     margin: 0 auto;
   }
 }
 
 .moodColumn {
+  --tile-peek: 20px;
+
   position: relative;
-  z-index: 2;
+  z-index: 1;
   flex-shrink: 0;
   align-self: flex-start;
-  margin: 96px 0 0 -20px;
+  margin: 96px 0 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -200,18 +202,31 @@
   }
 
   @media (max-width: 480px) {
-    margin: 40px 0 0 -12px;
+    --tile-peek: 14px;
+
+    margin-top: 40px;
     gap: 10px;
   }
 }
 
-.moodTile {
+.moodColumn .moodTile {
   margin: 0;
+  transform: translateX(calc(var(--tile-peek) - 100%));
+  transition: transform 0.35s ease;
+
+  &:hover {
+    transform: translateX(calc(var(--tile-peek) + 14px - 100%));
+  }
+}
+
+.moodColumn .moodTileActive,
+.moodColumn .moodTileActive:hover {
+  transform: translateX(0);
 }
 
 .shot {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   flex: 1 1 auto;
   min-width: 0;
   border: 2px solid var(--color-blue-50);
@@ -298,5 +313,9 @@
   .shake,
   .haloPulse {
     animation: none;
+  }
+
+  .moodTile {
+    transition: none;
   }
 }

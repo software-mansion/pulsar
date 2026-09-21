@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Presets } from 'pulsar-haptics';
 import styles from './FigmaHero.module.scss';
 import { Button } from '../../landing/Button/Button';
@@ -23,6 +23,8 @@ const moods: Mood[] = [
   { emoji: 'emoji4', playHaptic: () => Presets.heartbeat(), background: styles.green },
 ];
 
+const AUTO_ADVANCE_MS = 3600;
+
 const forceReflow = (element: HTMLElement) => void element.offsetWidth;
 
 function restartAnimation(element: HTMLElement | null, animationClass: string) {
@@ -32,12 +34,38 @@ function restartAnimation(element: HTMLElement | null, animationClass: string) {
   element.classList.add(animationClass);
 }
 
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setPrefersReducedMotion(query.matches);
+    sync();
+    query.addEventListener('change', sync);
+    return () => query.removeEventListener('change', sync);
+  }, []);
+
+  return prefersReducedMotion;
+}
+
 export function FigmaHero() {
   const [background, setBackground] = useState('');
+  const [activeMoodIndex, setActiveMoodIndex] = useState(0);
   const pluginWindowRef = useRef<HTMLDivElement>(null);
   const haloRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  const playMood = (mood: Mood) => {
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const advance = setTimeout(
+      () => setActiveMoodIndex((index) => (index + 1) % moods.length),
+      AUTO_ADVANCE_MS,
+    );
+    return () => clearTimeout(advance);
+  }, [activeMoodIndex, prefersReducedMotion]);
+
+  const playMood = (mood: Mood, index: number) => {
+    setActiveMoodIndex(index);
     mood.playHaptic();
     setBackground(mood.background);
     restartAnimation(pluginWindowRef.current, styles.shake);
@@ -114,13 +142,15 @@ export function FigmaHero() {
           </div>
 
           <div className={styles.moodColumn}>
-            {moods.map((mood) => (
+            {moods.map((mood, index) => (
               <EmojiButton
                 key={mood.emoji}
                 emoji={mood.emoji}
-                size="small"
-                className={styles.moodTile}
-                onClick={() => playMood(mood)}
+                size="medium"
+                className={`${styles.moodTile} ${
+                  index === activeMoodIndex ? styles.moodTileActive : ''
+                }`}
+                onClick={() => playMood(mood, index)}
               />
             ))}
           </div>
