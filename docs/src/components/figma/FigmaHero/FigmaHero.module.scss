@@ -5,8 +5,7 @@
   border-bottom: 1px solid var(--color-blue-50);
 }
 
-// Soft halo behind the plugin window, as in the design.
-.orb {
+.halo {
   position: absolute;
   top: -180px;
   right: -160px;
@@ -105,7 +104,6 @@
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   letter-spacing: -0.01em;
-  // Wraps as "Design your haptics right" / "where you design your UI".
   max-width: 26ch;
 
   @media (max-width: 960px) {
@@ -148,7 +146,6 @@
   flex-shrink: 0;
   width: 430px;
   max-width: 100%;
-  // The window is cut off by the hero's bottom border, the way the design has it.
   align-self: stretch;
 
   @media (max-width: 960px) {
@@ -158,8 +155,7 @@
   }
 }
 
-// Card edges peeking out from behind the plugin window.
-.ghost {
+.cardBehind {
   position: absolute;
   top: 56px;
   left: 56px;
@@ -175,7 +171,7 @@
   }
 }
 
-.ghostFar {
+.cardBehindFar {
   top: 180px;
   right: -86px;
   bottom: 30px;
@@ -189,8 +185,6 @@
   border-radius: 6px 6px 0 0;
   background-color: #fbfeff;
   box-shadow: -4px 4px 0 var(--color-blue-50);
-  // The screenshot is a tall plugin window; show its top and let the rest run
-  // off the bottom of the hero rather than scaling the whole thing down.
   min-height: 100%;
   max-height: 560px;
   overflow: hidden;
@@ -213,7 +207,6 @@
   background-color: #ffffff;
 }
 
-// Stand-in for the Figma plugin chrome's app icon.
 .shotMark {
   width: 14px;
   height: 14px;

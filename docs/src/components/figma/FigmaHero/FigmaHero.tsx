@@ -10,7 +10,7 @@ import pluginWindow from '../../../content/docs/assets/figma-plugin/presets-filt
 export function FigmaHero() {
   return (
     <section className={styles.hero}>
-      <div className={styles.orb} aria-hidden="true" />
+      <div className={styles.halo} aria-hidden="true" />
       <img
         className={`${styles.star} ${styles.starBig}`}
         src={star.src}
@@ -59,8 +59,8 @@ export function FigmaHero() {
         </div>
 
         <div className={styles.right}>
-          <div className={styles.ghost} aria-hidden="true" />
-          <div className={`${styles.ghost} ${styles.ghostFar}`} aria-hidden="true" />
+          <div className={styles.cardBehind} aria-hidden="true" />
+          <div className={`${styles.cardBehind} ${styles.cardBehindFar}`} aria-hidden="true" />
           <div className={styles.shot}>
             <div className={styles.shotBar}>
               <span className={styles.shotMark} aria-hidden="true" />

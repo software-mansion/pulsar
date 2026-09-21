@@ -41,9 +41,12 @@ export function FigmaSteps() {
 
         <ol className={styles.timeline}>
           {steps.map((step, index) => (
-            <li key={step.title} className={styles.step}>
+            <li
+              key={step.title}
+              className={`${styles.step} ${index % 2 === 0 ? styles.stepLeft : styles.stepRight}`}
+            >
               <span
-                className={`${styles.dot} ${index === 0 ? styles.dotFirst : ''}`}
+                className={`${styles.dot} ${index === 0 ? styles.dotStart : ''}`}
                 aria-hidden="true"
               />
               <div className={styles.card}>

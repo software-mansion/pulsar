@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import styles from './FigmaDemo.module.scss';
 import { BASE_PATH } from '../../../../config';
 import { track, trackFirstTimeOnly } from '../../../analytics/analytics';
@@ -6,47 +6,58 @@ import { track, trackFirstTimeOnly } from '../../../analytics/analytics';
 import star from '../../../assets/landing-page/star.svg';
 import wavePattern from '../../../assets/landing-page/pattern.svg';
 
-export function FigmaDemo() {
-  const videoRef = useRef<HTMLVideoElement>(null);
+const VISIBLE_ENOUGH_TO_PLAY = 0.4;
+const PROGRESS_QUARTILES = [25, 50, 75, 100];
 
-  // Same treatment as the Studio demo: play while it is on screen, pause once it
-  // scrolls away, and stay muted so browsers allow the programmatic start.
+const ignoreBlockedAutoplay = () => {};
+
+function usePlayWhileOnScreen(videoRef: RefObject<HTMLVideoElement | null>) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          video.play().catch(() => {
-            /* Autoplay can be blocked; the visible controls are the fallback. */
-          });
-        } else {
-          video.pause();
-        }
+        if (entry.isIntersecting) video.play().catch(ignoreBlockedAutoplay);
+        else video.pause();
       },
-      { threshold: 0.4 },
+      { threshold: VISIBLE_ENOUGH_TO_PLAY },
     );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [videoRef]);
+}
+
+function useTrackPlayback(videoRef: RefObject<HTMLVideoElement | null>) {
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
 
     const onPlay = () => track('figma_landing_demo_played');
     const onTimeUpdate = () => {
       if (!video.duration) return;
-      const percent = (video.currentTime / video.duration) * 100;
-      for (const quartile of [25, 50, 75, 100]) {
-        if (percent >= quartile)
+      const percentPlayed = (video.currentTime / video.duration) * 100;
+      for (const quartile of PROGRESS_QUARTILES) {
+        if (percentPlayed >= quartile)
           trackFirstTimeOnly('figma_landing_demo_progress', { percent: quartile });
       }
     };
 
     video.addEventListener('play', onPlay);
     video.addEventListener('timeupdate', onTimeUpdate);
-    observer.observe(video);
     return () => {
       video.removeEventListener('play', onPlay);
       video.removeEventListener('timeupdate', onTimeUpdate);
-      observer.disconnect();
     };
-  }, []);
+  }, [videoRef]);
+}
+
+export function FigmaDemo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  usePlayWhileOnScreen(videoRef);
+  useTrackPlayback(videoRef);
 
   return (
     <section className={styles.section}>

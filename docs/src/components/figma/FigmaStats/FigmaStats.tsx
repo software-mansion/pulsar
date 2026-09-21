@@ -6,7 +6,6 @@ import star from '../../../assets/landing-page/star.svg';
 interface Stat {
   value: string;
   label: string;
-  /** Which decorative shape sits behind the card, per the design. */
   decoration: 'mint' | 'star' | 'coral' | 'sky';
 }
 

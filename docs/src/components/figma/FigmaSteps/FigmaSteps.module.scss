@@ -1,8 +1,7 @@
-// Width of the gap each card leaves for the timeline running down the middle.
-$gutter: 56px;
-// How far each card is pulled up into the previous one. The two columns never
-// share horizontal space, so overlapping them vertically can't collide.
-$stagger: 72px;
+$timeline-gutter: 56px;
+$column-overlap: 72px;
+$single-column-breakpoint: 760px;
+$single-column-gap: 24px;
 
 .section {
   background-color: #ffffff;
@@ -31,7 +30,6 @@ $stagger: 72px;
   padding: 0;
   list-style: none;
 
-  // The line the steps hang off.
   &::before {
     content: '';
     position: absolute;
@@ -42,7 +40,7 @@ $stagger: 72px;
     margin-left: -1px;
     background-color: var(--color-blue-30);
 
-    @media (max-width: 760px) {
+    @media (max-width: $single-column-breakpoint) {
       left: 7px;
     }
   }
@@ -52,25 +50,26 @@ $stagger: 72px;
   position: relative;
   display: flex;
 
-  // Steps alternate columns, starting on the left.
-  &:nth-child(even) {
-    justify-content: flex-end;
-  }
-
   & + .step {
-    margin-top: -$stagger;
+    margin-top: -$column-overlap;
   }
 
-  @media (max-width: 760px) {
-    justify-content: flex-start;
-
-    &:nth-child(even) {
-      justify-content: flex-start;
-    }
-
+  @media (max-width: $single-column-breakpoint) {
     & + .step {
-      margin-top: 24px;
+      margin-top: $single-column-gap;
     }
+  }
+}
+
+.stepLeft {
+  justify-content: flex-start;
+}
+
+.stepRight {
+  justify-content: flex-end;
+
+  @media (max-width: $single-column-breakpoint) {
+    justify-content: flex-start;
   }
 }
 
@@ -86,14 +85,13 @@ $stagger: 72px;
   background-color: #ffffff;
   box-sizing: border-box;
 
-  @media (max-width: 760px) {
+  @media (max-width: $single-column-breakpoint) {
     top: 30px;
     left: 8px;
   }
 }
 
-// The entry point of the flow gets the heavier marker from the design.
-.dotFirst {
+.dotStart {
   width: 28px;
   height: 28px;
   margin: -14px 0 0 -14px;
@@ -102,21 +100,21 @@ $stagger: 72px;
   background-color: var(--color-blue-50);
   background-clip: content-box;
 
-  @media (max-width: 760px) {
+  @media (max-width: $single-column-breakpoint) {
     margin-top: -14px;
   }
 }
 
 .card {
   box-sizing: border-box;
-  width: calc(50% - #{$gutter});
+  width: calc(50% - #{$timeline-gutter});
   padding: 24px 28px 28px;
   border: 2px solid var(--color-blue-50);
   border-radius: 4px;
   background-color: #e8f5fb;
   box-shadow: -4px 4px 0 var(--color-blue-50);
 
-  @media (max-width: 760px) {
+  @media (max-width: $single-column-breakpoint) {
     width: calc(100% - 44px);
     margin-left: 44px;
     padding: 20px 22px 24px;
