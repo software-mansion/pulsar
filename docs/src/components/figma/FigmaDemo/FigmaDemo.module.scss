@@ -44,6 +44,17 @@
   position: absolute;
   z-index: 2;
   pointer-events: none;
+  animation: starFloat 4.6s ease-in-out infinite;
+}
+
+@keyframes starFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-6deg);
+  }
 }
 
 .starBig {
@@ -62,11 +73,19 @@
   top: 26px;
   left: -14px;
   width: 42px;
+  animation-duration: 3.8s;
+  animation-delay: -1.2s;
 
   @media (max-width: 768px) {
     top: 16px;
     left: -6px;
     width: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    animation: none;
   }
 }
 

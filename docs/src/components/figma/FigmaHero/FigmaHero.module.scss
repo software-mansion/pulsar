@@ -39,6 +39,17 @@
   position: absolute;
   z-index: 2;
   pointer-events: none;
+  animation: starFloat 4s ease-in-out infinite;
+}
+
+@keyframes starFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(6deg);
+  }
 }
 
 .starBig {
@@ -57,6 +68,8 @@
   top: 122px;
   right: 30px;
   width: 44px;
+  animation-duration: 5.2s;
+  animation-delay: -1.8s;
 
   @media (max-width: 960px) {
     top: 76px;
@@ -269,38 +282,12 @@
   height: auto;
 }
 
-.shake {
-  animation: shake 0.45s linear;
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  15% {
-    transform: translate(-3px, 2px) rotate(-0.4deg);
-  }
-  30% {
-    transform: translate(3px, -2px) rotate(0.4deg);
-  }
-  45% {
-    transform: translate(-2px, 1px) rotate(-0.3deg);
-  }
-  60% {
-    transform: translate(2px, -1px) rotate(0.3deg);
-  }
-  80% {
-    transform: translate(-1px, 1px) rotate(-0.15deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .shake {
+  .star {
     animation: none;
   }
 
-  .moodTile {
+  .moodColumn .moodTile {
     transition: none;
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Presets } from 'pulsar-haptics';
 import styles from './FigmaHero.module.scss';
 import { Button } from '../../landing/Button/Button';
@@ -43,15 +43,6 @@ const heroBackground: Record<RingsColor, string> = {
 
 const AUTO_ADVANCE_MS = 3600;
 
-const forceReflow = (element: HTMLElement) => void element.offsetWidth;
-
-function restartAnimation(element: HTMLElement | null, animationClass: string) {
-  if (!element) return;
-  element.classList.remove(animationClass);
-  forceReflow(element);
-  element.classList.add(animationClass);
-}
-
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -68,26 +59,20 @@ function usePrefersReducedMotion() {
 
 export function FigmaHero() {
   const [activeMoodIndex, setActiveMoodIndex] = useState(0);
-  const pluginWindowRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const activeMood = moods[activeMoodIndex];
-
-  const selectMood = (index: number) => {
-    setActiveMoodIndex(index);
-    restartAnimation(pluginWindowRef.current, styles.shake);
-  };
 
   useEffect(() => {
     if (prefersReducedMotion) return;
     const advance = setTimeout(
-      () => selectMood((activeMoodIndex + 1) % moods.length),
+      () => setActiveMoodIndex((index) => (index + 1) % moods.length),
       AUTO_ADVANCE_MS,
     );
     return () => clearTimeout(advance);
   }, [activeMoodIndex, prefersReducedMotion]);
 
   const playMood = (mood: Mood, index: number) => {
-    selectMood(index);
+    setActiveMoodIndex(index);
     mood.playHaptic();
     track('figma_landing_haptic_played', { emoji: mood.emoji });
   };
@@ -147,7 +132,7 @@ export function FigmaHero() {
         </div>
 
         <div className={styles.right}>
-          <div ref={pluginWindowRef} className={styles.shot}>
+          <div className={styles.shot}>
             <div className={styles.shotBar}>
               <span className={styles.shotMark} aria-hidden="true" />
               <span className={styles.shotName}>Pulsar Haptics</span>
