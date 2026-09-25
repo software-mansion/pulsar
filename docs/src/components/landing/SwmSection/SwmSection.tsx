@@ -5,6 +5,7 @@ import { Button } from '../Button/Button';
 
 import swm_logo from '../../../assets/swm-logo.svg';
 import arrow from '../../../assets/landing-page/footer_arrow.svg';
+import { SWM_URL, TERMS_URL, PULSAR_PRIVACY_URL, SWM_PRIVACY_URL } from '../../../data/legal';
 
 export function SwmSection({ className }: { className?: string }) {
   const currentYear = new Date().getFullYear();
@@ -36,23 +37,22 @@ export function SwmSection({ className }: { className?: string }) {
         <div className={styles.footer}>
           <p className={styles.footerText}>
             &copy; {currentYear}{' '}
-            <a href="https://swmansion.com/" target="_blank" rel="noopener">
+            <a href={SWM_URL} target="_blank" rel="noopener">
               Software Mansion
             </a>
             . Read the Pulsar{' '}
-            <a href="https://pulsar.swmansion.com/terms/" target="_blank" rel="noopener">
+            <a href={TERMS_URL} target="_blank" rel="noopener">
               Terms of Use
             </a>{' '}
             and{' '}
-            <a href="https://pulsar.swmansion.com/privacy/" target="_blank" rel="noopener">
+            <a href={PULSAR_PRIVACY_URL} target="_blank" rel="noopener">
               Privacy Policy
             </a>
             , or Software Mansion&rsquo;s{' '}
-            <a href="https://swmansion.com/privacy/policy/" target="_blank" rel="noopener">
+            <a href={SWM_PRIVACY_URL} target="_blank" rel="noopener">
               company privacy policy
             </a>
-            . We collect anonymous, cookieless usage statistics — no cookies, no tracking across
-            sites.
+            .
           </p>
         </div>
       </BasicLayout>

@@ -1,6 +1,7 @@
 ---
 import Default from '@astrojs/starlight/components/PageFrame.astro';
 import GTMBody from './gtm-body.astro';
+import { SWM_URL, TERMS_URL, PULSAR_PRIVACY_URL, SWM_PRIVACY_URL } from '../data/legal';
 const currentYear = new Date().getFullYear();
 ---
 
@@ -9,19 +10,17 @@ const currentYear = new Date().getFullYear();
   <slot name="header" slot="header" />
   <slot name="sidebar" slot="sidebar" />
   <slot />
-</Default>
-
-<footer class="docs-footer">
-  <p>
-    &copy; {currentYear}
-    <a href="https://swmansion.com/" target="_blank" rel="noopener">Software Mansion</a>.
+  <footer class="docs-footer">
+    <p>
+      &copy; {currentYear}
+    <a href={SWM_URL} target="_blank" rel="noopener">Software Mansion</a>.
     Read about our
-    <a href="https://swmansion.com/privacy/policy/" target="_blank" rel="noopener"
+    <a href={SWM_PRIVACY_URL} target="_blank" rel="noopener"
       >Privacy Policy</a
-    >. We collect anonymous, cookieless usage statistics — no cookies, no tracking across
-    sites.
-  </p>
-</footer>
+    >.
+    </p>
+  </footer>
+</Default>
 
 <style>
   .docs-footer {
@@ -41,5 +40,6 @@ const currentYear = new Date().getFullYear();
   .docs-footer a {
     color: inherit;
     text-underline-offset: 2px;
+    white-space: nowrap;
   }
  </style>
