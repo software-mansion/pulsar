@@ -5,6 +5,7 @@ import { SwmSection } from '../components/landing/SwmSection/SwmSection';
 import { FigmaHero } from '../components/figma/FigmaHero/FigmaHero';
 import { FigmaStats } from '../components/figma/FigmaStats/FigmaStats';
 import { FigmaSteps } from '../components/figma/FigmaSteps/FigmaSteps';
+import { FigmaFeatures } from '../components/figma/FigmaFeatures/FigmaFeatures';
 import { FigmaDemo } from '../components/figma/FigmaDemo/FigmaDemo';
 import { FigmaStart } from '../components/figma/FigmaStart/FigmaStart';
 import '../styles/index.css';
@@ -65,6 +66,7 @@ const description =
     <FigmaHero client:load />
     <FigmaStats />
     <FigmaSteps />
+    <FigmaFeatures client:visible />
     <FigmaDemo />
     <FigmaStart />
     <SwmSection />
