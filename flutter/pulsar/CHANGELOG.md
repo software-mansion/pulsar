@@ -20,3 +20,12 @@
 * Bump the native cores to pulsar-ios `1.4.0` and pulsar-android `1.3.0`.
 
   No Dart API changes — this release is packaging and native dependency work only.
+
+## 0.2.0
+
+* Update the minimum supported SDK version to Flutter 3.44 / Dart 3.12.
+* Migrate the Android build to built-in Kotlin: the plugin no longer applies the Kotlin
+  Gradle Plugin, pins its own AGP/KGP classpath, or uses the legacy `kotlinOptions` block,
+  so apps on Flutter 3.44+ and AGP 9 build without the "plugins that apply KGP" warning.
+
+  No Dart API changes — this release is Android build configuration only.
