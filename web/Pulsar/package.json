@@ -42,7 +42,8 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "clean": "rm -rf dist node_modules .turbo *.tsbuildinfo",
-    "prepublishOnly": "npm run clean && npm install && npm run build"
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run clean && npm install"
   },
   "peerDependencies": {
     "react": ">=16.8.0"
