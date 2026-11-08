@@ -22,19 +22,31 @@ struct CoreHapticsMockTests {
 
     /// Builds a wrapper, runs its one-time lifecycle bootstrap, then forces the app-active state so
     /// `canPlayHaptics()` is deterministic regardless of the test host's UIApplication state.
-    private func activeEngine(resetAfterWarmup: Bool = true) -> HapticEngineWrapper {
+    private func activeEngine(resetAfterWarmup: Bool = true, waitForStart: Bool = true) async -> HapticEngineWrapper {
         let engine = HapticEngineWrapper()
         _ = engine.createPlayer(pattern: nil)          // trigger bootstrap/seed
         engine.updatePlaybackAvailability(for: .active) // force active
+        if waitForStart {
+            _ = engine.createPlayer(pattern: nil)      // start the engine (asynchronously)
+            await waitUntil { engine.isEngineRunning }
+        }
         if resetAfterWarmup { HapticMockRecorder.shared.reset() }
         return engine
     }
 
-    @Test func mockedEngineConstructsStartsAndCreatesPlayers() {
+    /// The engine starts off the main thread and reports back on main, so yield the main actor.
+    private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() && Date() < deadline {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+    }
+
+    @Test func mockedEngineConstructsStartsAndCreatesPlayers() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine(resetAfterWarmup: false)
+        let engine = await activeEngine(resetAfterWarmup: false)
         let id = engine.createPlayer(pattern: makePattern())
 
         #expect(id != nil)
@@ -42,11 +54,44 @@ struct CoreHapticsMockTests {
         #expect(HapticMockRecorder.shared.startCalls >= 1)
     }
 
-    @Test func createPlayerReturnsDistinctIdsAndBuildsAPlayerEachTime() {
+    @Test func engineStartsOffTheMainThreadAndPlayersAreBuiltOnFirstPlay() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine()
+        let engine = await activeEngine(resetAfterWarmup: false, waitForStart: false)
+        let pattern = makePattern()
+        let created = engine.createPlayer(pattern: pattern)
+        #expect(created != nil)
+        #expect(!engine.isEngineRunning)
+        #expect(HapticMockRecorder.shared.playersCreated == 0)
+        guard let id = created else { return }
+
+        await waitUntil { engine.isEngineRunning }
+        #expect(engine.isEngineRunning)
+        #expect(HapticMockRecorder.shared.engineCallsOnMainThread == 0)
+
+        engine.playPlayer(id: id, pattern: pattern)
+        #expect(HapticMockRecorder.shared.playersCreated == 1)
+        #expect(HapticMockRecorder.shared.playerStarts == 1)
+    }
+
+    @Test func stoppingWhileTheEngineStartsDiscardsTheStart() async {
+        CoreHapticsMock.install()
+        defer { CoreHapticsMock.uninstall() }
+
+        let engine = await activeEngine(waitForStart: false)
+        _ = engine.createPlayer(pattern: makePattern())
+        engine.stopHaptics()
+
+        await waitUntil(timeout: 0.3) { engine.isEngineRunning }
+        #expect(!engine.isEngineRunning)
+    }
+
+    @Test func createPlayerReturnsDistinctIdsAndBuildsAPlayerEachTime() async {
+        CoreHapticsMock.install()
+        defer { CoreHapticsMock.uninstall() }
+
+        let engine = await activeEngine()
         let a = engine.createPlayer(pattern: makePattern())
         let b = engine.createPlayer(pattern: makePattern())
 
@@ -55,11 +100,11 @@ struct CoreHapticsMockTests {
         #expect(HapticMockRecorder.shared.playersCreated == 2)
     }
 
-    @Test func registryEvictsTheOldestPlayerBeyondTheLimit() {
+    @Test func registryEvictsTheOldestPlayerBeyondTheLimit() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine()
+        let engine = await activeEngine()
         // playerLimit is 20; the 21st creation must evict (and stop) the oldest.
         for _ in 0..<21 { _ = engine.createPlayer(pattern: makePattern()) }
 
@@ -67,11 +112,11 @@ struct CoreHapticsMockTests {
         #expect(HapticMockRecorder.shared.playerStops >= 1)
     }
 
-    @Test func playingAfterAStopBuildsAFreshPlayer() {
+    @Test func playingAfterAStopBuildsAFreshPlayer() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine()
+        let engine = await activeEngine()
         let pattern = makePattern()
         let created = engine.createPlayer(pattern: pattern)
         #expect(created != nil)
@@ -85,22 +130,22 @@ struct CoreHapticsMockTests {
         #expect(HapticMockRecorder.shared.playerStarts == 2)
     }
 
-    @Test func stopHapticsStopsEveryRegisteredPlayer() {
+    @Test func stopHapticsStopsEveryRegisteredPlayer() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine()
+        let engine = await activeEngine()
         for _ in 0..<3 { _ = engine.createPlayer(pattern: makePattern()) }
         engine.stopHaptics()
 
         #expect(HapticMockRecorder.shared.playerStops >= 3)
     }
 
-    @Test func realtimeComposerActivatesAndSendsClampedParameters() {
+    @Test func realtimeComposerActivatesAndSendsClampedParameters() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine()
+        let engine = await activeEngine()
         let composer = RealtimeComposer(engine: engine)
         composer.set(amplitude: 2.0, frequency: -1.0) // out of range
 
@@ -113,11 +158,11 @@ struct CoreHapticsMockTests {
         #expect(last?.sharpness == 0.0)   // clamped low-bound
     }
 
-    @Test func reparsingAPatternComposerReleasesItsPreviousPlayers() {
+    @Test func reparsingAPatternComposerReleasesItsPreviousPlayers() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine()
+        let engine = await activeEngine()
         let composer = PatternComposer(engine: engine, audioSimulator: AudioSimulator())
         let data = PatternData(line: [[[0, 1.0], [100, 0.0]], [[0, 0.5]]], bar: [[0, 1.0, 0.3]])
 
@@ -131,11 +176,11 @@ struct CoreHapticsMockTests {
         #expect(HapticMockRecorder.shared.playerStops >= perParse)
     }
 
-    @Test func stopDeactivatesTheRealtimeComposer() {
+    @Test func stopDeactivatesTheRealtimeComposer() async {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }
 
-        let engine = activeEngine()
+        let engine = await activeEngine()
         let composer = RealtimeComposer(engine: engine)
         composer.set(amplitude: 0.5, frequency: 0.5)
         #expect(composer.isActive)

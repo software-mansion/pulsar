@@ -20,6 +20,8 @@ final class HapticMockRecorder {
     var playerStarts = 0
     var playerStops = 0
     var sentParameters: [(intensity: Float, sharpness: Float)] = []
+    /// `CHHapticEngine()` / `start()` calls made on the main thread.
+    var engineCallsOnMainThread = 0
 
     func reset() {
         enginesCreated = 0
@@ -29,6 +31,7 @@ final class HapticMockRecorder {
         playerStarts = 0
         playerStops = 0
         sentParameters.removeAll()
+        engineCallsOnMainThread = 0
     }
 }
 
@@ -77,6 +80,7 @@ enum CoreHapticsMock {
         // -initAndReturnError:  -> return self as a shell engine
         let initBlock: @convention(block) (AnyObject, UnsafeMutableRawPointer?) -> AnyObject? = { obj, _ in
             HapticMockRecorder.shared.enginesCreated += 1
+            if Thread.isMainThread { HapticMockRecorder.shared.engineCallsOnMainThread += 1 }
             return obj
         }
         swizzle(engine, NSSelectorFromString("initAndReturnError:"), initBlock)
@@ -84,6 +88,7 @@ enum CoreHapticsMock {
         // -startAndReturnError: -> YES
         let startBlock: @convention(block) (AnyObject, UnsafeMutableRawPointer?) -> Bool = { _, _ in
             HapticMockRecorder.shared.startCalls += 1
+            if Thread.isMainThread { HapticMockRecorder.shared.engineCallsOnMainThread += 1 }
             return true
         }
         swizzle(engine, NSSelectorFromString("startAndReturnError:"), startBlock)
