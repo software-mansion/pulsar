@@ -54,7 +54,7 @@
     "packageName": "pulsar_haptics_lottie"
   },
   "web": {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "packageName": "pulsar-haptics"
   },
   "pulsarGen": {
