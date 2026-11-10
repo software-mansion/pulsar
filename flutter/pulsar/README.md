@@ -13,6 +13,11 @@ A haptic feedback SDK for Flutter. Pulsar gives you 150+ ready-to-play presets, 
 - **Audio simulation** – Optional companion audio so haptics feel right even on devices with weaker vibration motors
 - **Cross-platform** – The same Dart API runs on iOS 13+ and Android API 24+
 
+## Requirements
+
+- Flutter 3.44+ / Dart 3.12+ (`0.1.x` supports Flutter 3.29+)
+- Android API 24+ (Android 7.0), iOS 13+
+
 ## Quick start
 
 > **Note:** This package is published as **`pulsar_haptics`**, not `pulsar`. The shorter `pulsar` name on pub.dev was reserved by an unrelated author before this project was published and is not maintained by Software Mansion. Always depend on `pulsar_haptics`.

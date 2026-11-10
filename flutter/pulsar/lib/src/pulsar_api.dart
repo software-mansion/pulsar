@@ -130,10 +130,9 @@ class Pulsar {
   ///
   /// Call [AdaptiveHaptics.dispose] when the instance is no longer needed.
   Future<AdaptiveHaptics> createAdaptiveHaptics(AdaptivePreset preset) async {
-    final config =
-        defaultTargetPlatform == TargetPlatform.iOS
-            ? preset.ios
-            : preset.android;
+    final config = defaultTargetPlatform == TargetPlatform.iOS
+        ? preset.ios
+        : preset.android;
     final composer = getPatternComposer();
     if (config is AdaptivePresetPattern) {
       await composer.parsePattern(config.pattern);

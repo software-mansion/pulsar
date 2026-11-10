@@ -15,11 +15,7 @@ part of 'package:pulsar_haptics/pulsar.dart';
 /// await adaptive.dispose();
 /// ```
 class AdaptiveHaptics {
-  AdaptiveHaptics._({
-    required PulsarPatternComposer composer,
-    required AdaptivePresetConfig config,
-  }) : _composer = composer,
-       _config = config;
+  AdaptiveHaptics._({required this._composer, required this._config});
 
   final PulsarPatternComposer _composer;
   final AdaptivePresetConfig _config;

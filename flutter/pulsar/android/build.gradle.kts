@@ -2,15 +2,19 @@ group = "com.swmansion.pulsar"
 version = "1.0-SNAPSHOT"
 
 buildscript {
-    val kotlinVersion = "2.2.20"
-    repositories {
-        google()
-        mavenCentral()
-    }
+    val compilingLocalPulsarSources =
+        (rootProject.findProperty("USE_LOCAL_PULSAR_ANDROID")
+            ?: System.getenv("USE_LOCAL_PULSAR_ANDROID")) == "1"
 
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.11.1")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    if (compilingLocalPulsarSources) {
+        repositories {
+            google()
+            mavenCentral()
+        }
+
+        dependencies {
+            classpath("org.jetbrains.kotlin:kotlin-serialization:2.2.20")
+        }
     }
 }
 
@@ -23,8 +27,6 @@ allprojects {
 
 plugins {
     id("com.android.library")
-    id("kotlin-android")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
 }
 
 fun getStringPropertyOrEnv(name: String, defaultValue: String): String {
@@ -43,6 +45,7 @@ if (useLocalPulsarAndroid) {
     if (!localPulsarAndroidSourceDir.exists()) {
         throw GradleException("USE_LOCAL_PULSAR_ANDROID=1 but local Pulsar Android sources were not found at $localPulsarAndroidSourceDir")
     }
+    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
     logger.lifecycle("Using local Pulsar Android sources from $localPulsarAndroidSourceDir")
 } else {
     logger.lifecycle("Using published Pulsar Android artifact com.swmansion:pulsar:$pulsarAndroidVersion")
@@ -60,10 +63,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     sourceSets {
@@ -97,6 +96,12 @@ android {
                 }
             }
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
