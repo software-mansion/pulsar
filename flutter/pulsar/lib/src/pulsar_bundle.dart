@@ -56,8 +56,7 @@ class PresetHandle {
       pattern: PatternData.fromMap(
         (map['pattern'] as Map<dynamic, dynamic>?) ?? const {},
       ),
-      animation:
-          animation == null ? null : BundleAnimation.fromMap(animation),
+      animation: animation == null ? null : BundleAnimation.fromMap(animation),
       hasAudio: (map['hasAudio'] as bool?) ?? false,
     );
   }
@@ -96,7 +95,8 @@ class PresetHandle {
   void play() => unawaited(PulsarPlatform.instance.playBundlePreset(_token, id));
 
   /// Stop a preset started with [play].
-  void stop() => unawaited(PulsarPlatform.instance.stopBundlePreset(_token, id));
+  void stop() =>
+      unawaited(PulsarPlatform.instance.stopBundlePreset(_token, id));
 }
 
 /// Looks up preset handles by id when a generated descriptor builds its typed presets view.
@@ -186,7 +186,9 @@ extension PulsarBundleLoader on Pulsar {
     );
     final token = await PulsarPlatform.instance.loadBundle(bytes);
     if (token.isEmpty) {
-      throw StateError('Pulsar: failed to load bundle "${descriptor.bundleId}"');
+      throw StateError(
+        'Pulsar: failed to load bundle "${descriptor.bundleId}"',
+      );
     }
     final raw = await PulsarPlatform.instance.bundlePresets(
       token,
@@ -197,8 +199,9 @@ extension PulsarBundleLoader on Pulsar {
         entry['id'] as String: PresetHandle.fromMap(token, entry),
     };
     if (strict) {
-      final missing =
-          descriptor.presetIds.where((id) => !handles.containsKey(id)).toList();
+      final missing = descriptor.presetIds
+          .where((id) => !handles.containsKey(id))
+          .toList();
       if (missing.isNotEmpty) {
         throw StateError(
           'Pulsar: bundle "${descriptor.bundleId}" is missing preset(s) '
@@ -206,9 +209,11 @@ extension PulsarBundleLoader on Pulsar {
         );
       }
     }
-    final resolver =
-        BundleResolver(token, descriptor.bundleId, descriptor.contentHash)
-          ..bindPresets(handles);
+    final resolver = BundleResolver(
+      token,
+      descriptor.bundleId,
+      descriptor.contentHash,
+    )..bindPresets(handles);
     return descriptor.build(resolver);
   }
 }

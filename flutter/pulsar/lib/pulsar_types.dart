@@ -194,10 +194,9 @@ class PatternData {
     continuousPattern: ContinuousPattern.fromMap(
       (map['continuousPattern'] as Map<dynamic, dynamic>?) ?? const {},
     ),
-    discretePattern:
-        (map['discretePattern'] as List<dynamic>? ?? const [])
-            .map((p) => DiscretePoint.fromMap(p as Map<dynamic, dynamic>))
-            .toList(),
+    discretePattern: (map['discretePattern'] as List<dynamic>? ?? const [])
+        .map((p) => DiscretePoint.fromMap(p as Map<dynamic, dynamic>))
+        .toList(),
   );
 
   /// Raw array constructor matching the native iOS/Android shorthand:
@@ -219,18 +218,18 @@ class PatternData {
   }) {
     return PatternData(
       continuousPattern: ContinuousPattern(
-        amplitude:
-            amplitude.map((p) => ValuePoint(time: p[0], value: p[1])).toList(),
-        frequency:
-            frequency.map((p) => ValuePoint(time: p[0], value: p[1])).toList(),
+        amplitude: amplitude
+            .map((p) => ValuePoint(time: p[0], value: p[1]))
+            .toList(),
+        frequency: frequency
+            .map((p) => ValuePoint(time: p[0], value: p[1]))
+            .toList(),
       ),
-      discretePattern:
-          discrete
-              .map(
-                (p) =>
-                    DiscretePoint(time: p[0], amplitude: p[1], frequency: p[2]),
-              )
-              .toList(),
+      discretePattern: discrete
+          .map(
+            (p) => DiscretePoint(time: p[0], amplitude: p[1], frequency: p[2]),
+          )
+          .toList(),
     );
   }
 

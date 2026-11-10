@@ -25,9 +25,10 @@ class MethodChannelPulsar extends PulsarPlatform {
 
   @override
   Future<String> loadBundle(Uint8List bytes) async {
-    final token = await methodChannel.invokeMethod<String>('Pulsar_loadBundle', {
-      'bytes': bytes,
-    });
+    final token = await methodChannel.invokeMethod<String>(
+      'Pulsar_loadBundle',
+      {'bytes': bytes},
+    );
     return token ?? '';
   }
 
@@ -202,7 +203,7 @@ class MethodChannelPulsar extends PulsarPlatform {
   Future<int> patternParsePattern(PatternData data, {int? composerId}) async {
     final result = await methodChannel.invokeMethod<int>(
       'PatternComposer_parsePattern',
-      {'data': data.toMap(), if (composerId != null) 'composerId': composerId},
+      {'data': data.toMap(), 'composerId': ?composerId},
     );
     return result ?? composerId ?? 0;
   }
@@ -215,11 +216,7 @@ class MethodChannelPulsar extends PulsarPlatform {
   }) async {
     final result = await methodChannel.invokeMethod<int>(
       'PatternComposer_parsePatternWithSound',
-      {
-        'data': data.toMap(),
-        'sound': sound.toMap(),
-        if (composerId != null) 'composerId': composerId,
-      },
+      {'data': data.toMap(), 'sound': sound.toMap(), 'composerId': ?composerId},
     );
     return result ?? composerId ?? 0;
   }
@@ -228,7 +225,7 @@ class MethodChannelPulsar extends PulsarPlatform {
   Future<int> patternPlayPattern(PatternData data, {int? composerId}) async {
     final result = await methodChannel.invokeMethod<int>(
       'PatternComposer_playPattern',
-      {'data': data.toMap(), if (composerId != null) 'composerId': composerId},
+      {'data': data.toMap(), 'composerId': ?composerId},
     );
     return result ?? composerId ?? 0;
   }

@@ -44,33 +44,39 @@ void main() {
     expect(loggedCalls.single.arguments, {'name': 'BalloonPop'});
   });
 
-  test('parsePatternWithSound sends the pattern and sound over the channel', () async {
-    final pattern = PatternData(
-      continuousPattern: const ContinuousPattern(amplitude: [], frequency: []),
-      discretePattern: const [
-        DiscretePoint(time: 0, amplitude: 1.0, frequency: 0.8),
-      ],
-    );
+  test(
+    'parsePatternWithSound sends the pattern and sound over the channel',
+    () async {
+      final pattern = PatternData(
+        continuousPattern: const ContinuousPattern(
+          amplitude: [],
+          frequency: [],
+        ),
+        discretePattern: const [
+          DiscretePoint(time: 0, amplitude: 1.0, frequency: 0.8),
+        ],
+      );
 
-    await platform.patternParsePatternWithSound(
-      pattern,
-      const Sound(uri: 'beep', volume: 0.5, offset: 20),
-    );
+      await platform.patternParsePatternWithSound(
+        pattern,
+        const Sound(uri: 'beep', volume: 0.5, offset: 20),
+      );
 
-    expect(loggedCalls, hasLength(1));
-    final call = loggedCalls.single;
-    expect(call.method, 'PatternComposer_parsePatternWithSound');
-    final args = call.arguments as Map;
-    expect(args['sound'], {
-      'uri': 'beep',
-      'volume': 0.5,
-      'offset': 20,
-      'start': 0,
-      'duration': 0,
-    });
-    expect(args['data'], isNotNull);
-    expect(args.containsKey('composerId'), isFalse);
-  });
+      expect(loggedCalls, hasLength(1));
+      final call = loggedCalls.single;
+      expect(call.method, 'PatternComposer_parsePatternWithSound');
+      final args = call.arguments as Map;
+      expect(args['sound'], {
+        'uri': 'beep',
+        'volume': 0.5,
+        'offset': 20,
+        'start': 0,
+        'duration': 0,
+      });
+      expect(args['data'], isNotNull);
+      expect(args.containsKey('composerId'), isFalse);
+    },
+  );
 
   test('preloadPresets normalizes each preset name', () async {
     await platform.preloadPresets([
@@ -103,13 +109,16 @@ void main() {
     expect(capabilities.minControlPointDurationMillis, 35);
   });
 
-  test('hapticCapabilities falls back to unsupported on a null reply', () async {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (methodCall) async => null);
+  test(
+    'hapticCapabilities falls back to unsupported on a null reply',
+    () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (methodCall) async => null);
 
-    final capabilities = await platform.hapticCapabilities();
+      final capabilities = await platform.hapticCapabilities();
 
-    expect(capabilities.hasAmplitudeControl, isFalse);
-    expect(capabilities.minControlPointDurationMillis, 0);
-  });
+      expect(capabilities.hasAmplitudeControl, isFalse);
+      expect(capabilities.minControlPointDurationMillis, 0);
+    },
+  );
 }
