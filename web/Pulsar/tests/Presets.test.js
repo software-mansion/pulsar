@@ -68,16 +68,27 @@ test("has returns false for an unregistered preset name", () => {
   assert.equal(presets.has("definitelyNotAPreset"), false);
 });
 
-test("has returns true for inherited Object.prototype keys (current contract — would be tightened by an Object.hasOwn check)", () => {
-  // NOTE: Pinning current behavior. Presets.has uses `name in this.presets`,
-  // and `this.presets` is built via Object.fromEntries, so it inherits from
-  // Object.prototype. Inherited names like "toString" therefore satisfy `in`.
-  // This is the documented prototype-name caveat from the API inventory; the
-  // assertion here makes the caveat explicit. Swap `in` for `Object.hasOwn`
-  // (or a null-prototype map) in src/Presets.ts to tighten this.
+test("has returns false for inherited Object.prototype keys", () => {
   const presets = new PresetsManager();
 
-  assert.equal(presets.has("toString"), true);
+  for (const name of ["toString", "constructor", "hasOwnProperty", "__proto__"]) {
+    assert.equal(presets.has(name), false, `expected has('${name}') to be false`);
+  }
+});
+
+test("get and play reject inherited Object.prototype keys as unknown presets", async () => {
+  const presets = new PresetsManager();
+
+  for (const name of ["toString", "constructor", "__proto__"]) {
+    assert.throws(
+      () => presets.get(name),
+      (err) => err instanceof Error && err.message === `Unknown haptic preset: ${name}`,
+    );
+    await assert.rejects(
+      () => presets.play(name),
+      (err) => err instanceof Error && err.message === `Unknown haptic preset: ${name}`,
+    );
+  }
 });
 
 test("all returns Preset instances in the same order as list()", () => {

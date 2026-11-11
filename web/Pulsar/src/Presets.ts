@@ -105,7 +105,7 @@ class PresetsManager {
   }
 
   public has(name: string): name is PresetName {
-    return name in this.presets;
+    return Object.prototype.hasOwnProperty.call(this.presets, name);
   }
 
   public get(name: string): Preset {
