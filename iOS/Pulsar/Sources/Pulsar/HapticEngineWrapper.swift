@@ -17,6 +17,12 @@ public final class HapticEngineWrapper: @unchecked Sendable {
   private let playerLimit = 20
   private var nextPlayerId = 0
   private var cachedRealtimePlayer: CHHapticAdvancedPatternPlayer?
+  // `CHHapticEngine()` and `start()` can block for seconds (e.g. when the haptic
+  // server is slow to answer), so they run on this queue instead of the main thread.
+  private let engineQueue = DispatchQueue(label: "com.swmansion.pulsar.engine", qos: .userInitiated)
+  // The start in flight, if any. Cleared on stop, so that a start which finishes
+  // afterwards is discarded.
+  private var pendingStart: PendingEngineStart?
 
   public init() {}
 
@@ -49,6 +55,7 @@ public extension HapticEngineWrapper {
     clearPlayerState(stopPlayers: true)
     engine?.stop()
     initialized = false
+    pendingStart = nil
   }
 
   func shutDownEngine() {
@@ -61,6 +68,9 @@ public extension HapticEngineWrapper {
     guard canPlayHaptics() else { return nil }
 
     startEngine()
+    // While the engine is still starting, hand out an id without a player.
+    // `playPlayer(id:pattern:)` builds the player from the pattern on first play.
+    guard initialized else { return reservePlayerId() }
     guard let player = buildPatternPlayer(pattern: pattern) else { return nil }
 
     return registerPlayer(player)
@@ -71,8 +81,10 @@ public extension HapticEngineWrapper {
     guard canPlayHaptics() else { return nil }
 
     startEngine()
+    // A pattern with sound is built once, so wait for the engine rather than drop the sound.
+    waitForPendingStart()
     do {
-      return try engine?.registerAudioResource(url, options: [:])
+      return try runningEngine?.registerAudioResource(url, options: [:])
     } catch {
       print("Error registering audio resource: \(error.localizedDescription)")
       return nil
@@ -140,6 +152,10 @@ extension HapticEngineWrapper {
 
   func updatePlaybackAvailability(for state: UIApplication.State) {
     isAppActiveCache = state == .active
+  }
+
+  var isEngineRunning: Bool {
+    initialized
   }
 
   func canPlayHaptics() -> Bool {
@@ -217,14 +233,50 @@ private extension HapticEngineWrapper {
 
 private extension HapticEngineWrapper {
 
-  func startEngine() {
-    guard !initialized, canPlayHaptics() else { return }
+  var runningEngine: CHHapticEngine? {
+    initialized ? engine : nil
+  }
 
-    do {
-      try createEngineIfNeeded()
-      try engine?.start()
+  func startEngine() {
+    guard !initialized, pendingStart == nil, canPlayHaptics() else { return }
+
+    let start = PendingEngineStart(engine: engine)
+    pendingStart = start
+    engineQueue.async { [weak self] in
+      start.run()
+      DispatchQueue.main.async { [weak self] in
+        self?.finishStartingEngine(start)
+      }
+    }
+  }
+
+  func waitForPendingStart() {
+    guard let start = pendingStart else { return }
+    engineQueue.sync {}
+    finishStartingEngine(start)
+  }
+
+  func finishStartingEngine(_ start: PendingEngineStart) {
+    guard !start.isFinished, let result = start.result else { return }
+    start.isFinished = true
+
+    guard start === pendingStart else {
+      // Stopped while starting. Stop the engine again, unless a newer start is reusing it.
+      if case .success(let started) = result, started !== engine || pendingStart == nil {
+        started.stop()
+      }
+      return
+    }
+
+    pendingStart = nil
+    switch result {
+    case .success(let started):
+      if started !== engine {
+        engine = started
+        setupEngineHandlers()
+      }
       initialized = true
-    } catch {
+    case .failure(let error):
       print("Error starting engine: \(error.localizedDescription)")
       engine = nil
     }
@@ -240,13 +292,6 @@ private extension HapticEngineWrapper {
   func seedAppActiveCache() {
     let read = { MainActor.assumeIsolated { UIApplication.shared.applicationState == .active } }
     isAppActiveCache = Thread.isMainThread ? read() : DispatchQueue.main.sync(execute: read)
-  }
-
-  func createEngineIfNeeded() throws {
-    guard engine == nil else { return }
-
-    engine = try CHHapticEngine()
-    setupEngineHandlers()
   }
 
   func setupEngineHandlers() {
@@ -291,7 +336,7 @@ private extension HapticEngineWrapper {
 
   func buildPatternPlayer(pattern: CHHapticPattern?) -> CHHapticPatternPlayer? {
     do {
-      return try engine?.makePlayer(with: pattern ?? CHHapticPattern(events: [], parameters: []))
+      return try runningEngine?.makePlayer(with: pattern ?? CHHapticPattern(events: [], parameters: []))
     } catch {
       print("Error making pattern: \(error.localizedDescription)")
       return nil
@@ -310,7 +355,7 @@ private extension HapticEngineWrapper {
 
     do {
       let pattern = try CHHapticPattern(events: [event], parameters: [])
-      return try engine?.makeAdvancedPlayer(with: pattern)
+      return try runningEngine?.makeAdvancedPlayer(with: pattern)
     } catch {
       print("Error creating realtime player: \(error.localizedDescription)")
       return nil
@@ -337,10 +382,15 @@ private extension HapticEngineWrapper {
   func registerPlayer(_ player: CHHapticPatternPlayer) -> Int {
     evictOldestPlayerIfNeeded()
 
-    let id = nextPlayerId
-    nextPlayerId += 1
+    let id = reservePlayerId()
     playerRegistry[id] = player
     playerCreationOrder.append(id)
+    return id
+  }
+
+  func reservePlayerId() -> Int {
+    let id = nextPlayerId
+    nextPlayerId += 1
     return id
   }
 
@@ -383,6 +433,27 @@ private extension HapticEngineWrapper {
       try player.stop(atTime: 0)
     } catch {
       print("\(errorPrefix): \(error.localizedDescription)")
+    }
+  }
+}
+
+/// Creates (if needed) and starts an engine on `engineQueue`. `result` is written
+/// there and read on main only after the queue has run `run()`; `isFinished` is
+/// only used on main.
+private final class PendingEngineStart: @unchecked Sendable {
+  private let engine: CHHapticEngine?
+  private(set) var result: Result<CHHapticEngine, Error>?
+  var isFinished = false
+
+  init(engine: CHHapticEngine?) {
+    self.engine = engine
+  }
+
+  func run() {
+    result = Result {
+      let engine = try self.engine ?? CHHapticEngine()
+      try engine.start()
+      return engine
     }
   }
 }
