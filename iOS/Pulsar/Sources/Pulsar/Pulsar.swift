@@ -27,8 +27,6 @@ import UIKit
     return realtimeComposer
   }
 
-  /// A player for a pattern that follows another clock, such as a video's. It has its own engine, and
-  /// `enableHaptics`, `stopHaptics` and `shutDownEngine` reach it too.
   @objc public func getSeekablePatternPlayer() -> SeekablePatternPlayer {
     let player = SeekablePatternPlayer(isHapticsEnabled: engine.isHapticsEnabled)
     seekablePatternPlayers.add(player)

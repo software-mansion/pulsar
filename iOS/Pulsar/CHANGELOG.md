@@ -6,12 +6,9 @@ All notable changes to the Pulsar iOS SDK are documented here.
 
 ### Added
 
-- **`SeekablePatternPlayer`**, from `Pulsar.getSeekablePatternPlayer()`, plays a pattern in time with another clock,
-  such as a video's. It parses the pattern once, and `play(fromMs:rate:atHostTime:)` starts it at a set host time,
-  seeks, resumes or changes rate in place. `pause()` also drops a start that's still to come. It has its own engine and
-  can be called from any thread, and it picks up where the pattern should be after the engine stops or resets. Patterns
-  of any length play in full: `PatternComposer` plays a continuous layer for at most 30 s, Core Haptics' limit for one
-  event.
+- **`SeekablePatternPlayer`** (`Pulsar.getSeekablePatternPlayer()`) plays a pattern in time with another clock, such
+  as a video's: it parses once, starts at a host time, and seeks, resumes or changes rate in place. Its continuous layer
+  isn't cut off at 30 s.
 
 ### Changed (CocoaPods only — breaking)
 
