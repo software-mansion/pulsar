@@ -6,6 +6,7 @@ import UIKit
   private var audioSimulator = AudioSimulator()
   private var presets: PresetsWrapper?
   private var realtimeComposer: RealtimeComposer!
+  private let seekablePatternPlayers = NSHashTable<SeekablePatternPlayer>.weakObjects()
   
   @objc public override init() {
     realtimeComposer = RealtimeComposer(engine: self.engine)
@@ -25,6 +26,14 @@ import UIKit
   @objc public func getRealtimeComposer() -> RealtimeComposer {
     return realtimeComposer
   }
+
+  /// A player for a pattern that follows another clock, such as a video's. It has its own engine, and
+  /// `enableHaptics`, `stopHaptics` and `shutDownEngine` reach it too.
+  @objc public func getSeekablePatternPlayer() -> SeekablePatternPlayer {
+    let player = SeekablePatternPlayer(isHapticsEnabled: engine.isHapticsEnabled)
+    seekablePatternPlayers.add(player)
+    return player
+  }
   
   @objc public func preloadPresets(presetNames: Array<String>) {
     getPresets().preloadPresetByNames(presetNames)
@@ -36,6 +45,7 @@ import UIKit
 
   @objc public func enableHaptics(state: Bool) {
     engine.enableHaptics(state)
+    seekablePatternPlayers.allObjects.forEach { $0.setHapticsEnabled(state) }
   }
   
   @objc public func enableSound(state: Bool) {
@@ -52,10 +62,12 @@ import UIKit
   
   @objc public func stopHaptics() {
     engine.stopHaptics()
+    seekablePatternPlayers.allObjects.forEach { $0.pause() }
   }
   
   @objc public func shutDownEngine() {
     engine.shutDownEngine()
+    seekablePatternPlayers.allObjects.forEach { $0.dispose() }
   }
   
   @objc public func isHapticsSupported() -> Bool {
