@@ -48,6 +48,21 @@ internal object BundleLoaderImpl {
                 files[anim.src]?.let { BundleAnimation(it, anim.frameRate ?: 0.0, anim.totalFrames ?: 0) }
             }
 
+            val video = preset.video?.let { ref ->
+                val data = files[ref.src]
+                    ?: throw PulsarBundleException("Bundle is missing referenced entry \"${ref.src}\"")
+                // ExoPlayer/MediaPlayer read from a file, not from bytes in memory.
+                val dest = File(mediaDir, "video/${ref.src.substringAfterLast('/')}")
+                dest.parentFile?.mkdirs()
+                dest.writeBytes(data)
+                BundleVideo(
+                    path = dest.absolutePath,
+                    width = (ref.width ?: 0.0).toInt(),
+                    height = (ref.height ?: 0.0).toInt(),
+                    isMuted = sound != null,
+                )
+            }
+
             handles[preset.id] = PresetHandle(
                 id = preset.id,
                 name = preset.name,
@@ -56,6 +71,7 @@ internal object BundleLoaderImpl {
                 pattern = pattern,
                 haptics = haptics,
                 sound = sound,
+                video = video,
             )
         }
 

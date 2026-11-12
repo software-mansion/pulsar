@@ -25,7 +25,8 @@ The RN module **inlines each preset's device pattern** and statically requires t
 `.pulsar` asset, and exports two loaders. `loadBundleSync()` is synchronous and uses only the
 inline patterns; `loadBundleAsync()` returns a Promise and loads the binary natively
 for authored audio. JSON Lottie animations are inlined too when you pass `animations`, since
-they are rendered in JS.
+they are rendered in JS. A preset's `video` (an MP4) is only flagged: the native loaders extract
+it, so the generator warns that the sync, embedded-pattern path has no file for it.
 
 `react-native-pulsar` ships a zero-dependency copy of this emitter as `npx pulsar-gen-rn`, so apps
 can regenerate modules without installing pulsar-gen. The test suite pins the two to byte-identical

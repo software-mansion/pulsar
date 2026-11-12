@@ -54,6 +54,12 @@ uri. `preset.hasAudio` reports whether there is one.
 Animation is carried, not rendered: `preset.animation` exposes the Lottie bytes and timing for the
 host app's own Lottie view.
 
+Video is carried the same way: `preset.video` exposes the extracted MP4's `path`, its `width` and
+`height`, and `isMuted`, for the host app's own player (AVPlayer, ExoPlayer). The MP4 is extracted to a cache file when the bundle loads, so any player can stream it. Its time runs
+1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the preset also
+carries audio, that track replaces the video's own sound: `isMuted` is then `true`, and the player must
+stay muted while `play()` plays the audio with the haptics.
+
 ## Untyped surface
 
 ```kotlin

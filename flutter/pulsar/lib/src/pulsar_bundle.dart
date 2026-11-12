@@ -27,6 +27,40 @@ class BundleAnimation {
   final int totalFrames;
 }
 
+/// A preset's MP4, extracted natively to a local file for the app's own video
+/// player. Its time runs 1:1 with the preset's, so seek it to the same `fromMs`
+/// you pass to [PresetHandle.play].
+class BundleVideo {
+  /// Creates a [BundleVideo] over the extracted file at [path].
+  const BundleVideo({
+    required this.path,
+    this.width = 0,
+    this.height = 0,
+    this.isMuted = false,
+  });
+
+  /// Rebuilds a [BundleVideo] from the wire shape the native side sends.
+  factory BundleVideo.fromMap(Map<dynamic, dynamic> map) => BundleVideo(
+    path: map['path'] as String,
+    width: (map['width'] as num?)?.toInt() ?? 0,
+    height: (map['height'] as num?)?.toInt() ?? 0,
+    isMuted: (map['muted'] as bool?) ?? false,
+  );
+
+  /// Absolute path of the extracted MP4, ready for `VideoPlayerController.file`.
+  final String path;
+
+  /// Authored width in pixels, or 0 when the bundle carries no hint.
+  final int width;
+
+  /// Authored height in pixels, or 0 when the bundle carries no hint.
+  final int height;
+
+  /// The preset's bundle audio replaces the video's own sound, so the player
+  /// must stay muted.
+  final bool isMuted;
+}
+
 /// A single playable preset from a loaded bundle.
 ///
 /// [play] and [stop] run the preset natively — haptics plus its synced audio, if
@@ -43,11 +77,13 @@ class PresetHandle {
     PatternData? pattern,
     this.animation,
     this.hasAudio = false,
+    this.video,
   }) : pattern = pattern ?? _emptyPattern;
 
   /// Rebuilds a [PresetHandle] from the wire shape the native side sends.
   factory PresetHandle.fromMap(String token, Map<dynamic, dynamic> map) {
     final animation = map['animation'] as Map<dynamic, dynamic>?;
+    final video = map['video'] as Map<dynamic, dynamic>?;
     return PresetHandle(
       token,
       map['id'] as String,
@@ -58,6 +94,7 @@ class PresetHandle {
       ),
       animation: animation == null ? null : BundleAnimation.fromMap(animation),
       hasAudio: (map['hasAudio'] as bool?) ?? false,
+      video: video == null ? null : BundleVideo.fromMap(video),
     );
   }
 
@@ -90,6 +127,12 @@ class PresetHandle {
 
   /// Whether the preset carries a Lottie animation, exposed as [animation].
   bool get hasAnimation => animation != null;
+
+  /// The video the preset was authored against, when it has one.
+  final BundleVideo? video;
+
+  /// Whether the preset carries a video, exposed as [video].
+  bool get hasVideo => video != null;
 
   /// Play the preset from [fromMs] into its timeline — haptics, plus its synced
   /// audio when it has any.

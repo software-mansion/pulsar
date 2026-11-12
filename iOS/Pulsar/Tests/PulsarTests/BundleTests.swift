@@ -71,6 +71,30 @@ import Foundation
     ])
   }
 
+  private static let videoBytes = Data("ftypisom-fixture-video".utf8)
+
+  private static func videoFixture(includeVideoFile: Bool = true) -> Data {
+    let manifest = """
+    {"schema":"pulsar.bundle/1","id":"com.acme.video","name":"Video Pack","presets":[
+       {"id":"intro","name":"Intro","duration":3000,"haptics":"haptics/intro.json",
+        "video":{"src":"video/intro.mp4","width":1280,"height":720}},
+       {"id":"trailer","name":"Trailer","duration":3000,"haptics":"haptics/intro.json",
+        "audio":{"src":"audio/trailer.m4a"},"video":{"src":"video/trailer.mp4"}}]}
+    """
+    let haptics = """
+    {"continuousPattern":{"amplitude":[{"time":0,"value":1}],"frequency":[{"time":0,"value":0.5}]},
+     "discretePattern":[]}
+    """
+    var entries: [(String, Data)] = [
+      ("manifest.json", Data(manifest.utf8)),
+      ("haptics/intro.json", Data(haptics.utf8)),
+      ("audio/trailer.m4a", Data("ftypM4A-fixture-audio".utf8)),
+      ("video/trailer.mp4", videoBytes),
+    ]
+    if includeVideoFile { entries.append(("video/intro.mp4", videoBytes)) }
+    return makeZip(entries)
+  }
+
   // MARK: - Tests
 
   @Test func unzipReadsAllEntries() throws {
@@ -103,5 +127,40 @@ import Foundation
   @Test func rejectsUnsupportedSchema() {
     let bad = Self.makeZip([("manifest.json", Data(#"{"schema":"pulsar.bundle/2","id":"x","name":"y","presets":[]}"#.utf8))])
     #expect(throws: PulsarBundleError.self) { _ = try Pulsar().loadBundle(data: bad) }
+  }
+
+  @Test func videoIsExtractedToAPlayableFile() throws {
+    let loaded = try Pulsar().loadBundle(data: Self.videoFixture())
+    let video = try #require(loaded.handle("intro")?.video)
+    #expect(loaded.handle("intro")?.hasVideo == true)
+    #expect(video.url.isFileURL)
+    #expect(video.url.lastPathComponent == "intro.mp4")
+    #expect(try Data(contentsOf: video.url) == Self.videoBytes)
+    #expect(video.width == 1280)
+    #expect(video.height == 720)
+    #expect(!video.isMuted)
+  }
+
+  @Test func bundleAudioMutesTheVideo() throws {
+    let loaded = try Pulsar().loadBundle(data: Self.videoFixture())
+    let trailer = try #require(loaded.handle("trailer"))
+    #expect(trailer.hasAudio)
+    #expect(trailer.video?.isMuted == true)
+    #expect(trailer.video?.width == 0)
+  }
+
+  @Test func rejectsAVideoMissingFromTheArchive() {
+    #expect {
+      _ = try Pulsar().loadBundle(data: Self.videoFixture(includeVideoFile: false))
+    } throws: { error in
+      guard case PulsarBundleError.missingEntry("video/intro.mp4") = error else { return false }
+      return true
+    }
+  }
+
+  @Test func bundleWithoutVideoHasNone() throws {
+    let loaded = try Pulsar().loadBundle(data: Self.fixture())
+    #expect(loaded.handle("heartbeatV2")?.video == nil)
+    #expect(loaded.handle("heartbeatV2")?.hasVideo == false)
   }
 }

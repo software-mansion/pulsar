@@ -96,6 +96,7 @@ function mockBundle(definition) {
       id,
       hasAudio: !!preset?.audio,
       hasAnimation: !!preset?.animation,
+      hasVideo: !!preset?.video,
       play: jest.fn(),
       stop: jest.fn(),
     };

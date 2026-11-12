@@ -100,6 +100,8 @@ Each preset handle carries `id`, `name`, `duration`, `play(fromMs?)`, `stop()`, 
 Haptics.fanfare.hasAudio;
 Haptics.fanfare.hasAnimation;
 Haptics.fanfare.animation;
+Haptics.fanfare.hasVideo;
+Haptics.fanfare.video;
 ```
 
 `play()` does not render animations. A JSON Lottie is embedded in the generated module and
@@ -113,6 +115,24 @@ import { HapticLottieView } from 'react-native-pulsar-lottie';
 
 A binary dotLottie (`.lottie`) cannot be embedded in TypeScript; codegen warns and leaves
 `animation` undefined while preserving `hasAnimation: true`.
+
+A preset authored against a video carries it as `video` — `path`, a `file://` `uri`, `width`,
+`height` and `muted` — instead of an animation, for your own player:
+
+```tsx
+import Video from 'react-native-video';
+
+const bundle = await loadBundleAsync();
+const video = bundle.intro.video;
+
+{video && <Video source={{ uri: video.uri }} muted={video.muted} />}
+```
+
+The MP4 is extracted natively when the binary loads, so `video` is set only on `loadBundleAsync()`
+and `loadBundleSync(true)`; the embedded-pattern path keeps `hasVideo: true` with no file. The video's
+time runs 1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the
+preset also carries audio, that track replaces the video's own sound: `muted` is then `true`, and the
+player must stay muted while `play()` plays the audio with the haptics.
 
 The bundle metadata members `id`, `contentHash`, `get`, and `dispose` are non-enumerable.
 Therefore `Object.values(Haptics)` contains only preset handles.
