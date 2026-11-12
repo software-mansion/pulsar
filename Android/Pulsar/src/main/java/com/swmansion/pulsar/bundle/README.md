@@ -16,6 +16,25 @@ bundle.explosion.stop()
 bundle.heartbeatV2.animation?.let { myLottieView.setAnimation(it.data.inputStream(), null) }
 ```
 
+A preset authored against a video carries it as `video` instead of an animation — Pulsar times it,
+your ExoPlayer renders it:
+
+```kotlin
+bundle.intro.video?.let { video ->
+    player.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(video.path))))
+    player.volume = if (video.isMuted) 0f else 1f
+    player.prepare()
+    player.seekTo(2500)
+    bundle.intro.play(fromMs = 2500)
+    player.play()
+}
+```
+
+The MP4 is extracted to a cache file when the bundle loads, so any player can stream it. Its time runs
+1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the preset also
+carries audio, that track replaces the video's own sound: `isMuted` is then `true`, and the player must
+stay muted while `play()` plays the audio with the haptics.
+
 `loadBundleSync(descriptor)` asserts the loaded bundle's content hash matches the generated types,
 failing loudly on a stale bundle/types mismatch. Pass `strict = false` to skip it.
 

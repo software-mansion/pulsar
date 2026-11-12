@@ -75,6 +75,14 @@ public class PulsarPlugin: NSObject, FlutterPlugin {
           "hasAnimation": preset.hasAnimation,
           "pattern": Self.patternMap(preset.pattern),
         ]
+        if let video = preset.video {
+          map["video"] = [
+            "path": video.path,
+            "width": video.width,
+            "height": video.height,
+            "muted": video.isMuted,
+          ]
+        }
         if includeAnimations, let animation = preset.animation {
           map["animation"] = [
             "data": FlutterStandardTypedData(bytes: animation.data),

@@ -13,14 +13,28 @@ export type PresetAnimation = {
   readonly totalFrames?: number;
 };
 
+/** A preset's MP4, extracted natively. Its time runs 1:1 with the preset's `play(fromMs)`. */
+export type PresetVideo = {
+  readonly path: string;
+  /** `file://` form of `path`, ready for a video component's `source`. */
+  readonly uri: string;
+  readonly width: number;
+  readonly height: number;
+  /** The preset's bundle audio replaces the video's own sound — keep the player muted. */
+  readonly muted: boolean;
+};
+
 export type PresetHandle = {
   readonly id: string;
   readonly name: string;
   readonly duration?: number;
   readonly pattern?: Pattern;
   readonly animation?: PresetAnimation;
+  /** Set only on a bundle loaded natively — `loadBundleAsync()` or `loadBundleSync(true)`. */
+  readonly video?: PresetVideo;
   readonly hasAudio: boolean;
   readonly hasAnimation: boolean;
+  readonly hasVideo: boolean;
   /** Plays the preset from `fromMs` into its timeline — haptics plus its synced audio. */
   play: (fromMs?: number) => void;
   stop: () => void;
@@ -41,6 +55,7 @@ type SidecarPreset = {
   pattern: Pattern;
   audio: boolean;
   animation: boolean;
+  video?: boolean;
   lottie?: { source: object; frameRate?: number; totalFrames?: number };
 };
 
@@ -128,6 +143,11 @@ export function defineBundle<M extends BundleDefinition>(
   };
 }
 
+function readVideo(token: string, presetId: string): PresetVideo | undefined {
+  const video = Pulsar.Pulsar_getBundlePresetVideo(token, presetId);
+  return video ? { ...video, uri: `file://${video.path}` } : undefined;
+}
+
 function createLoadedBundle<M extends BundleDefinition>(
   definition: M,
   bundleToken?: string
@@ -168,8 +188,11 @@ function createLoadedBundle<M extends BundleDefinition>(
       duration: preset.duration,
       pattern: preset.pattern,
       animation: preset.lottie,
+      video:
+        bundleToken && preset.video ? readVideo(bundleToken, id) : undefined,
       hasAudio: preset.audio,
       hasAnimation: preset.animation,
+      hasVideo: preset.video ?? false,
       play: (fromMs = 0) => {
         if (disposed) return warnDisposed('play', id);
         const from = Math.max(0, fromMs);

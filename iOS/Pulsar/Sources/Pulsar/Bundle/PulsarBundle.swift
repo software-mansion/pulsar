@@ -19,6 +19,7 @@ struct BundlePresetEntry: Codable {
   let haptics: String
   let audio: BundleAudioRef?
   let animation: BundleAnimationRef?
+  let video: BundleVideoRef?
 }
 
 struct BundleAudioRef: Codable {
@@ -31,6 +32,12 @@ struct BundleAnimationRef: Codable {
   let src: String
   let frameRate: Double?
   let totalFrames: Int?
+}
+
+struct BundleVideoRef: Codable {
+  let src: String
+  let width: Double?
+  let height: Double?
 }
 
 // MARK: - Runtime handles
@@ -48,6 +55,23 @@ struct BundleAnimationRef: Codable {
   }
 }
 
+/// A preset's MP4, extracted to a local file for the app's own player. Its time runs 1:1 with the
+/// preset's, so seek it to the same `fromMs` you pass to ``PresetHandle/play(fromMs:)``.
+@objc public final class BundleVideo: NSObject {
+  @objc public let url: URL
+  @objc public var path: String { url.path }
+  @objc public let width: Int
+  @objc public let height: Int
+  /// The preset's bundle audio replaces the video's own sound, so the player must stay muted.
+  @objc public let isMuted: Bool
+  init(url: URL, width: Int, height: Int, isMuted: Bool) {
+    self.url = url
+    self.width = width
+    self.height = height
+    self.isMuted = isMuted
+  }
+}
+
 struct ResolvedSound {
   let uri: String
   let volume: Float
@@ -61,6 +85,7 @@ struct ResolvedSound {
   @objc public let name: String
   @objc public let duration: Double
   @objc public let animation: BundleAnimation?
+  @objc public let video: BundleVideo?
   /// The authored pattern. Read it to drive a timeline yourself — the Lottie SDK samples it per
   /// frame in realtime mode. ``play()`` stays the pre-parsed, engine-native route.
   @objc public let pattern: PatternData
@@ -68,13 +93,15 @@ struct ResolvedSound {
   @objc public var hasAudio: Bool { sound != nil }
   /// Whether the preset carries a Lottie animation, exposed as ``animation``.
   @objc public var hasAnimation: Bool { animation != nil }
+  /// Whether the preset carries a video, exposed as ``video``.
+  @objc public var hasVideo: Bool { video != nil }
 
   private weak var pulsar: Pulsar?
   private let sound: ResolvedSound?
   private var composer: PatternComposer?
   private var parsedFromMs: Double?
 
-  init(id: String, name: String, duration: Double, pulsar: Pulsar, pattern: PatternData, sound: ResolvedSound?, animation: BundleAnimation?) {
+  init(id: String, name: String, duration: Double, pulsar: Pulsar, pattern: PatternData, sound: ResolvedSound?, animation: BundleAnimation?, video: BundleVideo? = nil) {
     self.id = id
     self.name = name
     self.duration = duration
@@ -82,6 +109,7 @@ struct ResolvedSound {
     self.pattern = pattern
     self.sound = sound
     self.animation = animation
+    self.video = video
   }
 
   private func ensureParsed(fromMs: Double) {

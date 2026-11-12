@@ -23,6 +23,7 @@
       "type": "object",
       "required": ["id", "name", "haptics"],
       "additionalProperties": false,
+      "not": { "required": ["animation", "video"] },
       "properties": {
         "id": {
           "type": "string",
@@ -50,6 +51,17 @@
             "src": { "type": "string", "minLength": 1 },
             "frameRate": { "type": "number", "minimum": 0 },
             "totalFrames": { "type": "number", "minimum": 0 }
+          }
+        },
+        "video": {
+          "type": "object",
+          "required": ["src"],
+          "additionalProperties": false,
+          "description": "H.264 MP4 played 1:1 with the preset timeline. When audio is also set, it replaces the video's own sound.",
+          "properties": {
+            "src": { "type": "string", "minLength": 1 },
+            "width": { "type": "number", "minimum": 0 },
+            "height": { "type": "number", "minimum": 0 }
           }
         }
       }

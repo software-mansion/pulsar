@@ -14,6 +14,7 @@ jest.mock('../NativeRNPulsar', () => ({
     Pulsar_playBundlePreset: jest.fn(),
     Pulsar_stopBundlePreset: jest.fn(),
     Pulsar_disposeBundle: jest.fn(),
+    Pulsar_getBundlePresetVideo: jest.fn(),
   },
 }));
 
@@ -273,5 +274,78 @@ describe('dispose', () => {
     expect(native.PatternComposer_play).not.toHaveBeenCalled();
     expect(native.Pulsar_playBundlePreset).not.toHaveBeenCalled();
     expect(native.Pulsar_stopBundlePreset).not.toHaveBeenCalled();
+  });
+});
+
+describe('video', () => {
+  const videoDefinition = {
+    ...definition,
+    presets: {
+      ...definition.presets,
+      intro: {
+        name: 'Intro',
+        duration: 3000,
+        pattern: pattern(0.5),
+        audio: true,
+        animation: false,
+        video: true,
+      },
+    },
+  };
+
+  beforeEach(() => {
+    native.Pulsar_getBundlePresetVideo.mockReturnValue({
+      path: '/cache/PulsarBundles/com.acme.haptics/video/intro.mp4',
+      width: 1280,
+      height: 720,
+      muted: true,
+    });
+  });
+
+  it('exposes the natively extracted file on an asset-backed bundle', async () => {
+    const bundle = await defineBundle(videoDefinition).loadBundleAsync();
+
+    expect(bundle.intro.hasVideo).toBe(true);
+    expect(bundle.intro.video).toEqual({
+      path: '/cache/PulsarBundles/com.acme.haptics/video/intro.mp4',
+      uri: 'file:///cache/PulsarBundles/com.acme.haptics/video/intro.mp4',
+      width: 1280,
+      height: 720,
+      muted: true,
+    });
+    expect(native.Pulsar_getBundlePresetVideo).toHaveBeenCalledTimes(1);
+    expect(native.Pulsar_getBundlePresetVideo).toHaveBeenCalledWith(
+      'com.acme.haptics#1',
+      'intro'
+    );
+  });
+
+  it('leaves presets without a video untouched', async () => {
+    const bundle = await defineBundle(videoDefinition).loadBundleAsync();
+
+    expect(bundle.heartbeatV2.hasVideo).toBe(false);
+    expect(bundle.heartbeatV2.video).toBeUndefined();
+  });
+
+  it('flags the video but has no file on the inline path', () => {
+    const bundle = defineBundle(videoDefinition).loadBundleSync();
+
+    expect(bundle.intro.hasVideo).toBe(true);
+    expect(bundle.intro.video).toBeUndefined();
+    expect(native.Pulsar_getBundlePresetVideo).not.toHaveBeenCalled();
+  });
+
+  it('treats a definition generated before video support as video-less', async () => {
+    const bundle = await defineBundle(definition).loadBundleAsync();
+
+    expect(bundle.explosion.hasVideo).toBe(false);
+    expect(native.Pulsar_getBundlePresetVideo).not.toHaveBeenCalled();
+  });
+
+  it('has no video when the native bundle reports none', async () => {
+    native.Pulsar_getBundlePresetVideo.mockReturnValue(null);
+    const bundle = await defineBundle(videoDefinition).loadBundleAsync();
+
+    expect(bundle.intro.video).toBeUndefined();
   });
 });

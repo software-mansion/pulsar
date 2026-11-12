@@ -399,6 +399,7 @@ describing how it was authored:
 Haptics.fanfare.hasAudio       // true if the preset has a synced sound
 Haptics.fanfare.hasAnimation   // true if it has a Lottie animation
 Haptics.fanfare.animation      // the Lottie itself, when the bundle carries it in JS
+Haptics.fanfare.hasVideo       // true if it was authored against a video
 ```
 
 ### Playing a preset's animation
@@ -445,6 +446,26 @@ unless you genuinely cannot await.
 One generated module drives both paths, so the types are identical either way. Loading the same pack
 twice gives two independent bundles; `dispose()` on one leaves the other working, and a disposed
 bundle is inert rather than silently re-parsing.
+
+### Playing a preset's video
+
+A preset authored against a video carries it as `video` — `path`, a `file://` `uri`, `width`,
+`height` and `muted` — instead of an animation, for your own player:
+
+```tsx
+import Video from 'react-native-video';
+
+const bundle = await loadBundleAsync();
+const video = bundle.intro.video;
+
+{video && <Video source={{ uri: video.uri }} muted={video.muted} />}
+```
+
+The MP4 is extracted natively when the binary loads, so `video` is set only on `loadBundleAsync()`
+and `loadBundleSync(true)`; the embedded-pattern path keeps `hasVideo: true` with no file. The video's
+time runs 1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the
+preset also carries audio, that track replaces the video's own sound: `muted` is then `true`, and the
+player must stay muted while `play()` plays the audio with the haptics.
 
 ### Playing from a position
 

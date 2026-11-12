@@ -23,6 +23,24 @@ if let anim = bundle.heartbeatV2.animation {
 }
 ```
 
+A preset authored against a video carries it as `video` instead of an animation — Pulsar times it,
+your `AVPlayer` renders it:
+
+```swift
+if let video = bundle.intro.video {
+    let player = AVPlayer(url: video.url)
+    player.isMuted = video.isMuted
+    player.seek(to: CMTime(value: 2500, timescale: 1000))
+    bundle.intro.play(fromMs: 2500)
+    player.play()
+}
+```
+
+The MP4 is extracted to a cache file when the bundle loads, so any player can stream it. Its time runs
+1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the preset also
+carries audio, that track replaces the video's own sound: `isMuted` is then `true`, and the player must
+stay muted while `play()` plays the audio with the haptics.
+
 `loadBundleSync(_:strict:)` asserts the loaded bundle's content hash matches the generated types,
 failing loudly on a stale bundle/types mismatch instead of a silent surprise. Pass `strict: false`
 to skip it.

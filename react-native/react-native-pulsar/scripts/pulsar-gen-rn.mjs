@@ -68,6 +68,7 @@ function buildSidecar(entries, where) {
       pattern,
       audio: !!p.audio,
       animation: !!p.animation,
+      video: !!p.video,
     };
     if (p.duration !== undefined) presets[p.id].duration = p.duration;
 
@@ -94,7 +95,8 @@ function buildSidecar(entries, where) {
   if (manifest.revision !== undefined) sidecar.revision = manifest.revision;
 
   const withAudio = manifest.presets.filter((p) => p.audio).map((p) => p.id);
-  return { sidecar, withAudio, droppedAnimation };
+  const withVideo = manifest.presets.filter((p) => p.video).map((p) => p.id);
+  return { sidecar, withAudio, withVideo, droppedAnimation };
 }
 
 const dirs = process.argv.slice(2);
@@ -105,7 +107,7 @@ for (const dir of dirs) {
     if (!file.endsWith('.pulsar')) continue;
     const name = basename(file, '.pulsar');
     const bundlePath = join(dir, file);
-    const { sidecar, withAudio, droppedAnimation } = buildSidecar(
+    const { sidecar, withAudio, withVideo, droppedAnimation } = buildSidecar(
       readEntries(bundlePath),
       bundlePath
     );
@@ -133,6 +135,13 @@ for (const dir of dirs) {
         `pulsar-gen-rn: warning: presets ${withAudio.join(', ')} carry audio, which is decoded ` +
           'natively and cannot be inlined — `loadBundleSync()` plays their haptics only. Use ' +
           '`loadBundleSync(true)` or `loadBundleAsync()` for the sound.\n'
+      );
+    }
+    if (withVideo.length > 0) {
+      process.stderr.write(
+        `pulsar-gen-rn: warning: presets ${withVideo.join(', ')} carry a video, which is ` +
+          'extracted natively — only `loadBundleSync(true)` and `loadBundleAsync()` expose its ' +
+          'file.\n'
       );
     }
     if (droppedAnimation.length > 0) {

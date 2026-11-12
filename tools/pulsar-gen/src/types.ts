@@ -15,6 +15,13 @@ export interface AnimationRef {
   totalFrames?: number;
 }
 
+/** H.264 MP4 played 1:1 with the preset timeline. Never set together with `animation`. */
+export interface VideoRef {
+  src: string;
+  width?: number;
+  height?: number;
+}
+
 export interface PresetEntry {
   /** Code-safe identifier; becomes `bundle.presets.<id>`. */
   id: string;
@@ -26,6 +33,8 @@ export interface PresetEntry {
   haptics: string;
   audio?: AudioRef;
   animation?: AnimationRef;
+  /** When `audio` is also set, it replaces the video's own sound track. */
+  video?: VideoRef;
 }
 
 export interface BundleManifest {

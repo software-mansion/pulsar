@@ -99,13 +99,13 @@ class PulsarFacadeTest {
 
 }
 
-private class FakeFactory : PulsarPlatformFactory {
+internal class FakeFactory : PulsarPlatformFactory {
     val handle = FakeHandle()
 
     override fun createPulsar(): PulsarPlatformHandle = handle
 }
 
-private class FakeHandle : PulsarPlatformHandle {
+internal class FakeHandle : PulsarPlatformHandle {
     val presetsHandle = FakePresetsHandle()
     val patternHandle = FakePatternHandle()
     val realtimeHandle = FakeRealtimeHandle()
@@ -206,7 +206,7 @@ private class FakeHandle : PulsarPlatformHandle {
     val playedPresets get() = presetsHandle.playedPresets
 }
 
-private class FakePresetsHandle : PulsarPresetsHandle {
+internal class FakePresetsHandle : PulsarPresetsHandle {
     val playedPresets = mutableListOf<String>()
     var cacheEnabled = true
     val availablePresets = mutableSetOf("Hammer")
@@ -425,7 +425,7 @@ private class FakePresetsHandle : PulsarPresetsHandle {
     override fun zipper() { playedPresets += "Zipper" }
 }
 
-private class FakePatternHandle : PatternComposerHandle {
+internal class FakePatternHandle : PatternComposerHandle {
     var parsed = false
     var played = false
     var audioOnlyPlayed = false
@@ -462,7 +462,7 @@ private class FakePatternHandle : PatternComposerHandle {
     }
 }
 
-private class FakeRealtimeHandle : RealtimeComposerHandle {
+internal class FakeRealtimeHandle : RealtimeComposerHandle {
     var lastSet: Pair<Float, Float>? = null
     var lastDiscrete: Pair<Float, Float>? = null
     var stopped = false
