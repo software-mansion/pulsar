@@ -1,18 +1,20 @@
 import Foundation
-import CoreHaptics
+@preconcurrency import CoreHaptics
 import QuartzCore
 import UIKit
 
-/// Plays a pattern in time with another clock, such as a video's. An advanced player is silent inside a continuous
-/// event it seeks into, so the continuous layer is split into events of at most 50 ms with the curve values baked in.
+/// Plays a pattern in time with another clock, such as a video's. The continuous layer is cut into one event per
+/// rumble, from one silent point to the next, with the envelope on parameter curves. Curves scale every event in their
+/// pattern, so the taps play from a second player that seeks and resumes with the first.
+///
+/// Every method can be called from any thread and returns at once. The work runs in order on the player's own queue.
 @objc public final class SeekablePatternPlayer: NSObject, @unchecked Sendable {
   // `@unchecked Sendable` is justified: all stored state is read and written on `queue`.
 
   static let schedulingMargin: TimeInterval = 0.01
-  static let maxEventDuration: TimeInterval = 0.05
-  /// In milliseconds. Pulsar Studio draws hard edges as 1 ms steps.
-  static let minimumStretch: Double = 10
-  static let minimumIntensity: Float = 0.01
+  /// Well under Core Haptics' 30 s limit for a continuous event, leaving room for slow rates.
+  static let maxPieceDuration: TimeInterval = 10
+  static let maxCurvePoints = 16
 
   private struct Timeline {
     let offset: TimeInterval
@@ -33,12 +35,13 @@ import UIKit
   }
 
   private let queue = DispatchQueue(label: "com.swmansion.pulsar.SeekablePatternPlayer")
-  private var pattern: CHHapticPattern?
+  private var patterns: [CHHapticPattern] = []
   private var engine: CHHapticEngine?
-  private var player: CHHapticAdvancedPatternPlayer?
+  private var players: [CHHapticAdvancedPatternPlayer] = []
   private var playerStartTime: TimeInterval?
   private var timeline: Timeline?
   private var isHapticsEnabled: Bool
+  private var errorHandler: (@Sendable (Error) -> Void)?
   private var activationObserver: NSObjectProtocol?
 
   init(isHapticsEnabled: Bool) {
@@ -59,8 +62,8 @@ import UIKit
     if let activationObserver {
       NotificationCenter.default.removeObserver(activationObserver)
     }
-    try? player?.cancel()
-    engine?.stop()
+    players.forEach { try? $0.cancel() }
+    Self.stop(engine)
   }
 }
 
@@ -69,14 +72,16 @@ import UIKit
 public extension SeekablePatternPlayer {
 
   @objc func prepare(_ data: PatternData) {
-    queue.sync {
+    // PatternData only has `let` properties, so the queue can read it after this returns.
+    nonisolated(unsafe) let data = data
+    queue.async { [self] in
       timeline = nil
-      cancelPlayer()
+      cancelPlayers()
       do {
-        pattern = try Self.makePattern(data)
+        patterns = try Self.makePatterns(data)
       } catch {
-        print("Error parsing seekable pattern: \(error.localizedDescription)")
-        pattern = nil
+        patterns = []
+        fail("Error parsing seekable pattern", error)
         return
       }
       prepareQuietly()
@@ -86,7 +91,7 @@ public extension SeekablePatternPlayer {
   /// Plays from `fromMs` at `hostTime` on the `CACurrentMediaTime()` clock. Calling it again while playing seeks,
   /// resumes or changes rate in place. A rate of 0 or less pauses.
   @objc func play(fromMs: Double, rate: Float, atHostTime hostTime: TimeInterval) {
-    queue.sync {
+    queue.async { [self] in
       guard rate > 0 else {
         timeline = nil
         stopOutput()
@@ -99,19 +104,27 @@ public extension SeekablePatternPlayer {
 
   /// Also drops a start that's still to come.
   @objc func pause() {
-    queue.sync {
+    queue.async { [self] in
       timeline = nil
       stopOutput()
     }
   }
 
   @objc func dispose() {
-    queue.sync {
+    queue.async { [self] in
       timeline = nil
-      cancelPlayer()
-      engine?.stop()
+      cancelPlayers()
+      Self.stop(engine)
       engine = nil
-      pattern = nil
+      patterns = []
+    }
+  }
+
+  /// Called on the player's queue when parsing, preparing, playing or pausing fails. After a failed start the player
+  /// tries again when the engine restarts or the app becomes active, until `pause()`.
+  @objc func setErrorHandler(_ handler: @escaping @Sendable (Error) -> Void) {
+    queue.async { [self] in
+      errorHandler = handler
     }
   }
 }
@@ -120,8 +133,18 @@ public extension SeekablePatternPlayer {
 
 extension SeekablePatternPlayer {
 
+  /// Keeps the pattern, so `play` still works afterwards.
+  func shutDown() {
+    queue.async { [self] in
+      timeline = nil
+      cancelPlayers()
+      Self.stop(engine)
+      engine = nil
+    }
+  }
+
   func setHapticsEnabled(_ state: Bool) {
-    queue.sync {
+    queue.async { [self] in
       isHapticsEnabled = state
       if state {
         resumeOutput()
@@ -139,14 +162,14 @@ private extension SeekablePatternPlayer {
   func startOutput() {
     guard let timeline, isHapticsEnabled else { return }
     do {
-      // Making the player can start the engine, so the start time is worked out after.
-      var player = try preparedPlayer()
+      // Making the players can start the engine, so the start time is worked out after.
+      var prepared = try preparedPlayers()
       if isStartPending {
         // Core Haptics doesn't document what a pause or seek does to a resume that's still to come.
-        cancelPlayer()
-        player = try preparedPlayer()
+        cancelPlayers()
+        prepared = try preparedPlayers()
       } else if playerStartTime != nil {
-        try player.pause(atTime: CHHapticTimeImmediate)
+        try prepared.forEach { try $0.pause(atTime: CHHapticTimeImmediate) }
       }
       var startTime = max(timeline.hostTime, CACurrentMediaTime() + Self.schedulingMargin)
       var offset = timeline.offset(at: startTime)
@@ -154,35 +177,43 @@ private extension SeekablePatternPlayer {
         startTime -= offset / TimeInterval(timeline.rate)
         offset = 0
       }
-      player.playbackRate = timeline.rate
-      try player.seek(toOffset: offset)
-      try player.resume(atTime: engineTime(forHostTime: startTime))
+      let engineStartTime = engineTime(forHostTime: startTime)
+      for player in prepared {
+        player.playbackRate = timeline.rate
+        try player.seek(toOffset: offset)
+        try player.resume(atTime: engineStartTime)
+      }
       playerStartTime = startTime
     } catch {
-      print("Error playing seekable pattern: \(error.localizedDescription)")
-      dropPlayer()
+      cancelPlayers()
+      fail("Error playing seekable pattern", error)
     }
   }
 
   func stopOutput() {
-    guard let player, playerStartTime != nil else { return }
+    guard !players.isEmpty, playerStartTime != nil else { return }
     if isStartPending {
-      cancelPlayer()
+      cancelPlayers()
       prepareQuietly()
       return
     }
     do {
-      try player.pause(atTime: CHHapticTimeImmediate)
+      try players.forEach { try $0.pause(atTime: CHHapticTimeImmediate) }
       playerStartTime = nil
     } catch {
-      print("Error pausing seekable pattern: \(error.localizedDescription)")
-      dropPlayer()
+      cancelPlayers()
+      fail("Error pausing seekable pattern", error)
     }
   }
 
   func resumeOutput() {
     guard timeline != nil, playerStartTime == nil else { return }
     startOutput()
+  }
+
+  func fail(_ message: String, _ error: Error) {
+    print("\(message): \(error.localizedDescription)")
+    errorHandler?(error)
   }
 
   var isStartPending: Bool {
@@ -195,87 +226,95 @@ private extension SeekablePatternPlayer {
   }
 }
 
-// MARK: - Engine and Player
+// MARK: - Engine and Players
 
 private extension SeekablePatternPlayer {
 
   /// Started and paused, so that every play is a seek plus resume.
-  func preparedPlayer() throws -> CHHapticAdvancedPatternPlayer {
-    if let player { return player }
-    guard let pattern else { throw PlayerError.notPrepared }
+  func preparedPlayers() throws -> [CHHapticAdvancedPatternPlayer] {
+    if !players.isEmpty { return players }
+    guard !patterns.isEmpty else { throw PlayerError.notPrepared }
 
     let engine = try engine ?? makeEngine()
     try engine.start()
-    let player = try engine.makeAdvancedPlayer(with: pattern)
-    let playerID = ObjectIdentifier(player)
-    player.completionHandler = { [weak self] _ in
-      self?.queue.async { [weak self] in
-        self?.playerFinished(playerID)
+    let prepared = try patterns.map { try engine.makeAdvancedPlayer(with: $0) }
+    for player in prepared {
+      let playerID = ObjectIdentifier(player)
+      player.completionHandler = { [weak self] _ in
+        self?.queue.async { [weak self] in
+          self?.playerFinished(playerID)
+        }
       }
+      try player.start(atTime: CHHapticTimeImmediate)
+      try player.pause(atTime: CHHapticTimeImmediate)
     }
-    try player.start(atTime: CHHapticTimeImmediate)
-    try player.pause(atTime: CHHapticTimeImmediate)
-    self.player = player
+    players = prepared
     playerStartTime = nil
-    return player
+    return prepared
   }
 
   func prepareQuietly() {
     do {
-      _ = try preparedPlayer()
+      _ = try preparedPlayers()
     } catch {
-      print("Error preparing seekable pattern: \(error.localizedDescription)")
+      fail("Error preparing seekable pattern", error)
     }
   }
 
   func makeEngine() throws -> CHHapticEngine {
     let engine = try CHHapticEngine()
     engine.playsHapticsOnly = true
-    engine.stoppedHandler = { [weak self] reason in
+    engine.stoppedHandler = { [weak self] _ in
       self?.queue.async { [weak self] in
-        self?.engineStopped(reason)
+        self?.engineStopped()
       }
     }
     engine.resetHandler = { [weak self] in
       self?.queue.async { [weak self] in
-        self?.engineReset()
+        self?.engineStopped()
       }
     }
     self.engine = engine
     return engine
   }
 
-  func engineStopped(_ reason: CHHapticEngine.StoppedReason) {
-    dropPlayer()
-    // Haptics can't start in the background, so that waits for the app to become active.
-    if reason != .applicationSuspended {
-      resumeOutput()
+  /// The engine finishes stopping after `stop` returns, so it's kept alive until then.
+  static func stop(_ engine: CHHapticEngine?) {
+    engine?.stop { error in
+      withExtendedLifetime(engine) {}
+      if let error {
+        print("Error stopping seekable pattern engine: \(error.localizedDescription)")
+      }
     }
   }
 
-  func engineReset() {
-    dropPlayer()
+  /// Also for a suspended app: the restart fails in the background, and becoming active resumes it.
+  func engineStopped() {
+    dropPlayers()
     resumeOutput()
   }
 
-  func cancelPlayer() {
-    do {
-      try player?.cancel()
-    } catch {
-      print("Error cancelling seekable pattern: \(error.localizedDescription)")
+  func cancelPlayers() {
+    for player in players {
+      do {
+        try player.cancel()
+      } catch {
+        print("Error cancelling seekable pattern: \(error.localizedDescription)")
+      }
     }
-    dropPlayer()
+    dropPlayers()
   }
 
-  func dropPlayer() {
-    player = nil
+  func dropPlayers() {
+    players = []
     playerStartTime = nil
   }
 
+  /// Both patterns end at the same time, so either player finishing means the pattern has.
   func playerFinished(_ playerID: ObjectIdentifier) {
-    guard let player, ObjectIdentifier(player) == playerID else { return }
+    guard players.contains(where: { ObjectIdentifier($0) == playerID }) else { return }
     timeline = nil
-    dropPlayer()
+    dropPlayers()
   }
 }
 
@@ -283,8 +322,21 @@ private extension SeekablePatternPlayer {
 
 extension SeekablePatternPlayer {
 
-  static func makePattern(_ data: PatternData) throws -> CHHapticPattern {
-    let discreteEvents = data.discretePattern.map { point in
+  /// The taps, then the continuous layer if there is one.
+  static func makePatterns(_ data: PatternData) throws -> [CHHapticPattern] {
+    let amplitude = data.continuousPattern.amplitude
+    let frequency = data.continuousPattern.frequency
+    let endMs = max(
+      data.discretePattern.map(\.time).max() ?? 0,
+      amplitude.map(\.time).max() ?? 0,
+      frequency.map(\.time).max() ?? 0
+    )
+    let endMarker = CHHapticEvent(
+      eventType: .hapticTransient,
+      parameters: [CHHapticEventParameter(parameterID: .hapticIntensity, value: 0)],
+      relativeTime: endMs / 1000
+    )
+    let taps = data.discretePattern.map { point in
       CHHapticEvent(
         eventType: .hapticTransient,
         parameters: [
@@ -294,47 +346,86 @@ extension SeekablePatternPlayer {
         relativeTime: point.time / 1000
       )
     }
-    let continuousEvents = makeContinuousEvents(
-      amplitude: data.continuousPattern.amplitude,
-      frequency: data.continuousPattern.frequency
-    )
-    return try CHHapticPattern(events: discreteEvents + continuousEvents, parameters: [])
+    var patterns = [try CHHapticPattern(events: taps + [endMarker], parameters: [])]
+
+    let pieces = makeContinuousEvents(amplitude: amplitude, frequency: frequency)
+    if !pieces.isEmpty {
+      let curves = makeCurves(.hapticIntensityControl, amplitude) + makeCurves(.hapticSharpnessControl, frequency)
+      patterns.append(try CHHapticPattern(events: pieces + [endMarker], parameterCurves: curves))
+    }
+    return patterns
   }
 
-  /// Covers what `PatternComposer` plays. Events start and end on the amplitude curve's points, so its hard edges stay
-  /// sharp.
+  /// A rumble runs from the last silent amplitude point before it to the first one after it, in events of at most
+  /// `maxPieceDuration`.
   static func makeContinuousEvents(amplitude: [ValuePoint], frequency: [ValuePoint]) -> [CHHapticEvent] {
     guard !amplitude.isEmpty, !frequency.isEmpty else { return [] }
 
     let end = max(amplitude.map(\.time).max() ?? 0, frequency.map(\.time).max() ?? 0)
-    let edges = [0.0] + amplitude.map(\.time).filter { $0 > 0 && $0 < end } + [end]
+    var rumbles: [(start: Double, stop: Double)] = []
+    // Curves hold their first value before the first point and their last value after the last.
+    var lastSilence = 0.0
+    var rumbleStart: Double?
+    for point in amplitude {
+      if point.value > 0 {
+        rumbleStart = rumbleStart ?? lastSilence
+      } else {
+        if let start = rumbleStart {
+          rumbles.append((start, point.time))
+          rumbleStart = nil
+        }
+        lastSilence = point.time
+      }
+    }
+    if let start = rumbleStart {
+      rumbles.append((start, end))
+    }
+
     var events: [CHHapticEvent] = []
-    for (start, stop) in zip(edges, edges.dropFirst()) where stop - start >= minimumStretch {
+    for (start, stop) in rumbles where stop > start {
       let stretch = (stop - start) / 1000
-      let count = Int((stretch / maxEventDuration).rounded(.up))
+      let count = Int((stretch / maxPieceDuration).rounded(.up))
       let duration = stretch / Double(count)
       for index in 0..<count {
-        let eventStart = start / 1000 + Double(index) * duration
-        let middle = (eventStart + duration / 2) * 1000
-        let intensity = clamped(PatternSeek.interpolatedValue(of: amplitude, at: middle))
-        guard intensity > minimumIntensity else { continue }
         events.append(
           CHHapticEvent(
             eventType: .hapticContinuous,
             parameters: [
-              CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-              CHHapticEventParameter(
-                parameterID: .hapticSharpness,
-                value: clamped(PatternSeek.interpolatedValue(of: frequency, at: middle))
-              )
+              CHHapticEventParameter(parameterID: .hapticIntensity, value: 1),
+              CHHapticEventParameter(parameterID: .hapticSharpness, value: 0)
             ],
-            relativeTime: eventStart,
+            relativeTime: start / 1000 + Double(index) * duration,
             duration: duration
           )
         )
       }
     }
     return events
+  }
+
+  /// Curves of at most `maxCurvePoints`, each starting on the last point of the one before. Like `PatternComposer`'s,
+  /// they hold the first value from 0.
+  static func makeCurves(_ parameter: CHHapticDynamicParameter.ID, _ points: [ValuePoint]) -> [CHHapticParameterCurve] {
+    guard let first = points.first else { return [] }
+    let points = first.time > 0 ? [ValuePoint(time: 0, value: first.value)] + points : points
+
+    var curves: [CHHapticParameterCurve] = []
+    var index = 0
+    repeat {
+      let chunk = points[index..<min(index + maxCurvePoints, points.count)]
+      let curveStart = (chunk.first?.time ?? 0) / 1000
+      curves.append(
+        CHHapticParameterCurve(
+          parameterID: parameter,
+          controlPoints: chunk.map {
+            CHHapticParameterCurve.ControlPoint(relativeTime: $0.time / 1000 - curveStart, value: clamped($0.value))
+          },
+          relativeTime: curveStart
+        )
+      )
+      index = chunk.endIndex - 1
+    } while index < points.count - 1
+    return curves
   }
 
   private static func clamped(_ value: Float) -> Float {
