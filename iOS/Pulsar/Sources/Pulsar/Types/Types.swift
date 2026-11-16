@@ -24,7 +24,7 @@ import Foundation
   }
 }
 
-@objc public class ValuePoint: NSObject, Codable {
+@objc public final class ValuePoint: NSObject, Codable, Sendable {
   @objc public let time: Double
   @objc public let value: Float
   @objc public init(time: Double, value: Float) {
@@ -37,7 +37,7 @@ import Foundation
 /// - time: Time in milliseconds (ms)
 /// - amplitude: Intensity of the haptic (0.0 - 1.0)
 /// - frequency: Sharpness of the haptic (0.0 - 1.0)
-@objc public class DiscretePoint: NSObject, Codable {
+@objc public final class DiscretePoint: NSObject, Codable, Sendable {
   @objc public let time: Double
   @objc public let amplitude: Float
   @objc public let frequency: Float
@@ -48,7 +48,7 @@ import Foundation
   }
 }
 
-@objc public class ContinuousPattern: NSObject, Codable {
+@objc public final class ContinuousPattern: NSObject, Codable, Sendable {
   @objc public let amplitude: [ValuePoint]
   @objc public let frequency: [ValuePoint]
   @objc public init(amplitude: [ValuePoint], frequency: [ValuePoint]) {
@@ -57,7 +57,7 @@ import Foundation
   }
 }
 
-@objc public class PatternData: NSObject, Codable {
+@objc public final class PatternData: NSObject, Codable, Sendable {
   @objc public let continuousPattern: ContinuousPattern
   @objc public let discretePattern: [DiscretePoint]
   @objc public init(continuousPattern: ContinuousPattern, discretePattern: [DiscretePoint]) {
