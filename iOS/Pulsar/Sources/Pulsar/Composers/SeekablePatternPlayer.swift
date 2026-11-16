@@ -256,10 +256,10 @@ private extension SeekablePatternPlayer {
   func makeEngine() throws -> CHHapticEngine {
     let engine = try CHHapticEngine()
     engine.playsHapticsOnly = true
-    engine.stoppedHandler = { [weak self, weak engine] reason in
+    engine.stoppedHandler = { [weak self, weak engine] _ in
       self?.queue.async { [weak self, weak engine] in
         guard let self, let engine, self.engine === engine else { return }
-        self.engineStopped(reason)
+        self.engineStopped()
       }
     }
     engine.resetHandler = { [weak self, weak engine] in
@@ -290,14 +290,9 @@ private extension SeekablePatternPlayer {
     engine = nil
   }
 
-  func engineStopped(_ reason: CHHapticEngine.StoppedReason) {
+  func engineStopped() {
     cancelPlayers()
-    switch reason {
-    case .applicationSuspended, .audioSessionInterrupt:
-      timeline = nil
-    default:
-      resumeOutput()
-    }
+    resumeOutput()
   }
 
   func engineReset() {

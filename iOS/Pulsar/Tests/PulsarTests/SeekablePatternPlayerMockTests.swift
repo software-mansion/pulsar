@@ -91,11 +91,14 @@ extension CoreHapticsMockTests {
     @Test func playFromAPastHostTimeCatchesUpWithTheClock() throws {
       try withMock {
         let player = preparedPlayer()
-        player.play(fromMs: 1000, rate: 2, atHostTime: CACurrentMediaTime() - 0.5)
+        let hostTime = CACurrentMediaTime() - 0.5
+        player.play(fromMs: 1000, rate: 2, atHostTime: hostTime)
         player.waitForPendingWork()
+        let latestStart = CACurrentMediaTime() + SeekablePatternPlayer.schedulingMargin
 
         let offset = try #require(livePlayers.first?.seekOffsets.last)
-        #expect(offset >= 2.0 && offset < 2.2)
+        #expect(offset >= 2.0)
+        #expect(offset <= 1.0 + (latestStart - hostTime) * 2)
       }
     }
 
@@ -172,11 +175,66 @@ extension CoreHapticsMockTests {
       withMock {
         let player = preparedPlayer()
         playLater(player)
+        NotificationCenter.default.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        player.waitForPendingWork()
         stopEngine(of: player, reason: .applicationSuspended)
         NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
         player.waitForPendingWork()
 
         #expect(livePlayers.isEmpty)
+
+        playLater(player)
+        #expect(isPlaying)
+      }
+    }
+
+    @Test func lateSuspendedStopAfterPlayingAgainKeepsPlaying() {
+      withMock {
+        let player = preparedPlayer()
+        playLater(player, fromMs: 1000)
+        stopEngine(of: player, reason: .applicationSuspended)
+
+        #expect(livePlayers.count == 2)
+        #expect(livePlayers.allSatisfy { $0.state == .playing && $0.seekOffsets.last == 1.0 })
+      }
+    }
+
+    @Test func resetWhilePlayingResumesOnNewPlayers() {
+      withMock {
+        let player = preparedPlayer()
+        playLater(player, fromMs: 1000)
+        recorder.engines.last?.resetHandler()
+        player.waitForPendingWork()
+
+        #expect(recorder.advancedPlayers.count == 4)
+        #expect(livePlayers.count == 2)
+        #expect(livePlayers.allSatisfy { $0.state == .playing && $0.seekOffsets.last == 1.0 })
+      }
+    }
+
+    @Test func resetWhileIdlePreparesPausedPlayers() {
+      withMock {
+        let player = preparedPlayer()
+        recorder.engines.last?.resetHandler()
+        player.waitForPendingWork()
+
+        #expect(recorder.advancedPlayers.count == 4)
+        #expect(livePlayers.count == 2)
+        #expect(livePlayers.allSatisfy { $0.state == .paused })
+      }
+    }
+
+    @Test func staleEngineResetIsIgnored() {
+      withMock {
+        let player = preparedPlayer()
+        let staleResetHandler = recorder.engines[0].resetHandler
+        player.shutDown()
+        playLater(player)
+        staleResetHandler()
+        player.waitForPendingWork()
+
+        #expect(recorder.advancedPlayers.count == 4)
+        #expect(livePlayers.count == 2)
       }
     }
 

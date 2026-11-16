@@ -10,6 +10,11 @@ All notable changes to the Pulsar iOS SDK are documented here.
   as a video's: it parses once, starts at a host time, and seeks, resumes or changes rate in place. Its continuous layer
   isn't cut off at 30 s.
 
+### Changed
+
+- `PatternData`, `ContinuousPattern`, `ValuePoint` and `DiscretePoint` are now `final` and `Sendable`, so they can no
+  longer be subclassed.
+
 ### Changed (CocoaPods only — breaking)
 
 - **The CocoaPod is renamed `Pulsar-haptics` → `PulsarHaptics`**, and its module is
