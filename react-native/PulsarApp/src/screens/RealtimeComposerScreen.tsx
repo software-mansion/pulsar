@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   grid: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
   },
