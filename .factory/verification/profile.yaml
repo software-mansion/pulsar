@@ -1,109 +1,187 @@
-# Verification profile (spec 02 §6): presets mobile, patched from the detected stack.
+# Verification profile: mobile, level standard (set up with /factory:setup on 2026-11-17).
 # This file decides what "done" means (`factory check`). Agents may not edit it; review changes like code.
-# `/factory:setup` refines it with you (levels minimal | standard | strict, local test environment).
-# Adjustments made by `factory init`:
-#   - typecheck: disabled (no type checker detected)
-#   - e2e: disabled (xcuitest needs a project-specific command)
-#   - coverage: not configured (no coverage output detected)
+# The repo is a multi-SDK monorepo with no root test runner: every verifier is scoped to one package by `paths`,
+# so a task only pays for the packages it touches.
 schema: factory.profile/v1
 profiles:
   - mobile
 verifiers:
-  - id: typecheck
+  # --- react-native/react-native-pulsar (RN SDK) ---
+  - id: rn-typecheck
     kind: typecheck
-    run: npx tsc --noEmit
-    paths:
-      - "**/*.ts"
-      - "**/*.tsx"
+    run: cd react-native/react-native-pulsar && npx tsc --noEmit
+    paths: ["react-native/react-native-pulsar/src/**", "react-native/react-native-pulsar/tsconfig*.json"]
     required: true
     quick: true
     timeout_s: 300
     parse: exit
-    enabled: false
-  - id: lint
+  - id: rn-lint
     kind: lint
-    run: npx eslint . --max-warnings=0
-    paths:
-      - "**/*.kt"
-      - "**/*.swift"
-      - "**/*.ts"
-      - "**/*.tsx"
-      - "**/*.js"
-      - "**/*.jsx"
-      - "**/*.mjs"
-      - "**/*.java"
-    required: true
-    timeout_s: 300
-    parse: exit
-  - id: unit
-    kind: unit
-    run: mkdir -p .factory-out; (npx jest --ci) > .factory-out/unit.log 2>&1; s=$?; cat .factory-out/unit.log; exit $s
-    always: true
+    # Changed files only: main carries ~230 pre-existing eslint errors (mostly prettier) across the package.
+    run: .factory/verification/checks/eslint-changed.sh react-native/react-native-pulsar
+    paths: ["react-native/react-native-pulsar/**/*.{js,jsx,ts,tsx,mjs}"]
     required: true
     quick: true
-    timeout_s: 900
+    timeout_s: 300
+    parse: exit
+  - id: rn-unit
+    kind: unit
+    run: >-
+      mkdir -p .factory-out && cd react-native/react-native-pulsar &&
+      (npx jest --ci --coverage --coverageReporters=lcov --coverageDirectory="$OLDPWD/.factory-out/rn-coverage") > "$OLDPWD/.factory-out/rn-unit.log" 2>&1;
+      s=$?; cat "$OLDPWD/.factory-out/rn-unit.log"; exit $s
+    paths: ["react-native/react-native-pulsar/src/**", "react-native/react-native-pulsar/jest-mock.js", "react-native/react-native-pulsar/package.json"]
+    required: true
+    quick: true
+    timeout_s: 600
     parse: exit
     evidence:
-      - kind: test-report
-        glob: .factory-out/unit.log
-  - id: build
-    kind: build
-    enabled: false
-    run: npx expo export --platform ios --output-dir .factory-out/export
-    paths:
-      - app/**
-      - src/**
-      - app.json
-      - package.json
-    required: false
-    timeout_s: 900
+      - { kind: test-report, glob: .factory-out/rn-unit.log }
+      - { kind: coverage, glob: .factory-out/rn-coverage/lcov.info }
+
+  # --- react-native/react-native-pulsar-lottie ---
+  - id: rn-lottie-unit
+    kind: unit
+    run: cd react-native/react-native-pulsar-lottie && npm test
+    paths: ["react-native/react-native-pulsar-lottie/src/**", "react-native/react-native-pulsar-lottie/package.json"]
+    required: true
+    quick: true
+    timeout_s: 300
     parse: exit
+  - id: rn-lottie-typecheck
+    kind: typecheck
+    # Not required: fails on main (2026-11-17). The package type-checks against the published react-native-pulsar
+    # (^1.6.1), which lacks `PresetHandle`. Re-enable once react-native-pulsar is released with it.
+    run: cd react-native/react-native-pulsar-lottie && npx tsc --noEmit
+    paths: ["react-native/react-native-pulsar-lottie/src/**"]
+    required: false
+    timeout_s: 300
+    parse: exit
+
+  # --- web/Pulsar (pulsar-haptics web SDK) ---
+  - id: web-typecheck
+    kind: typecheck
+    run: cd web/Pulsar && npm run typecheck --silent
+    paths: ["web/Pulsar/**/*.{ts,tsx,js,mjs}", "web/Pulsar/tsconfig*.json"]
+    required: true
+    quick: true
+    timeout_s: 300
+    parse: exit
+  - id: web-unit
+    kind: unit
+    run: cd web/Pulsar && npm test --silent
+    paths: ["web/Pulsar/**"]
+    required: true
+    quick: true
+    timeout_s: 300
+    parse: exit
+
+  # --- tools/pulsar-gen ---
+  - id: gen-typecheck
+    kind: typecheck
+    run: cd tools/pulsar-gen && npm run typecheck --silent
+    paths: ["tools/pulsar-gen/**"]
+    required: true
+    quick: true
+    timeout_s: 300
+    parse: exit
+  - id: gen-unit
+    kind: unit
+    run: cd tools/pulsar-gen && npm test --silent
+    paths: ["tools/pulsar-gen/**"]
+    required: true
+    quick: true
+    timeout_s: 300
+    parse: exit
+
+  # --- native SDKs ---
+  - id: android-unit
+    kind: unit
+    run: cd Android/PulsarApp && ./gradlew :Pulsar:testDebugUnitTest --console=plain
+    env:
+      JAVA_HOME: /Applications/Android Studio.app/Contents/jbr/Contents/Home
+    paths: ["Android/Pulsar/**"]
+    required: true
+    timeout_s: 1200
+    parse: exit
+    evidence:
+      - { kind: test-report, glob: Android/Pulsar/build/reports/tests/testDebugUnitTest/index.html }
+  - id: ios-unit
+    kind: unit
+    run: .factory/verification/checks/ios-sdk-tests.sh
+    paths: ["iOS/Pulsar/Sources/**", "iOS/Pulsar/Tests/**", "iOS/Pulsar/Package.swift"]
+    required: true
+    timeout_s: 1800
+    parse: exit
+    evidence:
+      - { kind: test-report, glob: .factory-out/ios-sdk-tests.log }
+  - id: flutter-unit
+    kind: unit
+    run: .factory/verification/checks/flutter-test.sh flutter/pulsar
+    paths: ["flutter/pulsar/lib/**", "flutter/pulsar/test/**", "flutter/pulsar/pubspec.yaml"]
+    required: true
+    timeout_s: 600
+    parse: exit
+  - id: flutter-lottie-unit
+    kind: unit
+    run: .factory/verification/checks/flutter-test.sh flutter/PulsarLottie
+    paths: ["flutter/PulsarLottie/lib/**", "flutter/PulsarLottie/test/**", "flutter/PulsarLottie/pubspec.yaml"]
+    required: true
+    timeout_s: 600
+    parse: exit
+  - id: kmp-unit
+    kind: unit
+    run: cd kmp/Pulsar && ./gradlew :library:allTests --console=plain
+    env:
+      JAVA_HOME: /Applications/Android Studio.app/Contents/jbr/Contents/Home
+    paths: ["kmp/Pulsar/library/**", "kmp/Pulsar/*.gradle.kts", "kmp/Pulsar/gradle/**"]
+    required: true
+    timeout_s: 1200
+    parse: exit
+
+  # --- native lint (changed files only; main has ~6.5k ktlint and ~1k swiftlint violations, CI enforces neither) ---
+  - id: ktlint
+    kind: lint
+    run: .factory/verification/checks/native-lint-changed.sh kotlin
+    paths: ["**/*.kt"]
+    required: false
+    quick: true
+    timeout_s: 300
+    parse: exit
+  - id: swiftlint
+    kind: lint
+    run: .factory/verification/checks/native-lint-changed.sh swift
+    paths: ["**/*.swift"]
+    required: false
+    quick: true
+    timeout_s: 300
+    parse: exit
+
+  # --- device e2e: no saved suite in this repo yet. Enable (required: false) once argent flows exist. ---
   - id: e2e
     kind: e2e
+    enabled: false
     setup: .factory/verification/checks/boot-simulator.sh
-    run: maestro test .maestro/ --format junit --output .factory-out/e2e-junit.xml
-    paths:
-      - app/**
-      - src/**
-      - ios/**
-      - android/**
+    run: "echo 'no e2e suite configured' && exit 1"
+    paths: ["react-native/PulsarApp/**", "iOS/PulsarApp/**", "Android/PulsarApp/app/**"]
     required: false
     timeout_s: 2400
-    parse: junit
-    report_path: .factory-out/e2e-junit.xml
-    evidence:
-      - kind: test-report
-        glob: .factory-out/e2e-junit.xml
-      - kind: screenshot
-        glob: .factory-out/screenshots/**/*.png
-    enabled: false
-  - id: visual
-    kind: visual
-    enabled: false
-    run: maestro test .maestro/visual/ --format junit --output .factory-out/visual-junit.xml
-    paths:
-      - "**/*.tsx"
-      - "**/*.swift"
-      - "**/*.kt"
-    required: false
-    timeout_s: 1800
-    parse: junit
-    report_path: .factory-out/visual-junit.xml
-    evidence:
-      - kind: screenshot
-        glob: .factory-out/screenshots/**/*.png
+    parse: exit
   - id: mutation
     kind: mutation
     enabled: false
     run: .factory/verification/checks/mutation.sh
-    paths:
-      - src/**
+    paths: ["react-native/react-native-pulsar/src/**"]
     required: false
     timeout_s: 1800
     parse: json
     evidence:
-      - kind: mutation-report
-        glob: .factory-out/mutation.json
+      - { kind: mutation-report, glob: .factory-out/mutation.json }
+coverage:
+  format: lcov
+  path: .factory-out/rn-coverage/lcov.info
+  threshold: 0
+  required: false
 path_classes:
   src:
     - "**/*.kt"
@@ -116,6 +194,13 @@ path_classes:
     - "**/*.java"
   tests:
     - "**/*.test.*"
+    - "**/*Test.kt"
+    - "**/*Tests.swift"
+    - "**/*_test.dart"
+    - "**/src/test/**"
+    - "**/src/commonTest/**"
+    - "**/Tests/**"
+    - "**/test/**"
     - "**/*.spec.*"
     - test/**
     - tests/**
@@ -131,6 +216,11 @@ path_classes:
     - Jenkinsfile
     - azure-pipelines.yml
   lint_config:
+    - "**/.eslintrc*"
+    - "**/eslint.config.*"
+    - "**/.swiftlint.yml"
+    - "**/.editorconfig"
+    - "**/analysis_options.yaml"
     - .eslintrc*
     - eslint.config.*
     - biome.json
@@ -146,6 +236,8 @@ path_classes:
     - .golangci.*
     - .tflint.hcl
   test_config:
+    - "**/jest.config.*"
+    - "**/jest-mock.js"
     - vitest.config.*
     - jest.config.*
     - playwright.config.*
@@ -182,16 +274,22 @@ path_classes:
     - "**/migrations/**"
   public_api: []
   ui:
-    - "**/*.tsx"
-    - "**/*.jsx"
-    - "**/*.swift"
-    - "**/*.kt"
+    - "react-native/PulsarApp/**/*.tsx"
+    - "iOS/PulsarApp/**/*.swift"
+    - "Android/PulsarApp/app/**/*.kt"
+    - "flutter/PulsarApp/lib/**"
+    - "kmp/PulsarApp/**/*.kt"
+    - "web/PulsarApp/src/**"
+    - "docs/src/**"
     - "**/res/layout/**"
   docs:
     - "**/*.md"
     - docs/**
   generated:
     - "**/generated/**"
+    - "react-native/*/lib/**"
+    - "**/.build/**"
+    - "**/.tmp/**"
     - dist/**
     - build/**
     - "**/*.generated.*"
@@ -249,11 +347,13 @@ repro:
 evidence_required:
   - kind: test-report
     when_paths:
-      - src/**
-      - app/**
+      - react-native/react-native-pulsar/src/**
+      - Android/Pulsar/src/main/**
+      - iOS/Pulsar/Sources/**
+  # Screenshots only for the example/demo apps; SDK code has no UI of its own.
   - kind: screenshot
     when_paths:
-      - "**/*.tsx"
-      - "**/*.jsx"
-      - "**/*.swift"
-      - "**/*.kt"
+      - react-native/PulsarApp/**/*.tsx
+      - iOS/PulsarApp/**/*.swift
+      - Android/PulsarApp/app/**/*.kt
+      - flutter/PulsarApp/lib/**

@@ -1,3 +1,197 @@
 version: 1
-generated_at: ""
-features: []
+generated_at: 2026-11-17T11:33:40.771Z
+features:
+  - id: FEAT-PLAY
+    title: Haptic pattern playback
+    capability: pattern-playback
+    spec: specs/pattern-playback.md
+    status: planned
+    requirements:
+      - id: REQ-PLAY-001
+        title: Mobile pattern format
+        tests: []
+      - id: REQ-PLAY-002
+        title: iOS rendering
+        tests: []
+      - id: REQ-PLAY-003
+        title: Seeking with fromMs
+        tests: []
+      - id: REQ-PLAY-004
+        title: Pattern with a synced sound
+        tests: []
+      - id: REQ-PLAY-005
+        title: Gating when haptics cannot play
+        tests: []
+      - id: REQ-PLAY-006
+        title: Enabling, disabling and stopping haptics
+        tests: []
+      - id: REQ-PLAY-007
+        title: Audio simulation of haptics
+        tests: []
+      - id: REQ-PLAY-008
+        title: Android effect selection by capability
+        tests: []
+      - id: REQ-PLAY-009
+        title: Android impulse-only patterns
+        tests: []
+      - id: REQ-PLAY-010
+        title: Android PWM for timing-only actuators
+        tests: []
+      - id: REQ-PLAY-011
+        title: Support level and capabilities
+        tests: []
+      - id: REQ-PLAY-012
+        title: iOS realtime composer
+        tests: []
+      - id: REQ-PLAY-013
+        title: Android realtime composer strategies
+        tests: []
+      - id: REQ-PLAY-014
+        title: Web pattern compilation
+        tests: []
+      - id: REQ-PLAY-015
+        title: Web realtime composer
+        tests: []
+    code:
+      - iOS/Pulsar/Sources/Pulsar/Composers/*.swift
+      - iOS/Pulsar/Sources/Pulsar/HapticEngineWrapper.swift
+      - iOS/Pulsar/Sources/Pulsar/Pulsar.swift
+      - iOS/Pulsar/Sources/Pulsar/Lines/*.swift
+      - iOS/Pulsar/Sources/Pulsar/Audio/AudioSimulator.swift
+      - iOS/Pulsar/Sources/Pulsar/Types/*.swift
+      - Android/Pulsar/src/main/java/com/swmansion/pulsar/Pulsar.kt
+      - Android/Pulsar/src/main/java/com/swmansion/pulsar/composers/*.kt
+      - Android/Pulsar/src/main/java/com/swmansion/pulsar/haptics/*.kt
+      - Android/Pulsar/src/main/java/com/swmansion/pulsar/audio/*.kt
+      - Android/Pulsar/src/main/java/com/swmansion/pulsar/types/*.kt
+      - kmp/Pulsar/library/src/commonMain/kotlin/com/swmansion/pulsar/PatternSeek.kt
+      - web/Pulsar/src/PatternComposer.ts
+      - web/Pulsar/src/RealtimeComposer.ts
+      - web/Pulsar/src/Engine.ts
+      - web/Pulsar/src/Settings.ts
+      - web/Pulsar/src/types.ts
+    tests:
+      - iOS/Pulsar/Tests/PulsarTests/*.swift
+      - Android/Pulsar/src/test/java/com/swmansion/pulsar/**/*.kt
+      - kmp/Pulsar/library/src/commonTest/kotlin/com/swmansion/pulsar/PatternSeekTest.kt
+      - web/Pulsar/tests/PatternComposer.test.js
+      - web/Pulsar/tests/RealtimeComposer.test.js
+      - web/Pulsar/tests/Settings.test.js
+  - id: FEAT-PRE
+    title: Built-in haptic presets
+    capability: presets
+    spec: specs/presets.md
+    status: planned
+    requirements:
+      - id: REQ-PRE-001
+        title: Mobile generated catalog
+        tests: []
+      - id: REQ-PRE-002
+        title: System presets
+        tests: []
+      - id: REQ-PRE-003
+        title: Case-insensitive lookup by name on mobile
+        tests: []
+      - id: REQ-PRE-004
+        title: Unknown names on mobile are a silent no-op
+        tests: []
+      - id: REQ-PRE-005
+        title: Preset instance cache
+        tests: []
+      - id: REQ-PRE-006
+        title: Mobile preset data format
+        tests: []
+      - id: REQ-PRE-007
+        title: React Native preset names
+        tests: []
+      - id: REQ-PRE-008
+        title: Web catalog
+        tests: []
+      - id: REQ-PRE-009
+        title: Web lookup by name and unknown names
+        tests: []
+      - id: REQ-PRE-010
+        title: Web listing
+        tests: []
+      - id: REQ-PRE-011
+        title: Web preset playback and audio fallback
+        tests: []
+    code:
+      - iOS/Pulsar/Sources/Pulsar/Presets/**/*.swift
+      - Android/Pulsar/src/main/java/com/swmansion/pulsar/presets/**/*.kt
+      - Android/Pulsar/src/main/java/com/swmansion/pulsar/types/Points.kt
+      - kmp/Pulsar/library/src/commonMain/kotlin/com/swmansion/pulsar/PulsarControllers.kt
+      - kmp/Pulsar/library/src/iosMain/kotlin/com/swmansion/pulsar/iosimpl/presets/**/*.kt
+      - kmp/Pulsar/library/src/androidMain/kotlin/com/swmansion/pulsar/AndroidPulsarFactory.kt
+      - flutter/pulsar/lib/src/pulsar_presets.dart
+      - flutter/pulsar/lib/src/pulsar_preset.dart
+      - react-native/react-native-pulsar/src/Presets.ts
+      - react-native/react-native-pulsar/src/PresetsLight.ts
+      - react-native/react-native-pulsar/src/presetNames.ts
+      - web/Pulsar/src/Presets.ts
+      - web/Pulsar/src/builtin-presets.ts
+      - web/Pulsar/src/generated-presets.ts
+    tests:
+      - iOS/Pulsar/Tests/PulsarTests/PresetsWrapperTests.swift
+      - react-native/react-native-pulsar/src/__tests__/presetNames.test.ts
+      - react-native/react-native-pulsar/src/__tests__/PresetsLight.test.ts
+      - web/Pulsar/tests/Presets.test.js
+      - web/Pulsar/tests/Preset.test.js
+      - web/Pulsar/tests/builtin-presets.test.js
+      - flutter/pulsar/test/pulsar_test.dart
+      - kmp/Pulsar/library/src/commonTest/kotlin/com/swmansion/pulsar/PulsarFacadeTest.kt
+  - id: FEAT-RNAPI
+    title: React Native JS API
+    capability: react-native-api
+    spec: specs/react-native-api.md
+    status: planned
+    requirements:
+      - id: REQ-RNAPI-001
+        title: Package entry points
+        tests: []
+      - id: REQ-RNAPI-002
+        title: Preset playback functions
+        tests: []
+      - id: REQ-RNAPI-003
+        title: Settings
+        tests: []
+      - id: REQ-RNAPI-004
+        title: Enum values
+        tests: []
+      - id: REQ-RNAPI-005
+        title: usePatternComposer
+        tests: []
+      - id: REQ-RNAPI-006
+        title: Pattern sound
+        tests: []
+      - id: REQ-RNAPI-007
+        title: useRealtimeComposer
+        tests: []
+      - id: REQ-RNAPI-008
+        title: useAdaptiveHaptics
+        tests: []
+      - id: REQ-RNAPI-009
+        title: defineBundle validation
+        tests: []
+      - id: REQ-RNAPI-010
+        title: Loading a bundle
+        tests: []
+      - id: REQ-RNAPI-011
+        title: Bundle shape and playback
+        tests: []
+      - id: REQ-RNAPI-012
+        title: Disposing a bundle
+        tests: []
+      - id: REQ-RNAPI-013
+        title: Jest mock
+        tests: []
+    code:
+      - react-native/react-native-pulsar/src/*.ts
+      - react-native/react-native-pulsar/src/*.tsx
+      - react-native/react-native-pulsar/jest-mock.js
+      - react-native/react-native-pulsar/package.json
+      - react-native/react-native-pulsar/ios/Haptics.mm
+      - react-native/react-native-pulsar/android/src/main/java/com/swmansion/pulsar/reactnative/*.kt
+    tests:
+      - react-native/react-native-pulsar/src/__tests__/*.ts
+      - react-native/react-native-pulsar/src/__tests__/*.tsx

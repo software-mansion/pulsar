@@ -52,8 +52,16 @@ git:
   remote: origin
   worktree_dir: .factory/state/worktrees
   branch_prefix: factory/
-  worktree_setup: ["npm install --no-package-lock"]   # run once in every new task worktree
-  worktree_include: []  # gitignored files copied into task worktrees
+  # run once in every new task worktree; CI=1 stops the lefthook postinstall in react-native-pulsar from writing git hooks + lefthook.yml
+  worktree_setup:
+    - "CI=1 npm ci --prefix react-native/react-native-pulsar --no-audit --no-fund"
+    - "npm ci --prefix react-native/react-native-pulsar-lottie --no-audit --no-fund"
+    - "npm ci --prefix web/Pulsar --no-audit --no-fund"
+    - "npm ci --prefix tools/pulsar-gen --no-audit --no-fund"
+  worktree_include:   # gitignored files copied into task worktrees (Android SDK paths for Gradle)
+    - Android/PulsarApp/local.properties
+    - kmp/Pulsar/local.properties
+    - flutter/pulsar/example/android/local.properties
   merge_method: squash
   draft_prs: false
   delete_branch: true
