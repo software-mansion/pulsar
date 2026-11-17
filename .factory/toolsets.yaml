@@ -1,0 +1,34 @@
+# Toolsets (spec 02 §12): skills, MCP servers and permission rules per agent role.
+# A task can adjust its toolset with `toolset.enable` / `toolset.disable` entries
+# (`skill:<n>`, `mcp:<n>`, `plugin:<alias>`, `toolset:<n>`).
+# Credentials never go here: reference environment variables instead.
+version: 1
+
+mcp_servers:
+  argent: { command: argent, args: [mcp] }
+  # e.g. sentry: { type: http, url: "https://mcp.sentry.dev/mcp" }
+
+plugins: {}
+
+toolsets:
+  default: { skills: { enable: ["*"] }, mcp: [] }
+  readonly:
+    extends: default
+    deny: ["Edit", "Write", "MultiEdit", "NotebookEdit", "Bash(git commit*)", "Bash(git reset*)"]
+  # UI tooling (browser / simulator control) for builders and verifiers of UI changes
+  ui: { extends: default, mcp: ["argent"] }
+  readonly-ui: { extends: readonly, mcp: ["argent"] }
+
+roles:
+  builder: ui
+  worker: ui
+  reproducer: ui
+  test-writer: default
+  planner: readonly
+  reviewer: readonly
+  verifier: readonly-ui
+  validator: readonly-ui
+  compounder: default
+  interviewer: readonly
+  analyst: readonly
+  optimizer: readonly

@@ -1,0 +1,14 @@
+---
+id: api-errors
+paths: ["src/routes/**"]
+summary: Use HttpError for all 4xx/5xx responses.
+source: { kind: human, ref: "team decision 2026-11" }   # kind: proposal | compound | human
+added: 2026-11-20
+reason: Ad-hoc error bodies broke the public error contract twice.
+retire_when: "a lint rule (no-adhoc-error-body) enforces this"
+hits: 0
+helpful: 0
+harmful: 0
+---
+Return errors with `throw new HttpError(status, code)` from `src/http/errors.ts`.
+Do not build error JSON by hand.

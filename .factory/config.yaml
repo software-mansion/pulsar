@@ -1,0 +1,107 @@
+# factory configuration (spec 02 §2). Values left out fall back to the built-in defaults.
+# Edit freely; `factory check` and the merge policy are configured elsewhere
+# (.factory/verification/profile.yaml and .factory/policy/merge.yaml).
+version: 1
+
+project:
+  name: "pulsar"
+  base_branch: "main"
+  profiles: ["mobile"]
+
+orchestrator:
+  concurrency: 3              # tasks running at once
+  poll_interval_s: 10         # `factory run --watch` poll period
+  default_strategy: auto      # auto | solo-loop | gated-pipeline | checkpoint-convergence | contract-first-mission
+  max_runs_per_task: 2        # fresh runs after a failed run before the task is marked failed
+
+budgets:
+  per_task: { usd: 15, turns: 500, wall_minutes: 150 }   # ceiling per run; each strategy's own budget applies below it
+  per_day_usd: null           # e.g. 50 to stop scheduling new runs after $50/day
+
+loops:
+  max_attempts_per_gate: 3
+  repeat_signature_limit: 2   # identical consecutive failures that stop a loop early
+  max_reentries_per_step: 6
+  max_questions_per_run: 5        # question pauses per run; one more escalates to a human instead of asking again
+
+agent:
+  runner: claude-cli
+  claude_bin: claude
+  permission_mode: dontAsk
+  models: { default: sonnet }  # add e.g. `verifier: opus` to use a different model for a role
+  max_turns: { default: 80, builder: 150, reviewer: 40, verifier: 60 }
+  allow: [Read, Edit, Write, Glob, Grep, Bash, Skill, Task, TodoWrite]
+  deny:
+    - "Bash(git push*)"
+    - "Bash(gh pr merge*)"
+    - "Bash(git checkout main*)"
+    - "Edit(.factory/policy/**)"
+    - "Edit(.factory/verification/**)"
+    - "Write(.factory/policy/**)"
+    - "Write(.factory/verification/**)"
+  extra_args: []
+  bare: false
+  hermetic: true              # ignore user-level Claude settings, plugins, skills, MCP servers, CLAUDE.md and auto-memory
+  timeout_min: 45
+  idle_timeout_minutes: 15        # stop an agent run with no output events for this long (0 = off)
+  idle_after_output_seconds: 60   # stop an idle run this long after it wrote a valid report (counts as done; 0 = off)
+  rate_limit: { backoff_s: [30, 60, 120, 300], max_wait_min: 60 }
+
+git:
+  mode: github                 # github (push + PRs via gh) | local (local branches and merges)
+  remote: origin
+  worktree_dir: .factory/state/worktrees
+  branch_prefix: factory/
+  worktree_setup: ["npm install --no-package-lock"]   # run once in every new task worktree
+  worktree_include: []  # gitignored files copied into task worktrees
+  merge_method: squash
+  draft_prs: false
+  delete_branch: true
+  pr_labels: [factory]
+  keep_worktree_on_done: false
+
+board:
+  commit: false               # true = commit .factory/board/ (shared board through git)
+
+review:
+  block_on: { severities: [P0, P1], min_confidence: 75 }
+  max_personas: 4
+  personas:
+    correctness: { always: true }
+    security: { paths: ["**/auth/**", "**/crypto/**", "**/*secret*", "**/payments/**"], keywords: [password, token, jwt, crypto, "exec(", "eval(", sql] }
+    performance: { keywords: ["for (", while, ".map(", query, cache, "N+1"] }
+    api: { paths: ["**/api/**", "**/routes/**", "openapi*.y*ml", "src/index.ts"] }
+    ui: { paths: ["**/*.tsx", "**/*.vue", "**/*.svelte", "**/*.css"] }
+    tests: { paths: ["**/*.test.*", "**/*.spec.*", "**/test_*.py", "tests/**"] }
+
+kb:
+  include: [".factory/knowledge/**/*.md", "specs/**/*.md", ".factory/rules/**/*.md", ".factory/skills/**/SKILL.md", "docs/**/*.md", "README.md", "AGENTS.md", "CLAUDE.md"]
+  exclude: ["docs/research/**"]
+  chunk_chars: 2400
+
+specs:
+  dir: specs
+  test_globs: ["**/*.test.*", "**/*.spec.*", "tests/**", "test/**"]
+  staleness_commits: 10
+  require_delta_for: [feature]
+
+learning:
+  evaluator_paths: [".factory/verification/**", ".factory/policy/**", "bench/**", ".factory/learning/**"]
+  optimize_min_signals: 5
+
+routines:
+  optimize: { enabled: true, cron: "0 3 * * 1" }
+  spec-check: { enabled: true, cron: "0 2 * * *" }
+  kb-index: { enabled: true, cron: "*/30 * * * *" }
+  issue-sync: { enabled: false, cron: "*/15 * * * *" }
+  verification-refresh: { enabled: true, cron: "0 4 * * 0" }
+  board-gc: { enabled: true, cron: "0 5 * * *" }
+
+integrations:
+  github:
+    issues: { enabled: false, label: factory, ready_label: "factory:ready", comment_on_pr: true }
+  # MCP issue sources (Sentry, Linear, Asana, Datadog, …): declare the server in toolsets.yaml first.
+  # - { name: sentry, kind: sentry, enabled: true, mcp: sentry, query: "unresolved errors, first seen in the last 7 days", default_type: bug, labels: [sentry], status_on_import: draft, max_per_sync: 5 }
+  mcp_sources: []
+
+ui: { host: 127.0.0.1, port: 4317 }

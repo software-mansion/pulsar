@@ -28,3 +28,10 @@ config.toml
 # Gradle codegen plugin build artifacts
 tools/pulsar-gen-gradle/build/
 tools/pulsar-gen-gradle/.gradle/
+
+# factory
+.factory/state/
+.factory/runs/
+.factory/board/
+.factory-out/
+.factory-hidden/

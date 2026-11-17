@@ -1,0 +1,23 @@
+---
+id: vitest-esm-mock-hoisting
+title: vi.mock in ESM tests must be top-level
+type: gotcha
+summary: vi.mock calls inside test bodies are not hoisted under ESM and silently mock nothing.
+symptoms: ["mocked function still calls the real implementation"]
+aliases: ["mock is ignored", "stub not applied in test", "module replacement does nothing", "test hits real dependency"]
+error_signatures: []
+fix: Move vi.mock to module top level or use vi.doMock + dynamic import.
+components: ["test/**"]
+applies_when: ["writing vitest tests that mock modules"]
+tags: [vitest, esm, testing]
+refs: ["https://vitest.dev/api/vi.html#vi-mock"]
+provenance: { source: human }
+created: 2026-11-13
+last_verified: 2026-11-13
+retire_when: "vitest hoists vi.mock in ESM (check release notes)"
+---
+## Summary
+`vi.mock()` inside a test body runs after the module under test was imported, so nothing is mocked.
+
+## Fix
+Call `vi.mock()` at module top level, or use `vi.doMock()` followed by a dynamic `import()`.

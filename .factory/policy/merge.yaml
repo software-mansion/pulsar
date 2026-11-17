@@ -1,0 +1,72 @@
+# Merge policy (spec 02 §10, semantics in 05 §6). Read from the BASE branch, so a task branch
+# can never loosen its own merge rules. Agents may not edit this file.
+schema: factory.policy/v1
+version: "1"
+defaults: { decision: human_review, lane: standard }
+
+risk:
+  model: weighted_v1
+  weights: { size: 0.20, files: 0.10, sensitive_paths: 0.25, new_dependencies: 0.08, migrations: 0.10, public_api: 0.10, coverage_gap: 0.07, agent_struggle: 0.04, review_residual: 0.04, diff_guard_warnings: 0.02 }
+  norms: { loc: 400, files: 15, agent_attempts: 3 }
+  sensitive_paths: ["**/auth/**", "**/security/**", "**/payments/**", "**/billing/**", "**/crypto/**", "**/migrations/**", "infra/**", ".github/**", "**/*.lock", "Dockerfile*", ".factory/**"]
+  thresholds: { low_max: 0.25, medium_max: 0.6 }
+  size_basis: src            # risk size/files count source lines only (src) or every counted file incl. tests (counted)
+
+# What "size" means for rule limits (max_loc / max_src_loc / max_files) and the risk size signal (spec 05 §6.1):
+# source lines only. A file in one of `exclude_classes` (profile path classes, from the check report) or matching
+# `exclude_globs` does not count. A block of lines moved between or within source files counts once (its deleted side).
+# `max_total_loc` (optional, per rule) caps the whole diff, excluded files included.
+size:
+  exclude_classes: [tests, lockfiles, docs, generated, snapshots]
+  exclude_globs:
+    tests: ["**/*.test.*", "**/*.spec.*", "**/*_test.*", "**/test_*.py", "test/**", "tests/**", "**/test/**", "**/tests/**", "**/__tests__/**"]
+    lockfiles: ["**/package-lock.json", "**/npm-shrinkwrap.json", "**/yarn.lock", "**/pnpm-lock.yaml", "**/bun.lockb", "**/poetry.lock",
+      "**/Pipfile.lock", "**/uv.lock", "**/pdm.lock", "**/Cargo.lock", "**/Gemfile.lock", "**/composer.lock", "**/go.sum", "**/*.lock"]
+    docs: ["**/*.md", "**/*.mdx", "**/*.rst", "docs/**", "**/CHANGELOG*", "**/LICENSE*"]
+    snapshots: ["**/__snapshots__/**", "**/*.snap"]
+    generated: ["**/*.generated.*", "**/*.gen.*", "**/*.min.js", "**/*.min.css", "**/*.map", "coverage/**", ".factory-out/**"]
+  moved_blocks: { enabled: true, min_lines: 3, min_chars: 20 }   # a moved block: ≥ min_lines lines with ≥ min_chars alphanumerics
+
+# Non-blocking agent notes (open questions, caveats) are recorded with every decision and listed by `factory digest`.
+# On an auto-merge, notes matching `actionable_patterns` (case-insensitive regexes) become draft follow-up tasks
+# (type chore, labels follow-up + follow-up:<task>), at most `max_followups` per decision.
+notes:
+  followup_tasks: true
+  max_followups: 3
+  actionable_patterns: ["\\bnot (?:yet )?(?:covered|tested|verified)\\b", "\\b(?:did|could)(?:n't| not) (?:verify|run|test|check)\\b", "\\buntested\\b",
+    "\\bno (?:dedicated |unit |integration )?tests?\\b", "\\bmissing tests?\\b", "\\bTODO\\b", "\\bfollow[- ]?up\\b",
+    "\\b(?:forgeable|insecure|vulnerab\\w*|race condition|data loss)\\b", "\\bbehaviou?r change\\b"]
+
+# Evidence that must be present for any auto-merge.
+required_evidence:
+  - { id: gate_pass }
+  - { id: verdict_accept }
+  - { id: review_clean }
+  - { id: repro_proof, for_types: [bug] }
+  - { id: spec_synced }
+
+# Any of these blocks the merge outright.
+hard_blocks: [gate_fail, verdict_reject, blocking_findings, diff_guard_fail, protected_path]
+
+# First matching enforced rule wins; no match → defaults.decision. `mode: shadow` rules never change the decision:
+# they are evaluated and logged as `shadow_decision` in logs/decisions.jsonl ("would auto-merge"). Promote one to
+# `mode: enforce` (or drop `mode`) once its shadow log is trustworthy.
+rules:
+  - { id: sensitive-needs-human, match: { paths_any: ["**/auth/**", "**/payments/**", "**/migrations/**", "infra/**", ".github/**"] }, decision: human_review, lane: expert }
+  - { id: docs-only, match: { paths_only: ["**/*.md", "docs/**"], evidence_complete: true }, decision: auto_merge }
+  - { id: small-verified-fix, match: { task_types: [bug, chore], max_loc: 200, max_files: 6, risk_lte: 0.25, evidence_complete: true }, decision: auto_merge }
+  - { id: small-feature, match: { task_types: [feature], max_loc: 300, risk_lte: 0.25, evidence_complete: true, findings_max: { P2: 2 } }, decision: auto_merge }
+  # Refactors: behaviour-preserving (gate PASS, diff guard clean, no existing test line removed), no public-API change,
+  # sized on source LOC with moves counted once. Shadow until the benchmark has trap refactors (pilot 2026-11-16 §7).
+  - id: refactor-src
+    mode: shadow
+    description: Behaviour-preserving refactor sized on source LOC (moves count once).
+    match: { task_types: [refactor], max_src_loc: 300, max_files: 10, risk_lte: 0.25, evidence_complete: true, public_api_changed: false, behavior_preserving: true }
+    decision: auto_merge
+  - { id: high-risk, match: { risk_gt: 0.6 }, decision: human_review, lane: expert }
+
+limits:
+  max_auto_merges_per_day: 20
+  circuit_breaker: { window: 20, max_bad_outcomes: 2 }   # recent reverts/defects pause auto-merge
+
+github: { review_label: "factory:needs-review", blocked_label: "factory:blocked", reviewers: [] }

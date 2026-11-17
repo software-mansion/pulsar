@@ -1,0 +1,259 @@
+# Verification profile (spec 02 §6): presets mobile, patched from the detected stack.
+# This file decides what "done" means (`factory check`). Agents may not edit it; review changes like code.
+# `/factory:setup` refines it with you (levels minimal | standard | strict, local test environment).
+# Adjustments made by `factory init`:
+#   - typecheck: disabled (no type checker detected)
+#   - e2e: disabled (xcuitest needs a project-specific command)
+#   - coverage: not configured (no coverage output detected)
+schema: factory.profile/v1
+profiles:
+  - mobile
+verifiers:
+  - id: typecheck
+    kind: typecheck
+    run: npx tsc --noEmit
+    paths:
+      - "**/*.ts"
+      - "**/*.tsx"
+    required: true
+    quick: true
+    timeout_s: 300
+    parse: exit
+    enabled: false
+  - id: lint
+    kind: lint
+    run: npx eslint . --max-warnings=0
+    paths:
+      - "**/*.kt"
+      - "**/*.swift"
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.mjs"
+      - "**/*.java"
+    required: true
+    timeout_s: 300
+    parse: exit
+  - id: unit
+    kind: unit
+    run: mkdir -p .factory-out; (npx jest --ci) > .factory-out/unit.log 2>&1; s=$?; cat .factory-out/unit.log; exit $s
+    always: true
+    required: true
+    quick: true
+    timeout_s: 900
+    parse: exit
+    evidence:
+      - kind: test-report
+        glob: .factory-out/unit.log
+  - id: build
+    kind: build
+    enabled: false
+    run: npx expo export --platform ios --output-dir .factory-out/export
+    paths:
+      - app/**
+      - src/**
+      - app.json
+      - package.json
+    required: false
+    timeout_s: 900
+    parse: exit
+  - id: e2e
+    kind: e2e
+    setup: .factory/verification/checks/boot-simulator.sh
+    run: maestro test .maestro/ --format junit --output .factory-out/e2e-junit.xml
+    paths:
+      - app/**
+      - src/**
+      - ios/**
+      - android/**
+    required: false
+    timeout_s: 2400
+    parse: junit
+    report_path: .factory-out/e2e-junit.xml
+    evidence:
+      - kind: test-report
+        glob: .factory-out/e2e-junit.xml
+      - kind: screenshot
+        glob: .factory-out/screenshots/**/*.png
+    enabled: false
+  - id: visual
+    kind: visual
+    enabled: false
+    run: maestro test .maestro/visual/ --format junit --output .factory-out/visual-junit.xml
+    paths:
+      - "**/*.tsx"
+      - "**/*.swift"
+      - "**/*.kt"
+    required: false
+    timeout_s: 1800
+    parse: junit
+    report_path: .factory-out/visual-junit.xml
+    evidence:
+      - kind: screenshot
+        glob: .factory-out/screenshots/**/*.png
+  - id: mutation
+    kind: mutation
+    enabled: false
+    run: .factory/verification/checks/mutation.sh
+    paths:
+      - src/**
+    required: false
+    timeout_s: 1800
+    parse: json
+    evidence:
+      - kind: mutation-report
+        glob: .factory-out/mutation.json
+path_classes:
+  src:
+    - "**/*.kt"
+    - "**/*.swift"
+    - "**/*.ts"
+    - "**/*.tsx"
+    - "**/*.js"
+    - "**/*.jsx"
+    - "**/*.mjs"
+    - "**/*.java"
+  tests:
+    - "**/*.test.*"
+    - "**/*.spec.*"
+    - test/**
+    - tests/**
+    - "**/__tests__/**"
+    - "**/test_*.py"
+    - "**/*_test.py"
+    - "**/*_test.go"
+    - e2e/**
+  ci:
+    - .github/**
+    - .gitlab-ci.yml
+    - .circleci/**
+    - Jenkinsfile
+    - azure-pipelines.yml
+  lint_config:
+    - .eslintrc*
+    - eslint.config.*
+    - biome.json
+    - biome.jsonc
+    - .prettierrc*
+    - prettier.config.*
+    - tsconfig*.json
+    - ruff.toml
+    - .ruff.toml
+    - .flake8
+    - mypy.ini
+    - pyrightconfig.json
+    - .golangci.*
+    - .tflint.hcl
+  test_config:
+    - vitest.config.*
+    - jest.config.*
+    - playwright.config.*
+    - cypress.config.*
+    - .detoxrc*
+    - pytest.ini
+    - .mocharc*
+    - package.json#scripts.test
+  snapshots:
+    - "**/__snapshots__/**"
+    - "**/*.snap"
+  manifests:
+    - package.json
+    - pyproject.toml
+    - go.mod
+    - Cargo.toml
+    - Gemfile
+    - Podfile
+    - "**/build.gradle*"
+  lockfiles:
+    - package-lock.json
+    - pnpm-lock.yaml
+    - yarn.lock
+    - bun.lockb
+    - bun.lock
+    - uv.lock
+    - poetry.lock
+    - go.sum
+    - Cargo.lock
+    - Podfile.lock
+    - "**/*.lock"
+  migrations:
+    - migrations/**
+    - "**/migrations/**"
+  public_api: []
+  ui:
+    - "**/*.tsx"
+    - "**/*.jsx"
+    - "**/*.swift"
+    - "**/*.kt"
+    - "**/res/layout/**"
+  docs:
+    - "**/*.md"
+    - docs/**
+  generated:
+    - "**/generated/**"
+    - dist/**
+    - build/**
+    - "**/*.generated.*"
+  protected:
+    - .factory/policy/**
+    - .factory/verification/**
+diff_guard:
+  rules:
+    - test-deleted
+    - assertions-removed
+    - skip-added
+    - only-added
+    - suppression-added
+    - ci-modified
+    - test-config-modified
+    - lint-config-modified
+    - coverage-threshold-lowered
+    - snapshot-updated
+    - expected-value-changed
+    - protected-path-modified
+  skip_patterns:
+    - \b(it|test|describe)\.skip\(
+    - \bx(it|describe|test)\(
+    - "@pytest\\.mark\\.(skip|xfail)"
+    - \bt\.Skip\(
+    - "#\\[ignore\\]"
+  only_patterns:
+    - \b(it|test|describe)\.only\(
+    - \bf(it|describe)\(
+  suppression_patterns:
+    - eslint-disable
+    - "@ts-ignore"
+    - "@ts-expect-error"
+    - "@ts-nocheck"
+    - biome-ignore
+    - "# noqa"
+    - "# type: ignore"
+    - //\s*nolint
+    - istanbul ignore
+    - c8 ignore
+    - "pragma: no cover"
+    - "#\\[allow\\("
+  assertion_patterns:
+    - \bexpect\(
+    - \bassert
+    - \.should\b
+    - \bassertEquals\(
+    - \bt\.(Error|Fatal)
+    - \brequire\.
+    - \bassert_eq!
+repro:
+  required_for:
+    - bug
+  timeout_s: 600
+evidence_required:
+  - kind: test-report
+    when_paths:
+      - src/**
+      - app/**
+  - kind: screenshot
+    when_paths:
+      - "**/*.tsx"
+      - "**/*.jsx"
+      - "**/*.swift"
+      - "**/*.kt"
