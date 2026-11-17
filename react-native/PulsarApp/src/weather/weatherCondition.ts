@@ -20,7 +20,9 @@ export const mapWeatherCode = (code: number): WeatherCondition => {
   return DEFAULT_CONDITION;
 };
 
-type PresetName = Extract<keyof typeof Presets, string>;
+type PresetName = {
+  [K in keyof typeof Presets]: (typeof Presets)[K] extends () => void ? K : never;
+}[keyof typeof Presets];
 
 export const CONDITION_HAPTICS: Record<
   WeatherCondition,
