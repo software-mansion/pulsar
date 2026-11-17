@@ -39,6 +39,25 @@ verifiers:
       - { kind: test-report, glob: .factory-out/rn-unit.log }
       - { kind: coverage, glob: .factory-out/rn-coverage/lcov.info }
 
+  # --- react-native/PulsarApp (demo app) ---
+  - id: rn-app-lint
+    kind: lint
+    run: .factory/verification/checks/eslint-changed.sh react-native/PulsarApp
+    paths: ["react-native/PulsarApp/**/*.{js,jsx,ts,tsx,mjs}"]
+    required: true
+    quick: true
+    timeout_s: 300
+    parse: exit
+  - id: rn-app-unit
+    kind: unit
+    # Scoped to the weather tests: App.test.tsx already fails on main (missing RNGestureHandler native module).
+    run: cd react-native/PulsarApp && npx jest --ci __tests__/weather
+    paths: ["react-native/PulsarApp/src/weather/**", "react-native/PulsarApp/__tests__/weather*"]
+    required: true
+    quick: true
+    timeout_s: 300
+    parse: exit
+
   # --- react-native/react-native-pulsar-lottie ---
   - id: rn-lottie-unit
     kind: unit
