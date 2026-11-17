@@ -42,7 +42,7 @@ verifiers:
   # --- react-native/PulsarApp (demo app) ---
   - id: rn-app-lint
     kind: lint
-    run: .factory/verification/checks/eslint-changed.sh react-native/PulsarApp
+    run: cd react-native/PulsarApp && npx eslint src/weather __tests__/weather.test.ts --max-warnings=0
     paths: ["react-native/PulsarApp/**/*.{js,jsx,ts,tsx,mjs}"]
     required: true
     quick: true

@@ -1,0 +1,5 @@
+{"schema":"factory.signal/v1","ts":"2026-11-17T13:37:49.683Z","kind":"takeover","task":"T-7mmxrjkydm","run":"prepare","step":"prepare","data":{"mode":"desktop"}}
+{"schema":"factory.signal/v1","ts":"2026-11-17T13:47:18.653Z","kind":"gate_fail","task":"T-7mmxrjkydm","run":"R-7mw1ew2c6f","step":"checkpoints.0.cp-gate","strategy":"checkpoint-convergence","signature":"dfb936dc4f48","value":1,"data":{"failed":["lint","unit"]}}
+{"schema":"factory.signal/v1","ts":"2026-11-17T13:47:53.888Z","kind":"needs_human","task":"T-7mmxrjkydm","run":"R-7mw1ew2c6f","step":"checkpoints.0.cp-build","strategy":"checkpoint-convergence","data":{"reason":"question"}}
+{"schema":"factory.signal/v1","ts":"2026-11-17T13:49:57.389Z","kind":"needs_human","task":"T-7mmxrjkydm","run":"R-7mw1ew2c6f","step":"checkpoints.0.cp-build","strategy":"checkpoint-convergence","data":{"reason":"question"}}
+{"schema":"factory.signal/v1","ts":"2026-11-17T13:53:03.450Z","kind":"needs_human","task":"T-7mmxrjkydm","run":"R-7mw1ew2c6f","step":"checkpoints.0.cp-build","strategy":"checkpoint-convergence","data":{"reason":"question"}}
