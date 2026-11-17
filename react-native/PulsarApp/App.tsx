@@ -7,8 +7,9 @@ import PublicApisScreen from './src/screens/PublicApisScreen';
 import AudioHapticsScreen from './src/screens/AudioHapticsScreen';
 import LottieHapticsScreen from './src/screens/LottieHapticsScreen';
 import BundlesScreen from './src/screens/BundlesScreen';
+import WeatherScreen from './src/screens/WeatherScreen';
 
-type TabName = 'presets' | 'realtime' | 'audio' | 'lottie' | 'bundles' | 'apis';
+type TabName = 'presets' | 'realtime' | 'audio' | 'lottie' | 'bundles' | 'weather' | 'apis';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabName>('presets');
@@ -23,6 +24,7 @@ export default function App() {
           {activeTab === 'audio' && <AudioHapticsScreen />}
           {activeTab === 'lottie' && <LottieHapticsScreen />}
           {activeTab === 'bundles' && <BundlesScreen />}
+          {activeTab === 'weather' && <WeatherScreen />}
           {activeTab === 'apis' && <PublicApisScreen />}
         </View>
 
@@ -57,6 +59,12 @@ export default function App() {
             icon="📦"
             active={activeTab === 'bundles'}
             onPress={() => setActiveTab('bundles')}
+          />
+          <TabButton
+            title="Weather"
+            icon="🌦️"
+            active={activeTab === 'weather'}
+            onPress={() => setActiveTab('weather')}
           />
           <TabButton
             title="APIs"
