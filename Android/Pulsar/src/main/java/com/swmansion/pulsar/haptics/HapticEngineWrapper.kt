@@ -22,6 +22,8 @@ class HapticEngineWrapper(private val context: Context) {
     private var isHapticsEnabled = true
 
     private val hapticBuilder = HapticBuilder(this)
+    private val vendorHapticsPlayer: VendorHapticsPlayer? by lazy { VendorHapticsPlayer.createIfAvailable() }
+    private var simulatedMode = CompatibilityMode.ADVANCED_SUPPORT
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -41,11 +43,7 @@ class HapticEngineWrapper(private val context: Context) {
     }
 
     fun vibrate(vibrationEffect: VibrationEffect) {
-        if (!isHapticsEnabled) {
-            return
-        }
-        if (!hasVibrationPermission) {
-            Log.w(TAG, "Skipping vibration because android.permission.VIBRATE is not granted")
+        if (!canVibrate()) {
             return
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -57,6 +55,26 @@ class HapticEngineWrapper(private val context: Context) {
         } else {
             Log.w(TAG, "Incompatible Android version. Minimal supported version is Android API 26")
         }
+    }
+
+    fun usesVendorHaptics(): Boolean =
+        simulatedMode == CompatibilityMode.ADVANCED_SUPPORT && vendorHapticsPlayer != null
+
+    fun playVendorHaptics(patternJson: String) {
+        if (canVibrate()) {
+            vendorHapticsPlayer?.play(patternJson)
+        }
+    }
+
+    private fun canVibrate(): Boolean {
+        if (!isHapticsEnabled) {
+            return false
+        }
+        if (!hasVibrationPermission) {
+            Log.w(TAG, "Skipping vibration because android.permission.VIBRATE is not granted")
+            return false
+        }
+        return true
     }
 
     fun enableHaptics(state: Boolean) {
@@ -72,6 +90,7 @@ class HapticEngineWrapper(private val context: Context) {
         if (!initialized) {
             return
         }
+        vendorHapticsPlayer?.stop()
         vibrator?.cancel()
     }
 
@@ -137,6 +156,7 @@ class HapticEngineWrapper(private val context: Context) {
     }
 
     fun simulateCompatibilityMode(mode: CompatibilityMode) {
+        simulatedMode = mode
         hapticBuilder.simulateCompatibilityMode(mode)
     }
 

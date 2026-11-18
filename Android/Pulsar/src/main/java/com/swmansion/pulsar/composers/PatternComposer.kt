@@ -6,6 +6,7 @@ import android.util.Log
 import com.swmansion.pulsar.audio.AudioHapticPlayer
 import com.swmansion.pulsar.audio.AudioSimulator
 import com.swmansion.pulsar.haptics.HapticEngineWrapper
+import com.swmansion.pulsar.haptics.VendorHapticsPatternEncoder
 import com.swmansion.pulsar.types.PatternData
 import com.swmansion.pulsar.types.PatternSeek
 import com.swmansion.pulsar.types.SoundData
@@ -24,6 +25,7 @@ class PatternComposer(
     }
 
     private var vibrationEffect: VibrationEffect? = null
+    private var vendorHapticsPattern: String? = null
     private var audioBuffer: ByteArray? = null
 
     internal var soundPlayer: AudioHapticPlayer? = null
@@ -35,7 +37,8 @@ class PatternComposer(
     fun parsePattern(hapticsData: PatternData, fromMs: Long = 0L) {
         releaseSound()
         val seekedPattern = PatternSeek.patternFrom(hapticsData, fromMs)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vendorHapticsPattern = if (engine.usesVendorHaptics()) VendorHapticsPatternEncoder.encode(seekedPattern) else null
+        if (vendorHapticsPattern == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrationEffect = try {
                 engine.getHapticBuilder().createVibrationEffect(seekedPattern)
             } catch (_: IllegalArgumentException) {
@@ -77,10 +80,19 @@ class PatternComposer(
         if (player != null) {
             player.play()
             if (!useCoupledHaptics) {
-                vibrationEffect?.let { engine.vibrate(it) }
+                playHaptics()
             }
         } else {
             audioSimulator.play(audioBuffer)
+            playHaptics()
+        }
+    }
+
+    private fun playHaptics() {
+        val pattern = vendorHapticsPattern
+        if (pattern != null) {
+            engine.playVendorHaptics(pattern)
+        } else {
             vibrationEffect?.let { engine.vibrate(it) }
         }
     }
