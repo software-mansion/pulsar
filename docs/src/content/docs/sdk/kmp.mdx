@@ -691,8 +691,15 @@ a bundle kept there uses the `bytes` overload above.
 The loaded bundle's content hash is checked against the generated types; pass `strict = false`
 to skip it.
 
-Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play(fromMs = 0)`, `stop()`, and `animation` — the Lottie bytes
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `hasVideo`, `play(fromMs = 0)`, `stop()`, `video`, and `animation` — the Lottie bytes
 and timing for your own animation view.
+
+A preset authored against a video carries it as `video` — the extracted MP4's `path`, `width`,
+`height` and `isMuted` — instead of an animation, for your platform player to render.
+The MP4 is extracted to a cache file when the bundle loads, so any player can stream it. Its time runs
+1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the preset also
+carries audio, that track replaces the video's own sound: `isMuted` is then `true`, and the player must
+stay muted while `play()` plays the audio with the haptics.
 
 Pass `fromMs` to start a preset that far into its own timeline — audio and haptics seek together, so a progress bar can scrub it:
 

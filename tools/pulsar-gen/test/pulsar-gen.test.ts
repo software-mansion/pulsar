@@ -34,7 +34,7 @@ test('readBundleBytes parses + validates the fixture manifest', () => {
   assert.equal(manifest.name, 'Acme Pack');
   assert.deepEqual(
     manifest.presets.map((p) => p.id),
-    ['heartbeatV2', 'explosion'],
+    ['heartbeatV2', 'explosion', 'intro'],
   );
   assert.ok(manifest.hash?.startsWith('sha256-'));
   assert.ok(entries['haptics/heartbeatV2.json']);
@@ -114,7 +114,7 @@ test('rn definition keys are the preset ids (source of keyof inference)', () => 
   const { manifest, entries } = readBundleBytes(buildFixtureBundle());
   const sidecar = buildSidecar(manifest, extractPatterns(manifest, entries));
   assert.equal(sidecar.schema, SIDECAR_SCHEMA);
-  assert.deepEqual(Object.keys(sidecar.presets), ['heartbeatV2', 'explosion']);
+  assert.deepEqual(Object.keys(sidecar.presets), ['heartbeatV2', 'explosion', 'intro']);
   assert.equal(sidecar.presets.heartbeatV2.name, 'Heartbeat V2');
   assert.equal(sidecar.presets.heartbeatV2.duration, 1200);
 });
@@ -157,12 +157,49 @@ test('rn emitter warns separately about audio and about an un-inlinable animatio
   });
   const warnings = file.warnings ?? [];
 
-  assert.equal(warnings.length, 2);
+  assert.equal(warnings.length, 3);
   assert.match(warnings[0]!, /carry audio/);
   assert.match(warnings[0]!, /loadBundleSync/);
   assert.match(warnings[1]!, /explosion.*could not be inlined/s);
   // heartbeatV2's animation WAS inlined, so it must not be reported as dropped.
   assert.doesNotMatch(warnings[1]!, /heartbeatV2/);
+  assert.match(warnings[2]!, /intro carry a video/);
+});
+
+test('validateManifest keeps a preset video and its dimensions', () => {
+  const { manifest } = readBundleBytes(buildFixtureBundle());
+  const intro = manifest.presets.find((p) => p.id === 'intro');
+  assert.deepEqual(intro?.video, { src: 'video/intro.mp4', width: 1280, height: 720 });
+  assert.deepEqual(intro?.audio, { src: 'audio/intro.m4a' });
+  assert.equal(manifest.presets.find((p) => p.id === 'heartbeatV2')?.video, undefined);
+});
+
+test('validateManifest rejects a preset carrying both an animation and a video', () => {
+  assert.throws(
+    () =>
+      validateManifest({
+        schema: 'pulsar.bundle/1',
+        id: 'x',
+        name: 'y',
+        presets: [
+          {
+            id: 'clash',
+            name: 'Clash',
+            haptics: 'a.json',
+            animation: { src: 'animation/a.json' },
+            video: { src: 'video/a.mp4' },
+          },
+        ],
+      }),
+    /both an animation and a video/,
+  );
+});
+
+test('rn definition flags which presets carry a video', () => {
+  const { manifest, entries } = readBundleBytes(buildFixtureBundle());
+  const sidecar = buildSidecar(manifest, extractPatterns(manifest, entries));
+  assert.equal(sidecar.presets.intro.video, true);
+  assert.equal(sidecar.presets.heartbeatV2.video, false);
 });
 
 test('extractAnimations fails loudly when a manifest points at a missing animation', () => {

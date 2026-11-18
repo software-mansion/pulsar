@@ -684,7 +684,7 @@ let bundle = try await pulsar.loadBundleAsync(AcmePack.descriptor)
 The descriptor finds the `.pulsar` in the app's main bundle, and its content hash is checked
 against the generated types so a stale copy fails loudly. Pass `strict: false` to skip that.
 
-Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `play()` / `play(fromMs:)`, `stop()`, and `animation` — the Lottie bytes
+Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`, `hasVideo`, `play()` / `play(fromMs:)`, `stop()`, `video`, and `animation` — the Lottie bytes
 and timing for your own animation view. Pulsar carries and time-aligns the animation; the app
 renders it:
 
@@ -706,6 +706,24 @@ if let animation = bundle.heartbeatV2.animation {
 
 Audio authored into a preset is registered as a Core Haptics audio event, so it shares the engine
 clock with the haptics.
+
+A preset authored against a video carries it as `video` — its file `url`, `width`, `height` and
+`isMuted` — instead of an animation. Pulsar times it; your player renders it:
+
+```swift
+if let video = bundle.intro.video {
+    let player = AVPlayer(url: video.url)
+    player.isMuted = video.isMuted
+    player.seek(to: CMTime(value: 2500, timescale: 1000))
+    bundle.intro.play(fromMs: 2500)
+    player.play()
+}
+```
+
+The MP4 is extracted to a cache file when the bundle loads, so any player can stream it. Its time runs
+1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the preset also
+carries audio, that track replaces the video's own sound: `isMuted` is then `true`, and the player must
+stay muted while `play()` plays the audio with the haptics.
 
 For an id only known at runtime, `bundle.get(id)` returns a handle or `nil`. Call `bundle.dispose()`
 to release the native patterns when you are done.

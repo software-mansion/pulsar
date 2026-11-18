@@ -28,6 +28,7 @@ export type {
   BundleMeta,
   PresetHandle,
   PresetAnimation,
+  PresetVideo,
 } from './createBundle';
 export { HapticSupport, RealtimeComposerStrategy } from './NativeRNPulsar';
 export type { HapticCapabilities } from './NativeRNPulsar';

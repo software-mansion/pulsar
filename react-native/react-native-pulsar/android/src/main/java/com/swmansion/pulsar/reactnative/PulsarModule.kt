@@ -356,6 +356,17 @@ class PulsarModule(reactContext: ReactApplicationContext) :
     bundlesRegistry[token]?.handle(presetId)?.stop()
   }
 
+  override fun Pulsar_getBundlePresetVideo(token: String?, presetId: String?): WritableMap? {
+    if (token == null || presetId == null) return null
+    val video = bundlesRegistry[token]?.handle(presetId)?.video ?: return null
+    return Arguments.createMap().apply {
+      putString("path", video.path)
+      putInt("width", video.width)
+      putInt("height", video.height)
+      putBoolean("muted", video.isMuted)
+    }
+  }
+
   override fun Pulsar_disposeBundle(token: String?) {
     token?.let { bundlesRegistry.remove(it)?.dispose() }
   }

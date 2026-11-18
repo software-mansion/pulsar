@@ -20,5 +20,8 @@ internal actual fun writeBundleMedia(bundleId: String, name: String, bytes: Byte
             "Pulsar has no application context yet — load the bundle after app startup.",
         )
     val dir = File(context.cacheDir, "PulsarBundles/$bundleId").apply { mkdirs() }
-    return File(dir, name).apply { writeBytes(bytes) }.absolutePath
+    return File(dir, name).apply {
+        parentFile?.mkdirs()
+        writeBytes(bytes)
+    }.absolutePath
 }

@@ -214,6 +214,20 @@ RCT_EXPORT_MODULE()
   });
 }
 
+- (NSDictionary *_Nullable)Pulsar_getBundlePresetVideo:(nonnull NSString *)token
+                                              presetId:(nonnull NSString *)presetId {
+  BundleVideo *video = [[self bundleForToken:token] handle:presetId].video;
+  if (!video) {
+    return nil;
+  }
+  return @{
+    @"path" : video.path,
+    @"width" : @(video.width),
+    @"height" : @(video.height),
+    @"muted" : @(video.isMuted),
+  };
+}
+
 - (void)Pulsar_disposeBundle:(nonnull NSString *)token {
   LoadedBundle *bundle = [self takeBundleForToken:token];
   RNPulsarPerformSafely(@"Pulsar_disposeBundle", ^{

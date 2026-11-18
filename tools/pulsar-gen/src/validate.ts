@@ -53,6 +53,13 @@ export function validateManifest(input: unknown): BundleManifest {
       if (a.frameRate !== undefined) entry.animation.frameRate = Number(a.frameRate);
       if (a.totalFrames !== undefined) entry.animation.totalFrames = Number(a.totalFrames);
     }
+    if (p.video !== undefined) {
+      if (entry.animation) fail(`presets[${i}] carries both an animation and a video`);
+      const v = p.video as Record<string, unknown>;
+      entry.video = { src: asString(v.src, `presets[${i}].video.src`) };
+      if (v.width !== undefined) entry.video.width = Number(v.width);
+      if (v.height !== undefined) entry.video.height = Number(v.height);
+    }
     return entry;
   });
 

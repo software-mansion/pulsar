@@ -110,6 +110,17 @@ class PulsarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                             put("hasAudio", preset.hasAudio)
                             put("hasAnimation", preset.hasAnimation)
                             put("pattern", patternMap(preset.pattern))
+                            preset.video?.let { video ->
+                                put(
+                                    "video",
+                                    mapOf(
+                                        "path" to video.path,
+                                        "width" to video.width,
+                                        "height" to video.height,
+                                        "muted" to video.isMuted,
+                                    ),
+                                )
+                            }
                             val animation = preset.animation
                             if (includeAnimations && animation != null) {
                                 put(

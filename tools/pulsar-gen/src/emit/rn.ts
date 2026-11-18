@@ -14,6 +14,7 @@ export interface PresetSidecarEntry {
   /** How the preset was authored. `lottie` below holds the payload, when it can be carried. */
   audio: boolean;
   animation: boolean;
+  video: boolean;
   lottie?: InlineLottie;
 }
 
@@ -41,6 +42,7 @@ export function buildSidecar(
       pattern,
       audio: !!p.audio,
       animation: !!p.animation,
+      video: !!p.video,
     };
     if (p.duration !== undefined) entry.duration = p.duration;
     const lottie = animations[p.id];
@@ -82,6 +84,14 @@ export function emitRn(manifest: BundleManifest, opts: GenerateOptions = {}): Ge
     warnings.push(
       `presets ${droppedAnimation.join(', ')} have an animation that could not be inlined ` +
         '(dotLottie `.lottie` is binary — re-export the animation as .json, or use the .pulsar binary).',
+    );
+  }
+
+  const withVideo = manifest.presets.filter((p) => p.video).map((p) => p.id);
+  if (withVideo.length > 0) {
+    warnings.push(
+      `presets ${withVideo.join(', ')} carry a video, which is extracted natively — only ` +
+        '`loadBundleSync(true)` and `loadBundleAsync()` expose its file.',
     );
   }
 

@@ -27,6 +27,7 @@ internal data class PresetEntry(
     val haptics: String,
     val audio: AudioRef? = null,
     val animation: AnimationRef? = null,
+    val video: VideoRef? = null,
 )
 
 @Serializable
@@ -34,6 +35,9 @@ internal data class AudioRef(val src: String, val volume: Float? = null, val off
 
 @Serializable
 internal data class AnimationRef(val src: String, val frameRate: Double? = null, val totalFrames: Int? = null)
+
+@Serializable
+internal data class VideoRef(val src: String, val width: Double? = null, val height: Double? = null)
 
 @Serializable
 internal data class ValuePointDto(val time: Double, val value: Float)

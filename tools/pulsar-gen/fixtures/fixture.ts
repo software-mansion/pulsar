@@ -61,6 +61,14 @@ export function buildFixtureBundle(): Uint8Array {
         // A dotLottie: binary, so the rn target cannot inline it — exercises the skip path.
         animation: { src: 'animation/legacy.lottie' },
       },
+      {
+        id: 'intro',
+        name: 'Intro',
+        duration: 3000,
+        haptics: 'haptics/explosion.json',
+        audio: { src: 'audio/intro.m4a' },
+        video: { src: 'video/intro.mp4', width: 1280, height: 720 },
+      },
     ],
   };
 
@@ -72,6 +80,8 @@ export function buildFixtureBundle(): Uint8Array {
     'audio/blast.wav': enc('RIFF-fixture-audio'),
     'animation/pulse.json': jsonBytes({ v: '5.7.4', fr: 60, ip: 0, op: 72, w: 100, h: 100, layers: [] }),
     'animation/legacy.lottie': enc('PK\u0003\u0004fixture-dotlottie'),
+    'audio/intro.m4a': enc('ftypM4A-fixture-audio'),
+    'video/intro.mp4': enc('ftypisom-fixture-video'),
   };
 
   // Compute the content hash over everything EXCEPT the manifest's own hash, then embed it.

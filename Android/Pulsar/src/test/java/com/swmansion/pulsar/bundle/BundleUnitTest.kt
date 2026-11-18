@@ -56,6 +56,16 @@ class BundleUnitTest {
     }
 
     @Test
+    fun manifestDecodesAPresetVideo() {
+        val manifest = json.decodeFromString(
+            BundleManifest.serializer(),
+            """{"schema":"pulsar.bundle/1","id":"x","name":"X","presets":[{"id":"intro","name":"Intro",
+               "haptics":"haptics/intro.json","video":{"src":"video/intro.mp4","width":1280.0,"height":720}}]}""",
+        )
+        assertEquals(VideoRef("video/intro.mp4", 1280.0, 720.0), manifest.presets[0].video)
+    }
+
+    @Test
     fun devicePatternMapsIntoPatternData() {
         val pattern = json.decodeFromString(DevicePatternDto.serializer(), hapticsJson).toPatternData()
         assertEquals(listOf(0L, 10L), pattern.continuousPattern.amplitude.map { it.time })

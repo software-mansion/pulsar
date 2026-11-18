@@ -33,6 +33,22 @@ extension Pulsar {
         animation = BundleAnimation(data: animBytes, frameRate: anim.frameRate ?? 0, totalFrames: anim.totalFrames ?? 0)
       }
 
+      var video: BundleVideo?
+      if let ref = preset.video {
+        guard let videoBytes = files[ref.src] else { throw PulsarBundleError.missingEntry(ref.src) }
+        // AVPlayer streams from a file URL, not from bytes in memory.
+        let videoDir = mediaDir.appendingPathComponent("video", isDirectory: true)
+        try FileManager.default.createDirectory(at: videoDir, withIntermediateDirectories: true)
+        let dest = videoDir.appendingPathComponent((ref.src as NSString).lastPathComponent)
+        try videoBytes.write(to: dest, options: .atomic)
+        video = BundleVideo(
+          url: dest,
+          width: Int(ref.width ?? 0),
+          height: Int(ref.height ?? 0),
+          isMuted: sound != nil
+        )
+      }
+
       handles[preset.id] = PresetHandle(
         id: preset.id,
         name: preset.name,
@@ -40,7 +56,8 @@ extension Pulsar {
         pulsar: self,
         pattern: pattern,
         sound: sound,
-        animation: animation
+        animation: animation,
+        video: video
       )
     }
 

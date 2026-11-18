@@ -39,3 +39,23 @@ The loaded bundle's content hash is asserted against the generated types unless 
 `strict: false`. The app
 reads the `.pulsar` asset bytes and hands them to the native SDK, which decodes and plays; synced
 audio uses the native iOS/Android path. Animation bytes are carried for your own Lottie view.
+
+A preset authored against a video carries it as `video` instead of an animation — the native SDK
+extracts the MP4 to a cache file, and your `video_player` renders it:
+
+```dart
+final video = bundle.intro.video;
+if (video != null) {
+  final controller = VideoPlayerController.file(File(video.path));
+  await controller.initialize();
+  await controller.setVolume(video.isMuted ? 0 : 1);
+  await controller.seekTo(const Duration(milliseconds: 2500));
+  bundle.intro.play(fromMs: 2500);
+  await controller.play();
+}
+```
+
+The MP4 is extracted to a cache file when the bundle loads, so any player can stream it. Its time runs
+1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the preset also
+carries audio, that track replaces the video's own sound: `isMuted` is then `true`, and the player must
+stay muted while `play()` plays the audio with the haptics.

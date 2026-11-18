@@ -13,6 +13,18 @@ class BundleAnimation internal constructor(
     val totalFrames: Int,
 )
 
+/**
+ * A preset's MP4, extracted to a local file for the app's own player. Its time runs 1:1 with the
+ * preset's, so seek it to the same `fromMs` you pass to [PresetHandle.play].
+ */
+class BundleVideo internal constructor(
+    val path: String,
+    val width: Int,
+    val height: Int,
+    /** The preset's bundle audio replaces the video's own sound, so the player must stay muted. */
+    val isMuted: Boolean,
+)
+
 /** A single playable preset from a loaded bundle. Parses its pattern lazily on first play. */
 class PresetHandle internal constructor(
     val id: String,
@@ -27,12 +39,16 @@ class PresetHandle internal constructor(
     val pattern: PatternData,
     private val haptics: Pulsar,
     private val sound: SoundData?,
+    val video: BundleVideo? = null,
 ) {
     /** Whether the preset carries a synced audio track, which [play] plays alongside the haptics. */
     val hasAudio: Boolean get() = sound != null
 
     /** Whether the preset carries a Lottie animation, exposed as [animation]. */
     val hasAnimation: Boolean get() = animation != null
+
+    /** Whether the preset carries a video, exposed as [video]. */
+    val hasVideo: Boolean get() = video != null
 
     private var composer: PatternComposer? = null
 
@@ -113,7 +129,11 @@ internal object BundleLoaderImpl {
     private val json = Json { ignoreUnknownKeys = true }
     private const val SCHEMA = "pulsar.bundle/1"
 
-    fun load(haptics: Pulsar, bytes: ByteArray): LoadedBundle {
+    fun load(
+        haptics: Pulsar,
+        bytes: ByteArray,
+        writeMedia: (bundleId: String, name: String, bytes: ByteArray) -> String = ::writeBundleMedia,
+    ): LoadedBundle {
         val files = Unzip.read(bytes)
         val manifestBytes = files["manifest.json"]
             ?: throw PulsarBundleException("Bundle is missing manifest.json")
@@ -134,13 +154,24 @@ internal object BundleLoaderImpl {
             val sound = preset.audio?.let { audio ->
                 files[audio.src]?.let { data ->
                     SoundData(
-                        uri = writeBundleMedia(manifest.id, audio.src.substringAfterLast('/'), data),
+                        uri = writeMedia(manifest.id, audio.src.substringAfterLast('/'), data),
                         volume = audio.volume ?: 1f,
                         offset = (audio.offset ?: 0.0).toLong(),
                         // Bundle audio is plain music: always play Pulsar's own haptics alongside it.
                         hapticChannels = false,
                     )
                 }
+            }
+
+            val video = preset.video?.let { ref ->
+                val data = files[ref.src]
+                    ?: throw PulsarBundleException("Bundle is missing referenced entry \"${ref.src}\"")
+                BundleVideo(
+                    path = writeMedia(manifest.id, "video/${ref.src.substringAfterLast('/')}", data),
+                    width = (ref.width ?: 0.0).toInt(),
+                    height = (ref.height ?: 0.0).toInt(),
+                    isMuted = sound != null,
+                )
             }
 
             handles[preset.id] = PresetHandle(
@@ -151,6 +182,7 @@ internal object BundleLoaderImpl {
                 pattern = pattern,
                 haptics = haptics,
                 sound = sound,
+                video = video,
             )
         }
         return LoadedBundle(manifest.id, manifest.hash ?: "", manifest.revision ?: 0, handles)

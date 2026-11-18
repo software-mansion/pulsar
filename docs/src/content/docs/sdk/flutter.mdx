@@ -728,7 +728,7 @@ Audio authored into a preset plays through the native iOS/Android path alongside
 animation bytes are carried for your own Lottie view.
 
 Each `PresetHandle` exposes `id`, `name`, `duration`, `pattern`, `hasAudio`, `hasAnimation`,
-`play({fromMs})`, `stop()`, and `animation` — the Lottie `data`, `frameRate` and `totalFrames`, ready for
+`hasVideo`, `play({fromMs})`, `stop()`, `video`, and `animation` — the Lottie `data`, `frameRate` and `totalFrames`, ready for
 `Lottie.memory`. That metadata is read back from the native bundle when it loads; pass
 `includeAnimations: false` to `loadBundleAsync` to skip the animation bytes when nothing will
 render them.
@@ -744,6 +744,26 @@ Every non-zero seek re-parses the preset; playing from the start reuses the cach
 
 The [Lottie SDK](/pulsar/lottie/overview/) takes a `PresetHandle` directly and reads all of that
 for you — pattern, animation and duration — so you rarely have to unpack it by hand.
+
+A preset authored against a video carries it as `video` — the extracted MP4's `path`, `width`,
+`height` and `isMuted` — instead of an animation, for your own player:
+
+```dart
+final video = bundle.intro.video;
+if (video != null) {
+  final controller = VideoPlayerController.file(File(video.path));
+  await controller.initialize();
+  await controller.setVolume(video.isMuted ? 0 : 1);
+  await controller.seekTo(const Duration(milliseconds: 2500));
+  bundle.intro.play(fromMs: 2500);
+  await controller.play();
+}
+```
+
+The MP4 is extracted to a cache file when the bundle loads, so any player can stream it. Its time runs
+1:1 with the preset's — seek the player to the same `fromMs` you pass to `play`. When the preset also
+carries audio, that track replaces the video's own sound: `isMuted` is then `true`, and the player must
+stay muted while `play()` plays the audio with the haptics.
 
 For an id only known at runtime, `bundle.get(id)` returns a handle or `null`. Call `bundle.dispose()`
 when you are done with a bundle.

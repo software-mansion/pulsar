@@ -42,9 +42,8 @@ internal actual fun writeBundleMedia(bundleId: String, name: String, bytes: Byte
     val caches = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
         .firstOrNull() as? String
         ?: throw PulsarBundleException("Could not resolve the caches directory")
-    val dir = "$caches/PulsarBundles/$bundleId"
-    NSFileManager.defaultManager.createDirectoryAtPath(dir, true, null, null)
-    val path = "$dir/$name"
+    val path = "$caches/PulsarBundles/$bundleId/$name"
+    NSFileManager.defaultManager.createDirectoryAtPath(path.substringBeforeLast('/'), true, null, null)
     val data = bytes.usePinned { NSData.create(bytes = it.addressOf(0), length = bytes.size.toULong()) }
     if (!data.writeToFile(path, true)) {
         throw PulsarBundleException("Could not write bundle media to \"$path\"")

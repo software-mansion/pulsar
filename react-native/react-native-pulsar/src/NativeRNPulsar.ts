@@ -30,6 +30,13 @@ export type HapticCapabilities = {
   minControlPointDurationMillis: number;
 };
 
+export type BundlePresetVideo = {
+  path: string;
+  width: number;
+  height: number;
+  muted: boolean;
+};
+
 export interface Spec extends TurboModule {
   Pulsar_play(name: string): void;
   Pulsar_enableHaptics(state: boolean): void;
@@ -73,6 +80,10 @@ export interface Spec extends TurboModule {
   ): void;
   Pulsar_stopBundlePreset(token: string, presetId: string): void;
   Pulsar_disposeBundle(token: string): void;
+  Pulsar_getBundlePresetVideo(
+    token: string,
+    presetId: string
+  ): BundlePresetVideo | null;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNPulsar');
