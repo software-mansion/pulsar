@@ -6,6 +6,7 @@ import UIKit
   private var audioSimulator = AudioSimulator()
   private var presets: PresetsWrapper?
   private var realtimeComposer: RealtimeComposer!
+  private let seekablePatternPlayers = SeekablePatternPlayerRegistry()
   
   @objc public override init() {
     realtimeComposer = RealtimeComposer(engine: self.engine)
@@ -25,6 +26,10 @@ import UIKit
   @objc public func getRealtimeComposer() -> RealtimeComposer {
     return realtimeComposer
   }
+
+  @objc public func getSeekablePatternPlayer() -> SeekablePatternPlayer {
+    seekablePatternPlayers.makePlayer()
+  }
   
   @objc public func preloadPresets(presetNames: Array<String>) {
     getPresets().preloadPresetByNames(presetNames)
@@ -36,6 +41,7 @@ import UIKit
 
   @objc public func enableHaptics(state: Bool) {
     engine.enableHaptics(state)
+    seekablePatternPlayers.setHapticsEnabled(state)
   }
   
   @objc public func enableSound(state: Bool) {
@@ -52,10 +58,12 @@ import UIKit
   
   @objc public func stopHaptics() {
     engine.stopHaptics()
+    seekablePatternPlayers.pauseAll()
   }
   
   @objc public func shutDownEngine() {
     engine.shutDownEngine()
+    seekablePatternPlayers.shutDownAll()
   }
   
   @objc public func isHapticsSupported() -> Bool {

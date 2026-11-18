@@ -20,8 +20,12 @@ final class HapticMockRecorder {
     var playerStarts = 0
     var playerStops = 0
     var sentParameters: [(intensity: Float, sharpness: Float)] = []
+    var engines: [CHHapticEngine] = []
+    var advancedPlayers: [MockAdvancedPlayer] = []
 
     func reset() {
+        engines.removeAll()
+        advancedPlayers.removeAll()
         enginesCreated = 0
         startCalls = 0
         playersCreated = 0
@@ -41,9 +45,30 @@ final class MockPatternPlayer: NSObject {
 
 /// Fake `CHHapticAdvancedPatternPlayer` — also records the dynamic parameters the realtime path sends.
 final class MockAdvancedPlayer: NSObject {
-    @objc func start(atTime time: TimeInterval) throws { HapticMockRecorder.shared.playerStarts += 1 }
-    @objc func stop(atTime time: TimeInterval) throws { HapticMockRecorder.shared.playerStops += 1 }
+    enum State { case created, playing, paused, stopped, cancelled }
+
+    var state = State.created
+    var seekOffsets: [TimeInterval] = []
+    var resumeTimes: [TimeInterval] = []
+
+    @objc func start(atTime time: TimeInterval) throws {
+        HapticMockRecorder.shared.playerStarts += 1
+        state = .playing
+    }
+    @objc func stop(atTime time: TimeInterval) throws {
+        HapticMockRecorder.shared.playerStops += 1
+        state = .stopped
+    }
+    @objc func pause(atTime time: TimeInterval) throws { state = .paused }
+    @objc func resume(atTime time: TimeInterval) throws {
+        resumeTimes.append(time)
+        state = .playing
+    }
+    @objc func seek(toOffset offsetTime: TimeInterval) throws { seekOffsets.append(offsetTime) }
+    @objc func cancel() throws { state = .cancelled }
     @objc var isMuted: Bool = false
+    @objc var playbackRate: Float = 1
+    @objc var completionHandler: ((Error?) -> Void)?
 
     @objc func sendParameters(_ parameters: [CHHapticDynamicParameter], atTime time: TimeInterval) throws {
         var intensity: Float = .nan
@@ -77,6 +102,7 @@ enum CoreHapticsMock {
         // -initAndReturnError:  -> return self as a shell engine
         let initBlock: @convention(block) (AnyObject, UnsafeMutableRawPointer?) -> AnyObject? = { obj, _ in
             HapticMockRecorder.shared.enginesCreated += 1
+            if let engine = obj as? CHHapticEngine { HapticMockRecorder.shared.engines.append(engine) }
             return obj
         }
         swizzle(engine, NSSelectorFromString("initAndReturnError:"), initBlock)
@@ -102,7 +128,9 @@ enum CoreHapticsMock {
         // -createAdvancedPlayerWithPattern:error: -> fake advanced player
         let advancedBlock: @convention(block) (AnyObject, AnyObject?, UnsafeMutableRawPointer?) -> AnyObject? = { _, _, _ in
             HapticMockRecorder.shared.advancedPlayersCreated += 1
-            return MockAdvancedPlayer()
+            let player = MockAdvancedPlayer()
+            HapticMockRecorder.shared.advancedPlayers.append(player)
+            return player
         }
         swizzle(engine, NSSelectorFromString("createAdvancedPlayerWithPattern:error:"), advancedBlock)
     }
