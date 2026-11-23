@@ -30,6 +30,29 @@ struct CoreHapticsMockTests {
         return engine
     }
 
+    @Test func composerParsedWhileInactiveCreatesItsPlayersOnPlay() {
+        CoreHapticsMock.install()
+        defer { CoreHapticsMock.uninstall() }
+
+        let engine = activeEngine()
+        engine.updatePlaybackAvailability(for: .background)
+        let composer = PatternComposer(engine: engine, audioSimulator: AudioSimulator())
+        composer.parsePattern(hapticsData: PatternData(
+            continuousPattern: ContinuousPattern(
+                amplitude: [ValuePoint(time: 0, value: 1), ValuePoint(time: 100, value: 0)],
+                frequency: [ValuePoint(time: 0, value: 0.5), ValuePoint(time: 100, value: 0.5)]
+            ),
+            discretePattern: [DiscretePoint(time: 0, amplitude: 1, frequency: 0.5)]
+        ))
+        #expect(HapticMockRecorder.shared.playersCreated == 0)
+
+        engine.updatePlaybackAvailability(for: .active)
+        composer.play()
+
+        #expect(HapticMockRecorder.shared.playersCreated == 2)
+        #expect(HapticMockRecorder.shared.playerStarts == 2)
+    }
+
     @Test func mockedEngineConstructsStartsAndCreatesPlayers() {
         CoreHapticsMock.install()
         defer { CoreHapticsMock.uninstall() }

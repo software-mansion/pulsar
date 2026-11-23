@@ -4,6 +4,12 @@ All notable changes to the Pulsar iOS SDK are documented here.
 
 ## Unreleased
 
+### Fixed
+
+- **A pattern parsed while the app was inactive stayed silent until relaunch.** `PatternComposer` only created its
+  players at parse time, which is skipped while the app isn't active (a background launch, or mid-resign), and `play()`
+  never retried. `play()` now creates any missing player.
+
 ### Added
 
 - **`SeekablePatternPlayer`** (`Pulsar.getSeekablePatternPlayer()`) plays a pattern in time with another clock, such

@@ -184,8 +184,18 @@ public class PatternComposer: NSObject {
     if !hasSound {
       audioSimulator.play(buffer: audioBuffer)
     }
-    if let id = continuousPlayerId { engine.playPlayer(id: id, pattern: continuousPattern) }
-    if let id = discretePlayerId { engine.playPlayer(id: id, pattern: discretePattern) }
+    playLayer(playerId: &continuousPlayerId, pattern: continuousPattern)
+    playLayer(playerId: &discretePlayerId, pattern: discretePattern)
+  }
+
+  /// `parse` can't create players while the app is inactive (e.g. a background launch), so a
+  /// layer that was parsed then gets its player here instead of staying silent for good.
+  private func playLayer(playerId: inout Int?, pattern: CHHapticPattern?) {
+    guard let pattern else { return }
+    if playerId == nil {
+      playerId = engine.createPlayer(pattern: pattern)
+    }
+    if let id = playerId { engine.playPlayer(id: id, pattern: pattern) }
   }
 
   @objc public func playAudioOnly() {
